@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="en" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Test Doubles: in theory, in Minitest and in RSpec - Ilija Eftimov</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="Ilija Eftimov" />
+  <meta name="description" content="Those of us that do Test Driven Development have heard about doubles, mocks, stubs, fakes and spies multiple times. Unfortunately there is a ton of confusion about all these words and their meaning. Let&amp;rsquo;s see what each an every one of these really mean, where we should use them and how the popular testing frameworks for Ruby implement these.
+Test Doubles So, first things first. One of the biggest misconceptions is that doubles are types of objects that are used in testing." />
+
+  <meta name="keywords" content="Software, Programming, Computer Science, Products" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.54.0" />
+
+
+<link rel="canonical" href="https://ieftimov.com/post/test-doubles-theory-minitest-rspec/" />
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.ec807d8b802a40889537c26e014f733206312ea440d42e1f0dabed80918de1ac.css" integrity="sha256-7IB9i4AqQIiVN8JuAU9zMgYxLqRA1C4fDavtgJGN4aw=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/overrides.css">
+
+<link rel="stylesheet" href="/css/subscribe.css">
+
+
+<meta property="og:title" content="Test Doubles: in theory, in Minitest and in RSpec" />
+<meta property="og:description" content="Those of us that do Test Driven Development have heard about doubles, mocks, stubs, fakes and spies multiple times. Unfortunately there is a ton of confusion about all these words and their meaning. Let&rsquo;s see what each an every one of these really mean, where we should use them and how the popular testing frameworks for Ruby implement these.
+Test Doubles So, first things first. One of the biggest misconceptions is that doubles are types of objects that are used in testing." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/test-doubles-theory-minitest-rspec/" />
+<meta property="article:published_time" content="2015-08-05T00:00:00&#43;00:00"/>
+
+
+<meta itemprop="name" content="Test Doubles: in theory, in Minitest and in RSpec">
+<meta itemprop="description" content="Those of us that do Test Driven Development have heard about doubles, mocks, stubs, fakes and spies multiple times. Unfortunately there is a ton of confusion about all these words and their meaning. Let&rsquo;s see what each an every one of these really mean, where we should use them and how the popular testing frameworks for Ruby implement these.
+Test Doubles So, first things first. One of the biggest misconceptions is that doubles are types of objects that are used in testing.">
+
+
+
+<meta itemprop="wordCount" content="2361">
+
+
+
+<meta itemprop="keywords" content="minitest,rspec,tdd,double,mock,stub,fake,dummy," />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Test Doubles: in theory, in Minitest and in RSpec"/>
+<meta name="twitter:description" content="Those of us that do Test Driven Development have heard about doubles, mocks, stubs, fakes and spies multiple times. Unfortunately there is a ton of confusion about all these words and their meaning. Let&rsquo;s see what each an every one of these really mean, where we should use them and how the popular testing frameworks for Ruby implement these.
+Test Doubles So, first things first. One of the biggest misconceptions is that doubles are types of objects that are used in testing."/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Ilija Eftimov</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/about/">About</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/subscribe/">Subscribe</a>
+          
+        
+      </li>
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      Ilija Eftimov
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/about/">About</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/subscribe/">Subscribe</a>
+          
+
+        
+
+      </li>
+    
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">Test Doubles: in theory, in Minitest and in RSpec</h1>
+      
+      <div class="post-meta">
+        <time datetime="2015-08-05" class="post-time">
+          05-08-2015
+        </time>
+        <div class="post-category">
+            <a href="https://ieftimov.com/categories/ruby/"> Ruby </a>
+            <a href="https://ieftimov.com/categories/testing/"> Testing </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+
+    
+    <div class="post-content">
+      
+
+<p>Those of us that do <strong>T</strong>est <strong>D</strong>riven <strong>D</strong>evelopment have heard about doubles,
+mocks, stubs, fakes and spies multiple times. Unfortunately there is <strong>a ton</strong> of
+confusion about all these words and their meaning. Let&rsquo;s see what each an every
+one of these really mean, where we should use them and how the popular testing
+frameworks for Ruby implement these.</p>
+
+<h2 id="test-doubles">Test Doubles</h2>
+
+<p>So, first things first. One of the biggest misconceptions is that doubles are
+types of objects that are used in testing.</p>
+
+<p>Dummies, mocks, stubs, fakes and spies <strong>are test doubles</strong>. Test double is the
+<strong>category</strong> of these test objects. I think that the confusion around this concept
+arises from the naming that the popular testing frameworks use for these objects.</p>
+
+<p>So remember - dummies, mocks, stubs, fakes and spies <strong>are test doubles</strong>.
+Also, another thing to keep in mind is the word <strong>mock</strong>. The words mock and
+doubles were used interchangeably in the past and their definitions got skewed.</p>
+
+<h2 id="dummy">Dummy</h2>
+
+<p>Now, that we got this right, what is a dummy?</p>
+
+<p>The simplest type of test double is test dummy. Basically, the dummy is dumb,
+hence the naming. This means that the object is just a placeholder for another
+object, but it&rsquo;s interfaces (or methods) do not return anything.</p>
+
+<p>Confusing? Let&rsquo;s see an example.</p>
+
+<p>We have this class <code>Blog</code> that has a <code>publish!</code> method.</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">Post</span>
+  <span class="kp">attr_reader</span> <span class="ss">:published</span>
+
+  <span class="k">def</span> <span class="nf">publish!</span>
+    <span class="vi">@published</span> <span class="o">=</span> <span class="kp">true</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Blog</span>
+  <span class="kp">attr_reader</span> <span class="ss">:published_posts</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">author</span>
+    <span class="vi">@author</span> <span class="o">=</span> <span class="n">author</span>
+    <span class="vi">@published_posts</span> <span class="o">=</span> <span class="o">[]</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">publish!</span> <span class="n">post</span>
+    <span class="n">published_posts</span> <span class="o">&lt;&lt;</span> <span class="n">post</span>
+    <span class="n">post</span><span class="o">.</span><span class="n">publish!</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Moar methods...</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Now, we need to test the <code>publish!</code> method. How do we go about this? We obviously
+need to create a <code>Post</code> object first, then create a <code>Blog</code> object and pass
+the author as an argument to the initializer. Afterwards, we need to assert that
+the <code>publish!</code> method will add the post to the <code>published_posts</code> array.</p>
+
+<h3 id="minitest">Minitest</h3>
+
+<p>Let&rsquo;s test our method with Minitest:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">&#39;minitest/autorun&#39;</span>
+
+<span class="k">class</span> <span class="nc">BlogTest</span> <span class="o">&lt;</span> <span class="no">Minitest</span><span class="o">::</span><span class="no">Test</span>
+  <span class="k">def</span> <span class="nf">test_publish_adds_post_to_published_posts</span>
+    <span class="n">blog</span> <span class="o">=</span> <span class="no">Blog</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">author</span><span class="p">)</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="o">.</span><span class="n">new</span>
+    <span class="n">blog</span><span class="o">.</span><span class="n">publish!</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+    <span class="n">assert_includes</span><span class="p">(</span><span class="n">blog</span><span class="o">.</span><span class="n">published_posts</span><span class="p">,</span> <span class="n">post</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>If we run the test, it will fail. Why? Well, what is <code>author</code>? As you can see
+if we exclude author when creating the <code>Blog</code> object it will complain with an
+exception, <code>ArgumentError</code>. But, in the code that we are testing, <code>author</code>
+has no role to play. It basically does nothing. It is important to the class, but
+it&rsquo;s not important to the method under test.</p>
+
+<p>This is a great place to use a dummy. Let&rsquo;s add the author using a dummy. Minitest
+and RSpec do not have the concept of a pure dummy, although RSpec has a trick
+that you can use.</p>
+
+<p>If you need a dummy in Minitest, you can just use an <code>Object</code>. Or <code>nil</code>.
+Or an empty <code>Hash</code>. Or.. whatever.</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">&#39;minitest/autorun&#39;</span>
+
+<span class="k">class</span> <span class="nc">BlogTest</span> <span class="o">&lt;</span> <span class="no">Minitest</span><span class="o">::</span><span class="no">Test</span>
+  <span class="k">def</span> <span class="nf">test_publish_adds_post_to_published_posts</span>
+    <span class="n">author</span> <span class="o">=</span> <span class="no">Object</span><span class="o">.</span><span class="n">new</span>
+    <span class="n">blog</span> <span class="o">=</span> <span class="no">Blog</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">author</span><span class="p">)</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="o">.</span><span class="n">new</span>
+    <span class="n">blog</span><span class="o">.</span><span class="n">publish!</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+    <span class="n">assert_includes</span><span class="p">(</span><span class="n">blog</span><span class="o">.</span><span class="n">published_posts</span><span class="p">,</span> <span class="n">post</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<h3 id="rspec">RSpec</h3>
+
+<p>The same test, but using RSpec:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">&#39;rspec/autorun&#39;</span>
+
+<span class="n">describe</span> <span class="no">Post</span> <span class="k">do</span>
+  <span class="n">describe</span> <span class="s2">&#34;#publish!&#34;</span> <span class="k">do</span>
+    <span class="n">it</span> <span class="s1">&#39;adds the post to the published_posts array&#39;</span> <span class="k">do</span>
+      <span class="n">author</span> <span class="o">=</span> <span class="no">Object</span><span class="o">.</span><span class="n">new</span>
+      <span class="n">blog</span> <span class="o">=</span> <span class="no">Blog</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">author</span><span class="p">)</span>
+      <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="o">.</span><span class="n">new</span>
+      <span class="n">blog</span><span class="o">.</span><span class="n">publish!</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+      <span class="n">expect</span><span class="p">(</span><span class="n">blog</span><span class="o">.</span><span class="n">published_posts</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="kp">include</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Also, another trick in RSpec is to use a double. A double that doesn&rsquo;t to anything
+is a dummy. Remember that this only applies to RSpec:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">&#39;rspec/autorun&#39;</span>
+
+<span class="n">describe</span> <span class="no">Post</span> <span class="k">do</span>
+  <span class="n">describe</span> <span class="s2">&#34;#publish!&#34;</span> <span class="k">do</span>
+    <span class="n">it</span> <span class="s1">&#39;adds the post to the published_posts array&#39;</span> <span class="k">do</span>
+      <span class="n">author</span> <span class="o">=</span> <span class="n">double</span>
+      <span class="n">blog</span> <span class="o">=</span> <span class="no">Blog</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">author</span><span class="p">)</span>
+      <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="o">.</span><span class="n">new</span>
+      <span class="n">blog</span><span class="o">.</span><span class="n">publish!</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+      <span class="n">expect</span><span class="p">(</span><span class="n">blog</span><span class="o">.</span><span class="n">published_posts</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="kp">include</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Do not get confused by the <code>double</code> keyword. For now, just pretend that it&rsquo;s
+an object that does nothing. Just like <code>Object.new</code> or <code>nil</code>.</p>
+
+<h2 id="stub">Stub</h2>
+
+<p>Stubs are dummies, with one notable difference. Stubs have methods that they
+respond to.  But, their methods do not do anything except they return a predefined
+value. This means that their methods do not have an effect, they just return a
+value which will drive the test through the production code.</p>
+
+<p>Let&rsquo;s see some examples. We have the <code>Blog</code> class which has the <code>publish!</code>
+method.</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">Blog</span>
+  <span class="kp">attr_reader</span> <span class="ss">:published_posts</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">user</span>
+    <span class="vi">@user</span> <span class="o">=</span> <span class="n">user</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">publish!</span> <span class="n">post</span>
+    <span class="n">published_posts</span> <span class="o">&lt;&lt;</span> <span class="n">post</span> <span class="k">if</span> <span class="vi">@user</span><span class="o">.</span><span class="n">author?</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Moar methods...</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>How can we test the <code>publish!</code> method? Due to the check that occurs in the
+<code>publish!</code> method, we need a stub <code>User</code> object, which will return true
+when the <code>author?</code> method is called on it.</p>
+
+<h3 id="minitest-1">Minitest</h3>
+
+<p>Creating a stub in Minitest is dead easy. Let&rsquo;s write the test for the publish
+method:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">&#39;minitest/autorun&#39;</span>
+
+<span class="k">class</span> <span class="nc">BlogTest</span> <span class="o">&lt;</span> <span class="no">Minitest</span><span class="o">::</span><span class="no">Test</span>
+  <span class="k">def</span> <span class="nf">test_publish</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="o">.</span><span class="n">new</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="no">User</span><span class="o">.</span><span class="n">new</span>
+    <span class="n">blog</span> <span class="o">=</span> <span class="no">Blog</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="n">user</span><span class="o">.</span><span class="n">stub</span> <span class="ss">:author?</span><span class="p">,</span> <span class="kp">true</span> <span class="k">do</span>
+      <span class="n">blog</span><span class="o">.</span><span class="n">publish!</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+      <span class="n">assert_includes</span> <span class="n">blog</span><span class="o">.</span><span class="n">published_posts</span><span class="p">,</span> <span class="n">post</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Stubbing in Minitest is done by calling <code>.stub</code> on the object/class that you
+want to stub a method on, with three arguments: the method name, the return value
+of the stub and a block. The block is basically the scope of the stub, or in other
+words, the stub will work only in the provided block.</p>
+
+<p>Another way to achieve the same, which is a bit weird, is to avoid creating
+a new <code>User</code> object, create a dummy and declare a stub method on it.</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">&#39;minitest/autorun&#39;</span>
+
+<span class="k">class</span> <span class="nc">BlogTest</span> <span class="o">&lt;</span> <span class="no">Minitest</span><span class="o">::</span><span class="no">Test</span>
+  <span class="k">def</span> <span class="nf">test_publish</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="o">.</span><span class="n">new</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="no">Object</span><span class="o">.</span><span class="n">new</span>
+
+    <span class="c1"># Tha stub</span>
+    <span class="k">def</span> <span class="nc">user</span><span class="o">.</span><span class="nf">author?</span>
+      <span class="kp">true</span>
+    <span class="k">end</span>
+
+    <span class="n">blog</span> <span class="o">=</span> <span class="no">Blog</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="n">blog</span><span class="o">.</span><span class="n">publish!</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+    <span class="n">assert_includes</span> <span class="n">blog</span><span class="o">.</span><span class="n">published_posts</span><span class="p">,</span> <span class="n">post</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Using this way, we define the <code>author?</code> method on the singleton class of the
+user object, which will return <code>true</code>.</p>
+
+<h3 id="rspec-1">RSpec</h3>
+
+<p>The same test, or spec if you will, in RSpec is quite easy to write as well.</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">&#39;rspec/autorun&#39;</span>
+
+<span class="n">describe</span> <span class="no">Blog</span> <span class="k">do</span>
+  <span class="n">describe</span> <span class="s1">&#39;#publish&#39;</span> <span class="k">do</span>
+    <span class="n">it</span> <span class="s1">&#39;adds the published post to the published_posts collection&#39;</span> <span class="k">do</span>
+      <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="o">.</span><span class="n">new</span>
+      <span class="n">user</span> <span class="o">=</span> <span class="n">double</span><span class="p">(</span><span class="ss">:author?</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span>
+      <span class="n">blog</span> <span class="o">=</span> <span class="no">Blog</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+      <span class="n">blog</span><span class="o">.</span><span class="n">publish!</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+      <span class="n">expect</span><span class="p">(</span><span class="n">blog</span><span class="o">.</span><span class="n">published_posts</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="kp">include</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>As you can see, the RSpec syntax is easy to understand as well. We create a double,
+which is basically a dummy (makes sense, right?) and we declare a stub on it. The stub
+is the <code>author?</code> which will return a predefined value, or in our case <code>true</code>.</p>
+
+<h2 id="spy">Spy</h2>
+
+<p>I hope you guessed it - a spy is a stub. It&rsquo;s just an object whose methods do nothing
+and return a predefined values to drive the test. However the spy remembers certain
+things about the way and occurance of it&rsquo;s methods being called. For example, sometimes
+you want to assert that a certain method has been called. Another time, you might
+want to test how many times a method has been called.</p>
+
+<p>That&rsquo;s where spies are used.</p>
+
+<p>Again, let&rsquo;s see some code. Take these classes and methods for example:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">Blog</span>
+  <span class="kp">attr_reader</span> <span class="ss">:published_posts</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">user</span>
+    <span class="vi">@user</span> <span class="o">=</span> <span class="n">user</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">publish!</span> <span class="n">post</span>
+    <span class="k">if</span> <span class="vi">@user</span><span class="o">.</span><span class="n">author?</span>
+      <span class="n">published_posts</span> <span class="o">&lt;&lt;</span> <span class="n">post</span> 
+      <span class="no">NotificationService</span><span class="o">.</span><span class="n">notify_subscribers</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Now, the <code>NotificationService.notify_subscribers</code> method will send a notification
+email to all the subscribers of the blog when a new post is published.</p>
+
+<p>When testing this method, we are interested in two things:</p>
+
+<ol>
+<li>The post will be added to the <code>published_posts</code> array, and</li>
+<li>The subscribers will be notified of the new post.</li>
+</ol>
+
+<p>Since we already tested the first case in the example before, we&rsquo;ll just focus on
+no. 2. Let&rsquo;s test this method.</p>
+
+<h3 id="minitest-2">Minitest</h3>
+
+<p>Minitest does not support spies by default, but as always, we can use another gem
+that plays nice with Minitest.</p>
+
+<p><a href="https://github.com/ryanong/spy">Spy</a> is a really simple gem that does exactly that - spies.</p>
+
+<p>Let&rsquo;s add some spies using <a href="https://github.com/ryanong/spy">Spy</a>.</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">BlogTest</span> <span class="o">&lt;</span> <span class="no">Minitest</span><span class="o">::</span><span class="no">Test</span>
+  <span class="k">def</span> <span class="nf">test_notification_is_sent_when_publishing</span>
+    <span class="n">notification_service_spy</span> <span class="o">=</span> <span class="no">Spy</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="no">NotificationService</span><span class="p">,</span> <span class="ss">:notify_subscribers</span><span class="p">)</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="o">.</span><span class="n">new</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="no">User</span><span class="o">.</span><span class="n">new</span>
+    <span class="n">blog</span> <span class="o">=</span> <span class="no">Blog</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+
+    <span class="n">blog</span><span class="o">.</span><span class="n">publish!</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+
+    <span class="n">assert</span> <span class="n">notificaion_service_spy</span><span class="o">.</span><span class="n">has_been_called?</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Quite self-explanatory, isn&rsquo;t it?</p>
+
+<h3 id="rspec-2">RSpec</h3>
+
+<p>The RSpec syntactic sugar is really nice and human. This is how we can create spies
+in RSpec and use them appropriately.</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="n">describe</span> <span class="no">Blog</span> <span class="k">do</span>
+  <span class="n">describe</span> <span class="s1">&#39;#publish!&#39;</span> <span class="k">do</span>
+    <span class="n">it</span> <span class="s2">&#34;sends notification when new post is published&#34;</span> <span class="k">do</span>
+      <span class="n">notification_spy</span> <span class="o">=</span> <span class="n">class_spy</span><span class="p">(</span><span class="s2">&#34;Invitation&#34;</span><span class="p">)</span>
+      <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="o">.</span><span class="n">new</span>
+      <span class="n">user</span> <span class="o">=</span> <span class="no">User</span><span class="o">.</span><span class="n">new</span>
+      <span class="n">blog</span> <span class="o">=</span> <span class="no">Blog</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+
+      <span class="c1"># If you want to set the expectation before the action is done:</span>
+      <span class="n">expect</span><span class="p">(</span><span class="n">notification_spy</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">receive</span><span class="p">(</span><span class="ss">:notify_subscribers</span><span class="p">)</span><span class="o">.</span><span class="n">with</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+
+      <span class="n">blog</span><span class="o">.</span><span class="n">publish!</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+
+      <span class="c1"># If you want to assert after the action is done:</span>
+      <span class="n">expect</span><span class="p">(</span><span class="no">NotificationService</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">have_received</span><span class="p">(</span><span class="ss">:notify_subscribers</span><span class="p">)</span><span class="o">.</span><span class="n">with</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Also, keep in mind that since spy has the functionality of a stub, it can return
+fixed/predefined values. If you need your spy to return a value, you can do this
+in RSpec very easily, by chaining the <code>and_return</code> method to the spy:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="n">describe</span> <span class="no">Blog</span> <span class="k">do</span>
+  <span class="n">describe</span> <span class="s1">&#39;#publish!&#39;</span> <span class="k">do</span>
+    <span class="n">it</span> <span class="s2">&#34;sends notification when new post is published&#34;</span> <span class="k">do</span>
+      <span class="n">notification_spy</span> <span class="o">=</span> <span class="n">class_spy</span><span class="p">(</span><span class="s2">&#34;Invitation&#34;</span><span class="p">)</span>
+      <span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="o">.</span><span class="n">new</span>
+      <span class="n">user</span> <span class="o">=</span> <span class="no">User</span><span class="o">.</span><span class="n">new</span>
+      <span class="n">blog</span> <span class="o">=</span> <span class="no">Blog</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+
+      <span class="n">expect</span><span class="p">(</span><span class="n">notification_spy</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">receive</span><span class="p">(</span><span class="ss">:notify_subscribers</span><span class="p">)</span><span class="o">.</span><span class="n">with</span><span class="p">(</span><span class="n">post</span><span class="p">)</span><span class="o">.</span><span class="n">and_return</span><span class="p">(</span><span class="kp">true</span><span class="p">)</span>
+
+      <span class="n">blog</span><span class="o">.</span><span class="n">publish!</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<h2 id="true-mock">(True) Mock</h2>
+
+<p>Before we go over the true mock, we have to make sure we understand the difference
+between &ldquo;mocking&rdquo;, &ldquo;the RSpec mock&rdquo; and a &ldquo;True Mock&rdquo;.</p>
+
+<p>The whole issue behind the word <strong>mock</strong> is that in the beginning people started
+using it for simillar (but not the same) things and the word got left hanging in
+the air without a proper defnition.</p>
+
+<p>So, &ldquo;mocking&rdquo; is usually used when thinking about creating objects that simulate
+the behavior of real objects or units.</p>
+
+<p>On the other hand, RSpec also has the concept of a mock. From RSpec&rsquo;s documentation:</p>
+
+<p><em>
+rspec-mocks helps to control the context in a code example by letting you set
+known return values, fake implementations of methods, and even set expectations
+that specific messages are received by an object.
+</em></p>
+
+<p>As you can see, there&rsquo;s some nomenclature overlapping and/or disagreement.</p>
+
+<p>Now, throw away any knowledge you have about the word <strong>mock</strong>. The True Mock is
+a very interesting type of test object. Of course, it has all the functionalities
+that a dummy, a stub and a spy have. And, a bit more.</p>
+
+<p>The True Mock is an object that knows the flow of the method under test, and the test
+can ask the mock if everything went well, usually called &ldquo;verifying&rdquo;. This means that
+the test will rely on the True Mock to track what are the effects of the method under
+test and what methods have been called.</p>
+
+<p>Let&rsquo;s see an example. The code under test:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">Blog</span>
+  <span class="kp">attr_reader</span> <span class="ss">:published_posts</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">user</span>
+    <span class="vi">@user</span> <span class="o">=</span> <span class="n">user</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">publish!</span> <span class="n">post</span>
+    <span class="n">published_posts</span> <span class="o">&lt;&lt;</span> <span class="n">post</span> <span class="k">if</span> <span class="vi">@user</span><span class="o">.</span><span class="n">can?</span><span class="p">(</span><span class="ss">:publish</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">delete</span> <span class="n">post</span>
+    <span class="n">post</span><span class="o">.</span><span class="n">delete!</span> <span class="k">if</span> <span class="vi">@user</span><span class="o">.</span><span class="n">can?</span><span class="p">(</span><span class="ss">:delete</span><span class="p">)</span>
+  <span class="k">end</span>
+
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<h3 id="minitest-3">Minitest</h3>
+
+<p>Minitest has this type of testing object - it&rsquo;s called (believe it or not) <code>Mock</code>.</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">BlogTest</span> <span class="o">&lt;</span> <span class="no">Minitest</span><span class="o">::</span><span class="no">Test</span>
+  <span class="k">def</span> <span class="nf">test_post_deletion</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="no">Minitest</span><span class="o">::</span><span class="no">Mock</span><span class="o">.</span><span class="n">new</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="no">Minitest</span><span class="o">::</span><span class="no">Mock</span><span class="o">.</span><span class="n">new</span>
+    <span class="n">blog</span> <span class="o">=</span> <span class="no">Blog</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+
+    <span class="n">user</span><span class="o">.</span><span class="n">expect</span> <span class="ss">:can?</span><span class="p">,</span> <span class="kp">true</span>
+    <span class="n">post</span><span class="o">.</span><span class="n">expect</span> <span class="ss">:delete!</span><span class="p">,</span> <span class="kp">true</span>
+
+    <span class="n">blog</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+
+    <span class="n">user</span><span class="o">.</span><span class="n">verify</span>
+    <span class="n">post</span><span class="o">.</span><span class="n">verify</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>We create new <code>Minitest::Mock</code> objects and we set an expectation that it should
+receive the <code>can?</code> and <code>delete!</code> method, respectively. These will return
+<code>true</code>. Although this seems like a stub (setting a return value), the last
+line is what it differentiates it from a stub. The test asks the mocks to verify
+that the expected method was called, which will result in the test passing/failing.</p>
+
+<h3 id="rspec-3">RSpec</h3>
+
+<p>With RSpec, it&rsquo;s a bit different. RSpec does not have a <code>Mock</code> object, but it&rsquo;s
+jack-of-all-trades <code>double</code> can do the same trick.</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="n">describe</span> <span class="no">Blog</span> <span class="k">do</span>
+  <span class="n">it</span> <span class="s1">&#39;can remove a post&#39;</span> <span class="k">do</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">double</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="n">double</span>
+    <span class="n">blog</span> <span class="o">=</span> <span class="no">Blog</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+
+    <span class="n">expect</span><span class="p">(</span><span class="n">user</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">receive</span><span class="p">(</span><span class="ss">:can?</span><span class="p">)</span><span class="o">.</span><span class="n">with</span><span class="p">(</span><span class="ss">:publish</span><span class="p">)</span>
+    <span class="n">expect</span><span class="p">(</span><span class="n">user</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">receive</span><span class="p">(</span><span class="ss">:can?</span><span class="p">)</span><span class="o">.</span><span class="n">with</span><span class="p">(</span><span class="ss">:delete</span><span class="p">)</span>
+    <span class="n">expect</span><span class="p">(</span><span class="n">post</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">receive</span><span class="p">(</span><span class="ss">:delete!</span><span class="p">)</span>
+
+    <span class="n">blog</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+    <span class="n">blog</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>This is a bit ambigous, since it&rsquo;s half-way between spies and a true mock objects.
+But if you look in all the examples above, RSpec&rsquo;s <code>double</code> can morph into
+anything. It all depends on the programmer what (s)he want&rsquo;s to use it as. I guess
+that&rsquo;s why it&rsquo;s called <code>double</code>, because it can be any type of a test double
+you want.</p>
+
+<h2 id="fake">Fake</h2>
+
+<p>Last but not least, the fake. The fake is basically a half-baked, half-working
+implementation of the test object. It is not production ready, but, it&rsquo;s enough
+functional for the test to use it.</p>
+
+<p>The popular testing frameworks do not have the concept of a fake. This is due to
+that writing the (needed) implementation for the fake is left for the programmer
+to do.</p>
+
+<p>You should avoid fakes because fakes are standalone objects which are not used
+in the production code, but, they will grow linearly as the system grows. This means
+that in the long run they can turn into code that will be very hard to maintain.
+Also, pretty much every test can be written with one of the aforementioned testing
+objects. So, if you are ever using fakes, make sure you know what you are getting
+into.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Now, that we got to the end, I hope that this article helped you understand the
+theory behind test doubles and their implementations in Ruby. Be careful
+where and how you use these test objects. If you go overboard you can create
+isolation between your tests and your production code, which can render your
+test suite useless.</p>
+
+<p>Wow, you got to the very end. Thanks so much for reading!</p>
+
+    </div>
+
+    
+    
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://ieftimov.com/tags/minitest/">minitest</a>
+          <a href="https://ieftimov.com/tags/rspec/">rspec</a>
+          <a href="https://ieftimov.com/tags/tdd/">tdd</a>
+          <a href="https://ieftimov.com/tags/double/">double</a>
+          <a href="https://ieftimov.com/tags/mock/">mock</a>
+          <a href="https://ieftimov.com/tags/stub/">stub</a>
+          <a href="https://ieftimov.com/tags/fake/">fake</a>
+          <a href="https://ieftimov.com/tags/dummy/">dummy</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/post/tdd-humble-object/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">TDD Patterns: Humble Object</span>
+            <span class="prev-text nav-mobile">Prev</span>
+          </a>
+        
+          <a class="next" href="/post/exception-handling-and-testing/">
+            <span class="next-text nav-default">Exception handling and testing it with Minitest</span>
+            <span class="prev-text nav-mobile">Next</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    Show Disqus Comments
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://ieftimov.com/post/test-doubles-theory-minitest-rspec/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'ieftimov';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+  
+    
+
+
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:hi@ilija.io" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://stackoverflow.com/users/601555/ilija-eftimov" rel="me noopener" class="iconfont"
+      title="stack-overflow"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M809.714286 932.571429l-638.857143 0 0-274.285714-91.428571 0 0 365.714286 821.714286 0 0-365.714286-91.428571 0 0 274.285714zm-538.285714-299.428571l18.857143-89.714286 447.428571 94.285714-18.857143 89.142857zm58.857143-213.714286l38.285714-83.428571 414.285714 193.714286-38.285714 82.857143zm114.857143-203.428571l58.285714-70.285714 350.857143 293.142857-58.285714 70.285714zm226.857143-216l272.571429 366.285714-73.142857 54.857143-272.571429-366.285714zm-410.285714 840.571429l0-90.857143 457.142857 0 0 90.857143-457.142857 0z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://twitter.com/fteem" rel="me noopener" class="iconfont"
+      title="twitter"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1264 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M1229.8616 18.043658c0 0-117.852626 63.135335-164.151872 67.344358-105.225559-164.151872-505.082682-92.598492-437.738325 223.078185C278.622548 312.675223 89.216542 47.506814 89.216542 47.506814s-117.852626 189.406006 75.762402 345.139833C127.097743 396.85567 55.544363 371.601535 55.544363 371.601535S26.081207 535.753407 253.368414 615.724832c-21.045112 29.463156-113.643603 8.418045-113.643603 8.418045s25.254134 143.10676 231.496229 180.987961c-143.10676 130.479693-387.230056 92.598492-370.393967 105.225559 206.242095 189.406006 1119.599946 231.496229 1128.01799-643.98042C1179.353331 249.539887 1263.533778 123.269217 1263.533778 123.269217s-130.479693 37.881201-138.897738 33.672179C1225.652577 98.015083 1229.8616 18.043658 1229.8616 18.043658"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://www.linkedin.com/in/ieftimov/" rel="me noopener" class="iconfont"
+      title="linkedin"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="33" height="33">
+  <path d="M872.405333 872.618667h-151.637333v-237.610667c0-56.661333-1.152-129.578667-79.018667-129.578667-79.061333 0-91.136 61.653333-91.136 125.397334v241.792H398.976V384h145.664v66.602667h1.962667c20.352-38.4 69.845333-78.933333 143.786666-78.933334 153.642667 0 182.058667 101.12 182.058667 232.746667v268.202667zM227.712 317.141333a87.978667 87.978667 0 0 1-88.021333-88.106666 88.064 88.064 0 1 1 88.021333 88.106666z m76.032 555.477334H151.68V384h152.064v488.618667zM948.266667 0H75.562667C33.792 0 0 33.024 0 73.770667v876.458666C0 991.018667 33.792 1024 75.562667 1024h872.576C989.866667 1024 1024 991.018667 1024 950.229333V73.770667C1024 33.024 989.866667 0 948.138667 0h0.128z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/fteem" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://ieftimov.com/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2014 -
+    2019
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        Ilija Eftimov
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+  <script id="dsq-count-scr" src="//ieftimov.disqus.com/count.js" async></script>
+
+
+
+
+
+</body>
+</html>

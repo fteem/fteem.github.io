@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Data structures in Go: Stacks and queues - Ilija Eftimov</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="Ilija Eftimov" />
+  <meta name="description" content="In a previous post, we took a look at linked lists and how we can apply them in a hypothetical use-case. In this post, we will look at two similar but powerful data structures.
+Modelling actions and history Think about Excel or Google docs. You know, the most ubiquitous applications for composing documents that humanity has invented. We&amp;rsquo;ve all used them in some capacity. As you might know, these apps come with various actions one can apply to a text." />
+
+  <meta name="keywords" content="Software, Programming, Computer Science, Products" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.54.0" />
+
+
+<link rel="canonical" href="https://ieftimov.com/post/golang-datastructures-stacks-queues/" />
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.ec807d8b802a40889537c26e014f733206312ea440d42e1f0dabed80918de1ac.css" integrity="sha256-7IB9i4AqQIiVN8JuAU9zMgYxLqRA1C4fDavtgJGN4aw=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/overrides.css">
+
+<link rel="stylesheet" href="/css/subscribe.css">
+
+
+<meta property="og:title" content="Data structures in Go: Stacks and queues" />
+<meta property="og:description" content="In a previous post, we took a look at linked lists and how we can apply them in a hypothetical use-case. In this post, we will look at two similar but powerful data structures.
+Modelling actions and history Think about Excel or Google docs. You know, the most ubiquitous applications for composing documents that humanity has invented. We&rsquo;ve all used them in some capacity. As you might know, these apps come with various actions one can apply to a text." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/golang-datastructures-stacks-queues/" />
+
+<meta property="og:image" content="https://ieftimov.com/cards/golang-datastructures-stacks-queues.png" />
+<meta property="article:published_time" content="2018-02-24T00:00:00&#43;00:00"/>
+
+
+<meta itemprop="name" content="Data structures in Go: Stacks and queues">
+<meta itemprop="description" content="In a previous post, we took a look at linked lists and how we can apply them in a hypothetical use-case. In this post, we will look at two similar but powerful data structures.
+Modelling actions and history Think about Excel or Google docs. You know, the most ubiquitous applications for composing documents that humanity has invented. We&rsquo;ve all used them in some capacity. As you might know, these apps come with various actions one can apply to a text.">
+
+
+
+<meta itemprop="wordCount" content="2433">
+
+  <meta itemprop="image" content="https://ieftimov.com/cards/golang-datastructures-stacks-queues.png">
+
+
+
+<meta itemprop="keywords" content="queues,priority queues,stacks," />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/golang-datastructures-stacks-queues.png"/>
+
+<meta name="twitter:title" content="Data structures in Go: Stacks and queues"/>
+<meta name="twitter:description" content="In a previous post, we took a look at linked lists and how we can apply them in a hypothetical use-case. In this post, we will look at two similar but powerful data structures.
+Modelling actions and history Think about Excel or Google docs. You know, the most ubiquitous applications for composing documents that humanity has invented. We&rsquo;ve all used them in some capacity. As you might know, these apps come with various actions one can apply to a text."/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Ilija Eftimov</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/about/">About</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/subscribe/">Subscribe</a>
+          
+        
+      </li>
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      Ilija Eftimov
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/about/">About</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/subscribe/">Subscribe</a>
+          
+
+        
+
+      </li>
+    
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">Data structures in Go: Stacks and queues</h1>
+      
+      <div class="post-meta">
+        <time datetime="2018-02-24" class="post-time">
+          24-02-2018
+        </time>
+        <div class="post-category">
+            <a href="https://ieftimov.com/categories/golang/"> golang </a>
+            <a href="https://ieftimov.com/categories/data-structures/"> data structures </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">Table of Contents</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#modelling-actions-and-history">Modelling actions and history</a></li>
+<li><a href="#luggage-control">Luggage control</a>
+<ul>
+<li><a href="#what-about-first-class-passengers">What about first-class passengers?</a></li>
+</ul></li>
+<li><a href="#closing-thoughts">Closing thoughts</a></li>
+</ul></li>
+</ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      
+
+<p>In a <a href="/golang-datastructures-linked-lists">previous post</a>, we took a look at
+linked lists and how we can apply them in a hypothetical use-case. In this post,
+we will look at two similar but powerful data structures.</p>
+
+<h2 id="modelling-actions-and-history">Modelling actions and history</h2>
+
+<p>Think about Excel or Google docs. You know, the most ubiquitous applications
+for composing documents that humanity has invented. We&rsquo;ve all used them in some
+capacity. As you might know, these apps come with various actions one can
+apply to a text. Like adding colour to the text, underline, various fonts and
+sizes or organising the content in tables. The list is long, but there&rsquo;s one
+ubiquitous functionality that we expect from these tools - the ability to
+&ldquo;Undo&rdquo; and &ldquo;Redo&rdquo; the actions we have applied.</p>
+
+<p>Have you ever considered how you would program such functionality if given the
+opportunity? Let&rsquo;s explore a data structure that can help us with such a task.</p>
+
+<p><img src="https://i.imgur.com/Y9Jbm5A.png" alt="" /></p>
+
+<p>Let’s try to think how we would model the actions each of these applications
+have. Also, later on, we will see how we can keep the history of the actions
+and &ldquo;Undo&rdquo; them.</p>
+
+<p>A simple <code>Action</code> <code>struct</code> would look something like:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">Action</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">name</span> <span class="kt">string</span>
+	<span class="nx">metadata</span> <span class="nx">Meta</span>
+	<span class="c1">// Probably some other data here...
+</span><span class="c1"></span><span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>We will store only the name at the moment, while the real-deal would have much
+more options compared to our example. So now, when the user of the editor
+applies a function to a bunch of text, we want to store that action in some
+sort of a collection so we can &ldquo;Undo&rdquo; it later.</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">ActionHistory</span> <span class="kd">struct</span> <span class="p">{</span>
+  <span class="nx">top</span> <span class="o">*</span><span class="nx">Action</span>
+  <span class="nx">size</span> <span class="kt">int</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Looking at this <code>ActionHistory</code> data structure, we store a pointer to the
+<code>Action</code> at the top of the stack and the size of the stack. Once an action is
+applied, we will link it to the <code>top</code> item. So, when applying an action to the
+document, this is what could go under the hood.</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">history</span> <span class="o">*</span><span class="nx">ActionHistory</span><span class="p">)</span> <span class="nf">Apply</span><span class="p">(</span><span class="nx">newAction</span> <span class="o">*</span><span class="nx">Action</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="nx">history</span><span class="p">.</span><span class="nx">top</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">oldTop</span> <span class="o">:=</span> <span class="nx">history</span><span class="p">.</span><span class="nx">top</span>
+		<span class="nx">newAction</span><span class="p">.</span><span class="nx">next</span> <span class="p">=</span> <span class="nx">oldTop</span>
+	<span class="p">}</span>
+	<span class="nx">history</span><span class="p">.</span><span class="nx">top</span> <span class="p">=</span> <span class="nx">newAction</span>
+	<span class="nx">history</span><span class="p">.</span><span class="nx">size</span><span class="o">++</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>An <code>Add</code> function would add the latest <code>Action</code> to the top of the
+<code>ActionHistory</code>. If the history struct has an action present at the top, it
+would push it down the history by linking it to the new action. Otherwise, it
+will attach the new action to the top of the list. Now, if you know about
+linked lists (or read <a href="https://ieftimov.com/golang-datastructures-linked-lists">my last post about linked lists in
+Go</a>) you might see the
+resemblance here. So far, what we use here is essentially a linked list, none
+the less.</p>
+
+<p>What about undoing an action? This is what an <code>Undo</code> function would look like:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">history</span> <span class="o">*</span><span class="nx">ActionHistory</span><span class="p">)</span> <span class="nf">Undo</span><span class="p">()</span> <span class="o">*</span><span class="nx">Action</span> <span class="p">{</span>
+	<span class="nx">topAction</span> <span class="o">:=</span> <span class="nx">history</span><span class="p">.</span><span class="nx">top</span>
+	<span class="k">if</span> <span class="nx">topAction</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">history</span><span class="p">.</span><span class="nx">top</span> <span class="p">=</span> <span class="nx">topAction</span><span class="p">.</span><span class="nx">next</span>
+	<span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="nx">topAction</span><span class="p">.</span><span class="nx">next</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">history</span><span class="p">.</span><span class="nx">top</span> <span class="p">=</span> <span class="kc">nil</span>
+	<span class="p">}</span>
+	<span class="nx">historyAction</span><span class="p">.</span><span class="nx">size</span><span class="o">--</span>
+	<span class="k">return</span> <span class="nx">topAction</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>If you are paying close attention you can notice that this is a bit different
+than just removing a node from a linked list. Due to the nature of an
+<code>ActionHistory</code>, we want the <strong>last</strong> applied action to be the one that
+will be <code>Undo</code>ed <strong>first</strong>. Which makes sense, right?</p>
+
+<p>This is the default behaviour of a stack. A stack is a data structure where you
+can only insert or delete items at the top of the stack. Think of it like a
+stack of papers, or stack of plates in your kitchen drawer.  If you want to
+take the bottom plate from a stack you are going to have a hard time. But
+taking the one at the top is plain simple. Stacks are also considered LIFO
+structures - meaning Last In First Out, because of the behaviour we explained
+above.</p>
+
+<p>That is basically what our <code>Undo</code> function does. If the stack (a.k.a.
+<code>ActionHistory</code>) has more than one <code>Action</code> in it, it will set the top link for
+the second item. Otherwise, it will empty up the <code>ActionHistory</code> by setting the
+<code>top</code> element to <code>nil</code>.</p>
+
+<p>From a big-O perspective, searching through a stack has <code>O(n)</code> complexity,
+but insertion and deletion from a stack are super quick - <code>O(1)</code>. This is
+because traversing the whole stack, in worst case scenario, will still take
+going all <code>n</code> items in it, while inserting and removing items is constant time
+because we always insert and remove from the top of the stack.</p>
+
+<p>You can play with the working version of this code
+<a href="https://play.golang.org/p/Eu8_-HTDBY_A">here</a>.</p>
+
+<h2 id="luggage-control">Luggage control</h2>
+
+<p>Most of us have travelled by plane and know all of the security checks that a
+person has to go through to get on the plane. Sure, it’s for own our safety but
+sometimes it’s unnecessarily stressful to get through all of the scans, checks
+and tests.</p>
+
+<p>One of the usual sights at airports security checkpoints are the long queues of
+people and luggage being put on the strip of the X-ray machines while people
+walk through metal detector gates. Probably there’s more to it that we even
+don’t know about it, but let’s focus on the X-ray machines that scan our bags.</p>
+
+<p>Have you thought how would you model the interactions that happen on that
+machine? Of course, at least the visible ones. Let’s explore this idea for a
+moment. We would have to somehow represent the luggage on the strip as a
+collection of items, and the x-ray machine that scans the luggage one piece at
+a time.</p>
+
+<p>The <code>Luggage</code> would be simple, for now:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">Luggage</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">weight</span> <span class="kt">int</span>
+	<span class="nx">passenger</span> <span class="kt">string</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>We can also add a simple constructor function for the <code>Luggage</code> type as well:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">NewLuggage</span><span class="p">(</span><span class="nx">weight</span> <span class="kt">int</span><span class="p">,</span> <span class="nx">passenger</span> <span class="kt">string</span><span class="p">)</span> <span class="o">*</span><span class="nx">Luggage</span> <span class="p">{</span>
+	<span class="nx">l</span> <span class="o">:=</span> <span class="nx">Luggage</span><span class="p">{</span>
+		<span class="nx">weight</span><span class="p">:</span>    <span class="nx">weight</span><span class="p">,</span>
+		<span class="nx">passenger</span><span class="p">:</span> <span class="nx">passenger</span><span class="p">,</span> <span class="c1">// just as an identifier
+</span><span class="c1"></span>	<span class="p">}</span>
+	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">l</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Then, we can create a <code>Belt</code> where the <code>Luggage</code> is put on and taken to the
+x-ray scanner:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">Belt</span> <span class="p">[]</span><span class="o">*</span><span class="nx">Luggage</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Not what you were expecting? Well, what we create is a <code>Belt</code> type that is
+actually a slice of <code>Luggage</code> pointers. Which is what exactly the machine belt
+is - just a collection of bags that get scanned one by one.</p>
+
+<p>So now we need to add a function that knows how to add <code>Luggage</code> to the <code>Belt</code>:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">belt</span> <span class="o">*</span><span class="nx">Belt</span><span class="p">)</span> <span class="nf">Add</span><span class="p">(</span><span class="nx">newLuggage</span> <span class="o">*</span><span class="nx">Luggage</span><span class="p">)</span> <span class="p">{</span>
+	<span class="o">*</span><span class="nx">belt</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="o">*</span><span class="nx">belt</span><span class="p">,</span> <span class="nx">newLuggage</span><span class="p">)</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Since <code>Belt</code> is actually a slice, we can use the built-in <code>append</code> function
+which will add the <code>newLuggage</code> to the <code>Belt</code>.  The cool part about this
+implementation the time complexity - because we use <code>append</code>, which is a
+built-in method, we get an <strong>amortised</strong> <code>O(1)</code> for insertion. Of course, this
+comes at space cost, due to <a href="https://blog.golang.org/go-slices-usage-and-internals">the way slices in Go
+work</a>.</p>
+
+<p>As the <code>Belt</code> moves and takes <code>Luggage</code> to the x-ray machine, we will need to
+somehow take this luggage off and load it into the machine for inspection. But
+because of the nature of the <code>Belt</code>, the first item that’s put on it is the
+first item to be scanned. And the last one that is added will be the last one
+to be scanned. So, we can say that the <code>Belt</code> is a FIFO (First in, first out)
+data structure.</p>
+
+<p>This is what the function <code>Take</code>  would look like, keeping in mind the details
+above:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">belt</span> <span class="o">*</span><span class="nx">Belt</span><span class="p">)</span> <span class="nf">Take</span><span class="p">()</span> <span class="o">*</span><span class="nx">Luggage</span> <span class="p">{</span>
+	<span class="nx">first</span><span class="p">,</span> <span class="nx">rest</span> <span class="o">:=</span> <span class="p">(</span><span class="o">*</span><span class="nx">belt</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="o">*</span><span class="nx">belt</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]</span>
+	<span class="o">*</span><span class="nx">belt</span> <span class="p">=</span> <span class="nx">rest</span>
+	<span class="k">return</span> <span class="nx">first</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>It will take the first item and return it, and it will assign everything else
+in the collection to the beginning of it,  so the second item becomes first and
+so on. If you were wondering, this has a <code>O(1)</code> time complexity since it always
+takes the first item from the queue.</p>
+
+<p>Using our new types and functions can be done as such:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">belt</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">Belt</span><span class="p">{}</span>
+	<span class="nx">belt</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nf">NewLuggage</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&#34;Elmer Fudd&#34;</span><span class="p">))</span>
+	<span class="nx">belt</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nf">NewLuggage</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="s">&#34;Sylvester&#34;</span><span class="p">))</span>
+	<span class="nx">belt</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nf">NewLuggage</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s">&#34;Yosemite Sam&#34;</span><span class="p">))</span>
+	<span class="nx">belt</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nf">NewLuggage</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="s">&#34;Daffy Duck&#34;</span><span class="p">))</span>
+	<span class="nx">belt</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nf">NewLuggage</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#34;Bugs Bunny&#34;</span><span class="p">))</span>
+
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Belt:&#34;</span><span class="p">,</span> <span class="nx">belt</span><span class="p">,</span> <span class="s">&#34;Length:&#34;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="o">*</span><span class="nx">belt</span><span class="p">))</span>
+	<span class="nx">first</span> <span class="o">:=</span> <span class="nx">belt</span><span class="p">.</span><span class="nf">Take</span><span class="p">()</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;First luggage:&#34;</span><span class="p">,</span> <span class="nx">first</span><span class="p">)</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Belt:&#34;</span><span class="p">,</span> <span class="nx">belt</span><span class="p">,</span> <span class="s">&#34;Length:&#34;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="o">*</span><span class="nx">belt</span><span class="p">))</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>The output of the <code>main</code> function will be something like:
+<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">Belt: &amp;[0x1040a0c0 0x1040a0d0 0x1040a0e0 0x1040a100 0x1040a110] Length: 5
+First luggage: &amp;{3 Elmer Fudd}
+Belt: &amp;[0x1040a0d0 0x1040a0e0 0x1040a100 0x1040a110] Length: 4</code></pre></div></p>
+
+<p>Basically what happens is we add five different <code>Luggage</code> structs on the <code>Belt</code>
+and we take the first one off, which is the one printed on the second line of
+the output.</p>
+
+<p>You can play with the code from this example
+<a href="https://play.golang.org/p/DTFUkWeZ4H8">here</a>.</p>
+
+<h3 id="what-about-first-class-passengers">What about first-class passengers?</h3>
+
+<p>Yeah, what about them? I mean, they’ve paid so much money for their ticket that
+it just doesn’t make sense for them to wait in queues as the economy ticket
+holders. So, how can we prioritise these passengers? What if their luggage has
+some sort of priority, where the higher the priority is the faster they get
+through the queue?</p>
+
+<p>Let’s modify our <code>Luggage</code> struct to enable this:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">Luggage</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">weight</span>    <span class="kt">int</span>
+	<span class="nx">priority</span>  <span class="kt">int</span>
+	<span class="nx">passenger</span> <span class="kt">string</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Also, all <code>Luggage</code> created in the <code>NewLuggage</code> function will have to take the
+<code>priority</code> level as an argument:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">NewLuggage</span><span class="p">(</span><span class="nx">weight</span> <span class="kt">int</span><span class="p">,</span> <span class="nx">priority</span> <span class="kt">int</span><span class="p">,</span> <span class="nx">passenger</span> <span class="kt">string</span><span class="p">)</span> <span class="o">*</span><span class="nx">Luggage</span> <span class="p">{</span>
+	<span class="nx">l</span> <span class="o">:=</span> <span class="nx">Luggage</span><span class="p">{</span>
+		<span class="nx">weight</span><span class="p">:</span>    <span class="nx">weight</span><span class="p">,</span>
+		<span class="nx">priority</span><span class="p">:</span>  <span class="nx">priority</span><span class="p">,</span>
+		<span class="nx">passenger</span><span class="p">:</span> <span class="nx">passenger</span><span class="p">,</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">l</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Let’s think this through again. Basically, when a new <code>Luggage</code> is put on the
+<code>Belt</code>, we need to detect it’s <code>priority</code> and put it as close to the beginning
+of the <code>Belt</code> as possible based on the detected <code>priority</code>.</p>
+
+<p>Let’s modify our <code>Add</code> function:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">belt</span> <span class="o">*</span><span class="nx">Belt</span><span class="p">)</span> <span class="nf">Add</span><span class="p">(</span><span class="nx">newLuggage</span> <span class="o">*</span><span class="nx">Luggage</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="o">*</span><span class="nx">belt</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
+		<span class="o">*</span><span class="nx">belt</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="o">*</span><span class="nx">belt</span><span class="p">,</span> <span class="nx">newLuggage</span><span class="p">)</span>
+	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+		<span class="nx">added</span> <span class="o">:=</span> <span class="kc">false</span>
+		<span class="k">for</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">placedLuggage</span> <span class="o">:=</span> <span class="k">range</span> <span class="o">*</span><span class="nx">belt</span> <span class="p">{</span>
+			<span class="k">if</span> <span class="nx">newLuggage</span><span class="p">.</span><span class="nx">priority</span> <span class="p">&gt;</span> <span class="nx">placedLuggage</span><span class="p">.</span><span class="nx">priority</span> <span class="p">{</span>
+				<span class="o">*</span><span class="nx">belt</span> <span class="p">=</span> <span class="nb">append</span><span class="p">((</span><span class="o">*</span><span class="nx">belt</span><span class="p">)[:</span><span class="nx">i</span><span class="p">],</span> <span class="nb">append</span><span class="p">(</span><span class="nx">Belt</span><span class="p">{</span><span class="nx">newLuggage</span><span class="p">},</span> <span class="p">(</span><span class="o">*</span><span class="nx">belt</span><span class="p">)[</span><span class="nx">i</span><span class="p">:]</span><span class="o">...</span><span class="p">)</span><span class="o">...</span><span class="p">)</span>
+				<span class="nx">added</span> <span class="p">=</span> <span class="kc">true</span>
+				<span class="k">break</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+		<span class="k">if</span> <span class="p">!</span><span class="nx">added</span> <span class="p">{</span>
+			<span class="o">*</span><span class="nx">belt</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="o">*</span><span class="nx">belt</span><span class="p">,</span> <span class="nx">newLuggage</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Compared to the previous implementation, this is rather complicated. There are
+a couple of things going on here and the first case is quite simple. If the
+belt is empty,  we just put the new luggage on the belt and we are done. The
+<code>Belt</code> will have only one item on it and that one will be the first that can be
+taken off of it.</p>
+
+<p>The second case, when there’s more than one item on the <code>Belt</code>, loops through
+all of the luggage on the <code>Belt</code> and compares their <code>priority</code> with the new one
+coming on. Then it finds a <code>Luggage</code> that has a smaller priority it bypasses it
+and puts the new luggage in front of it. This means, the higher the <code>priority</code>
+the <code>Luggage</code> has the further to the beginning of the <code>Belt</code> it will be placed.</p>
+
+<p>Of course, if the loop doesn’t find such a <code>Luggage</code> it will just append it to
+the end of the <code>Belt</code>. Our new <code>Add</code> function has a time complexity of <code>O(n)</code>
+because in worst case scenario it will have to traverse the whole slice before
+it inserts the new <code>Luggage</code> struct. Inherently, searching and accessing any
+item in our queue will cost us the same - <code>O(n)</code>.</p>
+
+<p>To demonstrate the new <code>Add</code> functionality, we can run the following code:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">belt</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="nx">Belt</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+	<span class="nx">belt</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nf">NewLuggage</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#34;Elmer Fudd&#34;</span><span class="p">))</span>
+	<span class="nx">belt</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nf">NewLuggage</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#34;Sylvester&#34;</span><span class="p">))</span>
+	<span class="nx">belt</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nf">NewLuggage</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#34;Yosemite Sam&#34;</span><span class="p">))</span>
+	<span class="nx">belt</span><span class="p">.</span><span class="nf">Inspect</span><span class="p">()</span>
+
+	<span class="nx">belt</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nf">NewLuggage</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#34;Daffy Duck&#34;</span><span class="p">))</span>
+	<span class="nx">belt</span><span class="p">.</span><span class="nf">Inspect</span><span class="p">()</span>
+
+	<span class="nx">belt</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nf">NewLuggage</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&#34;Bugs Bunny&#34;</span><span class="p">))</span>
+	<span class="nx">belt</span><span class="p">.</span><span class="nf">Inspect</span><span class="p">()</span>
+
+	<span class="nx">belt</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nf">NewLuggage</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#34;Wile E. Coyote&#34;</span><span class="p">))</span>
+	<span class="nx">belt</span><span class="p">.</span><span class="nf">Inspect</span><span class="p">()</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>First, it will create a <code>Belt</code> with three <code>Luggage</code> structs on it, each of them
+with a priority of <code>1</code>:</p>
+
+<pre><code>0. &amp;{3 1 Elmer Fudd}
+1. &amp;{3 1 Sylvester}
+2. &amp;{3 1 Yosemite Sam}
+</code></pre>
+
+<p>Then, it will add a new <code>Luggage</code> with a priority of <code>2</code>:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">0. &amp;{3 2 Daffy Duck}
+1. &amp;{3 1 Elmer Fudd}
+2. &amp;{3 1 Sylvester}
+3. &amp;{3 1 Yosemite Sam}</code></pre></div>
+
+<p>You see, the new luggage with the highest priority got promoted to the first
+place in the <code>Belt</code>. Next, we add a new one with even higher priority (<code>3</code>):</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">0. &amp;{3 3 Bugs Bunny}
+1. &amp;{3 2 Daffy Duck}
+2. &amp;{3 1 Elmer Fudd}
+3. &amp;{3 1 Sylvester}
+4. &amp;{3 1 Yosemite Sam}</code></pre></div>
+
+<p>As expected, the one with the highest priority was put on the first spot in the
+<code>Belt</code>. Lastly, we add another <code>Luggage</code>, this time with priority <code>2</code>:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">0. &amp;{3 3 Bugs Bunny}
+1. &amp;{3 2 Daffy Duck}
+2. &amp;{100 2 Wile E. Coyote}
+3. &amp;{3 1 Elmer Fudd}
+4. &amp;{3 1 Sylvester}
+5. &amp;{3 1 Yosemite Sam}</code></pre></div>
+
+<p>The new <code>Luggage</code> was added right after the <code>Luggage</code> with the same priority as
+the new one and of course, not at the beginning of the <code>Belt</code>. Basically, our
+<code>Belt</code> gets implicitly sorted by the priority as we add new <code>Luggage</code> to it.</p>
+
+<p>If you are knowledgeable about queues you might think that these are not the
+most performant ways of implementing priority queues and you are quite right.
+Implementing priority queues can be done more performant using heaps, that
+we’ll take a look at in another post.</p>
+
+<p>There’s more interesting knowledge around priority queues that we can explore.
+Until then you can take a look at priority queues’ <a href="https://en.wikipedia.org/wiki/Priority_queue">Wiki
+page</a>. If you are knowledgeable
+about queues you might think that these are not the most performant ways of
+implementing priority queues and you are quite right.  Implementing priority
+queues can be done more performant using heaps, that we’ll take a look at in
+another post.), especially the “Implementation” section.</p>
+
+<p>You can see and play with the code from this example
+<a href="https://play.golang.org/p/Eu8_-HTDBY_A">here</a>.</p>
+
+<h2 id="closing-thoughts">Closing thoughts</h2>
+
+<p>In this post, we took a look at what stacks and queues are and we tried to mimic
+some interesting real-world application to them. I strongly believe that when
+we learn a topic (especially in computer science) it’s much better to do it
+through examples and application to a problem and I hope I managed to do
+exactly that.</p>
+
+<p>In further posts we will look at some more priority queues (using heaps), but
+before we get there we will take a look at some a bit simpler data structures.</p>
+
+<p><small>
+Acknowledgements: Big thanks to <a href="https://bytes-and-bites.com/">Vincent Boisard</a>
+for reviewing a final draft of this post and his constructive criticism on it.
+</small></p>
+
+    </div>
+
+    
+    
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://ieftimov.com/tags/queues/">queues</a>
+          <a href="https://ieftimov.com/tags/priority-queues/">priority queues</a>
+          <a href="https://ieftimov.com/tags/stacks/">stacks</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/post/haveibeenpwned-password-lookup-elixir/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">Validate your passwords using Elixir and haveibeenpwned.com&#39;s API</span>
+            <span class="prev-text nav-mobile">Prev</span>
+          </a>
+        
+          <a class="next" href="/post/golang-datastructures-linked-lists/">
+            <span class="next-text nav-default">Data structures in Go: Linked lists</span>
+            <span class="prev-text nav-mobile">Next</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    Show Disqus Comments
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://ieftimov.com/post/golang-datastructures-stacks-queues/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'ieftimov';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+  
+    
+
+
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:hi@ilija.io" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://stackoverflow.com/users/601555/ilija-eftimov" rel="me noopener" class="iconfont"
+      title="stack-overflow"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M809.714286 932.571429l-638.857143 0 0-274.285714-91.428571 0 0 365.714286 821.714286 0 0-365.714286-91.428571 0 0 274.285714zm-538.285714-299.428571l18.857143-89.714286 447.428571 94.285714-18.857143 89.142857zm58.857143-213.714286l38.285714-83.428571 414.285714 193.714286-38.285714 82.857143zm114.857143-203.428571l58.285714-70.285714 350.857143 293.142857-58.285714 70.285714zm226.857143-216l272.571429 366.285714-73.142857 54.857143-272.571429-366.285714zm-410.285714 840.571429l0-90.857143 457.142857 0 0 90.857143-457.142857 0z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://twitter.com/fteem" rel="me noopener" class="iconfont"
+      title="twitter"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1264 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M1229.8616 18.043658c0 0-117.852626 63.135335-164.151872 67.344358-105.225559-164.151872-505.082682-92.598492-437.738325 223.078185C278.622548 312.675223 89.216542 47.506814 89.216542 47.506814s-117.852626 189.406006 75.762402 345.139833C127.097743 396.85567 55.544363 371.601535 55.544363 371.601535S26.081207 535.753407 253.368414 615.724832c-21.045112 29.463156-113.643603 8.418045-113.643603 8.418045s25.254134 143.10676 231.496229 180.987961c-143.10676 130.479693-387.230056 92.598492-370.393967 105.225559 206.242095 189.406006 1119.599946 231.496229 1128.01799-643.98042C1179.353331 249.539887 1263.533778 123.269217 1263.533778 123.269217s-130.479693 37.881201-138.897738 33.672179C1225.652577 98.015083 1229.8616 18.043658 1229.8616 18.043658"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://www.linkedin.com/in/ieftimov/" rel="me noopener" class="iconfont"
+      title="linkedin"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="33" height="33">
+  <path d="M872.405333 872.618667h-151.637333v-237.610667c0-56.661333-1.152-129.578667-79.018667-129.578667-79.061333 0-91.136 61.653333-91.136 125.397334v241.792H398.976V384h145.664v66.602667h1.962667c20.352-38.4 69.845333-78.933333 143.786666-78.933334 153.642667 0 182.058667 101.12 182.058667 232.746667v268.202667zM227.712 317.141333a87.978667 87.978667 0 0 1-88.021333-88.106666 88.064 88.064 0 1 1 88.021333 88.106666z m76.032 555.477334H151.68V384h152.064v488.618667zM948.266667 0H75.562667C33.792 0 0 33.024 0 73.770667v876.458666C0 991.018667 33.792 1024 75.562667 1024h872.576C989.866667 1024 1024 991.018667 1024 950.229333V73.770667C1024 33.024 989.866667 0 948.138667 0h0.128z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/fteem" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://ieftimov.com/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2014 -
+    2019
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        Ilija Eftimov
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+  <script id="dsq-count-scr" src="//ieftimov.disqus.com/count.js" async></script>
+
+
+
+
+
+</body>
+</html>

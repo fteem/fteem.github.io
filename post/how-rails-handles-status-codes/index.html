@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>How Rails handles status codes - Ilija Eftimov</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="Ilija Eftimov" />
+  <meta name="description" content="Recently, I have been building an API as part of my day job. Rails is a great framework to build APIs in, and it has been a joy so far. When building the responses of the API, it&amp;rsquo;s paramount to understand what HTTP statuses you should utilize, which will in return help the consumers by providing more meaningful responses.
+Sure, you could always have a status property in the response JSON, which will be a human-readable status code." />
+
+  <meta name="keywords" content="Software, Programming, Computer Science, Products" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.54.0" />
+
+
+<link rel="canonical" href="https://ieftimov.com/post/how-rails-handles-status-codes/" />
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.ec807d8b802a40889537c26e014f733206312ea440d42e1f0dabed80918de1ac.css" integrity="sha256-7IB9i4AqQIiVN8JuAU9zMgYxLqRA1C4fDavtgJGN4aw=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/overrides.css">
+
+<link rel="stylesheet" href="/css/subscribe.css">
+
+
+<meta property="og:title" content="How Rails handles status codes" />
+<meta property="og:description" content="Recently, I have been building an API as part of my day job. Rails is a great framework to build APIs in, and it has been a joy so far. When building the responses of the API, it&rsquo;s paramount to understand what HTTP statuses you should utilize, which will in return help the consumers by providing more meaningful responses.
+Sure, you could always have a status property in the response JSON, which will be a human-readable status code." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/how-rails-handles-status-codes/" />
+
+<meta property="og:image" content="https://ieftimov.com/cards/how-rails-handles-status-codes.png" />
+<meta property="article:published_time" content="2016-05-27T00:00:00&#43;00:00"/>
+
+
+<meta itemprop="name" content="How Rails handles status codes">
+<meta itemprop="description" content="Recently, I have been building an API as part of my day job. Rails is a great framework to build APIs in, and it has been a joy so far. When building the responses of the API, it&rsquo;s paramount to understand what HTTP statuses you should utilize, which will in return help the consumers by providing more meaningful responses.
+Sure, you could always have a status property in the response JSON, which will be a human-readable status code.">
+
+
+
+<meta itemprop="wordCount" content="1880">
+
+  <meta itemprop="image" content="https://ieftimov.com/cards/how-rails-handles-status-codes.png">
+
+
+
+<meta itemprop="keywords" content="status,codes,http," />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/how-rails-handles-status-codes.png"/>
+
+<meta name="twitter:title" content="How Rails handles status codes"/>
+<meta name="twitter:description" content="Recently, I have been building an API as part of my day job. Rails is a great framework to build APIs in, and it has been a joy so far. When building the responses of the API, it&rsquo;s paramount to understand what HTTP statuses you should utilize, which will in return help the consumers by providing more meaningful responses.
+Sure, you could always have a status property in the response JSON, which will be a human-readable status code."/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Ilija Eftimov</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/about/">About</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/subscribe/">Subscribe</a>
+          
+        
+      </li>
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      Ilija Eftimov
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/about/">About</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/subscribe/">Subscribe</a>
+          
+
+        
+
+      </li>
+    
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">How Rails handles status codes</h1>
+      
+      <div class="post-meta">
+        <time datetime="2016-05-27" class="post-time">
+          27-05-2016
+        </time>
+        <div class="post-category">
+            <a href="https://ieftimov.com/categories/rails/"> Rails </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">Table of Contents</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#rails-and-statuses">Rails and statuses</a></li>
+<li><a href="#status-codes">Status codes</a></li>
+<li><a href="#a-bit-deeper">A bit deeper</a></li>
+<li><a href="#what-about-exceptions">What about exceptions?</a></li>
+<li><a href="#after-all">After all</a></li>
+</ul></li>
+</ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      
+
+<p>Recently, I have been building an API as part of my day job. Rails is a great
+framework to build APIs in, and it has been a joy so far. When building the
+responses of the API, it&rsquo;s paramount to understand what HTTP statuses you should
+utilize, which will in return help the consumers by providing more meaningful
+responses.</p>
+
+<p>Sure, you could always have a <code>status</code> property in the response JSON, which will
+be a human-readable status code. But, I would like you to think about HTTP status
+codes as a nice card on a present, with your beautiful handwriting and best
+wishes to whom the gift goes to. HTTP status code don&rsquo;t just add more semantical
+correctness, but they also speak about the nature of the response.</p>
+
+<h2 id="rails-and-statuses">Rails and statuses</h2>
+
+<p>Ruby on Rails, being a great framework, adds a very nice layer of abstraction of
+the status codes, and allows the developers to easily use custom status codes in
+their responses. I am sure, at some point you have seen something like:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="n">render</span> <span class="ss">json</span><span class="p">:</span> <span class="vi">@resource</span><span class="p">,</span> <span class="ss">status</span><span class="p">:</span> <span class="mi">201</span> <span class="c1"># Created</span></code></pre></div>
+
+<p>While this might be sometimes redundant, the <code>render</code> method in Rails allows you
+to specify HTTP status codes for the response. But also, being very developer
+friendly, Rails allows you to do the same with &ldquo;human readable&rdquo; status codes:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="n">render</span> <span class="ss">json</span><span class="p">:</span> <span class="vi">@resource</span><span class="p">,</span> <span class="ss">status</span><span class="p">:</span> <span class="ss">:created</span></code></pre></div>
+
+<p>The two code samples are identical, they specify the HTTP 201 status code to the
+response. But, what are the available Rails status codes (as symbols) that you
+can use? And how does Rails actually do this?</p>
+
+<h2 id="status-codes">Status codes</h2>
+
+<p>The HTTP status codes list is a quite stable and static list. Although sometimes
+status codes are added to the list, once you learn it, keeping up to date is
+rather easy. The latest addition to this list is HTTP 451 - Unavailable For
+Legal Reasons. You can see the RFC where it was proposed
+<a href="http://tools.ietf.org/html/rfc7725">here</a>.</p>
+
+<p>So, how does Rails knows how to create all of these symbols, so we can use them
+in our <code>render</code> methods? Well, what&rsquo;s very interesting is that Rails actually
+doesn&rsquo;t do much about this. It relies on Rack, which does all of this magic. In
+an <code>irb</code> session, type:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="o">&gt;&gt;</span> <span class="no">Rack</span><span class="o">::</span><span class="no">HTTP_STATUS_CODES</span>
+
+<span class="p">{</span><span class="mi">100</span><span class="o">=&gt;</span><span class="s2">&#34;Continue&#34;</span><span class="p">,</span>
+ <span class="mi">101</span><span class="o">=&gt;</span><span class="s2">&#34;Switching Protocols&#34;</span><span class="p">,</span>
+ <span class="mi">102</span><span class="o">=&gt;</span><span class="s2">&#34;Processing&#34;</span><span class="p">,</span>
+ <span class="mi">200</span><span class="o">=&gt;</span><span class="s2">&#34;OK&#34;</span><span class="p">,</span>
+ <span class="mi">201</span><span class="o">=&gt;</span><span class="s2">&#34;Created&#34;</span><span class="p">,</span>
+ <span class="mi">202</span><span class="o">=&gt;</span><span class="s2">&#34;Accepted&#34;</span><span class="p">,</span>
+ <span class="mi">203</span><span class="o">=&gt;</span><span class="s2">&#34;Non-Authoritative Information&#34;</span><span class="p">,</span>
+ <span class="mi">204</span><span class="o">=&gt;</span><span class="s2">&#34;No Content&#34;</span><span class="p">,</span>
+ <span class="mi">205</span><span class="o">=&gt;</span><span class="s2">&#34;Reset Content&#34;</span><span class="p">,</span>
+ <span class="mi">206</span><span class="o">=&gt;</span><span class="s2">&#34;Partial Content&#34;</span><span class="p">,</span>
+ <span class="mi">207</span><span class="o">=&gt;</span><span class="s2">&#34;Multi-Status&#34;</span><span class="p">,</span>
+ <span class="mi">208</span><span class="o">=&gt;</span><span class="s2">&#34;Already Reported&#34;</span><span class="p">,</span>
+ <span class="mi">226</span><span class="o">=&gt;</span><span class="s2">&#34;IM Used&#34;</span><span class="p">,</span>
+ <span class="mi">300</span><span class="o">=&gt;</span><span class="s2">&#34;Multiple Choices&#34;</span><span class="p">,</span>
+ <span class="mi">301</span><span class="o">=&gt;</span><span class="s2">&#34;Moved Permanently&#34;</span><span class="p">,</span>
+ <span class="mi">302</span><span class="o">=&gt;</span><span class="s2">&#34;Found&#34;</span><span class="p">,</span>
+ <span class="mi">303</span><span class="o">=&gt;</span><span class="s2">&#34;See Other&#34;</span><span class="p">,</span>
+ <span class="mi">304</span><span class="o">=&gt;</span><span class="s2">&#34;Not Modified&#34;</span><span class="p">,</span>
+ <span class="mi">305</span><span class="o">=&gt;</span><span class="s2">&#34;Use Proxy&#34;</span><span class="p">,</span>
+ <span class="mi">307</span><span class="o">=&gt;</span><span class="s2">&#34;Temporary Redirect&#34;</span><span class="p">,</span>
+ <span class="mi">308</span><span class="o">=&gt;</span><span class="s2">&#34;Permanent Redirect&#34;</span><span class="p">,</span>
+ <span class="mi">400</span><span class="o">=&gt;</span><span class="s2">&#34;Bad Request&#34;</span><span class="p">,</span>
+ <span class="mi">401</span><span class="o">=&gt;</span><span class="s2">&#34;Unauthorized&#34;</span><span class="p">,</span>
+ <span class="mi">402</span><span class="o">=&gt;</span><span class="s2">&#34;Payment Required&#34;</span><span class="p">,</span>
+ <span class="mi">403</span><span class="o">=&gt;</span><span class="s2">&#34;Forbidden&#34;</span><span class="p">,</span>
+ <span class="mi">404</span><span class="o">=&gt;</span><span class="s2">&#34;Not Found&#34;</span><span class="p">,</span>
+ <span class="mi">405</span><span class="o">=&gt;</span><span class="s2">&#34;Method Not Allowed&#34;</span><span class="p">,</span>
+ <span class="mi">406</span><span class="o">=&gt;</span><span class="s2">&#34;Not Acceptable&#34;</span><span class="p">,</span>
+ <span class="mi">407</span><span class="o">=&gt;</span><span class="s2">&#34;Proxy Authentication Required&#34;</span><span class="p">,</span>
+ <span class="mi">408</span><span class="o">=&gt;</span><span class="s2">&#34;Request Timeout&#34;</span><span class="p">,</span>
+ <span class="mi">409</span><span class="o">=&gt;</span><span class="s2">&#34;Conflict&#34;</span><span class="p">,</span>
+ <span class="mi">410</span><span class="o">=&gt;</span><span class="s2">&#34;Gone&#34;</span><span class="p">,</span>
+ <span class="mi">411</span><span class="o">=&gt;</span><span class="s2">&#34;Length Required&#34;</span><span class="p">,</span>
+ <span class="mi">412</span><span class="o">=&gt;</span><span class="s2">&#34;Precondition Failed&#34;</span><span class="p">,</span>
+ <span class="mi">413</span><span class="o">=&gt;</span><span class="s2">&#34;Payload Too Large&#34;</span><span class="p">,</span>
+ <span class="mi">414</span><span class="o">=&gt;</span><span class="s2">&#34;URI Too Long&#34;</span><span class="p">,</span>
+ <span class="mi">415</span><span class="o">=&gt;</span><span class="s2">&#34;Unsupported Media Type&#34;</span><span class="p">,</span>
+ <span class="mi">416</span><span class="o">=&gt;</span><span class="s2">&#34;Range Not Satisfiable&#34;</span><span class="p">,</span>
+ <span class="mi">417</span><span class="o">=&gt;</span><span class="s2">&#34;Expectation Failed&#34;</span><span class="p">,</span>
+ <span class="mi">422</span><span class="o">=&gt;</span><span class="s2">&#34;Unprocessable Entity&#34;</span><span class="p">,</span>
+ <span class="mi">423</span><span class="o">=&gt;</span><span class="s2">&#34;Locked&#34;</span><span class="p">,</span>
+ <span class="mi">424</span><span class="o">=&gt;</span><span class="s2">&#34;Failed Dependency&#34;</span><span class="p">,</span>
+ <span class="mi">426</span><span class="o">=&gt;</span><span class="s2">&#34;Upgrade Required&#34;</span><span class="p">,</span>
+ <span class="mi">428</span><span class="o">=&gt;</span><span class="s2">&#34;Precondition Required&#34;</span><span class="p">,</span>
+ <span class="mi">429</span><span class="o">=&gt;</span><span class="s2">&#34;Too Many Requests&#34;</span><span class="p">,</span>
+ <span class="mi">431</span><span class="o">=&gt;</span><span class="s2">&#34;Request Header Fields Too Large&#34;</span><span class="p">,</span>
+ <span class="mi">500</span><span class="o">=&gt;</span><span class="s2">&#34;Internal Server Error&#34;</span><span class="p">,</span>
+ <span class="mi">501</span><span class="o">=&gt;</span><span class="s2">&#34;Not Implemented&#34;</span><span class="p">,</span>
+ <span class="mi">502</span><span class="o">=&gt;</span><span class="s2">&#34;Bad Gateway&#34;</span><span class="p">,</span>
+ <span class="mi">503</span><span class="o">=&gt;</span><span class="s2">&#34;Service Unavailable&#34;</span><span class="p">,</span>
+ <span class="mi">504</span><span class="o">=&gt;</span><span class="s2">&#34;Gateway Timeout&#34;</span><span class="p">,</span>
+ <span class="mi">505</span><span class="o">=&gt;</span><span class="s2">&#34;HTTP Version Not Supported&#34;</span><span class="p">,</span>
+ <span class="mi">506</span><span class="o">=&gt;</span><span class="s2">&#34;Variant Also Negotiates&#34;</span><span class="p">,</span>
+ <span class="mi">507</span><span class="o">=&gt;</span><span class="s2">&#34;Insufficient Storage&#34;</span><span class="p">,</span>
+ <span class="mi">508</span><span class="o">=&gt;</span><span class="s2">&#34;Loop Detected&#34;</span><span class="p">,</span>
+ <span class="mi">510</span><span class="o">=&gt;</span><span class="s2">&#34;Not Extended&#34;</span><span class="p">,</span>
+ <span class="mi">511</span><span class="o">=&gt;</span><span class="s2">&#34;Network Authentication Required&#34;</span><span class="p">}</span></code></pre></div>
+
+<p>As you can see, the <code>Rack::Utils::HTTP_STATUS_CODES</code> is a Hash that has all of
+the HTTP status codes, with the corresponding messages. If you open the
+<code>Rack::Utils</code>
+<a href="http://www.rubydoc.info/github/rack/rack/master/Rack/Utils#HTTP_STATUS_CODES-constant">documentation</a>
+you can see how these are programmatically created, including the code that
+does the conversion. The status codes are pulled from
+<a href="www.iana.org/assignments/http-status-codes/http-status-codes-1.csv">this CSV file</a>
+and are parsed using this piece of code:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="n">ruby</span> <span class="o">-</span><span class="n">ne</span> <span class="s1">&#39;m = /^(\d{3}),(?!Unassigned|\(Unused\))([^,]+)/.match($_) and puts &#34;#{m[1]} =&gt; \x27#{m[2].strip}\x27,&#34;&#39;</span></code></pre></div>
+
+<p>Great. But, how do we get the symbolized versions of the status messages? Well,
+Rack does that for us as well. In an <code>irb</code> session, try this:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="o">&gt;&gt;</span> <span class="no">Rack</span><span class="o">::</span><span class="no">SYMBOL_TO_STATUS_CODE</span>
+<span class="p">{</span><span class="ss">:continue</span><span class="o">=&gt;</span><span class="mi">100</span><span class="p">,</span>
+ <span class="ss">:switching_protocols</span><span class="o">=&gt;</span><span class="mi">101</span><span class="p">,</span>
+ <span class="ss">:processing</span><span class="o">=&gt;</span><span class="mi">102</span><span class="p">,</span>
+ <span class="ss">:ok</span><span class="o">=&gt;</span><span class="mi">200</span><span class="p">,</span>
+ <span class="ss">:created</span><span class="o">=&gt;</span><span class="mi">201</span><span class="p">,</span>
+ <span class="ss">:accepted</span><span class="o">=&gt;</span><span class="mi">202</span><span class="p">,</span>
+ <span class="ss">:non_authoritative_information</span><span class="o">=&gt;</span><span class="mi">203</span><span class="p">,</span>
+ <span class="ss">:no_content</span><span class="o">=&gt;</span><span class="mi">204</span><span class="p">,</span>
+ <span class="ss">:reset_content</span><span class="o">=&gt;</span><span class="mi">205</span><span class="p">,</span>
+ <span class="ss">:partial_content</span><span class="o">=&gt;</span><span class="mi">206</span><span class="p">,</span>
+ <span class="ss">:multi_status</span><span class="o">=&gt;</span><span class="mi">207</span><span class="p">,</span>
+ <span class="ss">:already_reported</span><span class="o">=&gt;</span><span class="mi">208</span><span class="p">,</span>
+ <span class="ss">:im_used</span><span class="o">=&gt;</span><span class="mi">226</span><span class="p">,</span>
+ <span class="ss">:multiple_choices</span><span class="o">=&gt;</span><span class="mi">300</span><span class="p">,</span>
+ <span class="ss">:moved_permanently</span><span class="o">=&gt;</span><span class="mi">301</span><span class="p">,</span>
+ <span class="ss">:found</span><span class="o">=&gt;</span><span class="mi">302</span><span class="p">,</span>
+ <span class="ss">:see_other</span><span class="o">=&gt;</span><span class="mi">303</span><span class="p">,</span>
+ <span class="ss">:not_modified</span><span class="o">=&gt;</span><span class="mi">304</span><span class="p">,</span>
+ <span class="ss">:use_proxy</span><span class="o">=&gt;</span><span class="mi">305</span><span class="p">,</span>
+ <span class="ss">:temporary_redirect</span><span class="o">=&gt;</span><span class="mi">307</span><span class="p">,</span>
+ <span class="ss">:permanent_redirect</span><span class="o">=&gt;</span><span class="mi">308</span><span class="p">,</span>
+ <span class="ss">:bad_request</span><span class="o">=&gt;</span><span class="mi">400</span><span class="p">,</span>
+ <span class="ss">:unauthorized</span><span class="o">=&gt;</span><span class="mi">401</span><span class="p">,</span>
+ <span class="ss">:payment_required</span><span class="o">=&gt;</span><span class="mi">402</span><span class="p">,</span>
+ <span class="ss">:forbidden</span><span class="o">=&gt;</span><span class="mi">403</span><span class="p">,</span>
+ <span class="ss">:not_found</span><span class="o">=&gt;</span><span class="mi">404</span><span class="p">,</span>
+ <span class="ss">:method_not_allowed</span><span class="o">=&gt;</span><span class="mi">405</span><span class="p">,</span>
+ <span class="ss">:not_acceptable</span><span class="o">=&gt;</span><span class="mi">406</span><span class="p">,</span>
+ <span class="ss">:proxy_authentication_required</span><span class="o">=&gt;</span><span class="mi">407</span><span class="p">,</span>
+ <span class="ss">:request_timeout</span><span class="o">=&gt;</span><span class="mi">408</span><span class="p">,</span>
+ <span class="ss">:conflict</span><span class="o">=&gt;</span><span class="mi">409</span><span class="p">,</span>
+ <span class="ss">:gone</span><span class="o">=&gt;</span><span class="mi">410</span><span class="p">,</span>
+ <span class="ss">:length_required</span><span class="o">=&gt;</span><span class="mi">411</span><span class="p">,</span>
+ <span class="ss">:precondition_failed</span><span class="o">=&gt;</span><span class="mi">412</span><span class="p">,</span>
+ <span class="ss">:payload_too_large</span><span class="o">=&gt;</span><span class="mi">413</span><span class="p">,</span>
+ <span class="ss">:uri_too_long</span><span class="o">=&gt;</span><span class="mi">414</span><span class="p">,</span>
+ <span class="ss">:unsupported_media_type</span><span class="o">=&gt;</span><span class="mi">415</span><span class="p">,</span>
+ <span class="ss">:range_not_satisfiable</span><span class="o">=&gt;</span><span class="mi">416</span><span class="p">,</span>
+ <span class="ss">:expectation_failed</span><span class="o">=&gt;</span><span class="mi">417</span><span class="p">,</span>
+ <span class="ss">:unprocessable_entity</span><span class="o">=&gt;</span><span class="mi">422</span><span class="p">,</span>
+ <span class="ss">:locked</span><span class="o">=&gt;</span><span class="mi">423</span><span class="p">,</span>
+ <span class="ss">:failed_dependency</span><span class="o">=&gt;</span><span class="mi">424</span><span class="p">,</span>
+ <span class="ss">:upgrade_required</span><span class="o">=&gt;</span><span class="mi">426</span><span class="p">,</span>
+ <span class="ss">:precondition_required</span><span class="o">=&gt;</span><span class="mi">428</span><span class="p">,</span>
+ <span class="ss">:too_many_requests</span><span class="o">=&gt;</span><span class="mi">429</span><span class="p">,</span>
+ <span class="ss">:request_header_fields_too_large</span><span class="o">=&gt;</span><span class="mi">431</span><span class="p">,</span>
+ <span class="ss">:internal_server_error</span><span class="o">=&gt;</span><span class="mi">500</span><span class="p">,</span>
+ <span class="ss">:not_implemented</span><span class="o">=&gt;</span><span class="mi">501</span><span class="p">,</span>
+ <span class="ss">:bad_gateway</span><span class="o">=&gt;</span><span class="mi">502</span><span class="p">,</span>
+ <span class="ss">:service_unavailable</span><span class="o">=&gt;</span><span class="mi">503</span><span class="p">,</span>
+ <span class="ss">:gateway_timeout</span><span class="o">=&gt;</span><span class="mi">504</span><span class="p">,</span>
+ <span class="ss">:http_version_not_supported</span><span class="o">=&gt;</span><span class="mi">505</span><span class="p">,</span>
+ <span class="ss">:variant_also_negotiates</span><span class="o">=&gt;</span><span class="mi">506</span><span class="p">,</span>
+ <span class="ss">:insufficient_storage</span><span class="o">=&gt;</span><span class="mi">507</span><span class="p">,</span>
+ <span class="ss">:loop_detected</span><span class="o">=&gt;</span><span class="mi">508</span><span class="p">,</span>
+ <span class="ss">:not_extended</span><span class="o">=&gt;</span><span class="mi">510</span><span class="p">,</span>
+ <span class="ss">:network_authentication_required</span><span class="o">=&gt;</span><span class="mi">511</span><span class="p">}</span></code></pre></div>
+
+<p>As you can see, the <code>Rack::Utils::SYMBOL_TO_STATUS_CODE</code> constant contains all
+of the status codes as symbols. The
+<a href="http://www.rubydoc.info/github/rack/rack/master/Rack/Utils#SYMBOL_TO_STATUS_CODE-constant">documentation</a>
+also shows the actual conversion, from <code>HTTP_STATUS_CODES</code> to
+<code>SYMBOL_TO_STATUS_CODE</code>:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="no">Hash</span><span class="o">[*</span><span class="no">HTTP_STATUS_CODES</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">code</span><span class="p">,</span> <span class="n">message</span><span class="o">|</span>
+  <span class="o">[</span><span class="n">message</span><span class="o">.</span><span class="n">downcase</span><span class="o">.</span><span class="n">gsub</span><span class="p">(</span><span class="sr">/\s|-|&#39;/</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">to_sym</span><span class="p">,</span> <span class="n">code</span><span class="o">]</span>
+<span class="p">}</span><span class="o">.</span><span class="n">flatten</span><span class="o">]</span></code></pre></div>
+
+<p>Having all of this documentation in place, is rather easy to see how everything
+falls into place. Rails being a Rack app, can utilize everything that Rack
+provides, and this is just an example. But, how does Rails actually plugs this
+into its runtime and has the ability to understand what is the status code?</p>
+
+<h2 id="a-bit-deeper">A bit deeper</h2>
+
+<p>Rails&rsquo; source code, although very well documented and well structured, can still be
+overwhelming to someone that hasn&rsquo;t spent enough time digging through. If you are
+a Ruby developer, I encourage you to spend some time around Rails&rsquo; code - you
+will learn a lot, I promise you!</p>
+
+<p>So, how does Rails know what status code to apply to the response, if you provide
+just the symbolized version on the status? Well, let&rsquo;s start with Rails&rsquo; class
+hierarchy, which is quite nice.</p>
+
+<p>On the surface, or what we usually see as developers, the rendering is done in
+the controllers. If you open any of your applications&rsquo; <code>ApplicationController</code>,
+you will see something like:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">ApplicationController</span> <span class="o">&lt;</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">Base</span>
+  <span class="o">...</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>This means that all of our controllers are subclasses of the
+<code>ActionController::Base</code> class. If you open the
+<a href="https://github.com/rails/rails/blob/52ce6ece8c8f74064bb64e0a0b1ddd83092718e1/actionpack/lib/action_controller/base.rb">source code</a>
+of the <code>ActionController::Base</code> class, you will see some very interesting things,
+that can be quite informative. But for our use case, we are interested in the
+following:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="no">MODULES</span> <span class="o">=</span> <span class="o">[</span>
+  <span class="no">AbstractController</span><span class="o">::</span><span class="no">Rendering</span><span class="p">,</span>
+  <span class="no">AbstractController</span><span class="o">::</span><span class="no">Translation</span><span class="p">,</span>
+  <span class="no">AbstractController</span><span class="o">::</span><span class="no">AssetPaths</span><span class="p">,</span>
+
+  <span class="no">Helpers</span><span class="p">,</span>
+  <span class="no">UrlFor</span><span class="p">,</span>
+  <span class="no">Redirecting</span><span class="p">,</span>
+  <span class="no">ActionView</span><span class="o">::</span><span class="no">Layouts</span><span class="p">,</span>
+  <span class="no">Rendering</span><span class="p">,</span>
+  <span class="no">Renderers</span><span class="o">::</span><span class="no">All</span><span class="p">,</span>
+  <span class="no">ConditionalGet</span><span class="p">,</span>
+  <span class="no">EtagWithTemplateDigest</span><span class="p">,</span>
+  <span class="no">Caching</span><span class="p">,</span>
+  <span class="no">MimeResponds</span><span class="p">,</span>
+  <span class="no">ImplicitRender</span><span class="p">,</span>
+  <span class="no">StrongParameters</span><span class="p">,</span>
+
+  <span class="no">Cookies</span><span class="p">,</span>
+  <span class="no">Flash</span><span class="p">,</span>
+  <span class="no">FormBuilder</span><span class="p">,</span>
+  <span class="no">RequestForgeryProtection</span><span class="p">,</span>
+  <span class="no">ForceSSL</span><span class="p">,</span>
+  <span class="no">Streaming</span><span class="p">,</span>
+  <span class="no">DataStreaming</span><span class="p">,</span>
+  <span class="no">HttpAuthentication</span><span class="o">::</span><span class="no">ControllerMethods</span><span class="p">,</span>
+  <span class="no">HttpAuthentication</span><span class="o">::</span><span class="no">ControllerMethods</span><span class="p">,</span>
+  <span class="no">HttpAuthentication</span><span class="o">::</span><span class="no">ControllerMethods</span><span class="p">,</span>
+
+  <span class="c1"># Before callbacks should also be executed the earliest as possible, so</span>
+  <span class="c1"># also include them at the bottom.</span>
+  <span class="no">AbstractController</span><span class="o">::</span><span class="no">Callbacks</span><span class="p">,</span>
+
+  <span class="c1"># Append rescue at the bottom to wrap as much as possible.</span>
+  <span class="no">Rescue</span><span class="p">,</span>
+
+  <span class="c1"># Add instrumentations hooks at the bottom, to ensure they instrument</span>
+  <span class="c1"># all the methods properly.</span>
+  <span class="no">Instrumentation</span><span class="p">,</span>
+
+  <span class="c1"># Params wrapper should come before instrumentation so they are</span>
+  <span class="c1"># properly showed in logs</span>
+  <span class="no">ParamsWrapper</span>
+<span class="o">]</span>
+
+<span class="no">MODULES</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">mod</span><span class="o">|</span>
+  <span class="kp">include</span> <span class="n">mod</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>This piece of code, actually includes all of these modules in the
+<code>ActionController::Base</code> class, which in return gives us all of the
+functionlities that our controllers have. Just look at the module names, like
+<code>Redirecting</code>, <code>ActionView::Layouts</code>, <code>Rendering</code>, <code>Cookies</code>, <code>Flash</code> and so on.
+Very self-explanatory, right?</p>
+
+<p>Well, the classes that we are interested in are <code>AbstractController::Rendering</code>
+and <code>ActionController::Rendering</code>. The first one is an abstract class, kind of
+like an interface, and the second one is the default implementation class, which
+contains all of the rendering mechanisms that Rails uses to render your response.
+When we call <code>render</code> in our controllers, we are executing the
+<code>ActionController::Rendering#render</code> method, which does couple of things for us:
+it normalizes the arguments, the options and then builds the body of the response.
+When it normalizes the arguments, deep inside the <code>_normalize_render</code> method, it
+contains these lines of code:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">if</span> <span class="n">options</span><span class="o">[</span><span class="ss">:status</span><span class="o">]</span>
+  <span class="n">options</span><span class="o">[</span><span class="ss">:status</span><span class="o">]</span> <span class="o">=</span> <span class="no">Rack</span><span class="o">::</span><span class="no">Utils</span><span class="o">.</span><span class="n">status_code</span><span class="p">(</span><span class="n">options</span><span class="o">[</span><span class="ss">:status</span><span class="o">]</span><span class="p">)</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>This piece of code, takes the <code>:status</code> option from our render call, and
+translates the symbol to an actual HTTP code. If we go back to <code>Rack::Utils</code>
+documentation, we can see the actual implementation of the <code>status_code</code> method:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># File &#39;lib/rack/utils.rb&#39;, line 573</span>
+
+<span class="k">def</span> <span class="nf">status_code</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">status</span><span class="o">.</span><span class="n">is_a?</span><span class="p">(</span><span class="no">Symbol</span><span class="p">)</span>
+    <span class="no">SYMBOL_TO_STATUS_CODE</span><span class="o">[</span><span class="n">status</span><span class="o">]</span> <span class="o">||</span> <span class="mi">500</span>
+  <span class="k">else</span>
+    <span class="n">status</span><span class="o">.</span><span class="n">to_i</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Here&rsquo;s how your <code>status: :created</code> gets translated to a <code>status: 201</code>. As you
+can see, although Rails&rsquo; source is sometimes hard to digest, it&rsquo;s very well
+done and navigating through it is not that hard.</p>
+
+<h2 id="what-about-exceptions">What about exceptions?</h2>
+
+<p>So now we know how Rails does the expected rendering, which was created by us,
+developers. But, what happens when Rails hits an exception of some sort, but it
+still has to recover from it and return a proper HTTP status code to the client?</p>
+
+<p>Although at first you might expect some sort of a <code>rescue</code> block in
+<code>ActionController::Metal</code> class, this is not the case. Open any Rails app you
+have on your computer, and run in it&rsquo;s root directory:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">➜  rake middleware
+
+use Rack::Sendfile
+use ActionDispatch::Static
+use ActionDispatch::LoadInterlock
+use ActiveSupport::Middleware
+use Rack::Runtime
+use ActionDispatch::RequestId
+use Rails::Logger
+*use ActionDispatch::ShowExceptions*
+use ActionDispatch::DebugExceptions
+use ActionDispatch::RemoteIp
+use ActionDispatch::Reloader
+use ActionDispatch::Callbacks
+use ActiveRecord::CheckPending
+use ActiveRecord::ConnectionManagement
+use ActiveRecord::QueryCache
+use Rack::Head
+use Rack::ConditionalGet
+use Rack::ETag
+use ActionView::PerRequestDigestCacheExpiry
+run YourApp::Application.routes</code></pre></div>
+
+<p>Actually, the exceptions are handled in Rails&rsquo; middleware, more specifically in
+the <code>ActionDispatch::ShowExceptions</code> middleware class. It wraps a group of
+exceptions and maps them to a specific status code. This is the code that does
+the mapping:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">module</span> <span class="nn">ActionDispatch</span>
+  <span class="k">class</span> <span class="nc">ExceptionWrapper</span>
+    <span class="n">cattr_accessor</span> <span class="ss">:rescue_responses</span>
+    <span class="vc">@@rescue_responses</span> <span class="o">=</span> <span class="no">Hash</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="ss">:internal_server_error</span><span class="p">)</span>
+    <span class="vc">@@rescue_responses</span><span class="o">.</span><span class="n">merge!</span><span class="p">(</span>
+      <span class="s1">&#39;ActionController::RoutingError&#39;</span>              <span class="o">=&gt;</span> <span class="ss">:not_found</span><span class="p">,</span>
+      <span class="s1">&#39;AbstractController::ActionNotFound&#39;</span>          <span class="o">=&gt;</span> <span class="ss">:not_found</span><span class="p">,</span>
+      <span class="s1">&#39;ActionController::MethodNotAllowed&#39;</span>          <span class="o">=&gt;</span> <span class="ss">:method_not_allowed</span><span class="p">,</span>
+      <span class="s1">&#39;ActionController::UnknownHttpMethod&#39;</span>         <span class="o">=&gt;</span> <span class="ss">:method_not_allowed</span><span class="p">,</span>
+      <span class="s1">&#39;ActionController::NotImplemented&#39;</span>            <span class="o">=&gt;</span> <span class="ss">:not_implemented</span><span class="p">,</span>
+      <span class="s1">&#39;ActionController::UnknownFormat&#39;</span>             <span class="o">=&gt;</span> <span class="ss">:not_acceptable</span><span class="p">,</span>
+      <span class="s1">&#39;ActionController::InvalidAuthenticityToken&#39;</span>  <span class="o">=&gt;</span> <span class="ss">:unprocessable_entity</span><span class="p">,</span>
+      <span class="s1">&#39;ActionController::InvalidCrossOriginRequest&#39;</span> <span class="o">=&gt;</span> <span class="ss">:unprocessable_entity</span><span class="p">,</span>
+      <span class="s1">&#39;ActionDispatch::ParseError&#39;</span>    <span class="o">=&gt;</span> <span class="ss">:bad_request</span><span class="p">,</span>
+      <span class="s1">&#39;ActionController::BadRequest&#39;</span>                <span class="o">=&gt;</span> <span class="ss">:bad_request</span><span class="p">,</span>
+      <span class="s1">&#39;ActionController::ParameterMissing&#39;</span>          <span class="o">=&gt;</span> <span class="ss">:bad_request</span><span class="p">,</span>
+      <span class="s1">&#39;Rack::ParameterTypeError&#39;</span>             <span class="o">=&gt;</span> <span class="ss">:bad_request</span><span class="p">,</span>
+      <span class="s1">&#39;Rack::InvalidParameterError&#39;</span>          <span class="o">=&gt;</span> <span class="ss">:bad_request</span>
+    <span class="p">)</span>
+    <span class="o">...</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>All of the exceptions that can occur in the request/response lifecycle are mapped
+to a specific status code, which will be returned by the middleware if an
+exception is rescued. You can see this functionality in
+<code>ActionDispatch::ShowExceptions#call</code> method, which invokes the
+<code>render_exception</code> method if an <code>Exception</code> is rescued:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+  <span class="n">request</span> <span class="o">=</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">Request</span><span class="o">.</span><span class="n">new</span> <span class="n">env</span>
+  <span class="vi">@app</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+<span class="k">rescue</span> <span class="no">Exception</span> <span class="o">=&gt;</span> <span class="n">exception</span>
+  <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">show_exceptions?</span>
+    <span class="n">render_exception</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">exception</span><span class="p">)</span>
+  <span class="k">else</span>
+    <span class="k">raise</span> <span class="n">exception</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nf">render_exception</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">exception</span><span class="p">)</span>
+  <span class="n">backtrace_cleaner</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_header</span> <span class="s1">&#39;action_dispatch.backtrace_cleaner&#39;</span>
+  <span class="n">wrapper</span> <span class="o">=</span> <span class="no">ExceptionWrapper</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">backtrace_cleaner</span><span class="p">,</span> <span class="n">exception</span><span class="p">)</span>
+  <span class="n">status</span>  <span class="o">=</span> <span class="n">wrapper</span><span class="o">.</span><span class="n">status_code</span>
+  <span class="n">request</span><span class="o">.</span><span class="n">set_header</span> <span class="s2">&#34;action_dispatch.exception&#34;</span><span class="p">,</span> <span class="n">wrapper</span><span class="o">.</span><span class="n">exception</span>
+  <span class="n">request</span><span class="o">.</span><span class="n">set_header</span> <span class="s2">&#34;action_dispatch.original_path&#34;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">path_info</span>
+  <span class="n">request</span><span class="o">.</span><span class="n">path_info</span> <span class="o">=</span> <span class="s2">&#34;/</span><span class="si">#{</span><span class="n">status</span><span class="si">}</span><span class="s2">&#34;</span>
+  <span class="n">response</span> <span class="o">=</span> <span class="vi">@exceptions_app</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">env</span><span class="p">)</span>
+  <span class="n">response</span><span class="o">[</span><span class="mi">1</span><span class="o">][</span><span class="s1">&#39;X-Cascade&#39;</span><span class="o">]</span> <span class="o">==</span> <span class="s1">&#39;pass&#39;</span> <span class="p">?</span> <span class="n">pass_response</span><span class="p">(</span><span class="n">status</span><span class="p">)</span> <span class="p">:</span> <span class="n">response</span>
+<span class="k">rescue</span> <span class="no">Exception</span> <span class="o">=&gt;</span> <span class="n">failsafe_error</span>
+  <span class="vg">$stderr</span><span class="o">.</span><span class="n">puts</span> <span class="s2">&#34;Error during failsafe response: </span><span class="si">#{</span><span class="n">failsafe_error</span><span class="si">}</span><span class="se">\n</span><span class="s2">  </span><span class="si">#{</span><span class="n">failsafe_error</span><span class="o">.</span><span class="n">backtrace</span> <span class="o">*</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">  &#34;</span><span class="si">}</span><span class="s2">&#34;</span>
+  <span class="no">FAILSAFE_RESPONSE</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Now, when the exception is being rendered, the <code>ExceptionWrapper</code> comes into the
+picture. It will wrap the exception, and return an appropriate status code, which
+is translated from the symbolized variant, to the number version, using:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nf">status_code</span>
+  <span class="nb">self</span><span class="o">.</span><span class="n">class</span><span class="o">.</span><span class="n">status_code_for_exception</span><span class="p">(</span><span class="vi">@exception</span><span class="o">.</span><span class="n">class</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>The <code>status_code</code> method invokes the <code>status_code_for_exception</code> method, which
+converts the status code:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">status_code_for_exception</span><span class="p">(</span><span class="n">class_name</span><span class="p">)</span>
+  <span class="no">Rack</span><span class="o">::</span><span class="no">Utils</span><span class="o">.</span><span class="n">status_code</span><span class="p">(</span><span class="vc">@@rescue_responses</span><span class="o">[</span><span class="n">class_name</span><span class="o">]</span><span class="p">)</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>And that&rsquo;s about it. After that, the middleware stack is being executed in order
+to return the new response, with the exception and the proper HTTP status code
+attached.</p>
+
+<h2 id="after-all">After all</h2>
+
+<p>Although all of this Rails &ldquo;magic&rdquo; might be a bit much to digest at first,
+Rails&rsquo; source code does quite a good job of explaining what is going on. And as
+you can see, there&rsquo;s always something more than meets the eye. If you need to
+remember anything from this blogpost is that Rails does a very good
+(and interesting) job at handling HTTP status codes, to make your app&rsquo;s responses
+semantically correct and client friendly.</p>
+
+<p>If you got to this point - thanks so much for reading. I know it was a bit of a
+long journey, and I hope it was informative for you. Looking forward to reading
+your comments!</p>
+
+    </div>
+
+    
+    
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://ieftimov.com/tags/status/">status</a>
+          <a href="https://ieftimov.com/tags/codes/">codes</a>
+          <a href="https://ieftimov.com/tags/http/">http</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/post/learn-your-tools-navigating-git-history/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">Learn your tools: Navigating your Git History</span>
+            <span class="prev-text nav-mobile">Prev</span>
+          </a>
+        
+          <a class="next" href="/post/decorators-and-presenters/">
+            <span class="next-text nav-default">A bit about decorators and presenters</span>
+            <span class="prev-text nav-mobile">Next</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    Show Disqus Comments
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://ieftimov.com/post/how-rails-handles-status-codes/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'ieftimov';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+  
+    
+
+
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:hi@ilija.io" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://stackoverflow.com/users/601555/ilija-eftimov" rel="me noopener" class="iconfont"
+      title="stack-overflow"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M809.714286 932.571429l-638.857143 0 0-274.285714-91.428571 0 0 365.714286 821.714286 0 0-365.714286-91.428571 0 0 274.285714zm-538.285714-299.428571l18.857143-89.714286 447.428571 94.285714-18.857143 89.142857zm58.857143-213.714286l38.285714-83.428571 414.285714 193.714286-38.285714 82.857143zm114.857143-203.428571l58.285714-70.285714 350.857143 293.142857-58.285714 70.285714zm226.857143-216l272.571429 366.285714-73.142857 54.857143-272.571429-366.285714zm-410.285714 840.571429l0-90.857143 457.142857 0 0 90.857143-457.142857 0z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://twitter.com/fteem" rel="me noopener" class="iconfont"
+      title="twitter"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1264 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M1229.8616 18.043658c0 0-117.852626 63.135335-164.151872 67.344358-105.225559-164.151872-505.082682-92.598492-437.738325 223.078185C278.622548 312.675223 89.216542 47.506814 89.216542 47.506814s-117.852626 189.406006 75.762402 345.139833C127.097743 396.85567 55.544363 371.601535 55.544363 371.601535S26.081207 535.753407 253.368414 615.724832c-21.045112 29.463156-113.643603 8.418045-113.643603 8.418045s25.254134 143.10676 231.496229 180.987961c-143.10676 130.479693-387.230056 92.598492-370.393967 105.225559 206.242095 189.406006 1119.599946 231.496229 1128.01799-643.98042C1179.353331 249.539887 1263.533778 123.269217 1263.533778 123.269217s-130.479693 37.881201-138.897738 33.672179C1225.652577 98.015083 1229.8616 18.043658 1229.8616 18.043658"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://www.linkedin.com/in/ieftimov/" rel="me noopener" class="iconfont"
+      title="linkedin"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="33" height="33">
+  <path d="M872.405333 872.618667h-151.637333v-237.610667c0-56.661333-1.152-129.578667-79.018667-129.578667-79.061333 0-91.136 61.653333-91.136 125.397334v241.792H398.976V384h145.664v66.602667h1.962667c20.352-38.4 69.845333-78.933333 143.786666-78.933334 153.642667 0 182.058667 101.12 182.058667 232.746667v268.202667zM227.712 317.141333a87.978667 87.978667 0 0 1-88.021333-88.106666 88.064 88.064 0 1 1 88.021333 88.106666z m76.032 555.477334H151.68V384h152.064v488.618667zM948.266667 0H75.562667C33.792 0 0 33.024 0 73.770667v876.458666C0 991.018667 33.792 1024 75.562667 1024h872.576C989.866667 1024 1024 991.018667 1024 950.229333V73.770667C1024 33.024 989.866667 0 948.138667 0h0.128z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/fteem" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://ieftimov.com/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2014 -
+    2019
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        Ilija Eftimov
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+  <script id="dsq-count-scr" src="//ieftimov.disqus.com/count.js" async></script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,2274 @@
+<!DOCTYPE html>
+<html lang="en" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Sprinkle some HATEOAS on your Rails APIs - Ilija Eftimov</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="Ilija Eftimov" />
+  <meta name="description" content="REST as a concept was introduced by Roy Fielding in his doctoral thesis, named Architectural Styles and the Design of Network-based Software Architectures. 16 years later, REST as an architecture is the most widely accepted way to design and build APIs. I am sure we have all heard about it, and most of us think we are building actual RESTful APIs. But, are we?
+Let&amp;rsquo;s remind ourselves what REST is and then continue on something else that supplements REST, called HATEOAS." />
+
+  <meta name="keywords" content="Software, Programming, Computer Science, Products" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.54.0" />
+
+
+<link rel="canonical" href="https://ieftimov.com/post/sprinkle-some-hateoas-on-rails-apis/" />
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.ec807d8b802a40889537c26e014f733206312ea440d42e1f0dabed80918de1ac.css" integrity="sha256-7IB9i4AqQIiVN8JuAU9zMgYxLqRA1C4fDavtgJGN4aw=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/overrides.css">
+
+<link rel="stylesheet" href="/css/subscribe.css">
+
+
+<meta property="og:title" content="Sprinkle some HATEOAS on your Rails APIs" />
+<meta property="og:description" content="REST as a concept was introduced by Roy Fielding in his doctoral thesis, named Architectural Styles and the Design of Network-based Software Architectures. 16 years later, REST as an architecture is the most widely accepted way to design and build APIs. I am sure we have all heard about it, and most of us think we are building actual RESTful APIs. But, are we?
+Let&rsquo;s remind ourselves what REST is and then continue on something else that supplements REST, called HATEOAS." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/sprinkle-some-hateoas-on-rails-apis/" />
+
+<meta property="og:image" content="https://ieftimov.com/cards/sprinkle-some-hateoas-on-rails-apis-1.png" />
+<meta property="article:published_time" content="2016-06-26T00:00:00&#43;00:00"/>
+
+
+<meta itemprop="name" content="Sprinkle some HATEOAS on your Rails APIs">
+<meta itemprop="description" content="REST as a concept was introduced by Roy Fielding in his doctoral thesis, named Architectural Styles and the Design of Network-based Software Architectures. 16 years later, REST as an architecture is the most widely accepted way to design and build APIs. I am sure we have all heard about it, and most of us think we are building actual RESTful APIs. But, are we?
+Let&rsquo;s remind ourselves what REST is and then continue on something else that supplements REST, called HATEOAS.">
+
+
+
+<meta itemprop="wordCount" content="4929">
+
+  <meta itemprop="image" content="https://ieftimov.com/cards/sprinkle-some-hateoas-on-rails-apis-1.png">
+
+
+
+<meta itemprop="keywords" content="HTTP,APIs,HATEOAS," />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/sprinkle-some-hateoas-on-rails-apis-1.png"/>
+
+<meta name="twitter:title" content="Sprinkle some HATEOAS on your Rails APIs"/>
+<meta name="twitter:description" content="REST as a concept was introduced by Roy Fielding in his doctoral thesis, named Architectural Styles and the Design of Network-based Software Architectures. 16 years later, REST as an architecture is the most widely accepted way to design and build APIs. I am sure we have all heard about it, and most of us think we are building actual RESTful APIs. But, are we?
+Let&rsquo;s remind ourselves what REST is and then continue on something else that supplements REST, called HATEOAS."/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Ilija Eftimov</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/about/">About</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/subscribe/">Subscribe</a>
+          
+        
+      </li>
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      Ilija Eftimov
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/about/">About</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/subscribe/">Subscribe</a>
+          
+
+        
+
+      </li>
+    
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">Sprinkle some HATEOAS on your Rails APIs</h1>
+      
+      <div class="post-meta">
+        <time datetime="2016-06-26" class="post-time">
+          26-06-2016
+        </time>
+        <div class="post-category">
+            <a href="https://ieftimov.com/categories/ruby/"> Ruby </a>
+            <a href="https://ieftimov.com/categories/rest/"> REST </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">Table of Contents</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#so-what-was-rest-again">So, what was REST again?</a>
+<ul>
+<li><a href="#level-1">Level 1</a></li>
+<li><a href="#level-2">Level 2</a></li>
+<li><a href="#level-3">Level 3</a></li>
+<li><a href="#level-4">Level 4</a></li>
+</ul></li>
+<li><a href="#content-negotiation">Content negotiation</a></li>
+<li><a href="#hateoas">HATEOAS</a></li>
+<li><a href="#hateoas-serializers">HATEOAS Serializers</a>
+<ul>
+<li><a href="#author-serializer">Author serializer</a></li>
+<li><a href="#adding-links-to-our-serializer">Adding links to our serializer</a></li>
+</ul></li>
+<li><a href="#specifications">Specifications</a>
+<ul>
+<li><a href="#hal">HAL</a></li>
+<li><a href="#json-api">JSON API</a></li>
+<li><a href="#other-standards">Other standards</a></li>
+</ul></li>
+<li><a href="#json-api-and-active-model-serializers">JSON API and Active Model Serializers</a></li>
+<li><a href="#including-additional-resources">Including additional resources</a></li>
+<li><a href="#navigating-resources">Navigating resources</a></li>
+<li><a href="#outro">Outro</a></li>
+<li><a href="#additional-reading">Additional reading</a></li>
+</ul></li>
+</ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      
+
+<p>REST as a concept was introduced by
+<a href="https://en.wikipedia.org/wiki/Roy_Fielding">Roy Fielding</a> in his doctoral thesis,
+named
+<a href="http://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm">Architectural Styles and the Design of Network-based Software Architectures</a>.
+16 years later, REST as an architecture is the most widely accepted way to
+design and build APIs. I am sure we have all heard about it, and most of us
+think we are building actual RESTful APIs. But, are we?</p>
+
+<p>Let&rsquo;s remind ourselves what REST is and then continue on something else that
+supplements REST, called HATEOAS.</p>
+
+<h2 id="so-what-was-rest-again">So, what was REST again?</h2>
+
+<p>I was thinking of a good way to explain this, but this gem by Ryan Tomako named
+<a href="http://web.archive.org/web/20130316031532/http://tomayko.com/writings/rest-to-my-wife">How I Explained REST to My Wife</a> is the best explanation of REST I have seen so far.</p>
+
+<p>Overall, REST (an acronym for <em>REpresentational State Transfer</em>) is an
+architecture over which the Internet is built upon. The easiest way to explain
+REST is, in my opinion, the Richardson Maturity Model. Here, we will not go in
+much depth, but if you want to learn RMM in more depth, I recommend reading
+<a href="http://martinfowler.com/articles/richardsonMaturityModel.html">Richardson Maturity Model, steps toward the glory of REST</a>
+written by Martin Fowler.</p>
+
+<p>The RMM explains REST in four levels:</p>
+
+<ol>
+<li>Use a protocol to do remote procedure calls (RPC).</li>
+<li>Introduce Resources</li>
+<li>HTTP Verbs</li>
+<li>Hypermedia Controls</li>
+</ol>
+
+<p>Let&rsquo;s deconstruct all of these levels briefly.</p>
+
+<h3 id="level-1">Level 1</h3>
+
+<p>Level one basically states that we need to use a protocol (HTTP) to execute
+procedure calls on some remote location (a server). This also means that we will
+not use any of the mechanism that the protocol provides, but we will just use it
+as a tunnel to send the requests and responses.</p>
+
+<h3 id="level-2">Level 2</h3>
+
+<p>Level two is something very familiar to all of us, I am sure. Resources. Back in
+the day, when I was probably still in high school, RPC worked by communicating
+with a single endpoint on a server. This is called a &ldquo;service endpoint&rdquo;.</p>
+
+<p>By implementing resources in an API, we provide multiple endpoints that will
+represent the resources. This means that instead of having one single
+multipurpose endpoint, we have an endpoint for every resource that the API
+exposes.</p>
+
+<h3 id="level-3">Level 3</h3>
+
+<p>With level 1 and level 2 the mechanisms of the protocol were skipped, because we
+think only about tunneling our calls instead of fully utilising the protocol.
+Level 3 takes this to the next level (pun intended) and states that any RESTful
+service needs to utilise HTTP verbs so clients can interact with resources.</p>
+
+<p>If you are coming from Rails land, I am sure you already know this - there&rsquo;s
+a big difference between GET, POST, PUT, PATCH and DELETE. Sure, you could handle
+these in various ways in your backend, but this is where Rails shines - it
+strongly encourages you to comply to REST.</p>
+
+<p>If you do not obey Level 3 of the RMM, you could have a different endpoint for
+every action on the API side. For example, if you had a <code>Pet</code> resource, to
+create a new entry you could use a <code>/pets/create</code> or a <code>/pets/update</code> to update
+it. By utilising Level 3, when HTTP verbs come into play, you would use something
+that Rails makes super easy: <code>GET /pets/:id</code> to get a <code>Pet</code>, <code>POST /pets</code> to
+create a new <code>Pet</code> or <code>PATCH /pets</code> to update one.</p>
+
+<h3 id="level-4">Level 4</h3>
+
+<p>Now, while Rails does a great job to <strong>make you</strong> write RESTful APIs, Level 4 is
+something that falls onto you, the programmer, to implement. This is something
+that most of us don&rsquo;t follow and we, as a community, still haven&rsquo;t find the best
+way to accomplish.</p>
+
+<p>Hypermedia Controls is REST&rsquo;s &ldquo;holy grail&rdquo;, and the ultimate level of
+&ldquo;RESTfulness&rdquo;. It states that when an API is at level four, it&rsquo;s clients can
+request resources in a specific data format and can navigate throughout the API
+by using Hypermedia Controls.</p>
+
+<p>If you find this confusing, let&rsquo;s take a step back and think about browsers and
+websites. When you use a website you usually know only the entry point, in
+the form of <code>domainname.tld</code>, like <code>ieftimov.com</code> or <code>google.com</code>. Then, by
+interacting the website via your browser you navigate throughout the different
+pages it has. Well, navigating is done by clicking on links, right? Imagine a
+website that instead of having links makes your remember every URL on the
+website and you have to type it in manually. Worst website ever!</p>
+
+<p>Having this in mind, the idea of Hypermedia Controls means that a resource should
+provide links, so a client that consumes the resource can navigate through and
+interact with it without knowing any other endpoint except the entry point. Just
+like normal websites - the page provides you with the links so you can interact
+with it.</p>
+
+<p>We will get into the format of the JSON responses that HATEOAS APIs return in a
+bit, but first we will look at another important mechanism of HATEAOS - content
+negotiation.</p>
+
+<h2 id="content-negotiation">Content negotiation</h2>
+
+<p>Content negotiation is a mechanism embedded into HTTP that allows web services
+to serve different versions (or formats) of documents. Or in REST terminology,
+resources. This is achieved by the <code>Accept</code> group of HTTP headers. For example,
+when requesting a web page the user agent (the browser) sends these (or similar)
+headers, depending on the browser:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Encoding: gzip, deflate, sdch, br
+Accept-Language: en-US,en;q=0.8</code></pre></div>
+
+<p>This tells the server that the user agent can accept the document in a
+<code>text/html</code>, compressed with one of the specified compression schemes, formatted
+in <code>en-US</code> (US English) language.</p>
+
+<p>If we go back to APIs, Rails does a very good job in content negotiation. When
+we are building apps nowadays, we usually make sure our resources have a <code>HTML</code>,
+<code>JSON</code> and (maybe) an <code>XML</code> representation. I am sure all of us have seen this:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="n">respond_to</span> <span class="ss">:html</span><span class="p">,</span> <span class="ss">:json</span><span class="p">,</span> <span class="ss">:xml</span>
+
+<span class="k">def</span> <span class="nf">index</span>
+  <span class="vi">@pets</span> <span class="o">=</span> <span class="no">Pet</span><span class="o">.</span><span class="n">all</span>
+  <span class="n">respond_with</span><span class="p">(</span><span class="vi">@pets</span><span class="p">)</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Or maybe the older version of this code:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nf">index</span>
+  <span class="vi">@pets</span> <span class="o">=</span> <span class="no">Pet</span><span class="o">.</span><span class="n">all</span>
+  <span class="n">respond_to</span> <span class="k">do</span> <span class="o">|</span><span class="nb">format</span><span class="o">|</span>
+    <span class="nb">format</span><span class="o">.</span><span class="n">html</span>
+    <span class="nb">format</span><span class="o">.</span><span class="n">json</span> <span class="p">{</span> <span class="n">render</span> <span class="ss">:json</span> <span class="o">=&gt;</span> <span class="vi">@pets</span> <span class="p">}</span>
+    <span class="nb">format</span><span class="o">.</span><span class="n">xml</span> <span class="p">{</span> <span class="n">render</span> <span class="ss">:xml</span> <span class="o">=&gt;</span> <span class="vi">@pets</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>This tells our <code>index</code> action to allow three types of content format are
+requested, via content negotiation. <code>HTML</code>, <code>JSON</code> and <code>XML</code> are in fact Media
+(or MIME) types.</p>
+
+<p>If you look at the example headers, you can notice the <code>q</code> parameter. This is
+called a <em>Quality Value</em> and it is what makes one content type more important
+than another. In other words, the <code>q</code> parameter adds a relative <em>weight</em> to the
+preference for that associated kind of content.</p>
+
+<p>For example, let&rsquo;s say we have the following <code>Accept</code> header:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">Accept: application/json; q=0.5, application/xml; q=0.001</code></pre></div>
+
+<p>This tells the server that the client prefers JSON content type much more than
+XML. If the <code>q</code> value is not specified, then the value is defaulted to 1. You
+can read more about content negotiation in <a href="https://tools.ietf.org/html/rfc7231#section-5.3">RFC 7231</a>.</p>
+
+<h2 id="hateoas">HATEOAS</h2>
+
+<p>So what is HATEOAS? It is an acronym, just like REST, which translates to
+<strong>H</strong>ypermedia <strong>A</strong>s <strong>T</strong>he <strong>E</strong>ngine <strong>O</strong>f <strong>A</strong>pplication <strong>S</strong>tate. Whoa,
+what a mouthful, right?</p>
+
+<p>Like we mentioned, Level 4 of the RMM states that an API should provide
+hypermedia controls to navigate in and interact with. But, what does HATEOAS
+have to do with this? Well, think about this - REST means Representational
+State Transfer while HATEOAS means Hypermedia As The Engine Of Application
+State. If you look just as the names, it makes sense that HATEOAS is a mechanism
+of REST. It all revolves around application state and state transitions.</p>
+
+<p>Too complex? Let&rsquo;s see an example of a usual JSON representation of a resource,
+in this case, my user somewhere on a server:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">curl http://awesomeapi.com/users/1</code></pre></div>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;user&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;first_name&#34;</span><span class="p">:</span> <span class="s2">&#34;Ilija&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;last_name&#34;</span><span class="p">:</span> <span class="s2">&#34;Eftimov&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;age&#34;</span><span class="p">:</span> <span class="mi">25</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Simple enough. Now, when we apply HATEOAS to our representations of resources,
+it should look something like this:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;user&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;first_name&#34;</span><span class="p">:</span> <span class="s2">&#34;Ilija&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;last_name&#34;</span><span class="p">:</span> <span class="s2">&#34;Eftimov&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;age&#34;</span><span class="p">:</span> <span class="mi">25</span><span class="p">,</span>
+    <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+        <span class="nt">&#34;rel&#34;</span><span class="p">:</span> <span class="s2">&#34;self&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;http://awesomeapi.com/users/1&#34;</span>
+      <span class="p">},</span>
+      <span class="p">{</span>
+        <span class="nt">&#34;rel&#34;</span><span class="p">:</span> <span class="s2">&#34;roles&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;http://awesomeapi.com/users/1/roles&#34;</span>
+      <span class="p">}</span>
+    <span class="p">]</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>By providing the <code>links</code> we allow the clients to use hypermedia (in our case,
+JSON) as the engine (list of available actions) of our application state
+(changing the data on the API side). The idea here is that there should be
+only one entry point to an API, or to a resource, and that the representation of
+the resource should include all of the actions that can be executed on this
+resources.</p>
+
+<p>This means that a consumer of the API can take use the <code>self</code> attribute of the
+<code>User</code> resource, and consider this the endpoint where it can execute actions on
+it. By knowing that the API is RESTful, the client knows how to update the
+resource:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">curl -X <span class="s2">&#34;PUT&#34;</span> -d <span class="s2">&#34;{ &#39;age&#39;: 26 }&#34;</span> http://awesomeapi.com/users/1</code></pre></div>
+
+<p>Also, it knows how to delete the resource:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">curl -X <span class="s2">&#34;DELETE&#34;</span> http://awesomeapi.com/users/1</code></pre></div>
+
+<p>Furthermore, if it wants to see all of the roles for this user, it can execute
+a <code>GET</code> request to the <code>roles</code> relation of the user:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">curl http://awesomeapi.com/users/1/roles</code></pre></div>
+
+<p>As you can see, by putting HATEOAS in the mix, clients can interact with
+resources just by getting the URIs from the resources and by assuming that the
+API is level three RESTful (utilises HTTP verbs).</p>
+
+<h2 id="hateoas-serializers">HATEOAS Serializers</h2>
+
+<p>How can we make our Rails API implement Level 4 of RMM? Let&rsquo;s see an example.</p>
+
+<p>Our API is part of a blog CMS. It has an <code>Author</code> model, which has a one-to-many
+association with an <code>Article</code> model. This means that, one <code>Author</code> can have
+multiple <code>Article</code>.</p>
+
+<p>The <code>Author</code> model:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># == Schema Information</span>
+<span class="c1">#</span>
+<span class="c1"># Table name: authors</span>
+<span class="c1">#</span>
+<span class="c1">#  id         :integer          not null, primary key</span>
+<span class="c1">#  first_name :string</span>
+<span class="c1">#  last_name  :string</span>
+<span class="c1">#  created_at :datetime         not null</span>
+<span class="c1">#  updated_at :datetime         not null</span>
+<span class="c1">#</span>
+
+<span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:articles</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>And the <code>Article</code> model:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># == Schema Information</span>
+<span class="c1">#</span>
+<span class="c1"># Table name: articles</span>
+<span class="c1">#</span>
+<span class="c1">#  id         :integer          not null, primary key</span>
+<span class="c1">#  author_id  :integer</span>
+<span class="c1">#  title      :string</span>
+<span class="c1">#  body       :text</span>
+<span class="c1">#  created_at :datetime         not null</span>
+<span class="c1">#  updated_at :datetime         not null</span>
+<span class="c1">#</span>
+
+<span class="k">class</span> <span class="nc">Article</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Our routes look like the following:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="no">Rails</span><span class="o">.</span><span class="n">application</span><span class="o">.</span><span class="n">routes</span><span class="o">.</span><span class="n">draw</span> <span class="k">do</span>
+  <span class="n">resources</span> <span class="ss">:authors</span> <span class="k">do</span>
+    <span class="n">resources</span> <span class="ss">:articles</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Finally, we will have serializers for both, the <code>Article</code> and the <code>Author</code> model.
+For this example, we will use
+<a href="https://github.com/rails-api/active_model_serializers">Active Model Serializers</a>.</p>
+
+<h3 id="author-serializer">Author serializer</h3>
+
+<p>All of the <code>Author</code> objects will be serialized by the <code>AuthorSerializer</code>. Let&rsquo;s
+add the required attributes first to the serializer, and we can talk about
+extension afterwards.</p>
+
+<p>The <code>AuthorSerializer</code> class will look like this:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># == Schema Information</span>
+<span class="c1">#</span>
+<span class="c1"># Table name: authors</span>
+<span class="c1">#</span>
+<span class="c1">#  id         :integer          not null, primary key</span>
+<span class="c1">#  first_name :string</span>
+<span class="c1">#  last_name  :string</span>
+<span class="c1">#  created_at :datetime         not null</span>
+<span class="c1">#  updated_at :datetime         not null</span>
+<span class="c1">#</span>
+
+<span class="k">class</span> <span class="nc">AuthorSerializer</span> <span class="o">&lt;</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Serializer</span>
+  <span class="n">attributes</span> <span class="ss">:id</span><span class="p">,</span> <span class="ss">:first_name</span><span class="p">,</span> <span class="ss">:last_name</span><span class="p">,</span> <span class="ss">:created_at</span><span class="p">,</span> <span class="ss">:updated_at</span>
+  <span class="n">has_many</span> <span class="ss">:articles</span>
+  <span class="n">type</span> <span class="ss">:author</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Super simple! I will leave the annotations in, to keep the context of the data
+visible to us throughout this short example. In my everyday work, I usually
+consult with the schema file if I forget the shape of the data instead of adding
+annotations.</p>
+
+<p>Let&rsquo;s try sending a <code>GET /authors</code> request and see what the data looks like.
+For reference, this is the implementation of the index action in the
+<code>AuthorsController</code>:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">AuthorsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="n">render</span> <span class="ss">json</span><span class="p">:</span> <span class="no">Author</span><span class="o">.</span><span class="n">all</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">curl http://localhost:3000/authors</code></pre></div>
+
+<p>This request will return the following JSON:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">[</span>
+  <span class="p">{</span>
+    <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="nt">&#34;first_name&#34;</span><span class="p">:</span> <span class="s2">&#34;ilija&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;last_name&#34;</span><span class="p">:</span> <span class="s2">&#34;eftimov&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;created_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T2012.804Z&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;updated_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T2012.804Z&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;articles&#34;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+        <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;Lorem ipsum&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;Lorem ipsum dolor sit amet&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T2251.874Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T2251.874Z&#34;</span>
+      <span class="p">},</span>
+      <span class="p">{</span>
+        <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;A princess of Mars&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;His reference to the great games of which I had heard so much while among the Tharks convinced me that I had but jumped from purgatory into gehenna. After a few more words with the female, during which she assured him that I was now fully fit to travel, the jed ordered that we mount and ride after the main column. I was strapped securely to as wild and unmanageable a thoat as I had&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-26T0009.388Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-26T0009.388Z&#34;</span>
+      <span class="p">}</span>
+    <span class="p">]</span>
+  <span class="p">}</span>
+<span class="p">]</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Since my database has only one <code>Author</code> instance, it returns only that one. Also,
+the <code>Author</code> has two associated <code>Article</code> instances, so the serializer includes
+them in the response.</p>
+
+<h3 id="adding-links-to-our-serializer">Adding links to our serializer</h3>
+
+<p>Now we have our serializer working. The next step is to extend it with <code>links</code>.
+This is quite trivial to do using Active Model Serializers - we need to add a
+new <code>links</code> attribute to the serializer, and provide the implementation of the
+attribute (which will be a method in fact) in the class:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># == Schema Information</span>
+<span class="c1">#</span>
+<span class="c1"># Table name: authors</span>
+<span class="c1">#</span>
+<span class="c1">#  id         :integer          not null, primary key</span>
+<span class="c1">#  first_name :string</span>
+<span class="c1">#  last_name  :string</span>
+<span class="c1">#  created_at :datetime         not null</span>
+<span class="c1">#  updated_at :datetime         not null</span>
+<span class="c1">#</span>
+
+<span class="k">class</span> <span class="nc">AuthorSerializer</span> <span class="o">&lt;</span> <span class="no">BaseSerializer</span>
+  <span class="n">attributes</span> <span class="ss">:id</span><span class="p">,</span> <span class="ss">:first_name</span><span class="p">,</span> <span class="ss">:last_name</span><span class="p">,</span> <span class="ss">:created_at</span><span class="p">,</span> <span class="ss">:updated_at</span><span class="p">,</span> <span class="ss">:links</span>
+  <span class="n">has_many</span> <span class="ss">:articles</span>
+  <span class="n">type</span> <span class="ss">:author</span>
+
+  <span class="k">def</span> <span class="nf">links</span>
+    <span class="o">[</span>
+      <span class="p">{</span>
+        <span class="ss">rel</span><span class="p">:</span> <span class="ss">:self</span><span class="p">,</span>
+        <span class="ss">href</span><span class="p">:</span> <span class="n">author_path</span><span class="p">(</span><span class="n">object</span><span class="p">)</span>
+      <span class="p">}</span>
+    <span class="o">]</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>As you can see, the implementation is quite simple. We add a new attribute
+called <code>links</code>, and the method just returns an array of hashes. For starters,
+we will have only one - the <code>self</code> link which will point to the resource whose
+representation we are seeing.</p>
+
+<p>But, if you execute the curl request again, you will gen an error, something
+like:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">#&lt;NoMethodError: undefined method `author_path&#39; for #&lt;AuthorSerializer:0x007fe251b4c450&gt;&gt;</code></pre></div>
+
+<p>This occurs because Rails&rsquo; route helpers are not included in the scope of the
+serializers. This is easily fixable by including them to the serializer:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">AuthorSerializer</span> <span class="o">&lt;</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Serializer</span>
+  <span class="kp">include</span> <span class="no">Rails</span><span class="o">.</span><span class="n">application</span><span class="o">.</span><span class="n">routes</span><span class="o">.</span><span class="n">url_helpers</span>
+  
+  <span class="c1"># *snip*</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>If we execute the curl request again now, we will see the links in the JSON:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">[</span>
+  <span class="p">{</span>
+    <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="nt">&#34;first_name&#34;</span><span class="p">:</span> <span class="s2">&#34;ilija&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;last_name&#34;</span><span class="p">:</span> <span class="s2">&#34;eftimov&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;created_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T2012.804Z&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;updated_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T2012.804Z&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+        <span class="nt">&#34;rel&#34;</span><span class="p">:</span> <span class="s2">&#34;self&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/authors/1&#34;</span>
+      <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="nt">&#34;articles&#34;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+        <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;Lorem ipsum&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;Lorem ipsum dolor sit amet&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T2251.874Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T2251.874Z&#34;</span>
+      <span class="p">},</span>
+      <span class="p">{</span>
+        <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;A princess of Mars&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;His reference to the great games of which I had heard so much while among the Tharks convinced me that I had but jumped from purgatory into gehenna. After a few more words with the female, during which she assured him that I was now fully fit to travel, the jed ordered that we mount and ride after the main column. I was strapped securely to as wild and unmanageable a thoat as I had&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-26T0009.388Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-26T0009.388Z&#34;</span>
+      <span class="p">}</span>
+    <span class="p">]</span>
+  <span class="p">}</span>
+<span class="p">]</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Great stuff! We added <em>some</em> HATEOAS to our resources.</p>
+
+<h2 id="specifications">Specifications</h2>
+
+<p>Before we continue to add any more hypermedia to our resources, we need to put
+some thought into this. As you can see, we went on to implement the <code>links</code>
+attribute to the serializer without any thought. Sure, you might say, I am the
+creator of the API and I will structure the responses of the API as I please.</p>
+
+<p>True, you are the author of the API, but that statement is false. Imagine if all
+of us thought of a way to implement hypermedia in a different way? Every single
+API would be different in it&rsquo;s hypermedia controls and it would be a hell to
+find your way around.</p>
+
+<p>Well, the sad part is that we still don&rsquo;t know how to do HATEOAS. Or better said,
+we still don&rsquo;t know <strong>the best way</strong> to do HATEOAS. That is why, people have
+tried to create specifications, which have been somewhat adopted.</p>
+
+<h3 id="hal">HAL</h3>
+
+<p>From <a href="http://stateless.co/hal_specification.html">HAL</a>&rsquo;s documentation:</p>
+
+<blockquote>
+<p>HAL is a simple format that gives a consistent and easy way to hyperlink
+between resources in your API.</p>
+</blockquote>
+
+<p>As you can see, the motivation behind HAL is to create an easy and consistent
+way to add hypermedia controls. Just like any other specification, HAL provides
+a set of conventions for expressing hyperlinks in either JSON or XML.</p>
+
+<p>This is an example of a JSON that applies the HAL specification:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&#34;_links&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/orders&#34;</span> <span class="p">},</span>
+        <span class="nt">&#34;curies&#34;</span><span class="p">:</span> <span class="p">[{</span> <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;ea&#34;</span><span class="p">,</span> <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;http://example.com/docs/rels/{rel}&#34;</span><span class="p">,</span> <span class="nt">&#34;templated&#34;</span><span class="p">:</span> <span class="kc">true</span> <span class="p">}],</span>
+        <span class="nt">&#34;next&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/orders?page=2&#34;</span> <span class="p">},</span>
+        <span class="nt">&#34;ea:find&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/orders{?id}&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;templated&#34;</span><span class="p">:</span> <span class="kc">true</span>
+        <span class="p">},</span>
+        <span class="nt">&#34;ea:admin&#34;</span><span class="p">:</span> <span class="p">[{</span>
+            <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/admins/2&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;Fred&#34;</span>
+        <span class="p">},</span> <span class="p">{</span>
+            <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/admins/5&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;Kate&#34;</span>
+        <span class="p">}]</span>
+    <span class="p">},</span>
+    <span class="nt">&#34;currentlyProcessing&#34;</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>
+    <span class="nt">&#34;shippedToday&#34;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+    <span class="nt">&#34;_embedded&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;ea:order&#34;</span><span class="p">:</span> <span class="p">[{</span>
+            <span class="nt">&#34;_links&#34;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/orders/123&#34;</span> <span class="p">},</span>
+                <span class="nt">&#34;ea:basket&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/baskets/98712&#34;</span> <span class="p">},</span>
+                <span class="nt">&#34;ea:customer&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/customers/7809&#34;</span> <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="nt">&#34;total&#34;</span><span class="p">:</span> <span class="mf">30.00</span><span class="p">,</span>
+            <span class="nt">&#34;currency&#34;</span><span class="p">:</span> <span class="s2">&#34;USD&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;status&#34;</span><span class="p">:</span> <span class="s2">&#34;shipped&#34;</span>
+        <span class="p">},</span> <span class="p">{</span>
+            <span class="nt">&#34;_links&#34;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/orders/124&#34;</span> <span class="p">},</span>
+                <span class="nt">&#34;ea:basket&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/baskets/97213&#34;</span> <span class="p">},</span>
+                <span class="nt">&#34;ea:customer&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/customers/12369&#34;</span> <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="nt">&#34;total&#34;</span><span class="p">:</span> <span class="mf">20.00</span><span class="p">,</span>
+            <span class="nt">&#34;currency&#34;</span><span class="p">:</span> <span class="s2">&#34;USD&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;status&#34;</span><span class="p">:</span> <span class="s2">&#34;processing&#34;</span>
+        <span class="p">}]</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<h3 id="json-api">JSON API</h3>
+
+<p>JSON API, just like HAL is:</p>
+
+<blockquote>
+<p>a specification for how a client should request that resources be fetched or
+modified, and how a server should respond to those requests.</p>
+</blockquote>
+
+<p>It was was originally drafted by Yehuda Katz in 2013. This first draft was
+extracted from the JSON transport implicitly defined by Ember Data’s REST
+adapter. From there on, it picked up some popularity, but I cannot say with
+certainty that it&rsquo;s the de facto API specification.</p>
+
+<p>This is an example of a JSON that applies the JSON API specification:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">[{</span>
+    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;articles&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;JSON API paints my bikeshed!&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;The shortest article. Ever.&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;created&#34;</span><span class="p">:</span> <span class="s2">&#34;2015-05-22T1429.000Z&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;updated&#34;</span><span class="p">:</span> <span class="s2">&#34;2015-05-22T1428.000Z&#34;</span>
+    <span class="p">},</span>
+    <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;author&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;42&#34;</span><span class="p">,</span> <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;people&#34;</span><span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}],</span>
+  <span class="nt">&#34;included&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;people&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;42&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;John&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;age&#34;</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span>
+        <span class="nt">&#34;gender&#34;</span><span class="p">:</span> <span class="s2">&#34;male&#34;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<h3 id="other-standards">Other standards</h3>
+
+<p>As you can imagine, people have tried to create a good JSON standard for quite
+some time. Some of the more popular specs are
+<a href="http://json-ld.org/">JSON for Linking Data</a>, also known as JSON-LD;
+<a href="http://amundsen.com/media-types/collection/">Collection+JSON</a> and
+<a href="https://github.com/kevinswiber/siren">SIREN</a>.</p>
+
+<h2 id="json-api-and-active-model-serializers">JSON API and Active Model Serializers</h2>
+
+<p>Since JSON API is picking up momentum and Active Model Serializers has a very
+good integration of it, we will stick to it and carry on with the implementation.
+Active Model Serializers on a high-level works through two parts: serializers
+and adapters. From the documentation:</p>
+
+<blockquote>
+<p>Serializers describe which attributes and relationships should be serialized.
+Adapters describe how attributes and relationships should be serialized.</p>
+</blockquote>
+
+<p>To get our JSON serialized in the JSON API format, we need to use a different
+adapter called, believe it or not, <code>:json_api</code>. Personally, I prefer to do this
+type of configuration in an initializer file:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># config/initializers/active_model_serializers.rb</span>
+
+<span class="no">ActiveModelSerializers</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">adapter</span> <span class="o">=</span> <span class="ss">:json_api</span></code></pre></div>
+
+<p>By setting the adapter to <code>:json_api</code>, our API will produce and consume JSON
+formatted in the JSON API spec. If we execute the same API call that we did
+earlier, we will get a newly formatted JSON:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;author&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;first-name&#34;</span><span class="p">:</span> <span class="s2">&#34;ilija&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;last-name&#34;</span><span class="p">:</span> <span class="s2">&#34;eftimov&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T2012.804Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T2012.804Z&#34;</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;articles&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;2&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/authors/1&#34;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>As you can notice, the JSON that we get back has a completely different
+structure compared to what we have before. The reason is that the JSON API
+adapter that we use now formats the JSON in the JSON API Spec format.</p>
+
+<p>Another cool thing about the JSON API adapter is that it allows us to specify
+links very explicitly, with a very nice DSL:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">AuthorSerializer</span> <span class="o">&lt;</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Serializer</span>
+  <span class="n">attributes</span> <span class="ss">:id</span><span class="p">,</span> <span class="ss">:first_name</span><span class="p">,</span> <span class="ss">:last_name</span><span class="p">,</span> <span class="ss">:created_at</span><span class="p">,</span> <span class="ss">:updated_at</span>
+  <span class="n">has_many</span> <span class="ss">:articles</span>
+  <span class="n">type</span> <span class="ss">:author</span>
+
+  <span class="n">link</span> <span class="ss">:self</span> <span class="k">do</span>
+    <span class="n">href</span> <span class="n">author_path</span><span class="p">(</span><span class="n">object</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Also, we do not have to specify the <code>links</code> as an attribute and we can remove
+the <code>include</code> line that mixed-in Rails&rsquo; url helpers in our serializer. If we
+call the <code>/authors</code> endpoint with a <code>GET</code> request again, we will see an extended
+JSON, that again complies with the JSON API Spec:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;author&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;first-name&#34;</span><span class="p">:</span> <span class="s2">&#34;ilija&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;last-name&#34;</span><span class="p">:</span> <span class="s2">&#34;eftimov&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T2012.804Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T2012.804Z&#34;</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;articles&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;2&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/authors/1&#34;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<h2 id="including-additional-resources">Including additional resources</h2>
+
+<p>Since AMS is an awesome gem, it allows you to include additional resources by
+including them in the controllers:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">AuthorsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="n">render</span> <span class="ss">json</span><span class="p">:</span> <span class="no">Author</span><span class="o">.</span><span class="n">all</span><span class="p">,</span> <span class="kp">include</span><span class="p">:</span> <span class="s1">&#39;articles&#39;</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>By including the <code>Article</code> association of on the <code>Author</code> model, we are able to
+extend the JSON result with the associated articles for each of the users:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;author&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;first-name&#34;</span><span class="p">:</span> <span class="s2">&#34;ilija&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;last-name&#34;</span><span class="p">:</span> <span class="s2">&#34;eftimov&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T2012.804Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T2012.804Z&#34;</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;articles&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;2&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/authors/1&#34;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;included&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;Lorem ipsum&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;Lorem ipsum dolor sit amet&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T2251.874Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T2251.874Z&#34;</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;author&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;author&#34;</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/authors/1/articles/1&#34;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;2&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;A princess of Mars&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;His reference to the great games of which I had heard so much while among the Tharks convinced me that I had but jumped from purgatory into gehenna. After a few more words with the female, during which she assured him that I was now fully fit to travel, the jed ordered that we mount and ride after the main column. I was strapped securely to as wild and unmanageable a thoat as I had&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-26T0009.388Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-26T0009.388Z&#34;</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;author&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;author&#34;</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/authors/1/articles/2&#34;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Although this is quite nice, beware that this introduces N+1 queries for every
+resource that we fetch. That&rsquo;s why, usually <code>index</code> actions return only the
+requested resources, while <code>show</code> actions tend to include some additional
+resources:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">AuthorsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="n">render</span> <span class="ss">json</span><span class="p">:</span> <span class="no">Author</span><span class="o">.</span><span class="n">all</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">show</span>
+    <span class="n">author</span> <span class="o">=</span> <span class="no">Author</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">params</span><span class="o">[</span><span class="ss">:id</span><span class="o">]</span><span class="p">)</span>
+    <span class="n">render</span> <span class="ss">json</span><span class="p">:</span> <span class="n">author</span><span class="p">,</span> <span class="kp">include</span><span class="p">:</span> <span class="ss">:articles</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>This will add all of the articles found for the author that we requested:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;author&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;first-name&#34;</span><span class="p">:</span> <span class="s2">&#34;ilija&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;last-name&#34;</span><span class="p">:</span> <span class="s2">&#34;eftimov&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;created-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T2012.804Z&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;updated-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T2012.804Z&#34;</span>
+    <span class="p">},</span>
+    <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;articles&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">[</span>
+          <span class="p">{</span>
+            <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span>
+          <span class="p">},</span>
+          <span class="p">{</span>
+            <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;2&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span>
+          <span class="p">}</span>
+        <span class="p">]</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/authors/1&#34;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="nt">&#34;included&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;Lorem ipsum&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;Lorem ipsum dolor sit amet&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T2251.874Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T2251.874Z&#34;</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;author&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;author&#34;</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/authors/1/articles/1&#34;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;2&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;A princess of Mars&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;His reference to the great games of which I had heard so much while among the Tharks convinced me that I had but jumped from purgatory into gehenna. After a few more words with the female, during which she assured him that I was now fully fit to travel, the jed ordered that we mount and ride after the main column. I was strapped securely to as wild and unmanageable a thoat as I had&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-26T0009.388Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-26T0009.388Z&#34;</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;author&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;author&#34;</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/authors/1/articles/2&#34;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>As you can notice, because we supplied the <code>has_many</code> association in the
+serializer, AMS knows to utilise the correct serializer for each of the included
+resources. This adds the same structure to the included resources and the
+requested resource, which makes the result consistent and parsing this JSON much
+easier.</p>
+
+<h2 id="navigating-resources">Navigating resources</h2>
+
+<p>Now, to actually see how easy it is to navigate through resources, let&rsquo;s
+implement the <code>ArticlesController#show</code> action as well:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">ArticlesController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+
+  <span class="k">def</span> <span class="nf">show</span>
+    <span class="n">article</span> <span class="o">=</span> <span class="no">Article</span><span class="o">.</span><span class="n">find_by</span><span class="p">(</span><span class="ss">author_id</span><span class="p">:</span> <span class="n">params</span><span class="o">[</span><span class="ss">:author_id</span><span class="o">]</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="n">params</span><span class="o">[</span><span class="ss">:id</span><span class="o">]</span><span class="p">)</span>
+    <span class="n">render</span> <span class="ss">json</span><span class="p">:</span> <span class="n">article</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Super simple - we find the <code>Article</code> by the <code>author_id</code> and the <code>id</code> params and
+render it as a JSON. If we call <code>GET /authors/1/articles/2</code>, we will get the
+JSON API representation of the <code>Article</code> object:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;2&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;A princess of Mars&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;His reference to the great games of which I had heard so much while among the Tharks convinced me that I had but jumped from purgatory into gehenna. After a few more words with the female, during which she assured him that I was now fully fit to travel, the jed ordered that we mount and ride after the main column. I was strapped securely to as wild and unmanageable a thoat as I had&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;created-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-26T0009.388Z&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;updated-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-26T0009.388Z&#34;</span>
+    <span class="p">},</span>
+    <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;author&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+          <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;author&#34;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/authors/1/articles/2&#34;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>If you use <a href="https://www.getpostman.com/">Postman</a>, which I really enjoy using,
+or any other API browser to test the endpoints you could see how easy it is to
+navigate the resources:</p>
+
+<p><img src="/postman-hateoas-1.png" alt="" /></p>
+
+<p>Just link in the web browser, you know the entry point <code>localhost:3000/authors</code>.
+From there you can click on the <code>links</code> property of the <code>Author</code> and get the
+single <code>Author</code> resource:</p>
+
+<p><img src="/postman-hateoas-2.png" alt="" /></p>
+
+<p>By seeing the resource with all of it&rsquo;s included resources, then you can click
+on any of the links on the included <code>Article</code> resources, and see their attributes
+in JSON format:</p>
+
+<p><img src="/postman-hateoas-3.png" alt="" /></p>
+
+<p>This is what essentially HATEOAS means - navigating and interacting with
+resources via the endpoints that are provided in the JSON representation of
+the resources.</p>
+
+<h2 id="outro">Outro</h2>
+
+<p>As you can see, to understand and learn what Hypermedia As The Engine Of
+Application State is, there is quite a bit of context that we need to get in our
+heads. Although all of this sometimes can appear as quite complex, Rails makes
+implementing HATEOAS APIs quite easy, as you could see in the examples. Sure,
+there is more to hypermedia controls, but these examples should be more than
+enough to get your feet wet.</p>
+
+<p>Also, the HATEOAS concept seems quite complex on the surface, but when you
+deconstruct it it&rsquo;s quite simple, because we have already seen the same
+behaviour in web browsers. The issue of why it seems quite complex is because
+we haven&rsquo;t even thought about normal web sites like RESTful APIs, and vice-versa.</p>
+
+<p>If you want to see the actual implementation of the endpoints that we worked
+with in this article, you can check <a href="https://github.com/fteem/hateoas">this repo</a>
+on Github.</p>
+
+<h2 id="additional-reading">Additional reading</h2>
+
+<ul>
+<li><a href="https://tools.ietf.org/html/rfc5988">Web Linking - RFC 5988</a></li>
+<li><a href="http://timelessrepo.com/haters-gonna-hateoas">Haters gonna HATEOAS</a></li>
+<li><a href="http://martinfowler.com/articles/richardsonMaturityModel.html">Richardson Maturity Model, steps toward the glory of REST</a></li>
+<li><a href="http://restcookbook.com/Miscellaneous/richardsonmaturitymodel/">What is the Richardson Maturity Model?</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Media_type">Media type</a></li>
+<li><a href="https://tools.ietf.org/html/rfc7231#section-5.3">Content negotiation</a></li>
+</ul>
+
+    </div>
+
+    
+    
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://ieftimov.com/tags/http/">HTTP</a>
+          <a href="https://ieftimov.com/tags/apis/">APIs</a>
+          <a href="https://ieftimov.com/tags/hateoas/">HATEOAS</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/post/when-you-delete-an-api-resource/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">What happens when you DELETE a resource?</span>
+            <span class="prev-text nav-mobile">Prev</span>
+          </a>
+        
+          <a class="next" href="/post/practicality-designing-describing-apis/">
+            <span class="next-text nav-default">The practicality of designing and describing your APIs</span>
+            <span class="prev-text nav-mobile">Next</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    Show Disqus Comments
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://ieftimov.com/post/sprinkle-some-hateoas-on-rails-apis/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'ieftimov';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+  
+    
+
+
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:hi@ilija.io" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://stackoverflow.com/users/601555/ilija-eftimov" rel="me noopener" class="iconfont"
+      title="stack-overflow"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M809.714286 932.571429l-638.857143 0 0-274.285714-91.428571 0 0 365.714286 821.714286 0 0-365.714286-91.428571 0 0 274.285714zm-538.285714-299.428571l18.857143-89.714286 447.428571 94.285714-18.857143 89.142857zm58.857143-213.714286l38.285714-83.428571 414.285714 193.714286-38.285714 82.857143zm114.857143-203.428571l58.285714-70.285714 350.857143 293.142857-58.285714 70.285714zm226.857143-216l272.571429 366.285714-73.142857 54.857143-272.571429-366.285714zm-410.285714 840.571429l0-90.857143 457.142857 0 0 90.857143-457.142857 0z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://twitter.com/fteem" rel="me noopener" class="iconfont"
+      title="twitter"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1264 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M1229.8616 18.043658c0 0-117.852626 63.135335-164.151872 67.344358-105.225559-164.151872-505.082682-92.598492-437.738325 223.078185C278.622548 312.675223 89.216542 47.506814 89.216542 47.506814s-117.852626 189.406006 75.762402 345.139833C127.097743 396.85567 55.544363 371.601535 55.544363 371.601535S26.081207 535.753407 253.368414 615.724832c-21.045112 29.463156-113.643603 8.418045-113.643603 8.418045s25.254134 143.10676 231.496229 180.987961c-143.10676 130.479693-387.230056 92.598492-370.393967 105.225559 206.242095 189.406006 1119.599946 231.496229 1128.01799-643.98042C1179.353331 249.539887 1263.533778 123.269217 1263.533778 123.269217s-130.479693 37.881201-138.897738 33.672179C1225.652577 98.015083 1229.8616 18.043658 1229.8616 18.043658"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://www.linkedin.com/in/ieftimov/" rel="me noopener" class="iconfont"
+      title="linkedin"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="33" height="33">
+  <path d="M872.405333 872.618667h-151.637333v-237.610667c0-56.661333-1.152-129.578667-79.018667-129.578667-79.061333 0-91.136 61.653333-91.136 125.397334v241.792H398.976V384h145.664v66.602667h1.962667c20.352-38.4 69.845333-78.933333 143.786666-78.933334 153.642667 0 182.058667 101.12 182.058667 232.746667v268.202667zM227.712 317.141333a87.978667 87.978667 0 0 1-88.021333-88.106666 88.064 88.064 0 1 1 88.021333 88.106666z m76.032 555.477334H151.68V384h152.064v488.618667zM948.266667 0H75.562667C33.792 0 0 33.024 0 73.770667v876.458666C0 991.018667 33.792 1024 75.562667 1024h872.576C989.866667 1024 1024 991.018667 1024 950.229333V73.770667C1024 33.024 989.866667 0 948.138667 0h0.128z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/fteem" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://ieftimov.com/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2014 -
+    2019
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        Ilija Eftimov
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+  <script id="dsq-count-scr" src="//ieftimov.disqus.com/count.js" async></script>
+
+
+
+
+
+</body>
+</html>
