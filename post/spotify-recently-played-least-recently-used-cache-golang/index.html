@@ -23,7 +23,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="Ilija Eftimov" />
-  <meta name="description" content="One of the most widely used caching schemes is Least Recently Used (LRU). Caches that use this eviction strategy will remove the least recently used item when their maximum capacity is reached. That means that such caches have to keep a track of the order of access of the cached items, so it would know what items should be evicted.
+  <meta name="description" content="One of the most used caching schemes is Least Recently Used (LRU). Caches that use this eviction strategy will remove the least recently used item when their size reaches their capacity. That means that such caches have to keep a track of the order of access of the cached items, so it would evict the correct items.
 Before we go too much into details about the implementation of an LRU cache, let&amp;rsquo;s first see what are the possible applications of this caching scheme." />
 
   <meta name="keywords" content="Software, Programming, Computer Science, Products" />
@@ -63,7 +63,7 @@ Before we go too much into details about the implementation of an LRU cache, let
 
 
 <meta property="og:title" content="Barebones model of Spotify&#39;s &#39;Recently Played&#39; screen using a Least Recently Used (LRU) cache in Golang" />
-<meta property="og:description" content="One of the most widely used caching schemes is Least Recently Used (LRU). Caches that use this eviction strategy will remove the least recently used item when their maximum capacity is reached. That means that such caches have to keep a track of the order of access of the cached items, so it would know what items should be evicted.
+<meta property="og:description" content="One of the most used caching schemes is Least Recently Used (LRU). Caches that use this eviction strategy will remove the least recently used item when their size reaches their capacity. That means that such caches have to keep a track of the order of access of the cached items, so it would evict the correct items.
 Before we go too much into details about the implementation of an LRU cache, let&rsquo;s first see what are the possible applications of this caching scheme." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://ieftimov.com/post/spotify-recently-played-least-recently-used-cache-golang/" />
@@ -73,12 +73,12 @@ Before we go too much into details about the implementation of an LRU cache, let
 
 
 <meta itemprop="name" content="Barebones model of Spotify&#39;s &#39;Recently Played&#39; screen using a Least Recently Used (LRU) cache in Golang">
-<meta itemprop="description" content="One of the most widely used caching schemes is Least Recently Used (LRU). Caches that use this eviction strategy will remove the least recently used item when their maximum capacity is reached. That means that such caches have to keep a track of the order of access of the cached items, so it would know what items should be evicted.
+<meta itemprop="description" content="One of the most used caching schemes is Least Recently Used (LRU). Caches that use this eviction strategy will remove the least recently used item when their size reaches their capacity. That means that such caches have to keep a track of the order of access of the cached items, so it would evict the correct items.
 Before we go too much into details about the implementation of an LRU cache, let&rsquo;s first see what are the possible applications of this caching scheme.">
 
 
 
-<meta itemprop="wordCount" content="2595">
+<meta itemprop="wordCount" content="2545">
 
   <meta itemprop="image" content="https://ieftimov.com/cards/spotify-recently-played-least-recently-used-cache-golang.png">
 
@@ -89,7 +89,7 @@ Before we go too much into details about the implementation of an LRU cache, let
 <meta name="twitter:image" content="https://ieftimov.com/cards/spotify-recently-played-least-recently-used-cache-golang.png"/>
 
 <meta name="twitter:title" content="Barebones model of Spotify&#39;s &#39;Recently Played&#39; screen using a Least Recently Used (LRU) cache in Golang"/>
-<meta name="twitter:description" content="One of the most widely used caching schemes is Least Recently Used (LRU). Caches that use this eviction strategy will remove the least recently used item when their maximum capacity is reached. That means that such caches have to keep a track of the order of access of the cached items, so it would know what items should be evicted.
+<meta name="twitter:description" content="One of the most used caching schemes is Least Recently Used (LRU). Caches that use this eviction strategy will remove the least recently used item when their size reaches their capacity. That means that such caches have to keep a track of the order of access of the cached items, so it would evict the correct items.
 Before we go too much into details about the implementation of an LRU cache, let&rsquo;s first see what are the possible applications of this caching scheme."/>
 
 <!--[if lte IE 9]>
@@ -323,23 +323,22 @@ if (!doNotTrack) {
     <div class="post-content">
       
 
-<p>One of the most widely used caching schemes is Least Recently Used (LRU).
-Caches that use this eviction strategy will remove the least recently used item
-when their maximum capacity is reached. That means that such caches have to
-keep a track of the order of access of the cached items, so it would know what
-items should be evicted.</p>
+<p>One of the most used caching schemes is Least Recently Used (LRU). Caches that
+use this eviction strategy will remove the least recently used item when their
+size reaches their capacity. That means that such caches have to keep a track
+of the order of access of the cached items, so it would evict the correct
+items.</p>
 
 <p>Before we go too much into details about the implementation of an LRU cache,
 let&rsquo;s first see what are the possible applications of this caching scheme.</p>
 
 <h2 id="applications">Applications</h2>
 
-<p>LRU cache applications are really diverse. The LRU cache eviction scheme is, in
-my opinion, the most widespread and used scheme. I believe that this is due to
-its nature - it clicks with people really quick because it often does the trick
-for conventional problems in commercial programming. For example, if one has a
-fixed amount of memory, the most natural way to approach caching is to keep
-in cache whatever is accessed recently.</p>
+<p>LRU cache applications are diverse. The LRU cache eviction scheme is one of the
+most widespread and used scheme. Due to its nature, it often does the trick for
+conventional problems in commercial programming. For example, if one has a
+fixed amount of memory, the most natural way to cache is to keep recently
+accessed items.</p>
 
 <p>So, what would be one potential application of a LRU cache? Let&rsquo;s see an
 example.</p>
@@ -364,9 +363,10 @@ screenshot of mine:</p>
 
 
 <p>You can see in the screenshot above that I have chosen the &ldquo;Recently played&rdquo;
-view, which shows all of my recently played media. If you&rsquo;ve never thought
-about how such screen would look like, let me break the magic down for you -
-this view is just a GUI that lives on top of some sort of an LRU cache.</p>
+view. To no one&rsquo;s surprise, it shows all my recently played media. If you’ve
+never thought about the implementation of such a screen, let me break the magic
+down for you. This view is a GUI that lives on top of some sort of an LRU
+cache.</p>
 
 <p>Curious how we would model such a &ldquo;Recently played&rdquo; view? Let&rsquo;s take a deeper
 look.</p>
@@ -374,7 +374,7 @@ look.</p>
 <h2 id="establishing-basic-types">Establishing basic types</h2>
 
 <p>Let&rsquo;s define couple of types that would represent the <code>Playlist</code>s and <code>Song</code>s
-that can be found on Spotify:</p>
+found on Spotify:</p>
 
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -418,8 +418,8 @@ look at a <code>Playlist</code>:</p>
 </div>
 
 <p>A <code>Playlist</code> has a <code>title</code>, <code>description</code>, <code>duration</code> (which is the sum of the
-durations of all songs in it), <code>publishedAt</code> which is the date of the
-publishing of the playlist and <code>songs</code> - a slice of <code>Song</code> pointers
+durations of all songs in it). Also, a <code>publishedAt</code> which is the date of the
+publishing of the playlist. Finally it has <code>songs</code> - a slice of <code>Song</code> pointers
 representing the songs in the playlist.</p>
 
 <p>Such structure of the <code>Playlist</code> <code>struct</code> will allow users to find a playlist
@@ -430,10 +430,11 @@ and &ldquo;just play it&rdquo;.</p>
 <p>The &ldquo;Recently played&rdquo; screen in Spotify has 30 items only, where each of the
 items can be a playlist, an artist or an album. For simplicity of our example
 here, we will agree that we will only keep track of the recently played
-playlists, ignoring the artists or albums.</p>
+playlists. This means that we&rsquo;ll ignore the artists or albums in our version of
+the &ldquo;Recently Played&rdquo; screen.</p>
 
-<p>Now, a typical implementation of a LRU cache uses a combination of two simple
-data structures - a hash table and a linked list. Why? Well, as mentioned in
+<p>A typical implementation of a LRU cache uses a combination of two simple data
+structures: a hash table and a linked list. Why? Well, as I mentioned in
 <a href="https://ieftimov.com/when-why-least-frequently-used-cache-implementation-golang">another article on caching</a>,
 caches have to be fast along two dimensions:</p>
 
@@ -446,16 +447,16 @@ when to replace a <code>Playlist</code> should be as fast as possible.</li>
 
 <p>On the first point, we have agreed that LRU will do the job because of the
 nature of the &ldquo;Recently played&rdquo; screen. This means that we have to keep track
-of what <code>Playlist</code>s have been played recently. A data structure that allows us
-to do this is a linked list. Since Go already provides us a doubly-linked list
-implementation, there is no need to implement it ourselves - we will just use
-the <code>container/list</code> package <sup class="footnote-ref" id="fnref:1"><a href="#fn:1">1</a></sup>.</p>
+of what <code>Playlist</code>s are recently played. A data structure that allows us to do
+this is a linked list. Since Go already provides us a doubly-linked list
+implementation, there is no need to reinvent the wheel. We will use the
+<code>container/list</code> package <sup class="footnote-ref" id="fnref:1"><a href="#fn:1">1</a></sup>.</p>
 
 <p>On the second point, the data structure that comes to mind for a scalable
-membership tests is a hash table (or, a bloom filter <sup class="footnote-ref" id="fnref:3"><a href="#fn:3">2</a></sup>). In hash tables,
-every value has a unique key, so if our program can accurately recreate that
-key every time it needs it, it will be super easy for us to check if the
-<code>Playlist</code> is in the cache or not.</p>
+membership tests is a hash table. <sup class="footnote-ref" id="fnref:3"><a href="#fn:3">2</a></sup> As you might know, hash tables have
+unique keys for every value. If our program can create a unique key for a
+<code>Playlist</code>, it will be easy for us to check if the <code>Playlist</code> is in the cache
+or not.</p>
 
 <p>Knowing this, let&rsquo;s define the <code>RecentlyPlayed</code> struct and its constructor
 function:</p>
@@ -479,11 +480,11 @@ function:</p>
 </div>
 </div>
 
-<p>Things are pretty self explanatory here: <code>capacity</code> will hold the maximum
-capacity of the cache, <code>size</code> will be the current size of the recently played
-screen, <code>cache</code> is the hashmap that wil be used to retrieve the elements from
-cache and <code>lru</code> is a linked list (from the <code>container/list</code> package <sup class="footnote-ref" id="fnref:1"><a href="#fn:1">1</a></sup>) that
-we will use to keep track of the recently played playlists.</p>
+<p>Things are pretty self explanatory here. <code>capacity</code> will hold the maximum
+capacity of the cache and <code>size</code> will be the current size of the recently
+played screen. We will use the <code>cache</code> hash table to retrieve the elements from
+cache.  The <code>lru</code> is a linked list (from the <code>container/list</code> package) that we
+will use to keep track of the recently played playlists.</p>
 
 <p>Let&rsquo;s first create a small function that will spawn up a new <code>RecentlyPlayed</code>
 struct with some sane defaults:</p>
@@ -515,16 +516,16 @@ struct with some sane defaults:</p>
 </div>
 </div>
 
-<p>This function sets the defaults to the struct and returns a pointer to it. Now,
-before we go any further with the implementation, let&rsquo;s quickly understand
-how each of these two datastructures will work and also look at some diagrams.</p>
+<p>This function sets the defaults to the struct and returns a pointer to it.
+Before we continue, let&rsquo;s make a quick stop. Let&rsquo;s take a moment to understand
+how each of these two data structures will work together.</p>
 
 <p>First, <code>cache</code> is going to be a <code>map</code> that will have a key of type <code>string</code> and
 a value of type <code>*list.Element</code>. The <code>string</code> will be a hash of the <code>Playlist</code>
 that will be stored there, while the <code>*list.Element</code> will be a pointer to the
-element in the doubly-linked list. By having this pointer, we can easily get
-the <code>Playlist</code> that is stored inside it (so we can play it), but also it will
-be easy to reposition it in the <code>lru</code> list when we play the <code>Playlist</code>.</p>
+element in the doubly-linked list. By having this pointer, we can get the
+<code>Playlist</code> stored inside it (it&rsquo;s <code>Value</code>). Also, it will be easy to reposition
+it in the <code>lru</code> list when we play the Playlist.</p>
 
 <h2 id="introducing-the-player">Introducing the player</h2>
 
@@ -624,12 +625,13 @@ comment below.</p>
 <p>Let&rsquo;s dissect the <code>Play</code> function:</p>
 
 <ol>
-<li>The <code>player.RecentlyPlayedList</code> struct (which is of type <code>*RecentlyPlayed</code>)
-will have a function <code>Get</code> which will return a <code>bool</code> and a <code>playlist</code> which
-our player can then play.</li>
-<li>If it doesn&rsquo;t find a <code>cached</code> playlist, in that case it will fetch/start
-streaming the playlist and it will cache it using the <code>Set</code> function of the
-<code>RecentlyPlayedList</code> struct.</li>
+<li><p>The <code>player.RecentlyPlayedList</code> struct is of type <code>*RecentlyPlayed</code>. It has
+a function <code>Get</code> which will return a <code>bool</code> and a playlist which our player
+can then play.</p></li>
+
+<li><p>If it doesn’t find a cached playlist it will fetch/start streaming the
+playlist over the network. Then, it will cache it using the <code>Set</code> function
+of the <code>RecentlyPlayedLists</code> struct.</p></li>
 </ol>
 
 <p>So, what is the behaviour and the internals of these two new methods, <code>Get</code> and
@@ -637,12 +639,14 @@ streaming the playlist and it will cache it using the <code>Set</code> function 
 
 <h2 id="get-ting-a-playlist-from-cache"><code>Get</code>ting a <code>Playlist</code> from cache</h2>
 
-<p>To retrieve a <code>Playlist</code> from cache is actually a cheap and easy task - our
-cache is backed by a hash map which has a O(1) time complexity for the access
-operation. The trick lies it the fact that once we access an item in the cache
-we also have to make it the most recently used item in the
-<code>RecentlyPlayedList</code>.  Given that the list is powered by a linked list, we have
-to take our item from the list and move it to the front of the list.</p>
+<p>To retrieve a <code>Playlist</code> from cache is actually a cheap task, from time
+perspective. Our cache is hash table-backed which has a <code>O(1)</code> time complexity
+for the access operation. The trick is once we access an item in <code>cache</code> we
+also have to move it to the beginning of the <code>lru</code> list.</p>
+
+<p>In other words, we need to promote it as the most recently used item in the
+<code>RecentlyPlayedList</code>. Given that we use a linked list-backed cache, we have
+to take our item from the list and move it to the front.</p>
 
 <p>Let&rsquo;s see how that would work in our context:</p>
 
@@ -673,10 +677,10 @@ to take our item from the list and move it to the front of the list.</p>
 pretty simple. Its a three step function:</p>
 
 <ol>
-<li>Checks if the item can be found in the cache. If not it returns a <code>nil</code>.</li>
+<li>Checks if it finds the item in the cache. If not it returns a <code>nil</code>.</li>
 <li>Otherwise, it moves the element to the beginning of the LRU list, and</li>
-<li>It returns the value of the <code>*list.Element</code>, which is basically the pointer
-to the <code>Playlist</code> that our player is supposed to play</li>
+<li>It returns the value of the <code>*list.Element</code>, which is the pointer
+to the <code>Playlist</code> that our player will play</li>
 </ol>
 
 <p>That&rsquo;s it, pretty simple.</p>
@@ -727,7 +731,7 @@ step, it returns the hash in a hexidecimal format.</p>
 <h2 id="set-ting-a-playlist-to-cache"><code>Set</code>ting a <code>Playlist</code> to cache</h2>
 
 <p>Now that we have the <code>hash</code> function out of the way, let&rsquo;s look at the code of
-the <code>Set</code> function and then we can discuss the steps this function takes to add
+the <code>Set</code> function. After, we can discuss the steps this function takes to add
 a <code>Playlist</code> to the cache:</p>
 
 <div class="highlight"><div class="chroma">
@@ -757,22 +761,23 @@ a <code>Playlist</code> to the cache:</p>
 </div>
 </div>
 
-<p>The <code>Set</code> function takes a <code>*Playlist</code> as an argument, which is then hashed
-using a <code>hash</code> method that is implemented by <code>RecentlyPlayed</code> - this returns a
-unique key based on some attributes of the <code>Playlist</code>. Then <code>key</code> is used when
-the <code>Playlist</code> is added in the hash table <code>cache</code>.</p>
+<p>The Set function takes a <code>*Playlist</code> as an argument. It is then hashed using the
+<code>hash</code> method that implemented by <code>RecentlyPlayed</code>. It returns a unique key based
+on some attributes of the <code>Playlist</code>. The key is then used when the <code>Playlist</code>
+is added in the hash table <code>caches</code>.</p>
 
 <p>But before we add it to the hash table <code>cache</code>, we will check if there&rsquo;s
 already a value in the <code>cache</code> hash table with the same <code>key</code>. If so, we will
 only move the <code>*Playlist</code> to the front of the <code>lru</code> linked list.</p>
 
-<p>If not, the <code>*Playlist</code> will be pushed to the front of the <code>lru</code> linked list
-(as the most recently used item), which will return a <code>*list.Element</code>. This
-element, which for its <code>Value</code> expects an <code>interface{}</code> (which is the Go way
-to say &ldquo;any type&rdquo;), will wrap the <code>*Playlist</code> as its <code>Value</code>. This means that
-any time we access the <code>elem.Value</code> we will have to cast it to the proper type,
-since <code>*list.Element</code> does not know the type of its <code>Value</code> (remember, it
-accepts any type).</p>
+<p>If not, we push the <code>*Playlist</code> to the front of the <code>lru</code> linked list, as the
+most recently used item. This returns a <code>*list.Element</code>, which for its <code>Value</code>
+expects an <code>interface{}</code> (which is the Go way to say &ldquo;any type&rdquo;). The
+<code>*list.Element</code> will wrap the <code>*Playlist</code> as its <code>Value</code>.</p>
+
+<p>This means that any time we access the <code>elem.Value</code> we will have to cast it to
+its proper type, since <code>*list.Element</code> does not know the type of its <code>Value</code>
+(remember, it accepts any type).</p>
 
 <p>After the playlist is added to the front of the <code>lru</code> list, the <code>Set</code> function
 will increment the <code>RecentlyPlayed</code>&rsquo;s <code>size</code> due to the new item added to the
@@ -784,14 +789,14 @@ list.</p>
 <h2 id="eviction">Eviction</h2>
 
 <p>Now that we know how the <code>Get</code> and <code>Set</code> functions work, we need to take one
-more thing into consideration: Spotify&rsquo;s recently played screen has a limited
-amount of items. This means that once the number of playlists reach a
-threshold, the least recently played playlist will have to be removed so a new
-one can be added to the list.</p>
+more thing into consideration. That is Spotify’s limitation of the size of the
+recently played screen. It means that once the number of playlists reaches a
+threshold, it removes the least recently played playlist. This will make the
+room to add a new one to the list.</p>
 
-<p>In essence, this is the eviction algoritm that we have to write for our LRU
-cache that powers the recently played screen. For the purpose of our
-implementation we will write an <code>increment</code> function:</p>
+<p>This is the eviction algorithm that we have to write for our LRU cache, which
+powers the recently played screen. In our implementation we&rsquo;ll call the
+function <code>increment</code>:</p>
 
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -821,9 +826,8 @@ function will take these two steps:</p>
 
 <ol>
 <li>Move the accessed element to be beginning of the <code>lru</code> linked list, and</li>
-<li>Take the last item in the <code>lru</code> linked list and remove it from the list,
-only when the <code>size</code> of the <code>RecentlyPlayed</code> struct has reached its
-capacity</li>
+<li>When the <code>size</code> of the <code>RecentlyPlayed</code> struct has reached its <code>capacity</code>,
+remove the last item in the <code>lru</code> linked list</li>
 </ol>
 
 <p>This function will allow us to handle the eviction of the least recently used
@@ -875,32 +879,39 @@ functions and drop this function in:</p>
 </div>
 </div>
 
-<p>By dropping the <code>increment</code> function in <code>Set</code> and <code>Get</code>, every time we touch
-any of the playlists in our recently played screen we will make sure the list
-of recently used items is updated. This will allow our recently played screen
-to change the order (based on the how recently the playlists are played) or
-remove any playlists when the capacity is exceeded.</p>
+<p>Now that we have the <code>increment</code> function, we will use it in the <code>Set</code> and
+<code>Get</code> functions. By doing this, we will update the list of recently used items
+every time we play a <code>Playlist</code>.</p>
+
+<p>This change will unlock two things for our recently played screen:
+1. It will change the order of the cached playlists, based on the how recently
+   the playlists are played
+2. It will remove any playlists once <code>size</code> exceeds <code>capacity</code></p>
 
 <h2 id="in-closing">In closing</h2>
 
 <p>Now that we have a Go-powered sketch of Spotify&rsquo;s recently played screen, let&rsquo;s
-quickly recap what we did and what are the missing pieces.</p>
+do a quick recap.</p>
 
-<p>Obviously, this was a very limited implementation - it lacks any mechanisms to
-stream/download the playlists via the internet, which would be pretty hard to
-cover in this article. Also, the implementation does not take into account any
-restarting of the application - if we stop and start the program all of the
-cached playlists will be gone. This is because our implementation does not
-store the data on disk (just in memory). Of course, we also do not have any
-graphical user interface to interact with the application - just a couple of
-mere functions that we can invoke.</p>
+<p>To shine some light on the shortcomings:</p>
 
-<p>While all of the above is a downside of our implementation (or a shortcoming),
-it still effectively painted the picture of how we could write such a program
-using Go. The combination of the two data structures (linked list + hash table)
-worked nicely for solving the problem at hand - it scales well from time
-complexity and (for our scenario) the hit-to-miss ratio should is optimal. I
-hope that our barebones implementation of LRU cache paints that picture well.</p>
+<ol>
+<li>This is a barebones model - it lacks any mechanisms to stream/download the
+playlists via the internet. We agreed that although interesting, this would
+be hard to cover in this article.</li>
+<li>The model does not take into account any restarting of the application. This
+means if we stop and start the program the cached playlists will be gone.
+This is because our implementation does not store the data on disk (only in
+memory).</li>
+<li>We do not have any graphical user interface to interact with the application
+- only a couple of functions that we can invoke.</li>
+</ol>
+
+<p>While all the above is a shortcoming of our implementation, it still paints the
+picture of how we could write such a program using Go. The combination of a
+linked list &amp; a hash table works nice for solving the problem at hand. From
+time complexity perspective, it scales well. And, for our tiny scenario, the
+hit-to-miss ratio should is optimal.</p>
 
 <p>If you would like to read more of my rambling about caching algorithms, you can
 also read &ldquo;When and Why to use a Least Frequently Used (LFU) cache with an
@@ -912,7 +923,7 @@ implementation in Golang&rdquo; <sup class="footnote-ref" id="fnref:2"><a href="
 <ol>
 <li id="fn:1">Package that implements a doubly linked list: <a href="https://golang.org/pkg/container/list/">https://golang.org/pkg/container/list/</a>
  <a class="footnote-return" href="#fnref:1"><sup>[return]</sup></a></li>
-<li id="fn:3">Good article on the topic: <a href="https://bart.degoe.de/bloom-filters-bit-arrays-recommendations-caches-bitcoin/">https://bart.degoe.de/bloom-filters-bit-arrays-recommendations-caches-bitcoin/</a>
+<li id="fn:3">Or a bloom filter - good article on the topic: <a href="https://bart.degoe.de/bloom-filters-bit-arrays-recommendations-caches-bitcoin/">https://bart.degoe.de/bloom-filters-bit-arrays-recommendations-caches-bitcoin/</a>
  <a class="footnote-return" href="#fnref:3"><sup>[return]</sup></a></li>
 <li id="fn:2">Article I published on this very blog: <a href="https://ieftimov.com/when-why-least-frequently-used-cache-implementation-golang">https://ieftimov.com/when-why-least-frequently-used-cache-implementation-golang</a>
  <a class="footnote-return" href="#fnref:2"><sup>[return]</sup></a></li>
