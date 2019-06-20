@@ -79,7 +79,7 @@ Without further ado, let&rsquo;s take a look under the covers in the testing pac
 
 <meta itemprop="datePublished" content="2019-05-30T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2019-05-30T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="3531">
+<meta itemprop="wordCount" content="3546">
 
   <meta itemprop="image" content="https://ieftimov.com/cards/testing-in-go-failing-tests.png">
 
@@ -135,6 +135,13 @@ if (!doNotTrack) {
           
           
             <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/testing-in-go/">Testing in Go</a>
           
         
       </li><li class="mobile-menu-item">
@@ -247,6 +254,17 @@ if (!doNotTrack) {
         
           
           
+            <a class="menu-item-link" href="https://ieftimov.com/testing-in-go/">Testing in Go</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
             <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
           
 
@@ -342,7 +360,7 @@ meaningful error messages.</p>
 <p>Quite some options, right? But before we dive into these different functions,
 let&rsquo;s look at another one: <code>Logf</code> (<a href="https://golang.org/pkg/testing/#T.Logf">docs</a>).</p>
 
-<p>You might be thinking: &ldquo;I came here to read about signalling test failures, and
+<p>You might be thinking: &ldquo;I came here to read about signaling test failures, and
 for some reason, I am reading about logging&rdquo;. Trust me, there&rsquo;s a connection
 here.</p>
 
@@ -479,6 +497,8 @@ output is essential to showing the failures of the failing tests.</p>
 
 
 
+
+
 <style type="text/css">
 	#mc_embed_signup{
           background:#fff;
@@ -535,7 +555,7 @@ output is essential to showing the failures of the failing tests.</p>
 
 
 
-<h2 id="signailng-test-fail-ure">Signailng test <code>Fail</code>ure</h2>
+<h2 id="signaling-test-fail-ure">Signaling test <code>Fail</code>ure</h2>
 
 <p>To be able to illustrate the different type of failing a test in Golang, we
 will first need to write a small function that we can test. Let&rsquo;s use a simple
@@ -629,7 +649,7 @@ fail when we run it:</p>
 PASS
 ok  	github.com/fteem/testing_in_go	<span class="m">0</span>.006s</code></pre></div>
 
-<p>Huh? Here&rsquo;s the first thing we have to understand about signalling failures in
+<p>Huh? Here&rsquo;s the first thing we have to understand about signaling failures in
 tests: we actually have to tell the <code>testing</code> package that this is a failed
 test. And we are the ones to define what failure means - usually, it&rsquo;s <code>actual
 != expected</code>, but other times it can be something else. What <code>testing</code> only
@@ -686,7 +706,7 @@ FAIL	github.com/fteem/testing_in_go	<span class="m">0</span>.006s</code></pre></
 including our call to <code>Logf</code> with our informative error message <code>Expected 6,
 got 5</code>.</p>
 
-<p>Now that we have our first test failure signalled, let&rsquo;s look at different ways
+<p>Now that we have our first test failure signaled, let&rsquo;s look at different ways
 we can signal test failures.</p>
 
 <h2 id="delayed-vs-immediate-failure">Delayed vs. immediate failure</h2>
@@ -888,7 +908,7 @@ tests the max detection. Let&rsquo;s use it in our tests:</p>
 </div>
 </div>
 
-<p>Also, we need to make the <code>Max</code> function misbehave. To shortcircuit this
+<p>Also, we need to make the <code>Max</code> function misbehave. To short-circuit this
 quickly, let&rsquo;s make the <code>Max</code> function return <code>-100</code> so we can see the
 difference.</p>
 
@@ -1026,6 +1046,8 @@ marking (<code>Fail</code> and <code>FailNow</code>) in a more structured approa
 
 
 
+
+
 <style type="text/css">
 	#mc_embed_signup{
           background:#fff;
@@ -1084,7 +1106,7 @@ marking (<code>Fail</code> and <code>FailNow</code>) in a more structured approa
 
 <h2 id="signal-report-failures-in-one-go">Signal &amp; report failures in one go</h2>
 
-<p>Understanding the basics and variations of logging and signalling errors is
+<p>Understanding the basics and variations of logging and signaling errors is
 crucial to understand what we will talk about now. If you look at all the tests
 we wrote so far, although we switched up the approaches by using table-driven
 tests, two steps were constant:</p>
@@ -1102,11 +1124,11 @@ there are two ways to signal test failures, there are two functions to do this:
 <code>Error</code> and <code>Fatal</code>, with their own variants.</p>
 
 <p>Let&rsquo;s reuse the tests that we wrote above, namely the <code>TestMax</code> and
-<code>TestMaxEmptySlice  functions. If we would like to quickly collapse the
-invocation of</code>t.FailNow()<code>and</code>t.Log()<code>we can simply use</code>t.Fatal()<code>. We use
-</code>t.Logf()<code>instead of</code>t.Log()<code>in our test functions but conveniently for us,
-the</code>testing<code>package also implements a</code>t.Fatalf()<code>function, which is a
-combination of</code>t.FailNow()<code>+</code>t.Logf()`.</p>
+<code>TestMaxEmptySlice</code> functions. If we would like to quickly collapse the
+invocation of <code>t.FailNow()</code> and <code>t.Log()</code> we can simply use <code>t.Fatal()</code>. We use
+<code>t.Logf()</code> instead of <code>t.Log()</code> in our test functions but conveniently for us,
+the <code>testing</code> package also implements a <code>t.Fatalf()</code> function, which is a
+combination of <code>t.FailNow()</code> + <code>t.Logf()</code>.</p>
 
 <p>Let&rsquo;s see how we can use it in our <code>TestMax</code> test function:</p>
 
@@ -1227,7 +1249,7 @@ FAIL	_/users/Ilija/Documents/testing	0.005s</code></pre></div>
 
 <h2 id="when-to-use-error-f-or-fatal-f">When to use <code>Error(f)</code> or <code>Fatal(f)</code></h2>
 
-<p>So, we took a look at all the variations of signalling test failures and
+<p>So, we took a look at all the variations of signaling test failures and
 logging such failures and the behaviour of the respective functions. For those
 of you wondering when you should use <code>Error</code> or <code>Fatal</code>, I think that&rsquo;s a very
 important question that we should explore and find a good answer for.</p>
@@ -1276,7 +1298,7 @@ when writing our test functions.</p>
 <p>In this article, we explored a lot of the details around failing tests. We went
 deep in to understand how failure logging is done using Go&rsquo;s <code>testing</code> package
 - although it was unclear at that moment how it is related to failing tests.
-  Then we went on to explore signalling test failures and the different
+  Then we went on to explore signaling test failures and the different
   approaches we can take when marking our tests as failed.</p>
 
 <p>We looked in depth what is the difference between <code>Fail</code> and <code>FailNow</code>, and how
