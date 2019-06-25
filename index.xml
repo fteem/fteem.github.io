@@ -6,7 +6,7 @@
     <description>Recent content on Ilija Eftimov</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sat, 15 Jun 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 24 Jun 2019 00:00:00 +0000</lastBuildDate>
     
         <atom:link href="https://ieftimov.com/index.xml" rel="self" type="application/rss+xml" />
     
@@ -120,6 +120,8 @@ advanced subtopic.&lt;/p&gt;
           
             &lt;li&gt;&lt;a href=&#34;https://ieftimov.com/post/testing-in-go-writing-practical-failure-messages/&#34;&gt;Testing in Go: Writing Practical Failure Messages&lt;/a&gt;&lt;/li&gt;
           
+            &lt;li&gt;&lt;a href=&#34;https://ieftimov.com/post/testing-in-go-naming-conventions/&#34;&gt;Testing in Go: Naming Conventions&lt;/a&gt;&lt;/li&gt;
+          
         
       
     
@@ -201,6 +203,466 @@ Ruby on Rails developer at &lt;a href=&#34;http://siyelo.com&#34;&gt;Siyelo&lt;/
 &lt;a href=&#34;https://github.com/fteem&#34;&gt;Github&lt;/a&gt;,
 &lt;a href=&#34;https://www.linkedin.com/in/ieftimov/&#34;&gt;LinkedIn&lt;/a&gt; or
 &lt;a href=&#34;email:ieftimovcom@gmail.com&#34;&gt;e-mail&lt;/a&gt;.&lt;/p&gt;
+</description>
+      
+    </item>
+    
+    <item>
+      <title>Testing in Go: Naming Conventions</title>
+      <link>https://ieftimov.com/post/testing-in-go-naming-conventions/</link>
+      <pubDate>Mon, 24 Jun 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://ieftimov.com/post/testing-in-go-naming-conventions/</guid>
+      
+        <description>
+
+&lt;p&gt;&amp;ldquo;Crew, prepare for landing&amp;rdquo; echoed through the cabin. I looked out of the
+window and I saw the island – I was freaking out, but super excited at the same
+time. As a kid growing up in &lt;a href=&#34;https://en.wikipedia.org/wiki/Balkans&#34;&gt;the
+Balkans&lt;/a&gt;, if you told me I would visit
+Bali one day I am sure I would not believe you for a second.&lt;/p&gt;
+
+&lt;p&gt;The first memory I have of walking in the hotel was the May heat and humidity.
+It did take me a couple of heavy breaths to realise that I can actually breathe
+just fine in that humidity. Next memory are all the helpful people that we met
+in and on the way to the hotel - they all greeted us with
+&lt;a href=&#34;https://en.wikipedia.org/wiki/Sembah&#34;&gt;Sembah&lt;/a&gt; - a traiditonal Balinese
+greeting, forming a clasp with their hands placed in front of their chest.&lt;/p&gt;
+
+&lt;p&gt;Looking back at it, all of the interactions with other humans and their way of
+expression were part of one culture that contains some conventions. For example
+the Sembah greeting often felt fanciful, but the locals explained that that&amp;rsquo;s
+a good way to show respect through a greeting. As someone that is
+definitely not an anthropologist, what I can speculate is that all people,
+wherever they are located, abide to some conventions. And hopefully these
+conventions make their lives a bit simpler or effortless.&lt;/p&gt;
+
+&lt;p&gt;Following that line of thinking, there&amp;rsquo;s no surprise that programming languages
+and tools, which are made by people, often have conventions. These conventions
+help make our work more straightforward. Just like all tools out there, Go also
+has some conventions when it comes to testing. Some are defined in the language
+itself (official), while others are coined by community members (unofficial).&lt;/p&gt;
+
+&lt;p&gt;In this article we will look at the naming conventions for files, functions and
+variables separately.&lt;/p&gt;
+
+&lt;h2 id=&#34;file-and-package-naming-conventions&#34;&gt;File and package naming conventions&lt;/h2&gt;
+
+&lt;p&gt;Go&amp;rsquo;s &lt;a href=&#34;https://golang.org/pkg/testing/&#34;&gt;&lt;code&gt;testing&lt;/code&gt; package&lt;/a&gt; comes with an
+expectation that any test file must have a &lt;code&gt;_test.go&lt;/code&gt; suffix. For example, if
+we would have a file called &lt;code&gt;person.go&lt;/code&gt; its test file must be named
+&lt;code&gt;person_test.go&lt;/code&gt;. This is due to the package building process, where Go knows
+to ignore these files when building the package due to their naming. Simply,
+it ignores test files as they are not needed for the program to run.&lt;/p&gt;
+
+&lt;p&gt;Additionally, Go ships with a command line tool called &lt;code&gt;go test&lt;/code&gt;. This tool
+automates testing the packages named by the import paths. It recompiles each
+package along with any files with names that match the file pattern
+&lt;code&gt;*_test.go&lt;/code&gt;. This means that &lt;code&gt;go test&lt;/code&gt; recognizes these files as special and
+compiles them as a separate package, and then links and runs them with the main
+test binary.&lt;/p&gt;
+
+&lt;p&gt;When it comes to packages, Go by default expects that all test files are part
+of the same package that they test. For example, if &lt;code&gt;person.go&lt;/code&gt; defines a
+&lt;code&gt;person&lt;/code&gt; package, the respective &lt;code&gt;person_test.go&lt;/code&gt; should also be part of the
+&lt;code&gt;person&lt;/code&gt; package. This also means that both, the &lt;code&gt;person.go&lt;/code&gt; and
+&lt;code&gt;person_test.go&lt;/code&gt; files should be placed in the same directory - we let Go worry
+what files should be loaded depending on what &lt;code&gt;go&lt;/code&gt; command we run.&lt;/p&gt;
+
+&lt;p&gt;Looking at Golang&amp;rsquo;s source code oddly I found some disregard for these rules.
+For example, the tests for the &lt;code&gt;fmt&lt;/code&gt; package in the standard library, belong to
+a &lt;a href=&#34;https://github.com/golang/go/blob/e9188d1d18040bc6cb46065b2474664b8728a6df/src/fmt/stringer_test.go#L5&#34;&gt;&lt;code&gt;fmt_test&lt;/code&gt;
+package&lt;/a&gt;,
+instead of the &lt;code&gt;fmt&lt;/code&gt; package.&lt;/p&gt;
+
+&lt;p&gt;At first, my observation was that this is wrong and for some reason it is not
+fixed yet. After a more thorough research it was obvious that this is an
+intentional approach and not a mistake. As explained in
+&lt;a href=&#34;https://stackoverflow.com/a/31443271/601555&#34;&gt;this&lt;/a&gt; Stack Overflow answer, the
+best way to look at this is to differentiate the two approaches as &amp;ldquo;black box&amp;rdquo;
+and &amp;ldquo;white box&amp;rdquo; testing.&lt;/p&gt;
+
+&lt;p&gt;The &lt;strong&gt;black box approach&lt;/strong&gt;, where the test and the production code are in
+separate packages, allows us to test only the &lt;a href=&#34;https://golang.org/ref/spec#Exported_identifiers&#34;&gt;exported
+identifiers&lt;/a&gt; of a package.
+This means that our test package will not have access to any of the internal
+functions, variables or constants that are in the production code.&lt;/p&gt;
+
+&lt;p&gt;The &lt;strong&gt;white box approach&lt;/strong&gt;, where the test and the production code are in the same
+package, allows us to test both the non-exported and expored identifiers of the
+package. This is the preferrable approach when writing unit tests that require
+access to non-exported variables, functions, and methods.&lt;/p&gt;
+
+&lt;p&gt;I personally find the white box approach preferrable, because this is the
+default behaviour of the tooling that ships with the language. We as users of
+said tooling should employ good judgement and conventions to write code that is
+testable and avoid touching non-exported identifiers in the tests. In other
+words, we should adhere to the defaults, unless we have a really good reason
+not to.&lt;/p&gt;
+
+&lt;p&gt;In any case, if you would like to learn how to idiomatic Go and how to organise
+your packages properly, the source code of the language is the best place to
+learn from.&lt;/p&gt;
+
+&lt;h2 id=&#34;function-naming-conventions&#34;&gt;Function naming conventions&lt;/h2&gt;
+
+&lt;p&gt;While the file naming convention is enforced by the language and its toolkit,
+test function naming conventions are loosely enforced by Go, but are community
+driven.&lt;/p&gt;
+
+&lt;p&gt;In Go, each test file is composed of one or many test functions. Each test
+function has the following signature structure:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;TestXxx&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;What&amp;rsquo;s important to notice is that &lt;code&gt;Xxx&lt;/code&gt; does not start with a lowercase
+letter. The function name serves to identify the test routine. A simple test
+function looks like this (stolen from &lt;a href=&#34;https://golang.org/pkg/testing/&#34;&gt;here&lt;/a&gt;):&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;TestAbs&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+    &lt;span class=&#34;nx&#34;&gt;got&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;Abs&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;got&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;!=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+        &lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Errorf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Abs(-1) = %d; want 1&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;got&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+    &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;And that&amp;rsquo;s all that&amp;rsquo;s enforced by Go and it&amp;rsquo;s toolkit. Still, there are a few
+common ways to name your test functions. For example, we have a simple type
+&lt;code&gt;Person&lt;/code&gt; with &lt;code&gt;age&lt;/code&gt; attribute. It receives a function &lt;code&gt;older&lt;/code&gt; which checks what
+if one &lt;code&gt;Person&lt;/code&gt; is older than another &lt;code&gt;Person&lt;/code&gt;, by comparing their &lt;code&gt;age&lt;/code&gt;
+attributes.&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kn&#34;&gt;package&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;main&lt;/span&gt;
+
+&lt;span class=&#34;kd&#34;&gt;type&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Person&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt;  &lt;span class=&#34;kt&#34;&gt;int64&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+
+&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;p&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Person&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;older&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;other&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Person&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;bool&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;other&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;We would write a test function for &lt;code&gt;older&lt;/code&gt;, looking like this:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kn&#34;&gt;package&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;main&lt;/span&gt;
+
+&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+	&lt;span class=&#34;s&#34;&gt;&amp;#34;fmt&amp;#34;&lt;/span&gt;
+	&lt;span class=&#34;s&#34;&gt;&amp;#34;testing&amp;#34;&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;TestOlder&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;nx&#34;&gt;p1&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Person&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;21&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+	&lt;span class=&#34;nx&#34;&gt;p2&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Person&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;22&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+
+	&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;!&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;p1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;older&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;p2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+		&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Fatalf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;fmt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Sprintf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Expected %d &amp;gt; %d&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
+	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Here we name our test function &lt;code&gt;TestOlder&lt;/code&gt;, which clearly states the function
+under test - &lt;code&gt;older&lt;/code&gt;. This is in line with what the &lt;code&gt;testing&lt;/code&gt; package expects -
+a &lt;code&gt;PascalCased&lt;/code&gt; function name, starting with &lt;code&gt;Test&lt;/code&gt;. What comes after is up to
+us.&lt;/p&gt;
+
+&lt;p&gt;In our small example, calling the test function &lt;code&gt;TestOlder&lt;/code&gt; is the most common
+approach that you will see in the wild. But, what if we want to test the same
+function (&lt;code&gt;older&lt;/code&gt;) in more test functions? Do we use &lt;code&gt;TestOlder1&lt;/code&gt;,
+&lt;code&gt;TestOlder2&lt;/code&gt;, etc. as test function names? Or is there a better way?&lt;/p&gt;
+
+&lt;p&gt;For such scenarios, I have found a few approaches in the wild:&lt;/p&gt;
+
+&lt;p&gt;The Golang source code itself has a naming convention. If we zero in on an
+example, like &lt;a href=&#34;https://github.com/golang/go/blob/master/src/strings/compare_test.go&#34;&gt;the
+test&lt;/a&gt;
+where the &lt;code&gt;strings.Compare&lt;/code&gt; function is tested, we can see the convention in
+action:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;The base test function follows the format of &lt;code&gt;Test&lt;/code&gt; + the name of the
+function under test. For example &lt;code&gt;TestCompare&lt;/code&gt;, which tests the &lt;code&gt;Compare&lt;/code&gt;
+function.&lt;/li&gt;
+&lt;li&gt;More specific tests, for example a test that compares two idential strings,
+is called &lt;code&gt;TestCompareIndentialStrings&lt;/code&gt;. Tests that are more specific express
+that in the name, using the &lt;code&gt;PascalCase&lt;/code&gt; naming scheme.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;We can see the same pattern in other files, for example in
+&lt;a href=&#34;https://github.com/golang/go/blob/master/src/flag/flag_test.go&#34;&gt;&lt;code&gt;flag_test.go&lt;/code&gt;&lt;/a&gt;,
+where the functionality of the &lt;code&gt;flags&lt;/code&gt; package is tested. Notable examples there
+are the &lt;code&gt;TestUserDefined&lt;/code&gt; and &lt;code&gt;TestUserDefinedForCommandLine&lt;/code&gt; test functions:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;TestUserDefined&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;c1&#34;&gt;// Snipped...
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+
+&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;TestUserDefinedForCommandLine&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;c1&#34;&gt;// Snipped...
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Moving on to another popular Golang project, &lt;a href=&#34;https://www.consul.io/&#34;&gt;consul&lt;/a&gt;
+by HashiCorp, we can see a different test functions naming convention. If we
+look at the
+&lt;a href=&#34;https://github.com/hashicorp/consul/blob/master/api/api_test.go&#34;&gt;&lt;code&gt;api_test.go&lt;/code&gt;&lt;/a&gt;
+file, where the API client is tested, we can see that the project uses a naming
+convention where:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;The base test function follows the format of &lt;code&gt;Test&lt;/code&gt; + the name of the
+package where the function is placed, with the function name appended after
+an underscore (&lt;code&gt;_&lt;/code&gt;). For example, the &lt;code&gt;API.Debug.Heap()&lt;/code&gt; function is tested
+in the &lt;code&gt;TestAPI_DebugHeap&lt;/code&gt; test function. Similarly, the
+&lt;code&gt;API.SetupTLSConfig&lt;/code&gt; is tested in &lt;code&gt;TestAPI_SetupTLSConfig&lt;/code&gt; test function.&lt;/li&gt;
+&lt;li&gt;There are functions like &lt;code&gt;API.Agent.Services()&lt;/code&gt; that require more specific
+tests. That&amp;rsquo;s why, for example there are
+&lt;a href=&#34;https://github.com/hashicorp/consul/blob/master/api/agent_test.go#L170&#34;&gt;&lt;code&gt;TestAPI_AgentServices&lt;/code&gt;&lt;/a&gt;
+and
+&lt;a href=&#34;https://github.com/hashicorp/consul/blob/master/api/agent_test.go#L234&#34;&gt;&lt;code&gt;TestAPI_AgentServicesWithFilter&lt;/code&gt;&lt;/a&gt;,
+where in the latter there is more specific functionality being tested.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;TestAPI_AgentServices&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;c1&#34;&gt;// Snipped...
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+
+&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;TestAPI_AgentServicesWithFilter&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;c1&#34;&gt;// Snipped...
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;These are just a few examples of test function naming conventions, so expect
+to find some others in the ecosystem. There are various conventions when it
+comes to naming testing functions, but all of them have to follow the basic
+format of &lt;code&gt;TestXxx&lt;/code&gt; that the &lt;code&gt;testing&lt;/code&gt; package enforces.&lt;/p&gt;
+
+&lt;h2 id=&#34;variable-naming-conventions&#34;&gt;Variable naming conventions&lt;/h2&gt;
+
+&lt;p&gt;While there is strict enforcement of the file name convention, and a loose
+enforcement of test function naming, things are very relaxed when it comes to
+variables naming. Basically, Golang does not enforce any conventions on the
+naming of the variables that we can use in our tests via the tooling.&lt;/p&gt;
+
+&lt;p&gt;This in theory means that everyone can come up with their own variable names.
+But, what does that mean in practice? What do popular open source projects do
+when it comes to naming variables?&lt;/p&gt;
+
+&lt;p&gt;Before we dive in any open source projects, we have to go back to the basics.
+I am not sure if this is well known (enough), as I have found it a bit too
+burried in the Github wiki, but Go has a nice &amp;ldquo;Go Code Review Comments&amp;rdquo;
+&lt;a href=&#34;https://github.com/golang/go/wiki/CodeReviewComments&#34;&gt;page&lt;/a&gt; where variable
+names are discussed.&lt;/p&gt;
+
+&lt;p&gt;While the section is short, it says a lot about how we should be naming our
+variables:&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Variable names in Go should be short rather than long. This is especially
+true for local variables with limited scope. Prefer &lt;code&gt;c&lt;/code&gt; to &lt;code&gt;lineCount&lt;/code&gt;.
+Prefer &lt;code&gt;i&lt;/code&gt; to &lt;code&gt;sliceIndex&lt;/code&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;This part is self-explanatory. Go errs on the side of short variable names. In
+my personal opinion this does not make sense in a time of very powerful text
+editors that autocomplete our code. I prefer to be lazy and read what each
+variable means than figuring out what &lt;code&gt;c&lt;/code&gt;, &lt;code&gt;t&lt;/code&gt; or &lt;code&gt;p&lt;/code&gt; mean. Still, if you
+believe in consistency, we should all follow the same guidelines when writing
+Go.&lt;/p&gt;
+
+&lt;p&gt;Futher, it says:&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;The basic rule: the further from its declaration that a name is used, the
+more descriptive the name must be.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;This is something I personally like as a rule – the cognitive weight should be
+small when regaining context of what a variable or concept means. In such
+cases, &lt;code&gt;configuration&lt;/code&gt; (or &lt;code&gt;conf&lt;/code&gt;) can do wonders compared to &lt;code&gt;c&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Lastly, it states:&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Common variables such as loop indices and readers can be a single letter
+(&lt;code&gt;i&lt;/code&gt;, &lt;code&gt;r&lt;/code&gt;). More unusual things and global variables need more descriptive
+names.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;The &lt;code&gt;i&lt;/code&gt;, &lt;code&gt;j&lt;/code&gt; &amp;amp; &lt;code&gt;k&lt;/code&gt; variable names for indices are very commonly used, especially
+in C-inspired languages, so if you are a little bit experienced (or been exposed)
+to them this will be expected.&lt;/p&gt;
+
+&lt;p&gt;But, are we &lt;a href=&#34;https://en.wikipedia.org/wiki/Law_of_triviality&#34;&gt;bikeshedding&lt;/a&gt;
+here? Why are we discussing variable names, does it matter &lt;strong&gt;that much&lt;/strong&gt;?&lt;/p&gt;
+
+&lt;p&gt;Well, Go tests are just code. Being code, we should expect that all tests
+follow these guidelines just like all other code does. Also, we should write
+our tests using these guidelines so our tests feel familiar to others that will
+work with them. There shouldn&amp;rsquo;t be a major change of code style when switching
+between business logic and tests.&lt;/p&gt;
+
+&lt;p&gt;Now, let&amp;rsquo;s go back to popular open source projects writen in Go:&lt;/p&gt;
+
+&lt;p&gt;Looking at &lt;a href=&#34;https://www.terraform.io&#34;&gt;Terraform&lt;/a&gt;, another popular HashiCorp
+project, one thing that is ubiquitous about its test suite is that the project
+has both, the &lt;code&gt;actual&lt;/code&gt;/&lt;code&gt;expected&lt;/code&gt; and the &lt;code&gt;got&lt;/code&gt;/&lt;code&gt;want&lt;/code&gt; naming convention when
+it comes to test failures.&lt;/p&gt;
+
+&lt;p&gt;Basically, the test case has an &lt;code&gt;expected&lt;/code&gt; value, which is what we expect the
+function under test to return. The &lt;code&gt;actual&lt;/code&gt; value is what the function under
+test returned. What is convenient about following that naming convention is
+that &lt;code&gt;expected&lt;/code&gt; and &lt;code&gt;actual&lt;/code&gt; clearly state that those are the values that will
+have to be compared with each other, which will drive the decision if the test
+will pass or not:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// From: https://github.com/hashicorp/terraform/blob/250527d923f07130c36e65f9bb43b58fcbfe66cf/httpclient/useragent_test.go#L41-L43
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;c&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;expected&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;!=&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;actual&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+  &lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Fatalf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Expected User-Agent &amp;#39;%s&amp;#39; does not match &amp;#39;%s&amp;#39;&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;c&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;expected&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;actual&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Another way to achieve the same is the &lt;code&gt;got&lt;/code&gt;/&lt;code&gt;want&lt;/code&gt; naming, where the
+comparison looks like:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// From: https://github.com/hashicorp/terraform/blob/250527d923f07130c36e65f9bb43b58fcbfe66cf/backend/unparsed_value_test.go#L34-L45
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;got&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;want&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;diags&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;].&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Description&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;().&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Summary&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;undeclPlural&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;got&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;!=&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;want&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+  &lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Errorf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;wrong summary for diagnostic 3\ngot:  %s\nwant: %s&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;got&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;want&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The idea behind the naming is the same, but the goal is to fail with &lt;a href=&#34;https://ieftimov.com/testing-in-go-writing-practical-failure-messages&#34;&gt;a
+practical message&lt;/a&gt; to
+whoever&amp;rsquo;s debugging your code in the future.&lt;/p&gt;
+
+&lt;p&gt;From here on, delving in the variables conventions further would not prove to
+be productive, yet following the naming conventions that we discussed above is
+good enough for your tests. If you would like to read more on the topic, I
+suggest reading the &amp;ldquo;Names&amp;rdquo; section of &lt;a href=&#34;https://golang.org/doc/effective_go.html#names&#34;&gt;Effective
+Go&lt;/a&gt; and &amp;ldquo;Variable Names&amp;rdquo;
+section of the &lt;a href=&#34;https://github.com/golang/go/wiki/CodeReviewComments#variable-names&#34;&gt;Go Code Review
+Comments&lt;/a&gt;
+wiki page.&lt;/p&gt;
+
+&lt;h2 id=&#34;making-things-boring&#34;&gt;Making things boring&lt;/h2&gt;
+
+&lt;p&gt;Probably you now:&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Why do you bother me with these rules and conventions? &lt;code&gt;go fmt&lt;/code&gt; takes care of
+my code, isn&amp;rsquo;t that enough?&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;I hear you and I get your point.&lt;/p&gt;
+
+&lt;p&gt;Here&amp;rsquo;s how I look at it: easy conventions to follow diminish entropy, which
+makes for simpler and predictable code. The less cognitive load we have to
+absorb when working with a piece of code – the better.&lt;/p&gt;
+
+&lt;p&gt;In other words: I like boring code. Boring code is good. I like code that will
+dully adhere to Go&amp;rsquo;s naming conventions, regardless if I find them appealing or
+not. Conventions are put in place to make our lives easier, by not having to
+think if it should be &lt;code&gt;i&lt;/code&gt; or &lt;code&gt;index&lt;/code&gt;, and knowing that &lt;code&gt;conf&lt;/code&gt; will always mean
+&lt;code&gt;configuration&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;And I hope that you will find the boringness of such conventions liberating and
+empowering over time.&lt;/p&gt;
 </description>
       
     </item>

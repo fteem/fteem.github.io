@@ -79,7 +79,7 @@ The first memory I have of walking in the hotel was the May heat and humidity.">
 
 <meta itemprop="datePublished" content="2019-06-24T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2019-06-24T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="2203">
+<meta itemprop="wordCount" content="2371">
 
   <meta itemprop="image" content="https://ieftimov.com/cards/testing-in-go-naming-conventions.png">
 
@@ -370,12 +370,12 @@ package along with any files with names that match the file pattern
 compiles them as a separate package, and then links and runs them with the main
 test binary.</p>
 
-<p>When it comes to packages, Go expects that all test files are part of the same
-package that they test. For example, if <code>person.go</code> defines a <code>person</code> package,
-the respective <code>person_test.go</code> should also be part of the <code>person</code> package.
-This also means that both, the <code>person.go</code> and <code>person_test.go</code> files should be
-placed in the same directory - we let Go worry what files should be loaded
-depending on what <code>go</code> command we run.</p>
+<p>When it comes to packages, Go by default expects that all test files are part
+of the same package that they test. For example, if <code>person.go</code> defines a
+<code>person</code> package, the respective <code>person_test.go</code> should also be part of the
+<code>person</code> package. This also means that both, the <code>person.go</code> and
+<code>person_test.go</code> files should be placed in the same directory - we let Go worry
+what files should be loaded depending on what <code>go</code> command we run.</p>
 
 <p>Looking at Golang&rsquo;s source code oddly I found some disregard for these rules.
 For example, the tests for the <code>fmt</code> package in the standard library, belong to
@@ -383,18 +383,34 @@ a <a href="https://github.com/golang/go/blob/e9188d1d18040bc6cb46065b2474664b872
 package</a>,
 instead of the <code>fmt</code> package.</p>
 
-<p>But, as Andrew Gerrand said in his 2014 talk <a href="https://talks.golang.org/2014/names.slide#17">&ldquo;What&rsquo;s in a
-name?&rdquo;</a>:</p>
+<p>At first, my observation was that this is wrong and for some reason it is not
+fixed yet. After a more thorough research it was obvious that this is an
+intentional approach and not a mistake. As explained in
+<a href="https://stackoverflow.com/a/31443271/601555">this</a> Stack Overflow answer, the
+best way to look at this is to differentiate the two approaches as &ldquo;black box&rdquo;
+and &ldquo;white box&rdquo; testing.</p>
 
-<blockquote>
-<p>The standard library is a great place to find good Go code. &hellip; When the
-standard library was written, we were still learning. Most of it we got
-right, but we made some mistakes.</p>
-</blockquote>
+<p>The <strong>black box approach</strong>, where the test and the production code are in
+separate packages, allows us to test only the <a href="https://golang.org/ref/spec#Exported_identifiers">exported
+identifiers</a> of a package.
+This means that our test package will not have access to any of the internal
+functions, variables or constants that are in the production code.</p>
 
-<p>We can only speculate that the tests of the <code>fmt</code> package are one of those few
-places where they made small mistakes. Still, if you would like to learn how to
-write good Go, the source code of the language is still the best place to read.</p>
+<p>The <strong>white box approach</strong>, where the test and the production code are in the same
+package, allows us to test both the non-exported and expored identifiers of the
+package. This is the preferrable approach when writing unit tests that require
+access to non-exported variables, functions, and methods.</p>
+
+<p>I personally find the white box approach preferrable, because this is the
+default behaviour of the tooling that ships with the language. We as users of
+said tooling should employ good judgement and conventions to write code that is
+testable and avoid touching non-exported identifiers in the tests. In other
+words, we should adhere to the defaults, unless we have a really good reason
+not to.</p>
+
+<p>In any case, if you would like to learn how to idiomatic Go and how to organise
+your packages properly, the source code of the language is the best place to
+learn from.</p>
 
 <h2 id="function-naming-conventions">Function naming conventions</h2>
 
