@@ -6,7 +6,7 @@
     <description>Recent content on Ilija Eftimov</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 24 Jun 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 01 Jul 2019 00:00:00 +0000</lastBuildDate>
     
         <atom:link href="https://ieftimov.com/index.xml" rel="self" type="application/rss+xml" />
     
@@ -122,6 +122,8 @@ advanced subtopic.&lt;/p&gt;
           
             &lt;li&gt;&lt;a href=&#34;https://ieftimov.com/post/testing-in-go-naming-conventions/&#34;&gt;Testing in Go: Naming Conventions&lt;/a&gt;&lt;/li&gt;
           
+            &lt;li&gt;&lt;a href=&#34;https://ieftimov.com/post/testing-in-go-go-test/&#34;&gt;Testing in Go: go test&lt;/a&gt;&lt;/li&gt;
+          
         
       
     
@@ -203,6 +205,817 @@ Ruby on Rails developer at &lt;a href=&#34;http://siyelo.com&#34;&gt;Siyelo&lt;/
 &lt;a href=&#34;https://github.com/fteem&#34;&gt;Github&lt;/a&gt;,
 &lt;a href=&#34;https://www.linkedin.com/in/ieftimov/&#34;&gt;LinkedIn&lt;/a&gt; or
 &lt;a href=&#34;email:ieftimovcom@gmail.com&#34;&gt;e-mail&lt;/a&gt;.&lt;/p&gt;
+</description>
+      
+    </item>
+    
+    <item>
+      <title>Testing in Go: go test</title>
+      <link>https://ieftimov.com/post/testing-in-go-go-test/</link>
+      <pubDate>Mon, 01 Jul 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://ieftimov.com/post/testing-in-go-go-test/</guid>
+      
+        <description>
+
+&lt;p&gt;As I was going down the stairs I remember feeling the temperature dropping. It
+was an astounding experience descending towards the basement in my
+grandparents&amp;rsquo; house – it felt cooler and quieter. The light was warm and
+dimmed, with creepy shadows dropping behind the old furniture that was serving
+its last years before getting disposed to the city cleaning service.&lt;/p&gt;
+
+&lt;p&gt;One of the rooms in the basement was my grandfather’s workshop. There were many
+tools that he collected over the years. Some were hanging on the wall, making
+it quite hard for me to reach them. The ones on the working desk were easy to
+reach, yet very hard to carry. At least for 5-year-olds.&lt;/p&gt;
+
+&lt;p&gt;It was one of the first times I remember trying to handle any tooling.
+Watching my grandfather working with tools was always great because I could see
+something get created in front of my eyes. I remember him making me a pair of
+nunchucks (not a good idea!) A mundane task for him, but I was watching a
+magician conjure a pair of home-made nunchucks out of some wood and a very
+light chain.  Very cool!&lt;/p&gt;
+
+&lt;p&gt;Years later I realised that knowing how to use my tools to create things out of
+thin air is one of my great joys. Programmers are also builders, so we have to
+know our tools well. We are not making physical masterpieces (nunchuks
+anyone?), but we sure have to learn our tools to build good software.&lt;/p&gt;
+
+&lt;p&gt;That&amp;rsquo;s why in this article we will look at one important tool from our Go
+toolbox - the &lt;code&gt;go test&lt;/code&gt; command.&lt;/p&gt;
+
+&lt;h2 id=&#34;what-is-go-test-anyway&#34;&gt;What is &lt;code&gt;go test&lt;/code&gt; anyway?&lt;/h2&gt;
+
+&lt;p&gt;If you&amp;rsquo;re going to remember anything, remember this: &lt;code&gt;go test&lt;/code&gt; is a command
+which automates the execution of test files and functions in a Go project. The
+&lt;code&gt;go test&lt;/code&gt; command ships with Go itself, so if you have Go installed there&amp;rsquo;s
+nothing to check - it&amp;rsquo;s available on your machine.&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;go test&lt;/code&gt; will recompile each package along with any files with names matching
+the file pattern &lt;code&gt;*_test.go&lt;/code&gt;. These &lt;code&gt;*_test.go&lt;/code&gt; files can contain test
+functions, benchmark functions, and example functions. Each listed package will
+cause the execution of a separate test binary.&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;go test&lt;/code&gt; compiles test files, that declare a package, ending with the suffix
+&lt;code&gt;*_test.go&lt;/code&gt; as a separate package. It then links them with the main test binary
+and runs them.&lt;/p&gt;
+
+&lt;p&gt;While &lt;code&gt;go test&lt;/code&gt; seems simple on the surface, it actually has many options and
+commands. It allows for control of what test to be run, as in file-specific or
+package-specific tests, has flags for skipping tests, reporting test coverage
+and other options. Also, it has smart caching mechanisms under the hood, to
+avoids rebuilding packages every time we run our tests.&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;go test&lt;/code&gt; is a compact yet a rich tool that every Gopher should have a solid
+command of. We will not look at all its features, but at the end of this
+article, we will have a good understanding of the workings of the tool.&lt;/p&gt;
+
+&lt;h2 id=&#34;running-modes&#34;&gt;Running modes&lt;/h2&gt;
+
+&lt;p&gt;&lt;code&gt;go test&lt;/code&gt; has two running modes. Understanding them is essential to having an
+easy time working with the tool:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Local directory mode, or running without arguments&lt;/li&gt;
+&lt;li&gt;Package list mode, or running with arguments&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;In the &lt;strong&gt;local directory mode&lt;/strong&gt;, &lt;code&gt;go test&lt;/code&gt; compiles the package sources and
+tests found in the current directory and then runs the resulting test binary.
+This mode disables caching. After the package test finishes, &lt;code&gt;go test&lt;/code&gt; prints a
+summary line showing the test status (&amp;lsquo;ok&amp;rsquo; or &amp;lsquo;FAIL&amp;rsquo;), the package name, and
+elapsed time.&lt;/p&gt;
+
+&lt;p&gt;To run your tests in this mode, run &lt;code&gt;go test&lt;/code&gt; in your project&amp;rsquo;s root directory.&lt;/p&gt;
+
+&lt;p&gt;In the &lt;strong&gt;package list mode&lt;/strong&gt;, &lt;code&gt;go test&lt;/code&gt; compiles and tests each of the packages
+listed as arguments to the command. If a package test passes, &lt;code&gt;go test&lt;/code&gt; prints
+only the final &amp;lsquo;ok&amp;rsquo; summary line. If a package test fails, go test prints the
+full test output.&lt;/p&gt;
+
+&lt;p&gt;To run your test in this mode, run &lt;code&gt;go test&lt;/code&gt; with explicit package arguments.
+For example, we can run &lt;code&gt;go test PACKAGE_NAME&lt;/code&gt; to test a specific package or
+&lt;code&gt;go test ./...&lt;/code&gt; to test all packages in a directory tree or &lt;code&gt;go test .&lt;/code&gt; to run
+all tests in the current directory.&lt;/p&gt;
+
+&lt;p&gt;In our daily work with &lt;code&gt;go test&lt;/code&gt;, the difference between the two modes is
+caching.&lt;/p&gt;
+
+&lt;p&gt;When we run &lt;code&gt;go test&lt;/code&gt; in package list mode it will cache successful package
+test results to avoid unnecessary reruns. When it can find the result of a test
+in the cache, &lt;code&gt;go test&lt;/code&gt; will redisplay the cached result instead of running the
+tests again. When this happens, &lt;code&gt;go test&lt;/code&gt; will annotate the test results with
+&lt;code&gt;(cached)&lt;/code&gt; in place of the elapsed time in the summary line.&lt;/p&gt;
+
+&lt;h2 id=&#34;test-run-control&#34;&gt;Test run control&lt;/h2&gt;
+
+&lt;p&gt;One of the major features of the &lt;code&gt;go test&lt;/code&gt; command is the ability to control
+what tests files and test functions we can run. As we discussed before, &lt;code&gt;go
+test&lt;/code&gt; has two modes to which we can supply package or file names. Additionally,
+we can also selectively run one or more test functions.&lt;/p&gt;
+
+&lt;p&gt;To have an easier time further in this post, we will define a type &lt;code&gt;Person&lt;/code&gt;.
+It will have two functions: a constructor &lt;code&gt;NewPerson&lt;/code&gt; and a function &lt;code&gt;older&lt;/code&gt;,
+which will take a &lt;code&gt;*Person&lt;/code&gt; and return if one &lt;code&gt;*Person&lt;/code&gt; is older than another
+&lt;code&gt;*Person&lt;/code&gt;.&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kn&#34;&gt;package&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;person&lt;/span&gt;
+
+&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;&amp;#34;errors&amp;#34;&lt;/span&gt;
+
+&lt;span class=&#34;kd&#34;&gt;type&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Person&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+
+&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;NewPerson&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;error&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Person&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+		&lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;errors&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;New&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;A person is at least 1 years old&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;nil&lt;/span&gt;
+	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+
+	&lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;nil&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Person&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+		&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+
+&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;p&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Person&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;older&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;other&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Person&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;bool&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;other&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Let&amp;rsquo;s add tests for the constructor and the &lt;code&gt;older&lt;/code&gt; function. We want to test
+that the constructor will return an error when a negative integer is passed as
+the &lt;code&gt;age&lt;/code&gt; argument:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kn&#34;&gt;package&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;person&lt;/span&gt;
+
+&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+	&lt;span class=&#34;s&#34;&gt;&amp;#34;testing&amp;#34;&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;TestNewPersonPositiveAge&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;nx&#34;&gt;err&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;_&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;NewPerson&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+	&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;err&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;!=&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;nil&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+		&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Errorf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Expected person, received %v&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;err&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+
+&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;TestNewPersonNegativeAge&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;nx&#34;&gt;err&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;NewPerson&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+	&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;err&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;==&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;nil&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+		&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Errorf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Expected error, received %v&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Let&amp;rsquo;s add two more tests for the &lt;code&gt;older&lt;/code&gt; function. We will create two &lt;code&gt;*Person&lt;/code&gt;
+with different ages and check for the return value of the &lt;code&gt;older&lt;/code&gt; function:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;TestOlderFirstOlderThanSecond&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;nx&#34;&gt;_&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p1&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;NewPerson&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+	&lt;span class=&#34;nx&#34;&gt;_&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p2&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;NewPerson&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+	&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;older&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;p2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+		&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Errorf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Expected p1 with age %d to be younger than p2 with age %d&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+
+&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;TestOlderSecondOlderThanFirst&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;nx&#34;&gt;_&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p1&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;NewPerson&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+	&lt;span class=&#34;nx&#34;&gt;_&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p2&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;NewPerson&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+	&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;!&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;p1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;older&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;p2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+		&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Errorf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Expected p1 with age %d to be older than p2 with age %d&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;(If you find the tests a bit confusing I apologise - tried hard to make them
+more readable but it was hard. I guess that says something about the example.)&lt;/p&gt;
+
+&lt;p&gt;The first way to control tests running is by supplying the test files as
+arguments to the &lt;code&gt;go test&lt;/code&gt; command. For example, if we have a &lt;code&gt;person.go&lt;/code&gt; and
+&lt;code&gt;person_test.go&lt;/code&gt; files, we need to run:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; person.go person_test.go
+ok  	command-line-arguments	&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.005s&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;The &lt;code&gt;go test&lt;/code&gt; command prints only the final &lt;code&gt;ok&lt;/code&gt;, because all the test cases
+passed. If we would like to see a more detailed output, we can use the &lt;code&gt;-v&lt;/code&gt;
+flag:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; person.go person_test.go -v
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonPositiveAge
+--- PASS: TestNewPersonPositiveAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonNegativeAge
+--- PASS: TestNewPersonNegativeAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestOlderFirstOlderThanSecond
+--- PASS: TestOlderFirstOlderThanSecond &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestOlderSecondOlderThanFirst
+--- PASS: TestOlderSecondOlderThanFirst &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+PASS
+ok  	command-line-arguments	&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.005s&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;The second way to run the test for the &lt;code&gt;person&lt;/code&gt; package is to supply its name
+to the &lt;code&gt;go test&lt;/code&gt; command:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; person
+ok  	person	&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.004s&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;This way, the &lt;code&gt;go test&lt;/code&gt; locates the package, builds it and runs its tests.
+(Adding the &lt;code&gt;-v&lt;/code&gt; flag will produce the same output as before.)&lt;/p&gt;
+
+&lt;p&gt;The third way to run tests is by specifying a test function to be run, using
+the &lt;code&gt;-run&lt;/code&gt; flag. The flag takes an argument, which is a regex that will try to
+match against any test functions in the current directory. For example, if we
+would like to run the &lt;code&gt;TestNewPersonPositiveAge&lt;/code&gt; and &lt;code&gt;TestNewPersonNegativeAge&lt;/code&gt;
+function, we can do this:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -run TestNewPerson -v
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonPositiveAge
+--- PASS: TestNewPersonPositiveAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonNegativeAge
+--- PASS: TestNewPersonNegativeAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+PASS
+ok  	person	&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.004s&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;If we mistakenly supply a regexp that will not match anything, &lt;code&gt;go test&lt;/code&gt; will
+inform us about it:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -run TestFoo -v
+testing: warning: no tests to run
+PASS
+ok  	person	&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.004s&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h2 id=&#34;failing-fast&#34;&gt;Failing Fast&lt;/h2&gt;
+
+&lt;p&gt;Often when running tests we want to lower the waiting time and stop at the
+first test failure we hit. The default mode is to wait for all tests to finish
+before the errors are reported, so depending on the project this can save us
+some time.&lt;/p&gt;
+
+&lt;p&gt;To do this, &lt;code&gt;go test&lt;/code&gt; has a special flag we can use: &lt;code&gt;-failfast&lt;/code&gt;. Fail fast
+does what it advertises: it will stop at the first test that fails, exiting the
+process that is running the test suite/files. To see it in action, we will
+break one of the test functions for the &lt;code&gt;older&lt;/code&gt; function that we introduced
+earlier:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// Removing everything else for brewity...
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;
+&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;TestOlderFirstOlderThanSecond&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;nx&#34;&gt;_&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p1&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;NewPerson&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;100&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+	&lt;span class=&#34;nx&#34;&gt;_&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p2&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;NewPerson&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+	&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;older&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;p2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+		&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Errorf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Expected p1 with age %d to be younger than p2 with age %d&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;We know this test will fail: &lt;code&gt;p1&lt;/code&gt; will be older than &lt;code&gt;p2&lt;/code&gt;, because they are
+&lt;code&gt;100&lt;/code&gt; and &lt;code&gt;2&lt;/code&gt; years old respectively. If we run &lt;code&gt;go test&lt;/code&gt; it will run all the
+test functions, regardless if some fail:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonPositiveAge
+--- PASS: TestNewPersonPositiveAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonNegativeAge
+--- PASS: TestNewPersonNegativeAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestOlderFirstOlderThanSecond
+--- FAIL: TestOlderFirstOlderThanSecond &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+    person_test.go Expected p1 with age &lt;span class=&#34;m&#34;&gt;100&lt;/span&gt; to be younger than p2 with age &lt;span class=&#34;nv&#34;&gt;2&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestOlderSecondOlderThanFirst
+--- PASS: TestOlderSecondOlderThanFirst &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+FAIL
+&lt;span class=&#34;nb&#34;&gt;exit&lt;/span&gt; status &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;
+FAIL	person	&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.004s&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Now, let&amp;rsquo;s see the difference if we add the &lt;code&gt;-failfast&lt;/code&gt; flag:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v -failfast
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonPositiveAge
+--- PASS: TestNewPersonPositiveAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonNegativeAge
+--- PASS: TestNewPersonNegativeAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestOlderFirstOlderThanSecond
+--- FAIL: TestOlderFirstOlderThanSecond &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+    person_test.go Expected p1 with age &lt;span class=&#34;m&#34;&gt;100&lt;/span&gt; to be younger than p2 with age &lt;span class=&#34;m&#34;&gt;2&lt;/span&gt;
+FAIL
+&lt;span class=&#34;nb&#34;&gt;exit&lt;/span&gt; status &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;
+FAIL	person	&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.004s&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;By adding the &lt;code&gt;-failfast&lt;/code&gt; flag we actually stopped right where we got the first
+failure - when running the &lt;code&gt;TestOlderFirstOlderThanSecond&lt;/code&gt; test function. This
+option is useful when we do some heavier refactorings of our code. If our
+refactor breaks some tests, instead of being overwhelmed by all the errors we
+can add the &lt;code&gt;-failfast&lt;/code&gt; flag and fix errors one by one.&lt;/p&gt;
+
+&lt;p&gt;Next time you do some big refactors give it a shot, it might save you some
+sanity as you&amp;rsquo;re fixing the tests.&lt;/p&gt;
+
+&lt;h2 id=&#34;coverage&#34;&gt;Coverage&lt;/h2&gt;
+
+&lt;p&gt;Another interesting feature that is packed in &lt;code&gt;go test&lt;/code&gt; is test coverage. Taken
+from Go&amp;rsquo;s website from the &lt;a href=&#34;https://blog.golang.org/cover&#34;&gt;blog post on
+coverage&lt;/a&gt;:&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Test coverage is a term that describes how much of a package&amp;rsquo;s code is
+exercised by running the package&amp;rsquo;s tests. If executing the test suite causes
+80% of the package&amp;rsquo;s source statements to be run, we say that the test
+coverage is 80%.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;We will not go in detail here on how the coverage tools work. I recommend
+referring to the &amp;ldquo;Test coverage for Go&amp;rdquo; section in the aforementioned post to
+understand how it actually measures the coverage.&lt;/p&gt;
+
+&lt;p&gt;If we would like to check the test coverage on our &lt;code&gt;Person&lt;/code&gt; type and its
+functions, we can run &lt;code&gt;go test -cover&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -cover
+PASS
+coverage: &lt;span class=&#34;m&#34;&gt;100&lt;/span&gt;.0% of statements
+ok  	person	&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.004s&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;This is great - it means that our tests cover all the functionality of our
+functions. To see the coverage tool in action, we can add some more
+functionality to the &lt;code&gt;NewPerson&lt;/code&gt; constructor function. Creating a person that
+is 1000 years old doesn&amp;rsquo;t make much sense, especially
+&lt;a href=&#34;https://en.wikipedia.org/wiki/List_of_the_verified_oldest_people&#34;&gt;knowing&lt;/a&gt;
+that the older person ever recorded was 122 years old. We can extend the
+constructor to validate that the newly created &lt;code&gt;Person&lt;/code&gt; instance cannot be
+older than 130 years:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;23
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;24
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;25
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kn&#34;&gt;package&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;person&lt;/span&gt;
+
+&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;&amp;#34;errors&amp;#34;&lt;/span&gt;
+
+&lt;span class=&#34;kd&#34;&gt;type&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Person&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+
+&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;NewPerson&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;error&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Person&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+		&lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;errors&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;New&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;A person is at least 1 years old&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;nil&lt;/span&gt;
+	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+
+	&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;130&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+		&lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;errors&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;New&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;A person cannot be older than 130 years&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;nil&lt;/span&gt;
+	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+
+	&lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;nil&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Person&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+		&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+
+&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;p&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Person&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;older&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;other&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Person&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;bool&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;other&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;If we would run the coverage report again, we will see the following output:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -cover -v
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonPositiveAge
+--- PASS: TestNewPersonPositiveAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonNegativeAge
+--- PASS: TestNewPersonNegativeAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestOlderFirstOlderThanSecond
+--- PASS: TestOlderFirstOlderThanSecond &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestOlderSecondOlderThanFirst
+--- PASS: TestOlderSecondOlderThanFirst &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+PASS
+coverage: &lt;span class=&#34;m&#34;&gt;83&lt;/span&gt;.3% of statements
+ok  	person	&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.004s&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Whoops, our coverage dropped from 100% to 83.3%. To see where our problem is,
+we can ask &lt;code&gt;go test&lt;/code&gt; to create a coverage profile for us, using the
+&lt;code&gt;-coverprofile&lt;/code&gt; flag:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverprofile&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;prof.out
+PASS
+coverage: &lt;span class=&#34;m&#34;&gt;83&lt;/span&gt;.3% of statements
+ok  	person	&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.004s&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;This will create a &lt;code&gt;prof.out&lt;/code&gt; file, looking like this:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ cat prof.out
+mode: &lt;span class=&#34;nb&#34;&gt;set&lt;/span&gt;
+person/person.go:9.42,10.13 &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;
+person/person.go:14.2,14.16 &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;
+person/person.go:18.2,20.3 &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;
+person/person.go:10.13,12.3 &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;
+person/person.go:14.16,16.3 &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;
+person/person.go:23.44,25.2 &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;1&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;We don&amp;rsquo;t have to understand the output here, because Go has another tool that
+we can use with the profile file to visualise the coverage report better: its
+name is &lt;code&gt;go tool cover&lt;/code&gt;. Using the &lt;code&gt;prof.out&lt;/code&gt; profile file we have, we can
+generate an HTML page that will visualise what parts of the code are covered by
+tests:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ go tool cover -html&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;prof.out&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;This command pops open our browser with a page looking like this:&lt;/p&gt;
+
+
+
+
+
+
+
+
+
+
+
+&lt;span class=&#34;caption-wrapper&#34;&gt;
+  &lt;img class=&#34;caption&#34; src=&#34;https://ieftimov.com/testing-in-go-go-test/coverage-report.png&#34; title=&#34;&#34; alt=&#34;&#34;&gt;
+  &lt;span class=&#34;caption-text&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;
+
+
+&lt;p&gt;Looking at the image above, the red coloured code is the one that is never run.
+In other words, the red code is not covered, while the green one is. The grey
+code is not tracked, because from the coverage tool perspective it&amp;rsquo;s
+boilerplate (read: not needed to be tested).&lt;/p&gt;
+
+&lt;p&gt;From the image, it&amp;rsquo;s clear that our tests never run the new branch where we
+handle unreasonably old age as the argument. Let&amp;rsquo;s add another quick test function
+that will cover this functionality:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// person_test.go
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;TestNewPersonHugeAge&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;nx&#34;&gt;err&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;NewPerson&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;150&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+	&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;err&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;==&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;nil&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+		&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Errorf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Expected error, received %v&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;After running &lt;code&gt;go test -coverprofile=hundred.out -v&lt;/code&gt; we will see the coverage
+go back to 100% again:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -coverprofile&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;hundred.out -v
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonPositiveAge
+--- PASS: TestNewPersonPositiveAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonNegativeAge
+--- PASS: TestNewPersonNegativeAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonHugeAge
+--- PASS: TestNewPersonHugeAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestOlderFirstOlderThanSecond
+--- PASS: TestOlderFirstOlderThanSecond &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestOlderSecondOlderThanFirst
+--- PASS: TestOlderSecondOlderThanFirst &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+PASS
+coverage: &lt;span class=&#34;m&#34;&gt;100&lt;/span&gt;.0% of statements
+ok  	person	&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.004s&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Here&amp;rsquo;s the HTML output of the coverage profile:&lt;/p&gt;
+
+
+
+
+
+
+
+
+
+
+
+&lt;span class=&#34;caption-wrapper&#34;&gt;
+  &lt;img class=&#34;caption&#34; src=&#34;https://ieftimov.com/testing-in-go-go-test/coverage-report-100.png&#34; title=&#34;&#34; alt=&#34;&#34;&gt;
+  &lt;span class=&#34;caption-text&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;
+
+
+&lt;p&gt;The &lt;code&gt;go test&lt;/code&gt; and &lt;code&gt;go tool cover&lt;/code&gt; tools packs more combined functionality. I
+encourage you to read more about it in &lt;a href=&#34;https://blog.golang.org/cover&#34;&gt;the official blog
+post&lt;/a&gt; and to expriment further with the tools.&lt;/p&gt;
+
+&lt;h2 id=&#34;running-modes-1&#34;&gt;Running modes&lt;/h2&gt;
+
+&lt;p&gt;Software is built to serve highly mutable business requirements, which results
+in applications that grow and evolve over time. Such applications are
+(hopefully) well tested, with tests operating on unit, integration and
+end-to-end levels.&lt;/p&gt;
+
+&lt;p&gt;A common technique on bigger projects often is to be explicit what type of
+tests we want to run. For example, when running &lt;code&gt;go test&lt;/code&gt;, do we want to
+include running the integration tests of the project, or just the unit tests?
+In such cases, there are two useful techniques that come out of the box with
+Go: build tags and short mode.&lt;/p&gt;
+
+&lt;h3 id=&#34;using-short-mode&#34;&gt;Using &lt;code&gt;-short&lt;/code&gt; mode&lt;/h3&gt;
+
+&lt;p&gt;The &lt;code&gt;-short&lt;/code&gt; mode for &lt;code&gt;go test&lt;/code&gt; allows us to mark any long-running tests to be
+skipped in this mode. &lt;code&gt;go test&lt;/code&gt; and the &lt;code&gt;testing&lt;/code&gt; package support this via the
+&lt;code&gt;t.Skip()&lt;/code&gt;, the &lt;code&gt;testing.Short()&lt;/code&gt; functions and the &lt;code&gt;-short&lt;/code&gt; flag.&lt;/p&gt;
+
+&lt;p&gt;We can skip a test function by checking if the short mode is on and invoking
+the &lt;code&gt;t.Skip&lt;/code&gt; function if that returns &lt;code&gt;true&lt;/code&gt;. Let&amp;rsquo;s see this by changing an
+earlier example:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;TestOlderFirstOlderThanSecond&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+	&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;testing&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Short&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+		&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Skip&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Skipping long-running test.&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+	&lt;span class=&#34;nx&#34;&gt;_&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p1&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;NewPerson&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+	&lt;span class=&#34;nx&#34;&gt;_&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p2&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;NewPerson&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+	&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;older&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;p2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+		&lt;span class=&#34;nx&#34;&gt;t&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;Errorf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;Expected p1 with age %d to be younger than p2 with age %d&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;p2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;age&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+	&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;If we run the tests normally, using &lt;code&gt;go test -v&lt;/code&gt; we should see no change in the
+output:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -v
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonPositiveAge
+--- PASS: TestNewPersonPositiveAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonNegativeAge
+--- PASS: TestNewPersonNegativeAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonHugeAge
+--- PASS: TestNewPersonHugeAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestOlderFirstOlderThanSecond
+--- PASS: TestOlderFirstOlderThanSecond &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestOlderSecondOlderThanFirst
+--- PASS: TestOlderSecondOlderThanFirst &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+PASS
+ok  	person	&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.004s&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;If we would enable the short mode using the &lt;code&gt;-short&lt;/code&gt; flag, we should see the
+change in the behaviour and output:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -short -v
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonPositiveAge
+--- PASS: TestNewPersonPositiveAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonNegativeAge
+--- PASS: TestNewPersonNegativeAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonHugeAge
+--- PASS: TestNewPersonHugeAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestOlderFirstOlderThanSecond
+--- SKIP: TestOlderFirstOlderThanSecond &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+    person_test.go Skipping long-running test.
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestOlderSecondOlderThanFirst
+--- PASS: TestOlderSecondOlderThanFirst &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+PASS
+ok  	person	&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.005s&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;We can see that the output contains one &lt;code&gt;SKIP&lt;/code&gt; line, meaning in short mode &lt;code&gt;go
+test&lt;/code&gt; skipped the test function. We can use &lt;code&gt;-short&lt;/code&gt; in other ways, besides
+skipping a test. For example, mocking networks calls instead of opening a
+connection or loading simple fixtures instead of loading them from a database.
+The options are many, it all depends on the function that the test is covering.&lt;/p&gt;
+
+&lt;h3 id=&#34;using-build-tags&#34;&gt;Using build tags&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;go test&lt;/code&gt; supports build tags out of the box, like the &lt;code&gt;-short&lt;/code&gt; flag. While we
+apply the short mode on the function level, we use the build tags on a file
+level. This means that there is no way to use build tags to skip one or a few
+functions. Rather, build tags are used to run (or skip) a special type of test
+files from our test suite.&lt;/p&gt;
+
+&lt;p&gt;There are a couple of rules on build tags. As indicated in
+&lt;a href=&#34;https://stackoverflow.com/a/28007631/601555&#34;&gt;this&lt;/a&gt; Stack Overflow answer:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;build tags are special comments, with the format &lt;code&gt;// +build TAGNAME&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;we have to place the tag on the first line of the file&lt;/li&gt;
+&lt;li&gt;we have to add an empty line after the tag&lt;/li&gt;
+&lt;li&gt;the tag name comment cannot have a dash, but it allows underscores&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Following these rules, we can add a tag to our &lt;code&gt;person_test.go&lt;/code&gt; file from
+earlier:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// +build person_tests
+&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;
+&lt;span class=&#34;kn&#34;&gt;package&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;person&lt;/span&gt;
+
+&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
+	&lt;span class=&#34;s&#34;&gt;&amp;#34;testing&amp;#34;&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+
+&lt;span class=&#34;o&#34;&gt;//&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;Snipped&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;...&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;(The &lt;code&gt;person_tests&lt;/code&gt; tag is a useless when we have only one file in the test
+suite, but we will add it for experimentational purposes.)&lt;/p&gt;
+
+&lt;p&gt;To add the build tag to our &lt;code&gt;go test&lt;/code&gt; command, we need to run &lt;code&gt;go test
+-tags=TAG_NAME&lt;/code&gt;. To run the files with the &lt;code&gt;person_tests&lt;/code&gt; build tag:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -tags&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;person_tests -v
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonPositiveAge
+--- PASS: TestNewPersonPositiveAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonNegativeAge
+--- PASS: TestNewPersonNegativeAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestNewPersonHugeAge
+--- PASS: TestNewPersonHugeAge &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestOlderFirstOlderThanSecond
+--- PASS: TestOlderFirstOlderThanSecond &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;span class=&#34;o&#34;&gt;===&lt;/span&gt; RUN   TestOlderSecondOlderThanFirst
+--- PASS: TestOlderSecondOlderThanFirst &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.00s&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+PASS
+ok  	person	&lt;span class=&#34;m&#34;&gt;0&lt;/span&gt;.005s&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Based on the supplied tag, &lt;code&gt;go test&lt;/code&gt; detects the files tagged with
+&lt;code&gt;person_tests&lt;/code&gt; and runs them. If we would supply a tag that does not exist in
+the package, the output would report that no files are found:&lt;/p&gt;
+
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ go &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; -tags&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;foo -v
+?   	person	&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;no &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; files&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h2 id=&#34;notable-mentions&#34;&gt;Notable mentions&lt;/h2&gt;
+
+&lt;p&gt;Covering all the features that &lt;code&gt;go test&lt;/code&gt; packs in a single post is a hard
+undertaking. Here I will mention some other useful features that you should try
+to use and read more on:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;List tests with &lt;code&gt;-list&lt;/code&gt;: to list tests, benchmarks, or examples matching a
+regular expression passed as the argument. The usage of the &lt;code&gt;-list&lt;/code&gt; flags is
+analogous to the &lt;code&gt;-run&lt;/code&gt; flag that we discussed before. When we use this flag
+&lt;code&gt;go test&lt;/code&gt; will not run any tests, benchmarks or examples.&lt;/li&gt;
+&lt;li&gt;Disabling caching with &lt;code&gt;-count&lt;/code&gt;: as we discussed before, &lt;code&gt;go test&lt;/code&gt; by default
+caches test results for packages. It then uses them to skip running tests
+that have are not modified between two runs. Although can improve the
+performance, there are times when we would like to disable the caching using
+the &lt;code&gt;-count=1&lt;/code&gt; flag.&lt;/li&gt;
+&lt;li&gt;Get JSON output using &lt;code&gt;-json&lt;/code&gt;: if we would like to take the output of &lt;code&gt;go
+test&lt;/code&gt; and process it using a program, having it in a JSON format is better
+than normal text. This flag will convert the output to JSON, so processing it
+with a program is less cumbersome.&lt;/li&gt;
+&lt;li&gt;Use more CPU cores using &lt;code&gt;-cpu&lt;/code&gt;: this flag will set the &lt;code&gt;GOMAXPROCS&lt;/code&gt; variable
+to the argument that we pass to the flag. It limits the number of operating
+system threads that can execute user-level Go code simultaneously.&lt;/li&gt;
+&lt;li&gt;Detect race conditions using &lt;code&gt;-race&lt;/code&gt;: since it&amp;rsquo;s very easy to write
+concurrent code in Go, race conditions are always a risk. Go&amp;rsquo;s tooling is
+great in this regard - it has a fully integrated race conditions detector in
+its toolchain. You can read more about it in &lt;a href=&#34;https://blog.golang.org/race-detector&#34;&gt;its announcement blog
+post&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
 </description>
       
     </item>
