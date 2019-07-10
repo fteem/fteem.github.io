@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="en" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Testing in Go: Table-Driven Tests - Ilija Eftimov</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="Ilija Eftimov" />
+  <meta name="description" content="Coming from Ruby, which has excellent testing tools and libraries, the notion of table-driven tests was unusual for me. The popular testing libraries in Ruby, like RSpec, force the programmer to approach testing from a BDD standpoint. Thus, coming to Go and learning about the table-driven test was definitely a new way of looking at tests for me.
+Looking back, Dave Cheney&amp;rsquo;s 2013 seminal blog post &amp;ldquo;Writing table driven-tests in Go&amp;rdquo; was very likely my gateway to table-driven tests." />
+
+  <meta name="keywords" content="Software, Programming, Computer Science, Products" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.55.5" />
+
+
+<link rel="canonical" href="https://ieftimov.com/post/testing-in-go-table-driven-tests/" />
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.ec807d8b802a40889537c26e014f733206312ea440d42e1f0dabed80918de1ac.css" integrity="sha256-7IB9i4AqQIiVN8JuAU9zMgYxLqRA1C4fDavtgJGN4aw=" media="screen" crossorigin="anonymous">
+
+
+
+
+<link rel="stylesheet" href="/css/overrides.css">
+
+<link rel="stylesheet" href="/css/subscribe.css">
+
+
+<meta property="og:title" content="Testing in Go: Table-Driven Tests" />
+<meta property="og:description" content="Coming from Ruby, which has excellent testing tools and libraries, the notion of table-driven tests was unusual for me. The popular testing libraries in Ruby, like RSpec, force the programmer to approach testing from a BDD standpoint. Thus, coming to Go and learning about the table-driven test was definitely a new way of looking at tests for me.
+Looking back, Dave Cheney&rsquo;s 2013 seminal blog post &ldquo;Writing table driven-tests in Go&rdquo; was very likely my gateway to table-driven tests." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/testing-in-go-table-driven-tests/" />
+
+<meta property="og:image" content="https://ieftimov.com/cards/testing-in-go-table-driven-tests.png" />
+<meta property="article:published_time" content="2019-07-10T00:00:00&#43;00:00"/>
+<meta property="article:modified_time" content="2019-07-10T00:00:00&#43;00:00"/>
+
+<meta itemprop="name" content="Testing in Go: Table-Driven Tests">
+<meta itemprop="description" content="Coming from Ruby, which has excellent testing tools and libraries, the notion of table-driven tests was unusual for me. The popular testing libraries in Ruby, like RSpec, force the programmer to approach testing from a BDD standpoint. Thus, coming to Go and learning about the table-driven test was definitely a new way of looking at tests for me.
+Looking back, Dave Cheney&rsquo;s 2013 seminal blog post &ldquo;Writing table driven-tests in Go&rdquo; was very likely my gateway to table-driven tests.">
+
+
+<meta itemprop="datePublished" content="2019-07-10T00:00:00&#43;00:00" />
+<meta itemprop="dateModified" content="2019-07-10T00:00:00&#43;00:00" />
+<meta itemprop="wordCount" content="2251">
+
+  <meta itemprop="image" content="https://ieftimov.com/cards/testing-in-go-table-driven-tests.png">
+
+
+
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/testing-in-go-table-driven-tests.png"/>
+
+<meta name="twitter:title" content="Testing in Go: Table-Driven Tests"/>
+<meta name="twitter:description" content="Coming from Ruby, which has excellent testing tools and libraries, the notion of table-driven tests was unusual for me. The popular testing libraries in Ruby, like RSpec, force the programmer to approach testing from a BDD standpoint. Thus, coming to Go and learning about the table-driven test was definitely a new way of looking at tests for me.
+Looking back, Dave Cheney&rsquo;s 2013 seminal blog post &ldquo;Writing table driven-tests in Go&rdquo; was very likely my gateway to table-driven tests."/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Ilija Eftimov</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/testing-in-go/">Testing in Go</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/about/">About</a>
+          
+        
+      </li>
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      Ilija Eftimov
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/testing-in-go/">Testing in Go</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://ieftimov.com/about/">About</a>
+          
+
+        
+
+      </li>
+    
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">Testing in Go: Table-Driven Tests</h1>
+      
+      <div class="post-meta">
+        <time datetime="2019-07-10" class="post-time">
+          10-07-2019
+        </time>
+        <div class="post-category">
+            <a href="https://ieftimov.com/categories/go/"> go </a>
+            <a href="https://ieftimov.com/categories/testing-in-go/"> testing-in-go </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+
+    
+    <div class="post-content">
+      
+
+<p>Coming from Ruby, which has excellent testing tools and libraries, the notion
+of table-driven tests was unusual for me. The popular testing libraries in
+Ruby, like RSpec, force the programmer to approach testing from a BDD
+standpoint. Thus, coming to Go and learning about the table-driven test was
+definitely a new way of looking at tests for me.</p>
+
+<p>Looking back, Dave Cheney&rsquo;s 2013 seminal blog post <a href="https://dave.cheney.net/2013/06/09/writing-table-driven-tests-in-go">&ldquo;Writing table driven-tests
+in Go&rdquo;</a>
+was very likely my gateway to table-driven tests. In it, he points out to the
+tests of the <code>math</code> [<a href="http://golang.org/src/pkg/math/all_test.go">source</a>] and
+<code>time</code> [<a href="http://golang.org/src/pkg/time/time_test.go">source</a>] packages, where
+The Go authors have used table-driven tests. I encourage you to go visit these
+two links, they offer a good perspective to testing in Go.</p>
+
+<p>I remember that at the beginning, the idea of table-driven tests was quite
+provoking.  The Rubyist in me was screaming &ldquo;What is this blasphemy?!&rdquo;, &ldquo;These
+weird <code>for</code> loops don&rsquo;t seem right&rdquo; and &ldquo;What are these data structures that I
+have to define to run a simple spec!?&rdquo; These were some one of the first
+questions that came to my mind.</p>
+
+<p>In fact, the approach is very far from bad. Go&rsquo;s philosophy to testing is
+different from Ruby&rsquo;s, yet it has an identical goal: make sure that our code
+works as expected, so we can sleep tight at night.</p>
+
+<p>Let&rsquo;s explore table-driven tests, understand their background, the approach and
+their pros and cons.</p>
+
+<h2 id="what-are-table-driven-tests">What are table-driven tests?</h2>
+
+<p>As the name suggests, these are tests that are driven by tables. You might be
+wondering &ldquo;what kind of tables?!&rdquo; - an excellent question. Hold on though!</p>
+
+<p>Here’s the general idea: every function under test, has inputs and expected
+outputs. For example, the function <code>Max</code>
+[<a href="https://golang.org/pkg/math/#Max">docs</a>] from the <code>math</code> package takes two
+arguments and has one return value. Both arguments are numbers of type
+<code>float64</code>, and the returned value is also a <code>float64</code> number. When invoked,
+<code>Max</code> will return the bigger number between the two arguments.</p>
+
+<p>Following the same idea, <code>Max</code> has two inputs and one expected output. In fact,
+the output is actually one of the inputs.</p>
+
+<p>What would a test look like for <code>Max</code>? We would probably test its basic sanity,
+e.g. that between <code>1</code> and <code>2</code> it will return <code>2</code>. Also, we will probably test
+with negative numbers, e.g. that between <code>-100</code> and <code>-200</code> it will return
+<code>-100</code>. We will probably throw in a test that uses <code>0</code> or some arbitrary
+floating point number. Lastly, we can try the edge cases - very, very big and
+very, very small numbers. Who knows, maybe we can hit some sort of an edge
+case.</p>
+
+<p>Looking at the above paragraph, the input values and the expected outcomes
+change. Still, the number of values that are in play is always the same, three:
+two arguments and one expected return value. Given that the value number is
+constant, we can put it in a table:</p>
+
+<table>
+<thead>
+<tr>
+<th>Argument 1</th>
+<th>Argument 2</th>
+<th>Code representation</th>
+<th>Expected return</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>1</td>
+<td>2</td>
+<td>Max(1, 2)</td>
+<td>2</td>
+</tr>
+
+<tr>
+<td>-100</td>
+<td>-200</td>
+<td>Max(-100, -200)</td>
+<td>-100</td>
+</tr>
+
+<tr>
+<td>0</td>
+<td>-200</td>
+<td>Max(0, -200)</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td>-100</td>
+<td>0</td>
+<td>Max(-100, 0)</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td>100</td>
+<td>0</td>
+<td>Max(100, 0)</td>
+<td>100</td>
+</tr>
+
+<tr>
+<td>0</td>
+<td>200</td>
+<td>Max(0, 200)</td>
+<td>200</td>
+</tr>
+
+<tr>
+<td>100</td>
+<td>0</td>
+<td>Max(100, 0)</td>
+<td>100</td>
+</tr>
+
+<tr>
+<td>0</td>
+<td>200</td>
+<td>Max(0, 200)</td>
+<td>200</td>
+</tr>
+
+<tr>
+<td>-8.31373e-02</td>
+<td>1.84273e-02</td>
+<td>Max(-8.31373e-02, 1.84273e-02)</td>
+<td>1.84273e-02</td>
+</tr>
+</tbody>
+</table>
+
+<p>Following this idea, what if we would try to express this table in a very
+simple Go structure?</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">TestCase</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">arg1</span>     <span class="kt">float64</span>
+	<span class="nx">arg2</span>     <span class="kt">float64</span>
+	<span class="nx">expected</span> <span class="kt">float64</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>That should do the trick: it has three attributes of type <code>float64</code>: <code>arg1</code>,
+<code>arg2</code> and <code>expected</code>. We are going to skip the third column as that is only
+there for more clarity.</p>
+
+<p>What about the data? Could we next add the data to a slice of <code>TestCase</code>? Let&rsquo;s
+give it a shot:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestMax</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">cases</span> <span class="o">:=</span> <span class="p">[]</span><span class="nx">TestCase</span><span class="p">{</span>
+		<span class="nx">TestCase</span><span class="p">{</span>
+			<span class="nx">arg1</span><span class="p">:</span>     <span class="mf">1.0</span><span class="p">,</span>
+			<span class="nx">arg2</span><span class="p">:</span>     <span class="mf">2.0</span><span class="p">,</span>
+			<span class="nx">expected</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+		<span class="p">},</span>
+		<span class="nx">TestCase</span><span class="p">{</span>
+			<span class="nx">arg1</span><span class="p">:</span>     <span class="o">-</span><span class="mi">100</span><span class="p">,</span>
+			<span class="nx">arg2</span><span class="p">:</span>     <span class="o">-</span><span class="mi">200</span><span class="p">,</span>
+			<span class="nx">expected</span><span class="p">:</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span>
+		<span class="p">},</span>
+		<span class="nx">TestCase</span><span class="p">{</span>
+			<span class="nx">arg1</span><span class="p">:</span>     <span class="mi">0</span><span class="p">,</span>
+			<span class="nx">arg2</span><span class="p">:</span>     <span class="o">-</span><span class="mi">200</span><span class="p">,</span>
+			<span class="nx">expected</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+		<span class="p">},</span>
+		<span class="nx">TestCase</span><span class="p">{</span>
+			<span class="nx">arg1</span><span class="p">:</span>     <span class="o">-</span><span class="mf">8.31373e-02</span><span class="p">,</span>
+			<span class="nx">arg2</span><span class="p">:</span>     <span class="mf">1.84273e-02</span><span class="p">,</span>
+			<span class="nx">expected</span><span class="p">:</span> <span class="mf">1.84273e-02</span><span class="p">,</span>
+		<span class="p">},</span>
+	<span class="p">}</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>We intentionally omitted some of the cases for brevity and because what we have
+above clearly painted the picture. Now, we have a test function already and
+<code>cases</code> of type <code>[]TestCase</code>. The last piece of the puzzle is to iterate over
+the slice. For each of the <code>TestCase</code> structs invoke the <code>Max</code> function using
+the two arguments. Then, compare the <code>expected</code> attribute of the <code>TestCase</code>
+with the actual result of the invocation of <code>Max</code>.</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestMax</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">cases</span> <span class="o">:=</span> <span class="p">[]</span><span class="nx">TestCase</span><span class="p">{</span>
+		<span class="nx">TestCase</span><span class="p">{</span>
+			<span class="nx">arg1</span><span class="p">:</span>     <span class="mf">1.0</span><span class="p">,</span>
+			<span class="nx">arg2</span><span class="p">:</span>     <span class="mf">2.0</span><span class="p">,</span>
+			<span class="nx">expected</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+		<span class="p">},</span>
+		<span class="nx">TestCase</span><span class="p">{</span>
+			<span class="nx">arg1</span><span class="p">:</span>     <span class="o">-</span><span class="mi">100</span><span class="p">,</span>
+			<span class="nx">arg2</span><span class="p">:</span>     <span class="o">-</span><span class="mi">200</span><span class="p">,</span>
+			<span class="nx">expected</span><span class="p">:</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span>
+		<span class="p">},</span>
+		<span class="nx">TestCase</span><span class="p">{</span>
+			<span class="nx">arg1</span><span class="p">:</span>     <span class="mi">0</span><span class="p">,</span>
+			<span class="nx">arg2</span><span class="p">:</span>     <span class="o">-</span><span class="mi">200</span><span class="p">,</span>
+			<span class="nx">expected</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+		<span class="p">},</span>
+		<span class="nx">TestCase</span><span class="p">{</span>
+			<span class="nx">arg1</span><span class="p">:</span>     <span class="o">-</span><span class="mf">8.31373e-02</span><span class="p">,</span>
+			<span class="nx">arg2</span><span class="p">:</span>     <span class="mf">1.84273e-02</span><span class="p">,</span>
+			<span class="nx">expected</span><span class="p">:</span> <span class="mf">1.84273e-02</span><span class="p">,</span>
+		<span class="p">},</span>
+	<span class="p">}</span>
+
+	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">cases</span> <span class="p">{</span>
+		<span class="nx">got</span> <span class="o">:=</span> <span class="nx">math</span><span class="p">.</span><span class="nf">Max</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">arg1</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">arg2</span><span class="p">)</span>
+		<span class="k">if</span> <span class="nx">got</span> <span class="o">!=</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">expected</span> <span class="p">{</span>
+			<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Max(%f, %f): Expected %f, got %f&#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">arg1</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">arg2</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">expected</span><span class="p">,</span> <span class="nx">got</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Let&rsquo;s dissect the <code>for</code> loop:</p>
+
+<p>For each of the <code>cases</code>, we invoke the <code>math.Max</code> function, with <code>tc.arg1</code> and
+<code>tc.arg2</code> as arguments. Then, we compare what the invocation returned with the
+expected value in <code>tc.expected</code>. This tells us if <code>math.Max</code> returned what we
+expected and if that&rsquo;s not the case it will mark the test as failed. If any of
+the tests fail, the error message will look like this:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">› go <span class="nb">test</span> math_test.go -v
+<span class="o">===</span> RUN   TestMax
+--- FAIL: TestMax <span class="o">(</span><span class="m">0</span>.00s<span class="o">)</span>
+    math_test.go Max<span class="o">(</span>-0.083137, <span class="m">0</span>.018427<span class="o">)</span>: Expected <span class="m">0</span>.000000, got <span class="m">0</span>.018427
+FAIL
+FAIL	command-line-arguments	<span class="m">0</span>.004s</code></pre></div>
+
+<p>This is the magic behind table-driven tests and the reason for the name: a
+<code>TestCase</code> represents a row from a table. With the <code>for</code>, loop we evaluate each
+of the rows and we use its cells as arguments and expected values.</p>
+
+<h2 id="convert-ordinary-to-table-driven-tests">Convert ordinary to table-driven tests</h2>
+
+<p>As always, talking about code is better if we have some code to talk about. In
+this section, we will first add some simple and straightforward of tests. After
+that, we will convert them to table-driven tests.</p>
+
+<p>Consider this type <code>Person</code>, which has two functions: <code>older</code> and <code>NewPerson</code>.
+The latter being a constructor, while the former is a function that can decide
+what <code>Person</code> is older between two of them:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">person</span>
+
+<span class="kn">import</span> <span class="s">&#34;errors&#34;</span>
+
+<span class="kd">var</span> <span class="p">(</span>
+	<span class="nx">AgeTooLowError</span>  <span class="p">=</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">&#34;A person must be at least 1 years old&#34;</span><span class="p">)</span>
+	<span class="nx">AgeTooHighError</span> <span class="p">=</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">&#34;A person cannot be older than 130 years&#34;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">Person</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">age</span> <span class="kt">int</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">NewPerson</span><span class="p">(</span><span class="nx">age</span> <span class="kt">int</span><span class="p">)</span> <span class="p">(</span><span class="kt">error</span><span class="p">,</span> <span class="o">*</span><span class="nx">Person</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="nx">age</span> <span class="p">&lt;</span> <span class="mi">1</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">AgeTooLowError</span><span class="p">,</span> <span class="kc">nil</span>
+	<span class="p">}</span>
+
+	<span class="k">if</span> <span class="nx">age</span> <span class="o">&gt;=</span> <span class="mi">130</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">AgeTooHighError</span><span class="p">,</span> <span class="kc">nil</span>
+	<span class="p">}</span>
+
+	<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">Person</span><span class="p">{</span>
+		<span class="nx">age</span><span class="p">:</span> <span class="nx">age</span><span class="p">,</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">p</span> <span class="o">*</span><span class="nx">Person</span><span class="p">)</span> <span class="nf">older</span><span class="p">(</span><span class="nx">other</span> <span class="o">*</span><span class="nx">Person</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="nx">p</span><span class="p">.</span><span class="nx">age</span> <span class="p">&gt;</span> <span class="nx">other</span><span class="p">.</span><span class="nx">age</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Next, let&rsquo;s add some tests for these two functions:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">person</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;testing&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">TestNewPersonPositiveAge</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">err</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nf">NewPerson</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected person, received %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">TestNewPersonNegativeAge</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">err</span><span class="p">,</span> <span class="nx">p</span> <span class="o">:=</span> <span class="nf">NewPerson</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected error, received %v&#34;</span><span class="p">,</span> <span class="nx">p</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">TestNewPersonHugeAge</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">err</span><span class="p">,</span> <span class="nx">p</span> <span class="o">:=</span> <span class="nf">NewPerson</span><span class="p">(</span><span class="mi">150</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected error, received %v&#34;</span><span class="p">,</span> <span class="nx">p</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">TestOlderFirstOlderThanSecond</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">_</span><span class="p">,</span> <span class="nx">p1</span> <span class="o">:=</span> <span class="nf">NewPerson</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="nx">_</span><span class="p">,</span> <span class="nx">p2</span> <span class="o">:=</span> <span class="nf">NewPerson</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+	<span class="k">if</span> <span class="nx">p1</span><span class="p">.</span><span class="nf">older</span><span class="p">(</span><span class="nx">p2</span><span class="p">)</span> <span class="p">{</span>
+		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected p1 with age %d to be younger than p2 with age %d&#34;</span><span class="p">,</span> <span class="nx">p1</span><span class="p">.</span><span class="nx">age</span><span class="p">,</span> <span class="nx">p2</span><span class="p">.</span><span class="nx">age</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">TestOlderSecondOlderThanFirst</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">_</span><span class="p">,</span> <span class="nx">p1</span> <span class="o">:=</span> <span class="nf">NewPerson</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+	<span class="nx">_</span><span class="p">,</span> <span class="nx">p2</span> <span class="o">:=</span> <span class="nf">NewPerson</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+	<span class="k">if</span> <span class="p">!</span><span class="nx">p1</span><span class="p">.</span><span class="nf">older</span><span class="p">(</span><span class="nx">p2</span><span class="p">)</span> <span class="p">{</span>
+		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected p1 with age %d to be older than p2 with age %d&#34;</span><span class="p">,</span> <span class="nx">p1</span><span class="p">.</span><span class="nx">age</span><span class="p">,</span> <span class="nx">p2</span><span class="p">.</span><span class="nx">age</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>These tests are fairly conventional. Also, the tests covering the same function
+normally are alike having the same structure of setup, assertion and error
+reporting. This is another reason why table-driven tests are good: they
+eliminate repetition of boilerplate code and substitute it with a simple <code>for</code>
+loop.</p>
+
+<p>Let&rsquo;s refactor the tests into table-driven tests. We will begin with a
+<code>TestOlder</code> function:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestOlder</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">cases</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
+		<span class="nx">age1</span>     <span class="kt">int</span>
+		<span class="nx">age2</span>     <span class="kt">int</span>
+		<span class="nx">expected</span> <span class="kt">bool</span>
+	<span class="p">}{</span>
+		<span class="p">{</span>
+			<span class="nx">age1</span><span class="p">:</span>     <span class="mi">1</span><span class="p">,</span>
+			<span class="nx">age2</span><span class="p">:</span>     <span class="mi">2</span><span class="p">,</span>
+			<span class="nx">expected</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+		<span class="p">},</span>
+		<span class="p">{</span>
+
+			<span class="nx">age1</span><span class="p">:</span>     <span class="mi">2</span><span class="p">,</span>
+			<span class="nx">age2</span><span class="p">:</span>     <span class="mi">1</span><span class="p">,</span>
+			<span class="nx">expected</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+		<span class="p">},</span>
+	<span class="p">}</span>
+
+	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">c</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">cases</span> <span class="p">{</span>
+		<span class="nx">_</span><span class="p">,</span> <span class="nx">p1</span> <span class="o">:=</span> <span class="nf">NewPerson</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">age1</span><span class="p">)</span>
+		<span class="nx">_</span><span class="p">,</span> <span class="nx">p2</span> <span class="o">:=</span> <span class="nf">NewPerson</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">age2</span><span class="p">)</span>
+
+		<span class="nx">got</span> <span class="o">:=</span> <span class="nx">p1</span><span class="p">.</span><span class="nf">older</span><span class="p">(</span><span class="nx">p2</span><span class="p">)</span>
+
+		<span class="k">if</span> <span class="nx">got</span> <span class="o">!=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span> <span class="p">{</span>
+			<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected %v &gt; %v, got %v&#34;</span><span class="p">,</span> <span class="nx">p1</span><span class="p">.</span><span class="nx">age</span><span class="p">,</span> <span class="nx">p2</span><span class="p">.</span><span class="nx">age</span><span class="p">,</span> <span class="nx">got</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>There isn&rsquo;t much happening here. The only difference when compared to the tests
+we saw before is the inline definition and initialization of the <code>cases</code> slice.
+We define the type with its attributes and add values to it right away instead
+of first defining the type and initializing a slice of it after.</p>
+
+<p>Next, we will create a <code>TestNewPerson</code> function:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestNewPerson</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">cases</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
+		<span class="nx">age</span> <span class="kt">int</span>
+		<span class="nx">err</span> <span class="kt">error</span>
+	<span class="p">}{</span>
+		<span class="p">{</span>
+			<span class="nx">age</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+			<span class="nx">err</span><span class="p">:</span> <span class="kc">nil</span><span class="p">,</span>
+		<span class="p">},</span>
+		<span class="p">{</span>
+			<span class="nx">age</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+			<span class="nx">err</span><span class="p">:</span> <span class="nx">AgeTooLowError</span><span class="p">,</span>
+		<span class="p">},</span>
+		<span class="p">{</span>
+			<span class="nx">age</span><span class="p">:</span> <span class="mi">150</span><span class="p">,</span>
+			<span class="nx">err</span><span class="p">:</span> <span class="nx">AgeTooHighError</span><span class="p">,</span>
+		<span class="p">},</span>
+	<span class="p">}</span>
+
+	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">c</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">cases</span> <span class="p">{</span>
+		<span class="nx">err</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nf">NewPerson</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">age</span><span class="p">)</span>
+		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">err</span> <span class="p">{</span>
+			<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected %v, got %v&#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">err</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>This test follows the same structure: we define the <code>cases</code> slice by defining
+and initializing the slice inline. Then, in the loop, we assert that the errors
+that we expect are the same as the ones returned by the invocation of the
+<code>NewPerson</code> function.</p>
+
+<p>If you have a test file that you would like refactor to use a table-driven
+approach, follow these steps:</p>
+
+<ol>
+<li>Group all tests that focus on one function one after another in the test
+file</li>
+<li>Identify the inputs/arguments to the function under test in each of the test
+functions</li>
+<li>Identify the expected output on each of the tests</li>
+<li>Extract the inputs and the expected outputs into another test, wrapping them
+into a type (<code>struct</code>) that will accommodate all inputs and the expected
+output</li>
+<li>Create a slice of the new type, populate it with all inputs and expected
+outputs and introduce a loop where you will create the assertion between the
+expected and the actual output</li>
+</ol>
+
+<h2 id="why-should-you-use-them">Why should you use them?</h2>
+
+<p>One of the reasons I like the table-driven approach to testing is how
+effortless it is to add different test cases: it boils down to adding another
+entry in the <code>cases</code> slice. Compared to the classic style of writing a test
+function where you have to figure out a name for the function, then set up the
+state and lastly execute the assertion, table-driven tests make this a breeze.</p>
+
+<p>In most cases, table-driven tests centralize the test of a function to a single
+test function. This is because the classical approach to testing has only one
+set of inputs and expected outputs, compared to table-driven tests where we can
+add virtually unlimited test cases within a single test function.</p>
+
+<p>Lastly, having all cases centralized in a single slice gives more transparency
+to the quality of our test inputs. For example, are we trying to use arbitrary
+big or small numbers as inputs, or very long and very short strings, etc? You
+get the idea.</p>
+
+<p>Let&rsquo;s take a quick look at the <code>TestOlder</code> test function again:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestOlder</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">cases</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
+		<span class="nx">age1</span>     <span class="kt">int</span>
+		<span class="nx">age2</span>     <span class="kt">int</span>
+		<span class="nx">expected</span> <span class="kt">bool</span>
+	<span class="p">}{</span>
+		<span class="p">{</span>
+			<span class="nx">age1</span><span class="p">:</span>     <span class="mi">1</span><span class="p">,</span>
+			<span class="nx">age2</span><span class="p">:</span>     <span class="mi">2</span><span class="p">,</span>
+			<span class="nx">expected</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+		<span class="p">},</span>
+		<span class="p">{</span>
+
+			<span class="nx">age1</span><span class="p">:</span>     <span class="mi">2</span><span class="p">,</span>
+			<span class="nx">age2</span><span class="p">:</span>     <span class="mi">1</span><span class="p">,</span>
+			<span class="nx">expected</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+		<span class="p">},</span>
+	<span class="p">}</span>
+
+	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">c</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">cases</span> <span class="p">{</span>
+		<span class="nx">_</span><span class="p">,</span> <span class="nx">p1</span> <span class="o">:=</span> <span class="nf">NewPerson</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">age1</span><span class="p">)</span>
+		<span class="nx">_</span><span class="p">,</span> <span class="nx">p2</span> <span class="o">:=</span> <span class="nf">NewPerson</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">age2</span><span class="p">)</span>
+
+		<span class="nx">got</span> <span class="o">:=</span> <span class="nx">p1</span><span class="p">.</span><span class="nf">older</span><span class="p">(</span><span class="nx">p2</span><span class="p">)</span>
+
+		<span class="k">if</span> <span class="nx">got</span> <span class="o">!=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span> <span class="p">{</span>
+			<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected %v &gt; %v, got %v&#34;</span><span class="p">,</span> <span class="nx">p1</span><span class="p">.</span><span class="nx">age</span><span class="p">,</span> <span class="nx">p2</span><span class="p">.</span><span class="nx">age</span><span class="p">,</span> <span class="nx">got</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>If I ask you: only by looking at the <code>cases</code> slice, what kind of other tests
+cases can you come up with, what would you answer? One case that immediately
+comes to mind is testing when the two age <code>int</code>s are the same. There are more
+cases we can add, but I&rsquo;ll let you think that one through and let me know in
+the comments. (Hint: think about edge cases 😉)</p>
+
+<p>It&rsquo;s not all rainbows and unicorns, this approach has some downsides. For
+example, <a href="/post/testing-in-go-go-test">running a specific test case</a> (using <code>go
+test -run foo</code>) is problematic here - we cannot target a single case, we have
+to run the whole function. But, there&rsquo;s a trick to achieve both: it&rsquo;s called
+<em>subtests</em> and we will look into them in the next article.</p>
+
+<p>Until then, let me know in the comments how do you use table-driven test and do
+you use any specific technique to producing good test cases?</p>
+
+    </div>
+
+    
+    
+
+
+    
+    
+
+    <footer class="post-footer">
+      
+
+      
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/post/testing-in-go-go-test/">
+            <span class="next-text nav-default">Testing in Go: go test</span>
+            <span class="prev-text nav-mobile">Next</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  <div class="disqus-comment">
+  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
+    Show Disqus Comments
+  </div>
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_config = function () {
+      this.page.url = "https://ieftimov.com/post/testing-in-go-table-driven-tests/";
+    };
+    function load_disqus() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'eftimov';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+
+      $('#load_disqus').remove();
+    };
+  </script>
+  <noscript>Please enable JavaScript to view the
+    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+  </noscript>
+  
+  </div>
+
+    
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="https://stackoverflow.com/users/601555/ilija-eftimov" rel="me noopener" class="iconfont"
+      title="stack-overflow"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M809.714286 932.571429l-638.857143 0 0-274.285714-91.428571 0 0 365.714286 821.714286 0 0-365.714286-91.428571 0 0 274.285714zm-538.285714-299.428571l18.857143-89.714286 447.428571 94.285714-18.857143 89.142857zm58.857143-213.714286l38.285714-83.428571 414.285714 193.714286-38.285714 82.857143zm114.857143-203.428571l58.285714-70.285714 350.857143 293.142857-58.285714 70.285714zm226.857143-216l272.571429 366.285714-73.142857 54.857143-272.571429-366.285714zm-410.285714 840.571429l0-90.857143 457.142857 0 0 90.857143-457.142857 0z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://twitter.com/fteem" rel="me noopener" class="iconfont"
+      title="twitter"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1264 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M1229.8616 18.043658c0 0-117.852626 63.135335-164.151872 67.344358-105.225559-164.151872-505.082682-92.598492-437.738325 223.078185C278.622548 312.675223 89.216542 47.506814 89.216542 47.506814s-117.852626 189.406006 75.762402 345.139833C127.097743 396.85567 55.544363 371.601535 55.544363 371.601535S26.081207 535.753407 253.368414 615.724832c-21.045112 29.463156-113.643603 8.418045-113.643603 8.418045s25.254134 143.10676 231.496229 180.987961c-143.10676 130.479693-387.230056 92.598492-370.393967 105.225559 206.242095 189.406006 1119.599946 231.496229 1128.01799-643.98042C1179.353331 249.539887 1263.533778 123.269217 1263.533778 123.269217s-130.479693 37.881201-138.897738 33.672179C1225.652577 98.015083 1229.8616 18.043658 1229.8616 18.043658"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://www.linkedin.com/in/ieftimov/" rel="me noopener" class="iconfont"
+      title="linkedin"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="33" height="33">
+  <path d="M872.405333 872.618667h-151.637333v-237.610667c0-56.661333-1.152-129.578667-79.018667-129.578667-79.061333 0-91.136 61.653333-91.136 125.397334v241.792H398.976V384h145.664v66.602667h1.962667c20.352-38.4 69.845333-78.933333 143.786666-78.933334 153.642667 0 182.058667 101.12 182.058667 232.746667v268.202667zM227.712 317.141333a87.978667 87.978667 0 0 1-88.021333-88.106666 88.064 88.064 0 1 1 88.021333 88.106666z m76.032 555.477334H151.68V384h152.064v488.618667zM948.266667 0H75.562667C33.792 0 0 33.024 0 73.770667v876.458666C0 991.018667 33.792 1024 75.562667 1024h872.576C989.866667 1024 1024 991.018667 1024 950.229333V73.770667C1024 33.024 989.866667 0 948.138667 0h0.128z"></path>
+</svg>
+
+    </a>
+  
+    <a href="https://github.com/fteem" rel="me noopener" class="iconfont"
+      title="github"  target="_blank"
+      >
+      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
+</svg>
+
+    </a>
+  
+    <a href="ieftimovcom@gmail.com" rel="me noopener" class="iconfont"
+      title="email"  target="_blank"
+      >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://ieftimov.com/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2014 -
+    2019
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        Ilija Eftimov
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
