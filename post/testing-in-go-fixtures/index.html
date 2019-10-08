@@ -69,17 +69,17 @@ Judging by the Wiki page, it&rsquo;s clear that test fixutures as a concept has 
 <meta property="og:url" content="https://ieftimov.com/post/testing-in-go-fixtures/" />
 
 <meta property="og:image" content="https://ieftimov.com/cards/testing-in-go-fixtures.png" />
-<meta property="article:published_time" content="2019-09-15T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2019-09-15T00:00:00&#43;00:00"/>
+<meta property="article:published_time" content="2019-09-16T00:00:00&#43;00:00"/>
+<meta property="article:modified_time" content="2019-09-16T00:00:00&#43;00:00"/>
 
 <meta itemprop="name" content="Testing in Go: Fixtures">
 <meta itemprop="description" content="When I was researching the topic of test fixtures, I couldn&rsquo;t find much about their beginnings. My first search was about the name of the person who coined &ldquo;test fixtures&rdquo;. Unfortunately, that was not a fruitful edeavour. The next logical step was to look for etymology of the phrase &ldquo;test fixtures&rdquo;, but the only search result that made sense was a Wikipedia page on the topic.
 Judging by the Wiki page, it&rsquo;s clear that test fixutures as a concept has been heavily popularized by Ruby on Rails.">
 
 
-<meta itemprop="datePublished" content="2019-09-15T00:00:00&#43;00:00" />
-<meta itemprop="dateModified" content="2019-09-15T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="2752">
+<meta itemprop="datePublished" content="2019-09-16T00:00:00&#43;00:00" />
+<meta itemprop="dateModified" content="2019-09-16T00:00:00&#43;00:00" />
+<meta itemprop="wordCount" content="2782">
 
   <meta itemprop="image" content="https://ieftimov.com/cards/testing-in-go-fixtures.png">
 
@@ -432,13 +432,9 @@ to be simple - receive a path to a CSV file as argument and return a
 </span><span class="lnt">28
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">NewGradebook</span><span class="p">(</span><span class="nx">csvPath</span> <span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="nx">Gradebook</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">NewGradebook</span><span class="p">(</span><span class="nx">csvFile</span> <span class="nx">io</span><span class="p">.</span><span class="nx">Reader</span><span class="p">)</span> <span class="p">(</span><span class="nx">Gradebook</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
 	<span class="kd">var</span> <span class="nx">gradebook</span> <span class="nx">Gradebook</span>
-	<span class="nx">csvFile</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="nx">csvPath</span><span class="p">)</span>
-	<span class="nx">reader</span> <span class="o">:=</span> <span class="nx">csv</span><span class="p">.</span><span class="nf">NewReader</span><span class="p">(</span><span class="nx">bufio</span><span class="p">.</span><span class="nf">NewReader</span><span class="p">(</span><span class="nx">csvFile</span><span class="p">))</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="nx">gradebook</span><span class="p">,</span> <span class="nx">err</span>
-	<span class="p">}</span>
+	<span class="nx">reader</span> <span class="o">:=</span> <span class="nx">csv</span><span class="p">.</span><span class="nf">NewReader</span><span class="p">(</span><span class="nx">csvFile</span><span class="p">)</span>
 
 	<span class="k">for</span> <span class="p">{</span>
 		<span class="nx">line</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">reader</span><span class="p">.</span><span class="nf">Read</span><span class="p">()</span>
@@ -449,6 +445,10 @@ to be simple - receive a path to a CSV file as argument and return a
 
 		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
 			<span class="k">return</span> <span class="nx">gradebook</span><span class="p">,</span> <span class="nx">err</span>
+		<span class="p">}</span>
+
+		<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">line</span><span class="p">)</span> <span class="p">&lt;</span> <span class="mi">3</span> <span class="p">{</span>
+			<span class="k">return</span> <span class="nx">gradebook</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Invalid file structure&#34;</span><span class="p">)</span>
 		<span class="p">}</span>
 
 		<span class="nx">gradebook</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">gradebook</span><span class="p">,</span> <span class="nx">Record</span><span class="p">{</span>
@@ -463,11 +463,11 @@ to be simple - receive a path to a CSV file as argument and return a
 </div>
 </div>
 
-<p>Although a bit bloated, the function actually doesn&rsquo;t do much. It opens a file
-descriptor at the path, wraps it in a reader and reads it line by line. For
-each line it reads, it will create a new <code>Record</code> struct and <code>append</code> it to the
-collection of <code>Record</code>s, <code>gradebook</code>. After parsing the whole file it will exit
-the loop and return the gradebook.</p>
+<p>Although a bit bloated, the function actually doesn&rsquo;t do much. It receives an
+<code>io.Reader</code> as argument (which is the file reader), wraps it in a CSV reader
+and reads it line by line. For each line it reads, it will create a new
+<code>Record</code> struct and <code>append</code> it to the collection of <code>Record</code>s, <code>gradebook</code>.
+After parsing the whole file it will exit the loop and return the gradebook.</p>
 
 <p>Of course, in true Go fashion, in every step of the reading and parsing the
 file we gracefully handle the errors. If in any scenario there&rsquo;s an error, the
@@ -539,13 +539,15 @@ grades:</p>
 </span><span class="lnt">5
 </span><span class="lnt">6
 </span><span class="lnt">7
+</span><span class="lnt">8
 </span></code></pre></td>
 <td class="lntd">
 <pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-	<span class="nx">grades</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">NewGradebook</span><span class="p">(</span><span class="s">&#34;grades.csv&#34;</span><span class="p">)</span>
+	<span class="nx">csvFile</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="s">&#34;grades.csv&#34;</span><span class="p">)</span>
 	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Error opening file: %v \n&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;error opening file: %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">))</span>
 	<span class="p">}</span>
+	<span class="nx">grades</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">NewGradebook</span><span class="p">(</span><span class="nx">csvFile</span><span class="p">)</span>
 	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">grades</span><span class="p">.</span><span class="nf">FindByStudent</span><span class="p">(</span><span class="s">&#34;Jane&#34;</span><span class="p">))</span>
 <span class="p">}</span></code></pre></td></tr></table>
 </div>
@@ -569,8 +571,7 @@ that that code takes to accomplish its mission. For example, to test the
 like:</p>
 
 <ol>
-<li>Open a CSV file for reading</li>
-<li>Read through each of the lines</li>
+<li>Read through each of the lines of the CSV</li>
 <li>When reading through each line, create a new struct from the data</li>
 <li>Put the new struct in the collection of structs</li>
 <li>Return the collection of structs</li>
@@ -619,11 +620,6 @@ that what we expect from a valid file?</p>
 </span><span class="lnt">32
 </span><span class="lnt">33
 </span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
 </span></code></pre></td>
 <td class="lntd">
 <pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestNewGradebook_ErrorHandling</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
@@ -641,11 +637,6 @@ that what we expect from a valid file?</p>
 			<span class="nx">fixture</span><span class="p">:</span>   <span class="s">&#34;testdata/grades/invalid.csv&#34;</span><span class="p">,</span>
 			<span class="nx">returnErr</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
 			<span class="nx">name</span><span class="p">:</span>      <span class="s">&#34;InvalidFile&#34;</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">fixture</span><span class="p">:</span>   <span class="s">&#34;testdata/grades/nonexisting.csv&#34;</span><span class="p">,</span>
-			<span class="nx">returnErr</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-			<span class="nx">name</span><span class="p">:</span>      <span class="s">&#34;NonexistingFile&#34;</span><span class="p">,</span>
 		<span class="p">},</span>
 		<span class="p">{</span>
 			<span class="nx">fixture</span><span class="p">:</span>   <span class="s">&#34;testdata/grades/valid.csv&#34;</span><span class="p">,</span>
@@ -1040,6 +1031,10 @@ FAIL	_/Users/Ilija/Documents/fixtures	<span class="m">0</span>.004s</code></pre>
 able to offload the complexity of the missing fixtures outside of the tests
 themselves. While these concepts are simple, they&rsquo;re powerful as they lead to
 cleaner tests and functions that are local to the test and easy to maintain.</p>
+
+<hr/>
+
+<p><strong>EDIT October 8, 2019</strong>: As <a href="https://github.com/lyckade">Andreas Schröpfer</a> suggested in the comments, it&rsquo;s more idiomatic Go when the function receives a <code>io.Reader</code> instead of a file path. I have updated the example code and the article to reflect that. Thanks Andreas!</p>
 
     </div>
 
