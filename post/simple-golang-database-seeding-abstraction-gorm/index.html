@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>How to set tests as pending in your ExUnit suite - Ilija Eftimov ⚡️</title>
+  <title>Simple Golang database seeding abstraction for Gorm - Ilija Eftimov ⚡️</title>
   
 
 <meta name="renderer" content="webkit" />
@@ -23,7 +23,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 
 <meta name="author" content="Ilija Eftimov" />
-  <meta name="description" content="Elixir&amp;rsquo;s built in testing library is called ExUnit. It&amp;rsquo;s a proper testing framework, which, although simple, gives the developers a lot of power and flexibility. If you come from Ruby land, I am sure you&amp;rsquo;ve been in a position where you want to set a certain test to be skipped. For example, RSpec in Ruby does it with the pending method. Let&amp;rsquo;s see how we can customize our test suite so ExUnit can skip over tests in our test suite." />
+  <meta name="description" content="One of the most feature-full ORMs for Go that I have worked with is Gorm. If you would like to learn more about it, I recommend checking out its official website and its documentation.
+Recenlty I wanted to write a small database seeding abstraction. Database seeding is a process in which an initial set of data is provided to a database when it is being set up or installed.
+Yet, in true Go fashion my goal was to keep the abstraction tiny, yet provide some structure to folks that would write seeds in this application." />
 
   <meta name="keywords" content="Software, Programming, Computer Science, Products" />
 
@@ -35,7 +37,7 @@
 <meta name="generator" content="Hugo 0.55.6" />
 
 
-<link rel="canonical" href="https://ieftimov.com/post/pending-tests-exunit/" />
+<link rel="canonical" href="https://ieftimov.com/post/simple-golang-database-seeding-abstraction-gorm/" />
 
 
 
@@ -61,26 +63,39 @@
 <link rel="stylesheet" href="/css/subscribe.css">
 
 
-<meta property="og:title" content="How to set tests as pending in your ExUnit suite" />
-<meta property="og:description" content="Elixir&rsquo;s built in testing library is called ExUnit. It&rsquo;s a proper testing framework, which, although simple, gives the developers a lot of power and flexibility. If you come from Ruby land, I am sure you&rsquo;ve been in a position where you want to set a certain test to be skipped. For example, RSpec in Ruby does it with the pending method. Let&rsquo;s see how we can customize our test suite so ExUnit can skip over tests in our test suite." />
+<meta property="og:title" content="Simple Golang database seeding abstraction for Gorm" />
+<meta property="og:description" content="One of the most feature-full ORMs for Go that I have worked with is Gorm. If you would like to learn more about it, I recommend checking out its official website and its documentation.
+Recenlty I wanted to write a small database seeding abstraction. Database seeding is a process in which an initial set of data is provided to a database when it is being set up or installed.
+Yet, in true Go fashion my goal was to keep the abstraction tiny, yet provide some structure to folks that would write seeds in this application." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://ieftimov.com/post/pending-tests-exunit/" />
-<meta property="article:published_time" content="2015-10-18T00:00:00&#43;00:00"/>
+<meta property="og:url" content="https://ieftimov.com/post/simple-golang-database-seeding-abstraction-gorm/" />
+
+<meta property="og:image" content="https://ieftimov.com/cards/simple-golang-database-seeding-abstraction-gorm.png" />
+<meta property="article:published_time" content="2019-11-15T00:00:00&#43;00:00"/>
+<meta property="article:modified_time" content="2019-11-15T00:00:00&#43;00:00"/>
+
+<meta itemprop="name" content="Simple Golang database seeding abstraction for Gorm">
+<meta itemprop="description" content="One of the most feature-full ORMs for Go that I have worked with is Gorm. If you would like to learn more about it, I recommend checking out its official website and its documentation.
+Recenlty I wanted to write a small database seeding abstraction. Database seeding is a process in which an initial set of data is provided to a database when it is being set up or installed.
+Yet, in true Go fashion my goal was to keep the abstraction tiny, yet provide some structure to folks that would write seeds in this application.">
 
 
-<meta itemprop="name" content="How to set tests as pending in your ExUnit suite">
-<meta itemprop="description" content="Elixir&rsquo;s built in testing library is called ExUnit. It&rsquo;s a proper testing framework, which, although simple, gives the developers a lot of power and flexibility. If you come from Ruby land, I am sure you&rsquo;ve been in a position where you want to set a certain test to be skipped. For example, RSpec in Ruby does it with the pending method. Let&rsquo;s see how we can customize our test suite so ExUnit can skip over tests in our test suite.">
+<meta itemprop="datePublished" content="2019-11-15T00:00:00&#43;00:00" />
+<meta itemprop="dateModified" content="2019-11-15T00:00:00&#43;00:00" />
+<meta itemprop="wordCount" content="636">
+
+  <meta itemprop="image" content="https://ieftimov.com/cards/simple-golang-database-seeding-abstraction-gorm.png">
 
 
 
-<meta itemprop="wordCount" content="517">
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/simple-golang-database-seeding-abstraction-gorm.png"/>
 
-
-
-<meta itemprop="keywords" content="test,pending," />
-<meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="How to set tests as pending in your ExUnit suite"/>
-<meta name="twitter:description" content="Elixir&rsquo;s built in testing library is called ExUnit. It&rsquo;s a proper testing framework, which, although simple, gives the developers a lot of power and flexibility. If you come from Ruby land, I am sure you&rsquo;ve been in a position where you want to set a certain test to be skipped. For example, RSpec in Ruby does it with the pending method. Let&rsquo;s see how we can customize our test suite so ExUnit can skip over tests in our test suite."/>
+<meta name="twitter:title" content="Simple Golang database seeding abstraction for Gorm"/>
+<meta name="twitter:description" content="One of the most feature-full ORMs for Go that I have worked with is Gorm. If you would like to learn more about it, I recommend checking out its official website and its documentation.
+Recenlty I wanted to write a small database seeding abstraction. Database seeding is a process in which an initial set of data is provided to a database when it is being set up or installed.
+Yet, in true Go fashion my goal was to keep the abstraction tiny, yet provide some structure to folks that would write seeds in this application."/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -267,15 +282,15 @@ if (!doNotTrack) {
           <article class="post bg-white">
     
     <header class="post-header">
-      <h1 class="post-title">How to set tests as pending in your ExUnit suite</h1>
+      <h1 class="post-title">Simple Golang database seeding abstraction for Gorm</h1>
       
       <div class="post-meta">
-        <time datetime="2015-10-18" class="post-time">
-          18-10-2015
+        <time datetime="2019-11-16" class="post-time">
+          16-11-2019
         </time>
         <div class="post-category">
-            <a href="https://ieftimov.com/categories/elixir/"> Elixir </a>
-            <a href="https://ieftimov.com/categories/exunit/"> ExUnit </a>
+            <a href="https://ieftimov.com/categories/short/"> short </a>
+            <a href="https://ieftimov.com/categories/go/"> go </a>
             
           </div>
         
@@ -293,25 +308,124 @@ if (!doNotTrack) {
 
     
     <div class="post-content">
-      
+      <p><img src="/simple-golang-database-seeding-abstraction-gorm/storage.png" alt="" /></p>
 
-<p>Elixir&rsquo;s built in testing library is called ExUnit. It&rsquo;s a proper testing framework,
-which, although simple, gives the developers a lot of power and flexibility. If
-you come from Ruby land, I am sure you&rsquo;ve been in a position where you want to
-set a certain test to be skipped. For example, RSpec in Ruby does it with the
-<code>pending</code> method. Let&rsquo;s see how we can customize our test suite so ExUnit
-can skip over tests in our test suite.</p>
+<p>One of the most feature-full ORMs for Go that I have worked with is Gorm. If
+you would like to learn more about it, I recommend checking out its <a href="http://gorm.io/">official
+website</a> and its <a href="https://gorm.io/docs/">documentation</a>.</p>
 
-<h2 id="tags">Tags</h2>
+<p>Recenlty I wanted to write a small database seeding abstraction. Database
+seeding is a process in which an initial set of data is provided to a database
+when it is being set up or installed.</p>
 
-<p>ExUnit comes with this neat feature called <strong>tags</strong>. Tags are basically module variables
-in the test module. In the context of the test, you can think of them as <strong>annotations</strong>.
-So, by tagging a test, the value of the tag can be used in the test itself, by passing
-the context.</p>
+<p>Yet, in true Go fashion my goal was to keep the abstraction tiny, yet provide
+some structure to folks that would write seeds in this application. This is
+absolutely not the only way you can achieve this, the options are plenty.
+Still, this is one approach that I have found to be working well.</p>
+
+<p>We will have three different components:</p>
+
+<ol>
+<li>Create a <code>Seed</code> abstraction.</li>
+<li>Identify path for the seeds and how to collect them in a single <code>seeds</code>
+package.</li>
+<li>Create a <code>seeder</code> command line tool that can run the seeds against a
+database.</li>
+</ol>
+
+<p>First, to define a small <code>Seed</code> type that would be coupled to the <code>gorm.DB</code>
+connection instance:</p>
 
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="lnt"> 1
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="c1">// pkg/seed/seed.go
+</span><span class="c1"></span><span class="kn">package</span> <span class="nx">seed</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;github.com/jinzhu/gorm&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">Seed</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">Name</span> <span class="kt">string</span>
+	<span class="nx">Run</span>  <span class="kd">func</span><span class="p">(</span><span class="o">*</span><span class="nx">gorm</span><span class="p">.</span><span class="nx">DB</span><span class="p">)</span> <span class="kt">error</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>Next, we need to define a path where we&rsquo;ll store the seeds and how to collect
+them:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="c1">// pkg/seeds/seeds.go
+</span><span class="c1"></span><span class="kn">package</span> <span class="nx">seeds</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;github.com/fteem/seeding/pkg/seed&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">All</span><span class="p">()</span> <span class="p">[]</span><span class="nx">seed</span><span class="p">.</span><span class="nx">Seed</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="p">[]</span><span class="nx">seed</span><span class="p">.</span><span class="nx">Seed</span><span class="p">{}</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>The <code>seeds</code> package will contain all instances of <code>seed.Seed</code> and collect them
+in the <code>All</code> function. This will allow the third component, a CLI tool, to
+iterate over them and execute them against a database. Additionally, in the same
+<code>seeds</code> package we can have separate files for seeding various types of data.</p>
+
+<p>For example:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="c1">// pkg/seeds/users.go
+</span><span class="c1"></span><span class="kn">package</span> <span class="nx">seeds</span>
+
+<span class="kd">func</span> <span class="nf">CreateUser</span><span class="p">(</span><span class="nx">db</span> <span class="o">*</span><span class="nx">gorm</span><span class="p">.</span><span class="nx">DB</span><span class="p">,</span> <span class="nx">name</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">age</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">users</span><span class="p">.</span><span class="nx">User</span><span class="p">{</span><span class="nx">Name</span><span class="p">:</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">Age</span><span class="p">:</span> <span class="nx">age</span><span class="p">}).</span><span class="nx">Error</span>
+<span class="p">}</span></code></pre></td></tr></table>
+</div>
+</div>
+
+<p>The usage of the function in <code>All</code>:</p>
+
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
 </span><span class="lnt"> 2
 </span><span class="lnt"> 3
 </span><span class="lnt"> 4
@@ -331,129 +445,139 @@ the context.</p>
 </span><span class="lnt">18
 </span><span class="lnt">19
 </span><span class="lnt">20
+</span><span class="lnt">21
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">defmodule</span> <span class="nc">FileTest</span> <span class="n">do</span>
-  <span class="c1"># Changing directory cannot be async</span>
-  <span class="n">use</span> <span class="nc">ExUnit.Case</span><span class="p">,</span> <span class="ss">async</span><span class="p">:</span> <span class="n">false</span>
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="c1">// pkg/seeds/seeds.go
+</span><span class="c1"></span><span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;github.com/fteem/seeding/pkg/seed&#34;</span>
+<span class="p">)</span>
 
-  <span class="n">setup</span> <span class="n">context</span> <span class="n">do</span>
-    <span class="c1"># Read the :cd tag value</span>
-    <span class="n">if</span> <span class="n">cd</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="ss">:cd</span><span class="p">]</span> <span class="n">do</span>
-      <span class="n">prev_cd</span> <span class="o">=</span> <span class="nc">File</span><span class="o">.</span><span class="n">cwd!</span>
-      <span class="nc">File</span><span class="o">.</span><span class="n">cd!</span><span class="p">(</span><span class="n">cd</span><span class="p">)</span>
-      <span class="n">on_exit</span> <span class="n">fn</span> <span class="o">-&gt;</span> <span class="nc">File</span><span class="o">.</span><span class="n">cd!</span><span class="p">(</span><span class="n">prev_cd</span><span class="p">)</span> <span class="n">end</span>
-    <span class="n">end</span>
-
-    <span class="ss">:ok</span>
-  <span class="n">end</span>
-
-  <span class="na">@tag</span> <span class="ss">cd</span><span class="p">:</span> <span class="s2">&#34;fixtures&#34;</span>
-  <span class="n">test</span> <span class="s2">&#34;reads utf-8 fixtures&#34;</span> <span class="n">do</span>
-    <span class="nc">File</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&#34;hello&#34;</span><span class="p">)</span>
-  <span class="n">end</span>
-<span class="n">end</span></code></pre></td></tr></table>
+<span class="kd">func</span> <span class="nf">All</span><span class="p">()</span> <span class="p">[]</span><span class="nx">seed</span><span class="p">.</span><span class="nx">Seed</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="p">[]</span><span class="nx">seed</span><span class="p">.</span><span class="nx">Seed</span><span class="p">{</span>
+        	<span class="nx">seed</span><span class="p">.</span><span class="nx">Seed</span><span class="p">{</span>
+                        <span class="nx">Name</span><span class="p">:</span> <span class="s">&#34;CreateJane&#34;</span><span class="p">,</span>
+                        <span class="nx">Run</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">db</span> <span class="o">*</span><span class="nx">gorm</span><span class="p">.</span><span class="nx">DB</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+                              <span class="nf">CreateUser</span><span class="p">(</span><span class="nx">db</span><span class="p">,</span> <span class="s">&#34;Jane&#34;</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+                        <span class="p">},</span>
+                <span class="p">},</span>
+        	<span class="nx">seed</span><span class="p">.</span><span class="nx">Seed</span><span class="p">{</span>
+                        <span class="nx">Name</span><span class="p">:</span> <span class="s">&#34;CreateJohn&#34;</span><span class="p">,</span>
+                        <span class="nx">Run</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">db</span> <span class="o">*</span><span class="nx">gorm</span><span class="p">.</span><span class="nx">DB</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+                              <span class="nf">CreateUser</span><span class="p">(</span><span class="nx">db</span><span class="p">,</span> <span class="s">&#34;John&#34;</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+                        <span class="p">},</span>
+                <span class="p">},</span>
+        <span class="p">}</span>
+<span class="p">}</span></code></pre></td></tr></table>
 </div>
 </div>
 
-<p><small>Note: Example taken from ExUnit&rsquo;s official
-<a href="http://elixir-lang.org/docs/v1.0/ex_unit/ExUnit.Case.html">documentation</a>.</small></p>
+<p>The example above is contrived, but it can work really well if you have to compose
+seeds using multiple such functions.</p>
 
-<p>Now, how can we utilize tags to get RSpec&rsquo;s <code>pending</code> funcionality in ExUnit?</p>
-
-<h2 id="running-tests-by-tag">Running tests by tag</h2>
-
-<p>Running tests by tag is really simple in ExUnit. Basically, ExUnit has the ability
-to skip/include any test by it&rsquo;s tag.</p>
-
-<p>For example, let&rsquo;s say you have tagged couple of tests that are brittle:</p>
+<p>Last, a very simple command line tool that can running the seeds we defined:</p>
 
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
 </span></code></pre></td>
 <td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">defmodule</span> <span class="nc">SomeTest</span> <span class="n">do</span>
-  <span class="n">use</span> <span class="nc">ExUnit.Case</span><span class="p">,</span> <span class="ss">async</span><span class="p">:</span> <span class="n">false</span>
+<pre class="chroma"><code class="language-go" data-lang="go"><span class="c1">// pkg/seeder/seeder.go
+</span><span class="c1"></span><span class="kn">package</span> <span class="nx">main</span>
 
-  <span class="na">@tag</span> <span class="ss">:brittle</span>
-  <span class="n">test</span> <span class="s2">&#34;some brittle code&#34;</span> <span class="n">do</span>
-    <span class="c1"># test here...</span>
-  <span class="n">end</span>
-<span class="n">end</span></code></pre></td></tr></table>
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;log&#34;</span>
+
+	<span class="s">&#34;github.com/fteem/seeding/pkg/seeds&#34;</span>
+
+	<span class="s">&#34;github.com/jinzhu/gorm&#34;</span>
+	<span class="nx">_</span> <span class="s">&#34;github.com/jinzhu/gorm/dialects/mysql&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">dbConn</span> <span class="o">:=</span> <span class="nf">openConnection</span><span class="p">()</span>
+	<span class="k">defer</span> <span class="nx">dbConn</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+
+	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">seed</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">seeds</span><span class="p">.</span><span class="nf">All</span><span class="p">()</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">seed</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">dbConn</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+			<span class="nx">log</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Running seed &#39;%s&#39;, failed with error: %s&#34;</span><span class="p">,</span> <span class="nx">seed</span><span class="p">.</span><span class="nx">Name</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">openConnection</span><span class="p">()</span> <span class="o">*</span><span class="nx">gorm</span><span class="p">.</span><span class="nx">DB</span> <span class="p">{</span>
+        <span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">gorm</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="s">&#34;mysql&#34;</span><span class="p">,</span> <span class="s">&#34;user:password@/dbname?charset=utf8&amp;parseTime=True&amp;loc=Local&#34;</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Couldn&#39;t establish database connection: %s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="nx">db</span>
+<span class="p">}</span></code></pre></td></tr></table>
 </div>
 </div>
 
-<p>Now, you can run only the tests with the <code>brittle</code> tag, by executing:</p>
+<p>The binary produced by this is quite a simple one: loads all of the seeds using
+the <code>seeds.All</code> function, iterates over the collection and executes their <code>Run</code>
+function. If an error occurs, the whole program bombs.</p>
 
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">mix <span class="nb">test</span> test/some_test.exs --include brittle</code></pre></div>
+<p>That&rsquo;s it. Very thin and simple way to abstract away your database seeds using
+Gorm. Before you go, let me know in the comments how you approach database
+seeding.</p>
 
-<p>Having this in mind, let&rsquo;s introduce a custom tag of ours so we can make our tests
-<code>pending</code>.</p>
 
-<h2 id="custom-tags">Custom tags</h2>
 
-<p>Although the word &ldquo;custom&rdquo; used in programming often means something complicated
-done from scracth by the programmer, in this case it&rsquo;s very simple.</p>
 
-<p>Let&rsquo;s take any test and tag it with <code>:pending</code>.</p>
 
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">defmodule</span> <span class="nc">SomeTest</span> <span class="n">do</span>
-  <span class="n">use</span> <span class="nc">ExUnit.Case</span><span class="p">,</span> <span class="ss">async</span><span class="p">:</span> <span class="n">false</span>
 
-  <span class="na">@tag</span> <span class="ss">:pending</span>
-  <span class="n">test</span> <span class="s2">&#34;always true&#34;</span> <span class="n">do</span>
-    <span class="n">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">1</span>
-  <span class="n">end</span>
-<span class="n">end</span></code></pre></td></tr></table>
-</div>
+
+
+<div id="mc_embed_signup">
+<form action="https://pm.us20.list-manage.com/subscribe/post?u=d9a6471309140dcd520d05346&amp;id=2aac491644" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+    <div id="mc_embed_signup_scroll">
+        <div class="heading">Join The Newsletter</div>
+        <p>
+            I write about backend technologies, programming and cloud architectures. Join hundreds of other developers that get my content, twice a month. Unsubscribe whenever. Never any spam, ads, or affiliate links.
+        </p>
+	<input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Your email address" required>
+        <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
+
+      
+      <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_d9a6471309140dcd520d05346_2aac491644" tabindex="-1" value=""></div>
+
+    <p>You can also subscribe <a href="https://ieftimov.com/index.xml">via RSS</a>.</p>
+    </div>
+</form>
 </div>
 
-<p>We can exclude this &ldquo;pending&rdquo; test by executing our test suite with:</p>
 
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">mix <span class="nb">test</span> --exclude pending</code></pre></div>
-
-<p>This will skip any tests that have the <code>:pending</code> tag. Simple as that, we have
-RSpec&rsquo;s <code>pending</code> functionality just by excluding a tag. If you are wondering
-if we can make the exclusion of the tag automatic - yes we can. In your
-<code>test_helper.exs</code> add this line, before the <code>ExUnit.start</code> line:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="nc">ExUnit</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="ss">exclude</span><span class="p">:</span> <span class="p">[</span><span class="ss">pending</span><span class="p">:</span> <span class="n">true</span><span class="p">])</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>This configuration will tell ExUnit that it should always skip tests that are tagged as
-<code>:pending</code>. Now, every time you run your tests, the tests tagged with <code>:pending</code>
-will be excluded.</p>
-
-<p>Do you have any other interesting configuration trick in your ExUnit suite? Feel free
-to share them in the comments, I would love to learn more about ExUnit!</p>
-
-<p>Thanks for reading!</p>
 
     </div>
 
@@ -465,16 +589,12 @@ to share them in the comments, I would love to learn more about ExUnit!</p>
     
 
     <footer class="post-footer">
-      <div class="post-tags">
-          <a href="https://ieftimov.com/tags/test/">test</a>
-          <a href="https://ieftimov.com/tags/pending/">pending</a>
-          
-        </div>
+      
 
       
       <nav class="post-nav">
         
-          <a class="prev" href="/post/filter-params-phoenix/">
+          <a class="prev" href="/post/testing-in-go-dependency-injection/">
             
             <i class="iconfont">
               <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
@@ -484,12 +604,12 @@ to share them in the comments, I would love to learn more about ExUnit!</p>
 </svg>
 
             </i>
-            <span class="prev-text nav-default">Filter request params from Phoenix logs</span>
+            <span class="prev-text nav-default">Testing in Go: Dependency Injection</span>
             <span class="prev-text nav-mobile">Prev</span>
           </a>
         
-          <a class="next" href="/post/writing-elixir-library/">
-            <span class="next-text nav-default">Write and publish your first Elixir library</span>
+          <a class="next" href="/post/testing-in-go-fixtures/">
+            <span class="next-text nav-default">Testing in Go: Fixtures</span>
             <span class="prev-text nav-mobile">Next</span>
             
             <i class="iconfont">
@@ -527,7 +647,7 @@ to share them in the comments, I would love to learn more about ExUnit!</p>
   <div id="disqus_thread"></div>
   <script type="text/javascript">
     var disqus_config = function () {
-      this.page.url = "https://ieftimov.com/post/pending-tests-exunit/";
+      this.page.url = "https://ieftimov.com/post/simple-golang-database-seeding-abstraction-gorm/";
     };
     function load_disqus() {
       
