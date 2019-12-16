@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>TDD Patterns: Humble Object - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="TDD Patterns: Humble Object" />
+<meta property="og:description" content="We all know that there are different design patterns. They are all quite trivial to learn, but, the trick lies in applying them. When should we use this or that pattern and will that help in making our code better and cleaner. Well, tests are code as well and, you guessed it, there are some testing patterns that are around for a while.
+Today, we will take a look at one of them." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/tdd-patterns-humble-object/" />
+<meta property="article:published_time" content="2015-08-15T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="TDD Patterns: Humble Object"/>
+<meta name="twitter:description" content="We all know that there are different design patterns. They are all quite trivial to learn, but, the trick lies in applying them. When should we use this or that pattern and will that help in making our code better and cleaner. Well, tests are code as well and, you guessed it, there are some testing patterns that are around for a while.
+Today, we will take a look at one of them."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.comcss/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.comjs/main.js"></script><script src="https://ieftimov.comjs/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">15</span>
+							<span class="rest">Aug 2015</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">TDD Patterns: Humble Object</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>We all know that there are different design patterns. They are all quite trivial
+to learn, but, the trick lies in applying them. When should we use this or that
+pattern and will that help in making our code better and cleaner. Well, tests
+are code as well and, you guessed it, there are some testing patterns that are
+around for a while.</p>
+<p>Today, we will take a look at one of them. It is a useful one and also it has an
+interesting name - the Humble Object Pattern.</p>
+<h2 id="the-problem">The problem</h2>
+<p>Think about this. You are building an API client/wrapper. You read the documentation,
+you understand the model and the intent of the API and how everything is composed.
+You start writing your code, keeping it in small chunks (i.e. classes). You are a
+responsible programmer, you want to have your code well documented and tested. All
+of this is nice. And then, you get to this part where you start mocking your HTTP calls
+and stuff easily gets messy.</p>
+<p>How can we avoid this? Is there a better way?</p>
+<h2 id="humble-object">Humble Object</h2>
+<p>Let us take a detour. A bit of history first. I think that Uncle Bob has a really
+good definition of the Humble Object pattern in <a href="http://cleancoders.com/episode/clean-code-episode-23-p2/show">Episode 23</a>
+of his Clean Code videos:</p>
+<!-- raw HTML omitted -->
+<p>In case you find the definition confusing, let's tear it apart. First, the boundaries.
+When one says boundaries, it means that the person is referring to the part of the
+system that communicates with other software that is not written by you, but your
+software is dependent on it. For example, let's say your software creates cron jobs.
+The boundary lies beween the software that will call the cronjob system command and
+the operating system.</p>
+<p>So, this means when using the Humble Object pattern, we extract as much logic as
+we can from the boundary class(es), thus making them humble. The extracted logic
+will be moved to another class, which will be easily testable. On the other hand,
+the humble code will be dependant on the extracted class, but testing it won't be
+necessary, because it doesn't hold any business logic.</p>
+<p>Usually, when explaining the humble object, people use GUIs or async code as examples.
+We won't go down that path today. Let's try finding an example which we might run
+into more frequently.</p>
+
+
+
+
+
+
+
+<div id="mc_embed_signup">
+<form action="https://pm.us20.list-manage.com/subscribe/post?u=d9a6471309140dcd520d05346&amp;id=2aac491644" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+    <div id="mc_embed_signup_scroll">
+        <div class="heading">Join The Newsletter</div>
+        <p>
+            I write about backend technologies, programming and cloud architectures. Join hundreds of other developers that get my content, twice a month. Unsubscribe whenever. Never spam.
+        </p>
+	<input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Your email address" required>
+        <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
+
+      
+      <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_d9a6471309140dcd520d05346_2aac491644" tabindex="-1" value=""></div>
+
+    <p>You can also subscribe <a href="/index.xml">via RSS</a>.</p>
+    </div>
+</form>
+</div>
+
+
+<h2 id="back-to-the-problem">Back to the problem</h2>
+<p>Now, that we undestand the motivation and the theory behind this pattern, let's
+continue with aforementioned design problem.</p>
+<p>Tackling any programming problem, in my opinion, is best understood via some code.
+Here's an example. We will make a tiny API wrapper of the REST Countries API, more
+specifically, the <a href="https://restcountries.eu/rest/v1/capital/london">World Capitals API</a>.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#999">require</span> <span style="color:#b84">&#39;net/http&#39;</span>
+<span style="color:#999">require</span> <span style="color:#b84">&#39;json&#39;</span>
+
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">CapitalsClient</span>
+  <span style="color:#008080">API_ENDPOINT</span> <span style="font-weight:bold">=</span> <span style="color:#b84">&#34;</span><span style="color:#b84">https://restcountries.eu/rest/v1/capital/</span><span style="color:#b84">&#34;</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold">self</span><span style="font-weight:bold">.</span><span style="color:#900;font-weight:bold">find</span>(capital_name)
+    uri <span style="font-weight:bold">=</span> <span style="color:#008080">URI</span>(<span style="color:#008080">API_ENDPOINT</span> <span style="font-weight:bold">+</span> capital_name)
+    response <span style="font-weight:bold">=</span> <span style="color:#008080">Net</span><span style="font-weight:bold">::</span><span style="color:#008080">HTTP</span><span style="font-weight:bold">.</span>get(uri)
+    result <span style="font-weight:bold">=</span> <span style="color:#008080">JSON</span><span style="font-weight:bold">.</span>parse(response)<span style="font-weight:bold">.</span>first
+    currencies <span style="font-weight:bold">=</span> result<span style="font-weight:bold">[</span><span style="color:#b84">&#39;currencies&#39;</span><span style="font-weight:bold">]</span><span style="font-weight:bold">.</span>map {<span style="font-weight:bold">|</span>currency<span style="font-weight:bold">|</span> <span style="color:#008080">Currency</span><span style="font-weight:bold">.</span>new(currency) }
+
+    <span style="color:#008080">Country</span><span style="font-weight:bold">.</span>new({ <span style="color:#999">name</span>: result<span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">name</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>, 
+                  <span style="color:#b84">capital</span>: result<span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">capital</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>, 
+                  <span style="color:#b84">region</span>: result<span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">region</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+                  <span style="color:#b84">population</span>: result<span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">population</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+                  <span style="color:#b84">latitude</span>: result<span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">latlng</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span><span style="font-weight:bold">[</span><span style="color:#099">0</span><span style="font-weight:bold"></span><span style="font-weight:bold">]</span>,
+                  <span style="color:#b84">longitude</span>: result<span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">latlng</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span><span style="font-weight:bold">[</span><span style="color:#099">1</span><span style="font-weight:bold"></span><span style="font-weight:bold">]</span>,
+                  <span style="color:#b84">native_name</span>: result<span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">nativeName</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+                  <span style="color:#b84">currencies</span>: currencies
+    })
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>The <code>CapitalsClient</code> will issue a GET request to the API endpoint, get the
+result and build a <code>Country</code> object from the results. This is what the JSON
+result looks like for London, UK:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">[
+    {
+        <span style="color:#000080">&#34;name&#34;</span>: <span style="color:#b84">&#34;United Kingdom&#34;</span>,
+        <span style="color:#000080">&#34;capital&#34;</span>: <span style="color:#b84">&#34;London&#34;</span>,
+        <span style="color:#000080">&#34;altSpellings&#34;</span>: [
+            <span style="color:#b84">&#34;GB&#34;</span>,
+            <span style="color:#b84">&#34;UK&#34;</span>,
+            <span style="color:#b84">&#34;Great Britain&#34;</span>
+        ],
+        <span style="color:#000080">&#34;relevance&#34;</span>: <span style="color:#b84">&#34;2.5&#34;</span>,
+        <span style="color:#000080">&#34;region&#34;</span>: <span style="color:#b84">&#34;Europe&#34;</span>,
+        <span style="color:#000080">&#34;subregion&#34;</span>: <span style="color:#b84">&#34;Northern Europe&#34;</span>,
+        <span style="color:#000080">&#34;translations&#34;</span>: {
+            <span style="color:#000080">&#34;de&#34;</span>: <span style="color:#b84">&#34;Vereinigtes Königreich&#34;</span>,
+            <span style="color:#000080">&#34;es&#34;</span>: <span style="color:#b84">&#34;Reino Unido&#34;</span>,
+            <span style="color:#000080">&#34;fr&#34;</span>: <span style="color:#b84">&#34;Royaume-Uni&#34;</span>,
+            <span style="color:#000080">&#34;ja&#34;</span>: <span style="color:#b84">&#34;イギリス&#34;</span>,
+            <span style="color:#000080">&#34;it&#34;</span>: <span style="color:#b84">&#34;Regno Unito&#34;</span>
+        },
+        <span style="color:#000080">&#34;population&#34;</span>: <span style="color:#099">64105654</span>,
+        <span style="color:#000080">&#34;latlng&#34;</span>: [
+            <span style="color:#099">54</span>,
+            <span style="color:#099">-2</span>
+        ],
+        <span style="color:#000080">&#34;demonym&#34;</span>: <span style="color:#b84">&#34;British&#34;</span>,
+        <span style="color:#000080">&#34;area&#34;</span>: <span style="color:#099">242900</span>,
+        <span style="color:#000080">&#34;gini&#34;</span>: <span style="color:#099">34</span>,
+        <span style="color:#000080">&#34;timezones&#34;</span>: [
+            <span style="color:#b84">&#34;UTC−08:00&#34;</span>,
+            <span style="color:#b84">&#34;UTC−05:00&#34;</span>,
+            <span style="color:#b84">&#34;UTC−04:00&#34;</span>,
+            <span style="color:#b84">&#34;UTC−03:00&#34;</span>,
+            <span style="color:#b84">&#34;UTC−02:00&#34;</span>,
+            <span style="color:#b84">&#34;UTC&#34;</span>,
+            <span style="color:#b84">&#34;UTC+01:00&#34;</span>,
+            <span style="color:#b84">&#34;UTC+02:00&#34;</span>,
+            <span style="color:#b84">&#34;UTC+06:00&#34;</span>
+        ],
+        <span style="color:#000080">&#34;borders&#34;</span>: [
+            <span style="color:#b84">&#34;IRL&#34;</span>
+        ],
+        <span style="color:#000080">&#34;nativeName&#34;</span>: <span style="color:#b84">&#34;United Kingdom&#34;</span>,
+        <span style="color:#000080">&#34;callingCodes&#34;</span>: [
+            <span style="color:#b84">&#34;44&#34;</span>
+        ],
+        <span style="color:#000080">&#34;topLevelDomain&#34;</span>: [
+            <span style="color:#b84">&#34;.uk&#34;</span>
+        ],
+        <span style="color:#000080">&#34;alpha2Code&#34;</span>: <span style="color:#b84">&#34;GB&#34;</span>,
+        <span style="color:#000080">&#34;alpha3Code&#34;</span>: <span style="color:#b84">&#34;GBR&#34;</span>,
+        <span style="color:#000080">&#34;currencies&#34;</span>: [
+            <span style="color:#b84">&#34;GBP&#34;</span>
+        ],
+        <span style="color:#000080">&#34;languages&#34;</span>: [
+            <span style="color:#b84">&#34;en&#34;</span>
+        ]
+    }
+]</code></pre></div>
+<p>For completeness sake, let's see the <code>Currency</code> and <code>Country</code> classes.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">Currency</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">initialize</span> code
+    @code <span style="font-weight:bold">=</span> code
+  <span style="font-weight:bold">end</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">to_s</span>
+    @code
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">Country</span>
+  <span style="font-weight:bold">attr_reader</span> <span style="color:#b84">:name</span>, <span style="color:#b84">:capital</span>, <span style="color:#b84">:region</span>, <span style="color:#b84">:population</span>, <span style="color:#b84">:latitude</span>, <span style="color:#b84">:longitude</span>, 
+    <span style="color:#b84">:native_name</span>, <span style="color:#b84">:currencies</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">initialize</span> attrs
+    @name        <span style="font-weight:bold">=</span>  attrs<span style="font-weight:bold">.</span>fetch(<span style="color:#b84">&#34;</span><span style="color:#b84">name</span><span style="color:#b84">&#34;</span>,<span style="font-weight:bold">nil</span>)
+    @capital     <span style="font-weight:bold">=</span>  attrs<span style="font-weight:bold">.</span>fetch(<span style="color:#b84">&#34;</span><span style="color:#b84">capital</span><span style="color:#b84">&#34;</span>,<span style="font-weight:bold">nil</span>)
+    @region      <span style="font-weight:bold">=</span>  attrs<span style="font-weight:bold">.</span>fetch(<span style="color:#b84">&#34;</span><span style="color:#b84">region</span><span style="color:#b84">&#34;</span>,<span style="font-weight:bold">nil</span>)
+    @population  <span style="font-weight:bold">=</span>  attrs<span style="font-weight:bold">.</span>fetch(<span style="color:#b84">&#34;</span><span style="color:#b84">population</span><span style="color:#b84">&#34;</span>,<span style="font-weight:bold">nil</span>)
+    @latitude    <span style="font-weight:bold">=</span>  attrs<span style="font-weight:bold">.</span>fetch(<span style="color:#b84">&#34;</span><span style="color:#b84">latlng</span><span style="color:#b84">&#34;</span>,<span style="font-weight:bold">[</span><span style="font-weight:bold">]</span>)<span style="font-weight:bold">.</span>first
+    @longitude   <span style="font-weight:bold">=</span>  attrs<span style="font-weight:bold">.</span>fetch(<span style="color:#b84">&#34;</span><span style="color:#b84">latlng</span><span style="color:#b84">&#34;</span>,<span style="font-weight:bold">[</span><span style="font-weight:bold">]</span>)<span style="font-weight:bold">.</span>last
+    @native_name <span style="font-weight:bold">=</span>  attrs<span style="font-weight:bold">.</span>fetch(<span style="color:#b84">&#34;</span><span style="color:#b84">nativeName</span><span style="color:#b84">&#34;</span>,<span style="font-weight:bold">nil</span>) 
+    @currencies  <span style="font-weight:bold">=</span>  attrs<span style="font-weight:bold">.</span>fetch(<span style="color:#b84">&#34;</span><span style="color:#b84">currencies</span><span style="color:#b84">&#34;</span>, <span style="font-weight:bold">[</span><span style="font-weight:bold">]</span>)
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>Now, let's revisit the <code>CountryClient</code> class. We've all done this - we fetch
+the JSON, parse it and build the currencies and country object(s). Now, testing is
+interesting.</p>
+<p>First, we'll need to stub the GET request using
+<a href="https://github.com/bblimke/webmock">Webmock</a> and assert on the <code>Country</code>
+object that we receive as a result of the <code>CapitalsClient::find</code> method.
+Another approach is to use VCR and record the request going out and replay it
+whenever needed.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#999">require</span> <span style="color:#b84">&#39;minitest/autorun&#39;</span>
+<span style="color:#999">require</span> <span style="color:#b84">&#39;webmock/minitest&#39;</span>
+
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">CountryClientTest</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">Minitest</span><span style="font-weight:bold">::</span><span style="color:#008080">Test</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">test_client_fetches_countries</span>
+    response <span style="font-weight:bold">=</span> <span style="color:#b84">%Q{</span><span style="color:#b84">
+</span><span style="color:#b84">      [
+</span><span style="color:#b84">        </span><span style="color:#b84">{</span><span style="color:#b84">
+</span><span style="color:#b84">          &#34;name&#34;: &#34;United Kingdom&#34;,
+</span><span style="color:#b84">          &#34;capital&#34;: &#34;London&#34;,
+</span><span style="color:#b84">          &#34;region&#34;: &#34;Europe&#34;,
+</span><span style="color:#b84">          &#34;population&#34;: 64105654,
+</span><span style="color:#b84">          &#34;latlng&#34;: [54, -2],
+</span><span style="color:#b84">          &#34;nativeName&#34;: &#34;United Kingdom&#34;
+</span><span style="color:#b84">        </span><span style="color:#b84">}</span><span style="color:#b84">
+</span><span style="color:#b84">      ]
+</span><span style="color:#b84">    </span><span style="color:#b84">}</span>
+    stub_request(<span style="color:#b84">:get</span>, <span style="color:#008080">CountryClient</span><span style="font-weight:bold">::</span><span style="color:#008080">API_ENDPOINT</span> <span style="font-weight:bold">+</span> <span style="color:#b84">&#34;</span><span style="color:#b84">London</span><span style="color:#b84">&#34;</span>)<span style="font-weight:bold">.</span>to_return(<span style="color:#b84">body</span>: response)
+    country <span style="font-weight:bold">=</span> <span style="color:#008080">CapitalsClient</span><span style="font-weight:bold">.</span>find(<span style="color:#b84">&#34;</span><span style="color:#b84">London</span><span style="color:#b84">&#34;</span>)
+    assert_equal <span style="color:#b84">&#34;</span><span style="color:#b84">London</span><span style="color:#b84">&#34;</span>, country<span style="font-weight:bold">.</span>name
+    assert_equal <span style="color:#b84">&#34;</span><span style="color:#b84">United Kingdom</span><span style="color:#b84">&#34;</span>, country<span style="font-weight:bold">.</span>name
+    assert_equal <span style="color:#b84">&#34;</span><span style="color:#b84">Europe</span><span style="color:#b84">&#34;</span>, country<span style="font-weight:bold">.</span>region
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>Now, this works, it's fine. But, what exactly are we testing here? I am sure we
+have all done this multiple times. Look at the test class name - <code>CountryClientTest</code>.
+We should be testing the client, not setting assertions on the country object.
+The <code>CountryClient</code> acts like a factory, not like an API client.</p>
+<p>Also, think about this - stubbing, although it looks fine, it's basically isolation.
+While we cannot completely rely on pulling real data from the API for each of our
+tests, we shouldn't also go overboard with it.</p>
+<p>While one can argue that stubbing external services is all good, what would the
+case be if you used a library that was actually fetching the data and building
+it for you? What would you test if the wrapper was made by someone else and
+you are using it in a Rails app? You could go on and stub the library, but you have
+no idea if the API and/or the wrapper had any changes made to them.</p>
+<p>But, let's take a step back. How can we apply the humble object pattern here?</p>
+
+
+
+
+
+
+
+<div id="mc_embed_signup">
+<form action="https://pm.us20.list-manage.com/subscribe/post?u=d9a6471309140dcd520d05346&amp;id=2aac491644" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+    <div id="mc_embed_signup_scroll">
+        <div class="heading">Join The Newsletter</div>
+        <p>
+            I write about backend technologies, programming and cloud architectures. Join hundreds of other developers that get my content, twice a month. Unsubscribe whenever. Never spam.
+        </p>
+	<input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Your email address" required>
+        <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
+
+      
+      <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_d9a6471309140dcd520d05346_2aac491644" tabindex="-1" value=""></div>
+
+    <p>You can also subscribe <a href="/index.xml">via RSS</a>.</p>
+    </div>
+</form>
+</div>
+
+
+<h2 id="applying-the-pattern">Applying the pattern</h2>
+<p>If you remember, the pattern states that we need to extract most of the logic near
+the boundaries of the system, so the code on the boundary itself is so humble, it
+doesn't need to be tested. But, the humble object should be <strong>dependent</strong> on the
+extracted code.</p>
+<p>Let's try to refactor our code by doing exactly that.</p>
+<p>First, the <code>CountryClient</code>. It sure does more than it should. Let's make it humble.
+The first step would be to make it an API client. Exactly that, nothing more or less.
+This means that it will only issue HTTP GET to the API. Hint: think of the
+Single-responsibility principle.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#999">require</span> <span style="color:#b84">&#39;net/http&#39;</span>
+
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">CapitalsClient</span>
+  <span style="color:#008080">API_ENDPOINT</span> <span style="font-weight:bold">=</span> <span style="color:#b84">&#34;</span><span style="color:#b84">https://restcountries.eu/rest/v1/capital/</span><span style="color:#b84">&#34;</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold">self</span><span style="font-weight:bold">.</span><span style="color:#900;font-weight:bold">find</span>(capital_name)
+    uri <span style="font-weight:bold">=</span> <span style="color:#008080">URI</span>(<span style="color:#008080">API_ENDPOINT</span> <span style="font-weight:bold">+</span> capital_name)
+    <span style="color:#008080">Net</span><span style="font-weight:bold">::</span><span style="color:#008080">HTTP</span><span style="font-weight:bold">.</span>get(uri)
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>That's it. Again, <code>CapitalsClient</code> just sends the request and it returns it's
+response. Now, the extracted logic.</p>
+<p>Since the code that we extracted was actually building the <code>Country</code> object,
+we can create a <code>CountryBuilder</code> class out of it:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#999">require</span> <span style="color:#b84">&#39;json&#39;</span>
+
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">CountryBuilder</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold">self</span><span style="font-weight:bold">.</span><span style="color:#900;font-weight:bold">build</span> json
+    result <span style="font-weight:bold">=</span> <span style="color:#008080">JSON</span><span style="font-weight:bold">.</span>parse(response)<span style="font-weight:bold">.</span>first
+    currencies <span style="font-weight:bold">=</span> result<span style="font-weight:bold">[</span><span style="color:#b84">&#39;currencies&#39;</span><span style="font-weight:bold">]</span><span style="font-weight:bold">.</span>map {<span style="font-weight:bold">|</span>currency<span style="font-weight:bold">|</span> <span style="color:#008080">Currency</span><span style="font-weight:bold">.</span>new(currency) }
+
+    <span style="color:#008080">Country</span><span style="font-weight:bold">.</span>new({ <span style="color:#999">name</span>: result<span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">name</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>, 
+                  <span style="color:#b84">capital</span>: result<span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">capital</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>, 
+                  <span style="color:#b84">region</span>: result<span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">region</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+                  <span style="color:#b84">population</span>: result<span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">population</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+                  <span style="color:#b84">latitude</span>: result<span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">latlng</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span><span style="font-weight:bold">[</span><span style="color:#099">0</span><span style="font-weight:bold"></span><span style="font-weight:bold">]</span>,
+                  <span style="color:#b84">longitude</span>: result<span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">latlng</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span><span style="font-weight:bold">[</span><span style="color:#099">1</span><span style="font-weight:bold"></span><span style="font-weight:bold">]</span>,
+                  <span style="color:#b84">native_name</span>: result<span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">nativeName</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+                  <span style="color:#b84">currencies</span>: currencies
+    })
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>The <code>CountryBuilder.build</code> method will receive the JSON and build the <code>Country</code>
+object on it's own. The next, obvious step, is to test this class. If you look at
+the test we wrote earlier, you can notice that the test is 90% done, it just needs
+some tweaking.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#999">require</span> <span style="color:#b84">&#39;minitest/autorun&#39;</span>
+
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">CountryBuilderTest</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">Minitest</span><span style="font-weight:bold">::</span><span style="color:#008080">Test</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">test_build_builds_the_country</span>
+    response <span style="font-weight:bold">=</span> <span style="color:#b84">%Q{</span><span style="color:#b84">
+</span><span style="color:#b84">      [
+</span><span style="color:#b84">        </span><span style="color:#b84">{</span><span style="color:#b84">
+</span><span style="color:#b84">          &#34;name&#34;: &#34;United Kingdom&#34;,
+</span><span style="color:#b84">          &#34;capital&#34;: &#34;London&#34;,
+</span><span style="color:#b84">          &#34;region&#34;: &#34;Europe&#34;,
+</span><span style="color:#b84">          &#34;population&#34;: 64105654,
+</span><span style="color:#b84">          &#34;latlng&#34;: [54, -2],
+</span><span style="color:#b84">          &#34;nativeName&#34;: &#34;United Kingdom&#34;
+</span><span style="color:#b84">        </span><span style="color:#b84">}</span><span style="color:#b84">
+</span><span style="color:#b84">      ]
+</span><span style="color:#b84">    </span><span style="color:#b84">}</span>
+    country <span style="font-weight:bold">=</span> <span style="color:#008080">CountryBuilder</span><span style="font-weight:bold">.</span>build(response)
+
+    <span style="color:#998;font-style:italic"># Sanity check</span>
+    assert_equal <span style="color:#008080">Country</span>, country<span style="font-weight:bold">.</span>class
+
+    <span style="color:#998;font-style:italic"># Useful assertions</span>
+    assert_equal <span style="color:#b84">&#34;</span><span style="color:#b84">London</span><span style="color:#b84">&#34;</span>, country<span style="font-weight:bold">.</span>name
+    assert_equal <span style="color:#b84">&#34;</span><span style="color:#b84">United Kingdom</span><span style="color:#b84">&#34;</span>, country<span style="font-weight:bold">.</span>name
+    assert_equal <span style="color:#b84">&#34;</span><span style="color:#b84">Europe</span><span style="color:#b84">&#34;</span>, country<span style="font-weight:bold">.</span>region
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>The key differences in the new and old test is that the new one is missing the
+Webmock request stub. Also, we are testing the builder class, which does what it should -
+receives the response as a JSON, builds an object of a class and returns it. But,
+what happens now to the <code>CapitalsClient</code>? Well, nothing too complicated. If
+you remember, the pattern states that the humble object should depend on the
+extracted code.</p>
+<p>If you look at the code below, it should all make sense:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#999">require</span> <span style="color:#b84">&#39;net/http&#39;</span>
+
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">CapitalsClient</span>
+  <span style="color:#008080">API_ENDPOINT</span> <span style="font-weight:bold">=</span> <span style="color:#b84">&#34;</span><span style="color:#b84">https://restcountries.eu/rest/v1/capital/</span><span style="color:#b84">&#34;</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold">self</span><span style="font-weight:bold">.</span><span style="color:#900;font-weight:bold">find</span>(capital_name)
+    uri <span style="font-weight:bold">=</span> <span style="color:#008080">URI</span>(<span style="color:#008080">API_ENDPOINT</span> <span style="font-weight:bold">+</span> capital_name)
+    response <span style="font-weight:bold">=</span> <span style="color:#008080">Net</span><span style="font-weight:bold">::</span><span style="color:#008080">HTTP</span><span style="font-weight:bold">.</span>get(uri)
+    <span style="color:#008080">CountryBuilder</span><span style="font-weight:bold">.</span>build(response)
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>So, we add the dependency, making <code>CapitalsClient</code> use <code>CountryBuilder</code> to
+create the country out of the JSON payload.</p>
+<p>And, what about testing <code>CapitalsClient</code>? Well, we don't really need to test it.
+Even if we wanted to test it, we could only write a test with a test spy that would
+expect <code>CountryBuilder.build</code> to be called. But, how useful is that test?
+If we wrote it, we would tie our test to the implementation of the production code.
+This means that if the implementation of this method changes in the future, but
+it's output does not, our tests will fail although we haven't broken our code.</p>
+<h2 id="outro">Outro</h2>
+<p>As you can see, although very simple, this humble pattern can make a difference
+when we want to leave out heavy stubbing to external services, APIs or interfaces
+and just focus on our code where &ldquo;the magic&rdquo; happens. Also, at least for me, this
+type of refactor comes very natural in these situations. But, knowing the pattern
+guides us towards making only one entry point to our code (or, dependency).</p>
+
+			</div>
+
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/patterns">patterns</a></li>
+							
+							<li><a href="/tags/humble">humble</a></li>
+							
+							<li><a href="/tags/object">object</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>

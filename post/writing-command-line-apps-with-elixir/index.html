@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Writing command line apps with Elixir - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Writing command line apps with Elixir" />
+<meta property="og:description" content="Elixir is a really cool language. Although I do not have much experience with it (yet), I am always trying to build interesting stuff with it and learn the built-in tools. In this blog post I decided to show you how to build a self-contained command line application with Elixir, with some help from escript.
+Escript Erlang and Elixir have this cool thing called escript. It&#39;s basically a tool that compiles an Elixir app that you have as a command line application." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/writing-command-line-apps-with-elixir/" />
+<meta property="article:published_time" content="2015-11-27T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Writing command line apps with Elixir"/>
+<meta name="twitter:description" content="Elixir is a really cool language. Although I do not have much experience with it (yet), I am always trying to build interesting stuff with it and learn the built-in tools. In this blog post I decided to show you how to build a self-contained command line application with Elixir, with some help from escript.
+Escript Erlang and Elixir have this cool thing called escript. It&#39;s basically a tool that compiles an Elixir app that you have as a command line application."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.comcss/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.comjs/main.js"></script><script src="https://ieftimov.comjs/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">27</span>
+							<span class="rest">Nov 2015</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Writing command line apps with Elixir</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>Elixir is a really cool language. Although I do not have much experience with it
+(yet), I am always trying to build interesting stuff with it and learn the
+built-in tools. In this blog post I decided to show you how to build a
+self-contained command line application with Elixir, with some help from
+<code>escript</code>.</p>
+<h2 id="escript">Escript</h2>
+<p>Erlang and Elixir have this cool thing called escript. It's basically a tool
+that compiles an Elixir app that you have as a command line application.</p>
+<p>From Elixir's <a href="http://elixir-lang.org/docs/master/mix/Mix.Tasks.Escript.Build.html">documentation on escript</a>:</p>
+<blockquote>
+<p>An escript is an executable that can be invoked from the command line. An
+escript can run on any machine that has Erlang installed and by default does
+not require Elixir to be installed, as Elixir is embedded as part of the
+escript.</p>
+</blockquote>
+<blockquote>
+<p>This task guarantees the project and its dependencies are compiled and packages
+them inside an escript.</p>
+</blockquote>
+<p>What is really interesting is that escript will build your Elixir CLI
+application and create an executable. The executable will only require Erlang to
+be able to run on any machine. It will not need Elixir because it will be
+contained in the executable it builds.</p>
+<h2 id="eight-ball-wrapped-in-escript"><code>eight_ball</code> wrapped in <code>escript</code></h2>
+<p>Now, instead of going at length of building a tiny example Elixir application,
+I will use the <code>eight_ball</code> application that we built in the
+<a href="/writing-elixir-library">Write and publish your first Elixir library</a> post. If
+you haven't read it yet you can click on the link above, read the step-by-step
+tutorial and come back to this post once you are done.</p>
+<p>The application is quite simple. It's a module which has only one function
+<code>EightBall.ask/1</code>. It takes a question as an argument and returns the answer.
+Let's use <code>escript</code> to build a command line application from this Elixir
+application.</p>
+<h2 id="adding-escript-to-the-application">Adding escript to the application</h2>
+<p>If you want to follow along, you can find the repo
+<a href="https://github.com/fteem/eight_ball">here</a>.</p>
+<p>In the <code>mix.exs</code> file, we need to make an addition:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">defmodule <span style="color:#458;font-weight:bold">EightBall.Mixfile</span> do
+  use <span style="color:#458;font-weight:bold">Mix.Project</span>
+
+  def project do
+    [<span style="color:#b84">app</span>: <span style="color:#b84">:eight_ball</span>,
+     <span style="color:#b84">version</span>: <span style="color:#b84">&#34;</span><span style="color:#b84">0.0.1</span><span style="color:#b84">&#34;</span>,
+     <span style="color:#b84">elixir</span>: <span style="color:#b84">&#34;</span><span style="color:#b84">~&gt; 1.0</span><span style="color:#b84">&#34;</span>,
+     <span style="color:#b84">build_embedded</span>: <span style="color:#458;font-weight:bold">Mix</span><span style="font-weight:bold">.</span>env <span style="font-weight:bold">==</span> <span style="color:#b84">:prod</span>,
+     <span style="color:#b84">start_permanent</span>: <span style="color:#458;font-weight:bold">Mix</span><span style="font-weight:bold">.</span>env <span style="font-weight:bold">==</span> <span style="color:#b84">:prod</span>,
+     <span style="color:#b84">escript</span>: [<span style="color:#b84">main_module</span>: <span style="color:#458;font-weight:bold">EightBall.CLI</span>], <span style="color:#998;font-style:italic"># &lt;- this line</span>
+     <span style="color:#b84">deps</span>: deps,
+     <span style="color:#b84">package</span>: package ]
+  end
+  <span style="color:#998;font-style:italic"># ...</span>
+end</code></pre></div>
+<p>The line we added will tell <code>escript</code> that the main module where the <code>main/1</code>
+function will be placed is <code>EightBall.CLI</code>. If you are wondering what <code>main/1</code>
+function, think of it in this way: the <code>main/1</code> function is the function that
+will be an entry point for the command line application.</p>
+<h2 id="eightballcli"><code>EightBall.CLI</code></h2>
+<p>Since the <code>EightBall.CLI</code> module doesn't exist, let's create it:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">defmodule <span style="color:#458;font-weight:bold">EightBall.CLI</span> do
+  def main(args) do
+  end
+end</code></pre></div>
+<p>As you can see, the module contains the <code>main/1</code> function wich will take the
+command line arguments map as an argument. Now, to make any sense of the
+arguments, we need to use the <code>OptionParser</code> module which comes with Elixir.
+The <code>OptionParser</code>
+(<a href="http://elixir-lang.org/docs/v1.0/elixir/OptionParser.html">docs</a>) module
+contains functions which can parse the command line arguments.</p>
+<p>If I were to wish the syntax of the arguments of the command line application,
+I'd like to see something like:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">eight_ball --question <span style="color:#b84">&#34;Is Elixir great?&#34;</span></code></pre></div>
+<p>or</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">eight_ball -q <span style="color:#b84">&#34;Is Elixir great?&#34;</span></code></pre></div>
+<p>So, let's use <code>OptionParser</code> and make <code>-q/--question</code> an argument:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">defmodule <span style="color:#458;font-weight:bold">EightBall.CLI</span> do
+  def main(argv) do
+    {options, _, _} <span style="font-weight:bold">=</span> <span style="color:#458;font-weight:bold">OptionParser</span><span style="font-weight:bold">.</span>parse(argv, 
+      <span style="color:#b84">switches</span>: [<span style="color:#b84">question</span>: <span style="color:#b84">:string</span>],
+    )
+
+    <span style="color:#458;font-weight:bold">IO</span><span style="font-weight:bold">.</span>inspect options
+  end
+end</code></pre></div>
+<p>The <code>main/1</code> function will parse arguments and build meaningful tagged lists
+that we can use. At this time, the <code>main/1</code> function will only show the options
+that have been parsed. We will add some meaningful logic later.</p>
+<p>First, let's build the executable with <code>escript</code>. To build the executable, in the
+project root we need to run:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mix escript.build</code></pre></div>
+<p>This will compile the Elixir application and build an <code>escript</code> executable.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  eight_ball git:<span style="font-weight:bold">(</span>master<span style="font-weight:bold">)</span> ✗ mix escript.build
+Compiled lib/eight_ball/cli.ex
+Generated eight_ball app
+Generated escript eight_ball with <span style="color:#008080">MIX_ENV</span><span style="font-weight:bold">=</span>dev</code></pre></div>
+<p>If you check the contents of the root path of the <code>eight_ball</code> project, you will
+see an <code>eight_ball</code> executable. To use it, type:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">./eight_ball --question <span style="color:#b84">&#34;Is Elixir great?&#34;</span></code></pre></div>
+<p>And you will get the following output:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  eight_ball git:<span style="font-weight:bold">(</span>master<span style="font-weight:bold">)</span> ✗ ./eight_ball -q <span style="color:#b84">&#34;Is Elixir great?&#34;</span>
+<span style="font-weight:bold">[</span>question: <span style="color:#b84">&#34;Is Elixir great?&#34;</span><span style="font-weight:bold">]</span></code></pre></div>
+<p>Voila! We can see the parsed command line arguments.</p>
+<h2 id="wiring-it-up">Wiring it up</h2>
+<p>Now, let's use the <code>EightBall.ask/1</code> function in the CLI app. In the
+<code>EightBall::CLI.main/1</code> function, add the following code:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">defmodule <span style="color:#458;font-weight:bold">EightBall.CLI</span> do
+  def main(opts) do
+    {options, _, _} <span style="font-weight:bold">=</span> <span style="color:#458;font-weight:bold">OptionParser</span><span style="font-weight:bold">.</span>parse(opts, 
+      <span style="color:#b84">switches</span>: [<span style="color:#b84">question</span>: <span style="color:#b84">:string</span>],
+      <span style="color:#b84">aliases</span>: [<span style="color:#b84">q</span>: <span style="color:#b84">:question</span>] <span style="color:#998;font-style:italic"># makes &#39;-q&#39; an alias of &#39;--question&#39;</span>
+    )
+
+    try do
+      <span style="color:#458;font-weight:bold">IO</span><span style="font-weight:bold">.</span>puts <span style="color:#458;font-weight:bold">EightBall</span><span style="font-weight:bold">.</span>ask(options[<span style="color:#b84">:question</span>]) 
+    rescue 
+      e in <span style="color:#458;font-weight:bold">RuntimeError</span> <span style="font-weight:bold">-&gt;</span> e
+        <span style="color:#458;font-weight:bold">IO</span><span style="font-weight:bold">.</span>puts e<span style="font-weight:bold">.</span>message
+    end
+  end
+end</code></pre></div>
+<p>In the try/rescue block we send the question string to the <code>ask/1</code> function and
+rescue from a <code>RuntimeError</code>. This error can be triggered by
+<code>EightBall::QuestionValidator</code> which validates the input string. If the input is
+not a question, it will throw an error:</p>
+<blockquote>
+<p>Question must be a string, ending with a question mark.</p>
+</blockquote>
+<p>If our command line application rescues this error, it will output the error
+message.</p>
+<h2 id="building-the-cli-application">Building the CLI application</h2>
+<p>Now, the last step of building the command line application is invoking escript.
+With Elixir, as we saw earlier, it's super easy to invoke <code>esciprt</code> via <code>mix</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mix escript.build</code></pre></div>
+<p>If you are following along, the output of the command should be similar to this:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  eight_ball git:<span style="font-weight:bold">(</span>master<span style="font-weight:bold">)</span> ✗ mix escript.build
+Compiled lib/eight_ball.ex
+Generated eight_ball app
+Generated escript eight_ball with <span style="color:#008080">MIX_ENV</span><span style="font-weight:bold">=</span>dev</code></pre></div>
+<p>This will create a command line application, with the same filename as the main
+module. In our case, this will be just <code>eight_ball</code>. Now, if one would open the
+executable, there will be a ton of non-readable code. This is due to the fact
+that the code you will see is Erlang VM bytecode.</p>
+<p>While the code is unreadable, the awesome thing is that you can send this command
+line application to anyone that has just Erlang installed on her/his machine.
+Elixir itself is embedded in the file, so the only dependency is Erlang.
+Isn't that cool?</p>
+<p>Now, if we run the app:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  eight_ball git:<span style="font-weight:bold">(</span>master<span style="font-weight:bold">)</span> ✗ ./eight_ball --question <span style="color:#b84">&#34;Is Elixir awesome?&#34;</span>
+Outlook good</code></pre></div>
+<p>Or</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">➜  eight_ball git:<span style="font-weight:bold">(</span>master<span style="font-weight:bold">)</span> ✗ ./eight_ball --question <span style="color:#b84">&#34;Is Elixir awesome&#34;</span>
+Question must be a string, ending with a question mark.</code></pre></div>
+<h3 id="outro">Outro</h3>
+<p>Thanks for following along this post. I hope you learn something and you consider
+it a time well spent. Have you built anything interesting with Elixir? Share it
+with me in the comments, I would love to check it out!</p>
+
+			</div>
+
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/cli">cli</a></li>
+							
+							<li><a href="/tags/command-line">command line</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>

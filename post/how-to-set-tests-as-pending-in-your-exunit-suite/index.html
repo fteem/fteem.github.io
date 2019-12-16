@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>How to set tests as pending in your ExUnit suite - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="How to set tests as pending in your ExUnit suite" />
+<meta property="og:description" content="Elixir&#39;s built in testing library is called ExUnit. It&#39;s a proper testing framework, which, although simple, gives the developers a lot of power and flexibility. If you come from Ruby land, I am sure you&#39;ve been in a position where you want to set a certain test to be skipped. For example, RSpec in Ruby does it with the pending method. Let&#39;s see how we can customize our test suite so ExUnit can skip over tests in our test suite." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/how-to-set-tests-as-pending-in-your-exunit-suite/" />
+<meta property="article:published_time" content="2015-10-18T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="How to set tests as pending in your ExUnit suite"/>
+<meta name="twitter:description" content="Elixir&#39;s built in testing library is called ExUnit. It&#39;s a proper testing framework, which, although simple, gives the developers a lot of power and flexibility. If you come from Ruby land, I am sure you&#39;ve been in a position where you want to set a certain test to be skipped. For example, RSpec in Ruby does it with the pending method. Let&#39;s see how we can customize our test suite so ExUnit can skip over tests in our test suite."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.comcss/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.comjs/main.js"></script><script src="https://ieftimov.comjs/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">18</span>
+							<span class="rest">Oct 2015</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">How to set tests as pending in your ExUnit suite</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>Elixir's built in testing library is called ExUnit. It's a proper testing framework,
+which, although simple, gives the developers a lot of power and flexibility. If
+you come from Ruby land, I am sure you've been in a position where you want to
+set a certain test to be skipped. For example, RSpec in Ruby does it with the
+<code>pending</code> method. Let's see how we can customize our test suite so ExUnit
+can skip over tests in our test suite.</p>
+<h2 id="tags">Tags</h2>
+<p>ExUnit comes with this neat feature called <strong>tags</strong>. Tags are basically module variables
+in the test module. In the context of the test, you can think of them as <strong>annotations</strong>.
+So, by tagging a test, the value of the tag can be used in the test itself, by passing
+the context.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">defmodule <span style="color:#458;font-weight:bold">FileTest</span> do
+  <span style="color:#998;font-style:italic"># Changing directory cannot be async</span>
+  use <span style="color:#458;font-weight:bold">ExUnit.Case</span>, <span style="color:#b84">async</span>: false
+
+  setup context do
+    <span style="color:#998;font-style:italic"># Read the :cd tag value</span>
+    if cd <span style="font-weight:bold">=</span> context[<span style="color:#b84">:cd</span>] do
+      prev_cd <span style="font-weight:bold">=</span> <span style="color:#458;font-weight:bold">File</span><span style="font-weight:bold">.</span>cwd!
+      <span style="color:#458;font-weight:bold">File</span><span style="font-weight:bold">.</span>cd!(cd)
+      on_exit fn <span style="font-weight:bold">-&gt;</span> <span style="color:#458;font-weight:bold">File</span><span style="font-weight:bold">.</span>cd!(prev_cd) end
+    end
+
+    <span style="color:#b84">:ok</span>
+  end
+
+  <span style="color:#008080">@tag</span> <span style="color:#b84">cd</span>: <span style="color:#b84">&#34;</span><span style="color:#b84">fixtures</span><span style="color:#b84">&#34;</span>
+  test <span style="color:#b84">&#34;</span><span style="color:#b84">reads utf-8 fixtures</span><span style="color:#b84">&#34;</span> do
+    <span style="color:#458;font-weight:bold">File</span><span style="font-weight:bold">.</span>read(<span style="color:#b84">&#34;</span><span style="color:#b84">hello</span><span style="color:#b84">&#34;</span>)
+  end
+end</code></pre></div>
+<p><!-- raw HTML omitted -->Note: Example taken from ExUnit's official
+<a href="http://elixir-lang.org/docs/v1.0/ex_unit/ExUnit.Case.html">documentation</a>.<!-- raw HTML omitted --></p>
+<p>Now, how can we utilize tags to get RSpec's <code>pending</code> funcionality in ExUnit?</p>
+<h2 id="running-tests-by-tag">Running tests by tag</h2>
+<p>Running tests by tag is really simple in ExUnit. Basically, ExUnit has the ability
+to skip/include any test by it's tag.</p>
+<p>For example, let's say you have tagged couple of tests that are brittle:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">defmodule <span style="color:#458;font-weight:bold">SomeTest</span> do
+  use <span style="color:#458;font-weight:bold">ExUnit.Case</span>, <span style="color:#b84">async</span>: false
+
+  <span style="color:#008080">@tag</span> <span style="color:#b84">:brittle</span>
+  test <span style="color:#b84">&#34;</span><span style="color:#b84">some brittle code</span><span style="color:#b84">&#34;</span> do
+    <span style="color:#998;font-style:italic"># test here...</span>
+  end
+end</code></pre></div>
+<p>Now, you can run only the tests with the <code>brittle</code> tag, by executing:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mix <span style="color:#999">test</span> test/some_test.exs --include brittle</code></pre></div>
+<p>Having this in mind, let's introduce a custom tag of ours so we can make our tests
+<code>pending</code>.</p>
+<h2 id="custom-tags">Custom tags</h2>
+<p>Although the word &ldquo;custom&rdquo; used in programming often means something complicated
+done from scracth by the programmer, in this case it's very simple.</p>
+<p>Let's take any test and tag it with <code>:pending</code>.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">defmodule <span style="color:#458;font-weight:bold">SomeTest</span> do
+  use <span style="color:#458;font-weight:bold">ExUnit.Case</span>, <span style="color:#b84">async</span>: false
+
+  <span style="color:#008080">@tag</span> <span style="color:#b84">:pending</span>
+  test <span style="color:#b84">&#34;</span><span style="color:#b84">always true</span><span style="color:#b84">&#34;</span> do
+    assert <span style="color:#099">1</span> <span style="font-weight:bold">==</span> <span style="color:#099">1</span>
+  end
+end</code></pre></div>
+<p>We can exclude this &ldquo;pending&rdquo; test by executing our test suite with:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mix <span style="color:#999">test</span> --exclude pending</code></pre></div>
+<p>This will skip any tests that have the <code>:pending</code> tag. Simple as that, we have
+RSpec's <code>pending</code> functionality just by excluding a tag. If you are wondering
+if we can make the exclusion of the tag automatic - yes we can. In your
+<code>test_helper.exs</code> add this line, before the <code>ExUnit.start</code> line:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir"><span style="color:#458;font-weight:bold">ExUnit</span><span style="font-weight:bold">.</span>configure(<span style="color:#b84">exclude</span>: [<span style="color:#b84">pending</span>: true])</code></pre></div>
+<p>This configuration will tell ExUnit that it should always skip tests that are tagged as
+<code>:pending</code>. Now, every time you run your tests, the tests tagged with <code>:pending</code>
+will be excluded.</p>
+<p>Do you have any other interesting configuration trick in your ExUnit suite? Feel free
+to share them in the comments, I would love to learn more about ExUnit!</p>
+<p>Thanks for reading!</p>
+
+			</div>
+
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/test">test</a></li>
+							
+							<li><a href="/tags/pending">pending</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>

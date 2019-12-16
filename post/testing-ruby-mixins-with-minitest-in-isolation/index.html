@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Testing Ruby Mixins with Minitest in isolation - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Testing Ruby Mixins with Minitest in isolation" />
+<meta property="og:description" content="Mixins in Ruby are a very powerful feature. But knowing how to test them sometimes is not so obvious, especially to beginners. I think that this comes from mixins&rsquo; nature - they get mixed into other classes. So, if you think that there is a lot to testing mixins and you easily get overwhelmed by it - take it easy, it&#39;s not that hard.
+Let&#39;s see how easy it is to test mixins, with some help from the lovely Minitest." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/testing-ruby-mixins-with-minitest-in-isolation/" />
+<meta property="article:published_time" content="2015-11-04T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Testing Ruby Mixins with Minitest in isolation"/>
+<meta name="twitter:description" content="Mixins in Ruby are a very powerful feature. But knowing how to test them sometimes is not so obvious, especially to beginners. I think that this comes from mixins&rsquo; nature - they get mixed into other classes. So, if you think that there is a lot to testing mixins and you easily get overwhelmed by it - take it easy, it&#39;s not that hard.
+Let&#39;s see how easy it is to test mixins, with some help from the lovely Minitest."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.comcss/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.comjs/main.js"></script><script src="https://ieftimov.comjs/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">04</span>
+							<span class="rest">Nov 2015</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Testing Ruby Mixins with Minitest in isolation</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>Mixins in Ruby are a very powerful feature. But knowing how to test them sometimes
+is not so obvious, especially to beginners. I think that this comes from mixins&rsquo;
+nature - they get mixed into other classes. So, if you think that there is a lot
+to testing mixins and you easily get overwhelmed by it - take it easy, it's not
+<strong>that</strong> hard.</p>
+<p>Let's see how easy it is to test mixins, with some help from the lovely Minitest.</p>
+<h2 id="mixins">Mixins</h2>
+<p>When writing Ruby, we usually write two types of mixins. The first one is a coupled
+mixin, and the other, well.. uncoupled.</p>
+<h3 id="uncoupled-mixins">Uncoupled mixins</h3>
+<p>Uncoupled mixins are the ones whose methods <strong>do not</strong> depend on the implementation
+of the class where they will get mixed in.</p>
+<p>Quick example:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">module</span> <span style="color:#555">Speedable</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">speed</span>
+    <span style="color:#b84">&#34;</span><span style="color:#b84">This car runs super fast!</span><span style="color:#b84">&#34;</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span>
+
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">PetrolCar</span>
+  <span style="font-weight:bold">include</span> <span style="color:#008080">Speedable</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">fuel</span>
+    <span style="color:#b84">&#34;</span><span style="color:#b84">Petrol</span><span style="color:#b84">&#34;</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span>
+
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">DieselCar</span>
+  <span style="font-weight:bold">include</span> <span style="color:#008080">Speedable</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">fuel</span>
+    <span style="color:#b84">&#34;</span><span style="color:#b84">Diesel</span><span style="color:#b84">&#34;</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>In <code>irb</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">&gt;&gt;</span> <span style="color:#999">p</span> <span style="font-weight:bold">=</span> <span style="color:#008080">PetrolCar</span><span style="font-weight:bold">.</span>new
+<span style="font-weight:bold">=</span><span style="font-weight:bold">&gt;</span> <span style="color:#998;font-style:italic">#&lt;PetrolCar:0x007fc332cc4be0&gt;</span>
+<span style="font-weight:bold">&gt;&gt;</span> <span style="color:#999">p</span><span style="font-weight:bold">.</span>speed
+<span style="font-weight:bold">=</span><span style="font-weight:bold">&gt;</span> <span style="color:#b84">&#34;</span><span style="color:#b84">This car runs super fast!</span><span style="color:#b84">&#34;</span>
+<span style="font-weight:bold">&gt;&gt;</span> <span style="color:#999">p</span><span style="font-weight:bold">.</span>fuel
+<span style="font-weight:bold">=</span><span style="font-weight:bold">&gt;</span> <span style="color:#b84">&#34;</span><span style="color:#b84">Petrol</span><span style="color:#b84">&#34;</span>
+
+<span style="font-weight:bold">&gt;&gt;</span> d <span style="font-weight:bold">=</span> <span style="color:#008080">DieselCar</span><span style="font-weight:bold">.</span>new
+<span style="font-weight:bold">=</span><span style="font-weight:bold">&gt;</span> <span style="color:#998;font-style:italic">#&lt;DieselCar:0x007fc332cae2f0&gt;</span>
+<span style="font-weight:bold">&gt;&gt;</span> d<span style="font-weight:bold">.</span>speed
+<span style="font-weight:bold">=</span><span style="font-weight:bold">&gt;</span> <span style="color:#b84">&#34;</span><span style="color:#b84">This car runs super fast!</span><span style="color:#b84">&#34;</span>
+<span style="font-weight:bold">&gt;&gt;</span> d<span style="font-weight:bold">.</span>fuel
+<span style="font-weight:bold">=</span><span style="font-weight:bold">&gt;</span> <span style="color:#b84">&#34;</span><span style="color:#b84">Diesel</span><span style="color:#b84">&#34;</span></code></pre></div>
+<p>As you can see, the <code>speed</code> method in the <code>Speedable</code> mixins does not depend on
+any other methods. In other words, it's self-contained.</p>
+<h4 id="testing-uncoupled-mixins">Testing uncoupled mixins</h4>
+<p>When it comes to testing uncoupled mixins, it's quite trivial. There are two main
+strategies that you can use, by extending the singleton class of an object or by
+using a <strong>dummy class</strong>.</p>
+<p>Let's see the first one.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">FastCarTest</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">Minitest</span><span style="font-weight:bold">::</span><span style="color:#008080">Test</span> 
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">setup</span>
+    @test_obj <span style="font-weight:bold">=</span> <span style="color:#008080">Object</span><span style="font-weight:bold">.</span>new
+    @test_obj<span style="font-weight:bold">.</span>extend(<span style="color:#008080">Speedable</span>)
+  <span style="font-weight:bold">end</span>
+  
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">test_speed_reported</span>
+    assert_equal <span style="color:#b84">&#34;</span><span style="color:#b84">This car runs super fast!</span><span style="color:#b84">&#34;</span>, @test_obj<span style="font-weight:bold">.</span>speed
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>As you can see, we instantiate an object of the <code>Object</code> class which is just
+an empty, ordinary object that doesn't do anything. Then, we extend the object
+singleton class with the <code>Speedable</code> module which will mix the <code>speed</code> method in.
+Then, in the test, we assert that the method will return the expected output.</p>
+<p>The second strategy is the &ldquo;dummy class&rdquo; strategy:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">DummyTestClass</span>
+  <span style="font-weight:bold">include</span> <span style="color:#008080">Speedable</span>
+<span style="font-weight:bold">end</span>
+
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">FastCarTest</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">Minitest</span><span style="font-weight:bold">::</span><span style="color:#008080">Test</span> 
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">test_speed_reported</span>
+    dummy <span style="font-weight:bold">=</span> <span style="color:#008080">DummyTestClass</span><span style="font-weight:bold">.</span>new
+    assert_equal <span style="color:#b84">&#34;</span><span style="color:#b84">This car runs super fast!</span><span style="color:#b84">&#34;</span>, dummy<span style="font-weight:bold">.</span>speed
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>As you can see, we create just a dummy class, specific only for this test file.
+Since the <code>FastCar</code> mixin is mixed in, the <code>DummyTestClass</code> will have the
+<code>speed</code> method as an instance method. Then, in the test, we just create a new
+object from the dummy class and assert on the <code>dummy.speed</code> method.</p>
+<h3 id="coupled-mixins">Coupled mixins</h3>
+<p>Coupled mixins are the ones whose methods depend on the implementation of the class
+where they will be mixed in. Or, the oposite of uncoupled mixins.</p>
+<p>Let me show you a quick example:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">module</span> <span style="color:#555">Reportable</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">report</span>
+    <span style="color:#b84">&#34;</span><span style="color:#b84">This car runs on </span><span style="color:#b84">#{</span>fuel<span style="color:#b84">}</span><span style="color:#b84">.</span><span style="color:#b84">&#34;</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span>
+
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">PetrolCar</span>
+  <span style="font-weight:bold">include</span> <span style="color:#008080">Reportable</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">fuel</span>
+    <span style="color:#b84">&#34;</span><span style="color:#b84">petrol</span><span style="color:#b84">&#34;</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span>
+
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">DieselCar</span>
+  <span style="font-weight:bold">include</span> <span style="color:#008080">Reportable</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">fuel</span>
+    <span style="color:#b84">&#34;</span><span style="color:#b84">diesel</span><span style="color:#b84">&#34;</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>Now, if we try our classes in <code>irb</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">&gt;&gt;</span> pcar <span style="font-weight:bold">=</span> <span style="color:#008080">PetrolCar</span><span style="font-weight:bold">.</span>new
+<span style="font-weight:bold">=</span><span style="font-weight:bold">&gt;</span> <span style="color:#998;font-style:italic">#&lt;PetrolCar:0x007fda3403bba8&gt;</span>
+<span style="font-weight:bold">&gt;&gt;</span> pcar<span style="font-weight:bold">.</span>report
+<span style="font-weight:bold">=</span><span style="font-weight:bold">&gt;</span> <span style="color:#b84">&#34;</span><span style="color:#b84">This car runs on petrol.</span><span style="color:#b84">&#34;</span>
+
+<span style="font-weight:bold">&gt;&gt;</span> dcar <span style="font-weight:bold">=</span> <span style="color:#008080">DieselCar</span><span style="font-weight:bold">.</span>new
+<span style="font-weight:bold">=</span><span style="font-weight:bold">&gt;</span> <span style="color:#998;font-style:italic">#&lt;DieselCar:0x007fda3318a320&gt;</span>
+<span style="font-weight:bold">&gt;&gt;</span> dcar<span style="font-weight:bold">.</span>report
+<span style="font-weight:bold">=</span><span style="font-weight:bold">&gt;</span> <span style="color:#b84">&#34;</span><span style="color:#b84">This car runs on diesel.</span><span style="color:#b84">&#34;</span></code></pre></div>
+<p>You see, the implementation of the <code>Reportable#report</code> method relies on
+(or, is coupled to) the implementation of the <code>DieselCar</code> and <code>PetrolCar</code>
+classes. If we mixed in the <code>Reportable</code> mixin in a class that does not have the
+<code>fuel</code> method implemented, we would get an error when calling the <code>report</code> method.</p>
+<h4 id="testing-coupled-mixins">Testing coupled mixins</h4>
+<p>When it comes to coupled mixins, testing can get just a tad bit harder. Again, the same two
+strategies.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">ReportableTest</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">Minitest</span><span style="font-weight:bold">::</span><span style="color:#008080">Test</span> 
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">setup</span>
+    @test_obj <span style="font-weight:bold">=</span> <span style="color:#008080">Object</span><span style="font-weight:bold">.</span>new
+    @test_obj<span style="font-weight:bold">.</span>extend(<span style="color:#008080">Reportable</span>)
+
+    <span style="font-weight:bold">class</span> <span style="font-weight:bold">&lt;&lt;</span> @test_obj
+      <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">fuel</span>
+        <span style="color:#b84">&#34;</span><span style="color:#b84">diesel</span><span style="color:#b84">&#34;</span>
+      <span style="font-weight:bold">end</span>
+    <span style="font-weight:bold">end</span>
+  <span style="font-weight:bold">end</span>
+  
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">test_speed_reported</span>
+    assert_equal <span style="color:#b84">&#34;</span><span style="color:#b84">This car runs on diesel.</span><span style="color:#b84">&#34;</span>, @test_obj<span style="font-weight:bold">.</span>report
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>Now, you can see, it gets a bit hairy when we open the singleton class of the <code>@test_obj</code>
+and we add the <code>fuel</code> method, so our coupled mixin can work. But, otherwise,
+it's quite straight forward.</p>
+<p>The approach that I prefer is using the dummy class because it's much more explicit.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">DummyCar</span>
+  <span style="font-weight:bold">include</span> <span style="color:#008080">Reportable</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">fuel</span>
+    <span style="color:#b84">&#34;</span><span style="color:#b84">gasoline</span><span style="color:#b84">&#34;</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span>
+
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">ReportableTest</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">Minitest</span><span style="font-weight:bold">::</span><span style="color:#008080">Test</span> 
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">test_fuel_reported</span>
+    dummy <span style="font-weight:bold">=</span> <span style="color:#008080">DummyCar</span><span style="font-weight:bold">.</span>new
+    assert_equal <span style="color:#b84">&#34;</span><span style="color:#b84">This car runs on gasoline.</span><span style="color:#b84">&#34;</span>, dummy<span style="font-weight:bold">.</span>report
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>Now, this is cleaner. We create a <code>DummyCar</code> class where we mix the <code>Reportable</code>
+mixin and we define the <code>fuel</code> method. Then, in the test, we just create a
+<code>DummyCar</code> object and we assert for the value of the <code>report</code> method. Remember,
+we are doing this only because we want to test the mixin. If we were to test any of
+the classes, there would be no point in doing this.</p>
+<p>As you can see, it's quite simple to test these mixins with plain-old Ruby. I guess
+it's worth mentioning that these examples are very simple and you might run into
+more complex mixins that need testing in the future. But, when testing mixins,
+these strategies will still work. Just don't get owerwhelmed and take it step-by-step.</p>
+
+			</div>
+
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/testing">testing</a></li>
+							
+							<li><a href="/tags/mixins">mixins</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>

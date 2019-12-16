@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>PostgreSQL Indexes: B-Tree - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="PostgreSQL Indexes: B-Tree" />
+<meta property="og:description" content="Indexes in relational databases are a very imporatant feature, that reduce the cost of our lookup queries. In the last post on the basics of indexes in PostgreSQL, we covered the fundamentals and saw how we can create an index on a table and measure it&#39;s impact on our queries. In this post, we will take a dive into the inner workings and some implmentation details of the most used index type in PostgreSQL - the B-Tree index." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/postgresql-indexes-b-tree/" />
+<meta property="og:image" content="https://ieftimov.com/cards/postgresql-indexes-btree.png" />
+<meta property="article:published_time" content="2016-02-23T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/postgresql-indexes-btree.png"/>
+
+<meta name="twitter:title" content="PostgreSQL Indexes: B-Tree"/>
+<meta name="twitter:description" content="Indexes in relational databases are a very imporatant feature, that reduce the cost of our lookup queries. In the last post on the basics of indexes in PostgreSQL, we covered the fundamentals and saw how we can create an index on a table and measure it&#39;s impact on our queries. In this post, we will take a dive into the inner workings and some implmentation details of the most used index type in PostgreSQL - the B-Tree index."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.comcss/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.comjs/main.js"></script><script src="https://ieftimov.comjs/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">23</span>
+							<span class="rest">Feb 2016</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">PostgreSQL Indexes: B-Tree</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>Indexes in relational databases are a very imporatant feature, that reduce the
+cost of our lookup queries. In the last post on
+<a href="/postgresql-indexes-first-principles">the basics of indexes</a> in PostgreSQL, we
+covered the fundamentals and saw how we can create an index on a table and
+measure it's impact on our queries. In this post, we will take a dive into the
+inner workings and some implmentation details of the most used index type in
+PostgreSQL - the B-Tree index.</p>
+<h2 id="what-is-b-tree">What is B-Tree?</h2>
+<p>From Wikipedia's page on B-Tree:</p>
+<blockquote>
+<p>In computer science, a B-tree is a self-balancing tree data structure that
+keeps data sorted and allows searches, sequential access, insertions, and
+deletions in logarithmic time.</p>
+</blockquote>
+<p>Awesome, right? Basically, it's a data structure that sorts itself. That's why
+it's self-balancing - it chooses it's shape on it's own.</p>
+<blockquote>
+<p>The B-tree is a generalization of a binary search tree in that a node can have
+more than two children. Unlike self-balancing binary search trees, the B-
+tree is optimized for systems that read and write large blocks of data.</p>
+</blockquote>
+<p>Unlike regular binary trees, the B-Tree can have multiple leaves, which it
+balances on it's own. Also, it's implementations are I/O optimized, which makes
+them suitable for database indexes.</p>
+<blockquote>
+<p>B-trees are a good example of a data structure for external memory. It is
+commonly used in databases and filesystems.</p>
+</blockquote>
+<p>Now, there's plenty to know about B-Trees. Knowing how they work is pretty
+interesting, so let's check it out.</p>
+<h3 id="functionality">Functionality</h3>
+<p>As a disclaimer before we start with the B-Tree as a self-balancing data
+structure, I would like to inform you that there is a lot of CS theory about the
+B-Tree, which we will not cover in this section. For example, you might
+want to look first at binary trees, 23-trees and 234-trees before you dive into
+B-Trees. Nevertheless, what we will cover here will be sufficient for you to
+understand how the B-Tree index works.</p>
+<p>Having that out of the way, think of a binary tree. In binary trees, each node
+can have a maximum of two children, hence the name - binary.</p>
+<p><img src="/binary-tree.jpg" alt=""></p>
+<p><!-- raw HTML omitted -->A Binary Tree<!-- raw HTML omitted --></p>
+<p>Well, a B-Tree is a tree where each node can have multiple children, or better
+said, a B-Tree can have <strong>N</strong> children. While in binary search trees each node
+can have one value, B-Trees have the concept of <strong>keys</strong>. Keys are like a list
+of values, that each of the nodes will hold.</p>
+<p>B-Trees also have the concept of <strong>order</strong>, where for B-Trees an order of 3
+means that each non-leaf node of the tree can have a <strong>maximum</strong> of 3 children.
+Having that in mind, this means that each node can have two (3-1) keys.</p>
+<p>Confusing? Well, think about this: on a non-leaf node with keys <code>5, 10</code>, you can
+add three nodes:</p>
+<ul>
+<li>one node, with values smaller than 5</li>
+<li>one node, with values between 5 and 10</li>
+<li>and one node, with values larger than 10</li>
+</ul>
+<p>Let's draw it out:</p>
+<p><img src="/b-tree-example-1.jpg" alt=""></p>
+<p>The most important thing about B-Trees is their balaning aspect. The concept
+revolves on the fact that each node has keys, like in the example above. The way
+B-Trees balance themselves is really interesting, and the keys are the most
+important aspect of this this functionality.</p>
+<p>Basically, whenever a new item (or, in our case, a number) is added, the B-Tree
+finds the appropriate place (or, node) for the item to go in. For example,
+if we want to add the number 6, the B-Tree will &ldquo;ask the root node&rdquo;, in what
+node should it push the number in. &ldquo;Asking&rdquo; is nothing more than comparing the new
+number with the keys of the node. Since the number 6 is larger then 5, but
+smaller then the number 10 (which are the root node keys), it will create a new
+node just below the root node:</p>
+<p><img src="/b-tree-example-2.jpg" alt=""></p>
+<p>With this mechanism, the B-Tree is always ordered and looking up a value in it
+is rather cheap. There are multiple implementations of B-Trees. For this post,
+it's nice to know that PostgreSQL uses the B-Tree implementation of the &ldquo;Lehman
+and Yao's high-concurrency B-tree management algorithm&rdquo;. You can read the actual
+paper <a href="http://www.csd.uoc.gr/~hy460/pdf/p650-lehman.pdf">here</a>{:target=&rdquo;_blank&rdquo;}.</p>
+<p>But, how is this relevant to the B-Tree indexes in PostgreSQL?</p>
+<h2 id="b-trees-and-postgresql">B-Trees and PostgreSQL</h2>
+<p>Indexes in PostgreSQL, simply put, are a replica of the data on the column(s)
+that is/are indexed. The only difference is in the data order - the replica of
+the data is sorted, which allows PostgreSQL to quickly find and retrieve the
+data. For example, when you search for a record in a table, where the column by
+which you are searching is indexed, the index decreases the cost of the query
+because PostgreSQL looks up in the index and can easily find the location of the
+data on disk.</p>
+<p>The B-Tree data structure falls really nice into place, when you recall that the
+index is ordered. Under the hood, indexes are B-Trees, but really big ones. Due
+to the nature of the B-Tree data structure, whenever a new record is added on
+the indexed table it knows how to rebalance and keep the order of the records in
+it.</p>
+<h3 id="limitations">Limitations</h3>
+<p>Almost in all use cases, the power of indexes is noticable on large amounts of
+data. This means that the indexes will have to be as big as the actual data
+tables. Or does it?</p>
+<p>Imagine if we are dealing with billions of records. This means that the index
+tables will have the billions of records stored in an ordered fashion. Okay,
+PostgreSQL could handle that. But, can you imagine how long would an <code>INSERT</code>
+command take? Adding the record in the data table will take really long, because
+the index will have to add the new record in the correct place, to keep the
+order of the indexes. Due to this limitation, the implementation of the B-Tree
+index keeps <strong>page files</strong>, which simply put, are nodes on a big B-Tree data
+structure.</p>
+<p>Although each index is a whole, this paging mechanism adds a separation of the
+data in the index, while still keeping the order. In that case, instead of
+dumping the whole index into memory just to add a single record, PostgreSQL
+finds the page where the new record should be added and writes the indexed value
+into it.</p>
+<p>My explanation is quite abstract, but the aim of this article was to introduce
+the B-Tree data structure and how it falls into place with PostgreSQL. If you
+would like to read more details on the implementation, check
+<a href="http://patshaughnessy.net/2014/11/11/discovering-the-computer-science-behind-postgres-indexes">Discovering the Computer Science Behind Postgres Indexes</a>
+from Pat Shaughnessy. Actually, if I know the existence of his article before
+I started writing this article, I might have not even written it.</p>
+<h2 id="using-a-b-tree-index">Using a B-Tree index</h2>
+<p>Having the workings of B-Tree index aside, let's see how to use it. The command
+to add an index to a column is:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="font-weight:bold">CREATE</span> <span style="font-weight:bold">INDEX</span> name <span style="font-weight:bold">ON</span> <span style="font-weight:bold">table</span> <span style="font-weight:bold">USING</span> btree (<span style="font-weight:bold">column</span>);</code></pre></div>
+<p>Or, since the <code>btree</code> index is the default one, we can omit the <code>USING</code> part of
+the command:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="font-weight:bold">CREATE</span> <span style="font-weight:bold">INDEX</span> name <span style="font-weight:bold">ON</span> <span style="font-weight:bold">table</span>;</code></pre></div>
+<p>This will create a BTree index on the <code>name</code> column in the <code>table</code> table.</p>
+<h2 id="outro">Outro</h2>
+<p>In this article we took an overview on one of the most popular indexes in
+PostgreSQL. We saw what is the difference between Binary Search Trees and
+B-Trees, and how their behaviour translates into PostgreSQL. Take note, there is
+a ton of detail that I had to omit due to the length of the article and the
+target audience.</p>
+<h2 id="links">Links</h2>
+<p>If you would like to dig in deeper into B-Tree, whether the index or the data
+structure, here are some useful links:</p>
+<ul>
+<li><a href="http://www.csd.uoc.gr/~hy460/pdf/p650-lehman.pdf">Efficient Locking for Concurrent Operations on B-Trees</a></li>
+<li><a href="http://www.cs.utexas.edu/users/djimenez/utsa/cs3343/lecture16.html">B-Trees</a></li>
+<li><a href="http://use-the-index-luke.com/sql/anatomy">Anatomy of an SQL index</a></li>
+<li><a href="https://en.wikipedia.org/wiki/B-tree">B-Tree on Wikipedia</a></li>
+</ul>
+
+
+
+
+
+
+
+<div id="mc_embed_signup">
+<form action="https://pm.us20.list-manage.com/subscribe/post?u=d9a6471309140dcd520d05346&amp;id=2aac491644" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+    <div id="mc_embed_signup_scroll">
+        <div class="heading">Join The Newsletter</div>
+        <p>
+            I write about backend technologies, programming and cloud architectures. Join hundreds of other developers that get my content, twice a month. Unsubscribe whenever. Never spam.
+        </p>
+	<input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Your email address" required>
+        <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
+
+      
+      <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_d9a6471309140dcd520d05346_2aac491644" tabindex="-1" value=""></div>
+
+    <p>You can also subscribe <a href="/index.xml">via RSS</a>.</p>
+    </div>
+</form>
+</div>
+
+
+
+			</div>
+
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/b-tree">b-tree</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>

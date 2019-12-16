@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Testing in Go: Test Doubles by Example - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Testing in Go: Test Doubles by Example" />
+<meta property="og:description" content="One of the biggest misconceptions is that doubles are a specific implementation of mocks or other testing constructs that we use in testing.
+Dummies, mocks, stubs, fakes, and spies ARE test doubles. Test double is the category of these test constructs. Over the years, there has been some confusion around this concept.
+It is my observation that this confusion arises from the naming of testing constructs that the popular testing frameworks use." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/testing-in-go-test-doubles-by-example/" />
+<meta property="og:image" content="https://ieftimov.com/cards/testing-in-go-test-doubles-by-example.png" />
+<meta property="article:published_time" content="2019-12-16T00:00:00+00:00" />
+<meta property="article:modified_time" content="2019-12-16T00:00:00+00:00" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/testing-in-go-test-doubles-by-example.png"/>
+
+<meta name="twitter:title" content="Testing in Go: Test Doubles by Example"/>
+<meta name="twitter:description" content="One of the biggest misconceptions is that doubles are a specific implementation of mocks or other testing constructs that we use in testing.
+Dummies, mocks, stubs, fakes, and spies ARE test doubles. Test double is the category of these test constructs. Over the years, there has been some confusion around this concept.
+It is my observation that this confusion arises from the naming of testing constructs that the popular testing frameworks use."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.comcss/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.comjs/main.js"></script><script src="https://ieftimov.comjs/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">16</span>
+							<span class="rest">Dec 2019</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Testing in Go: Test Doubles by Example</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>One of the biggest misconceptions is that doubles are a specific implementation
+of mocks or other testing constructs that we use in testing.</p>
+<p>Dummies, mocks, stubs, fakes, and spies ARE test doubles. Test double is the
+category of these test constructs. Over the years, there has been some
+confusion around this concept.</p>
+<p>It is my observation that this confusion arises from the naming of testing
+constructs that the popular testing frameworks use. Also, the words mock and
+doubles have been used interchangeably over the years, and their definitions
+got skewed.</p>
+<p>In any case, without further ado, let's dive in and explore each of these
+categories of test doubles.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure class="imagecaption">
+  <img class="caption" src="/testing-in-go-test-doubles-by-example/fitting_pieces.png" title="Image taken from Undraw." alt="Girl with geometric objects">
+  <span class="caption-text">Image taken from <a href="https://undraw.co/">Undraw</a>.</span>
+</figure>
+
+<h2 id="dummies">Dummies</h2>
+<p>The simplest type of test double is a test dummy. In a nutshell, it means that
+the instance is just a placeholder for another one, but its functions do not
+return anything.</p>
+<p>Let's imagine the following scenario. We have a <code>Phonebook</code> type that has a
+slice of <code>Person</code> as an attribute. Each <code>Person</code> has a <code>FirstName</code>, <code>LastName</code>,
+and <code>Phone</code> attributes. Also, the <code>Phonebook</code> has a <code>Find</code> method through which
+we can find a person's phone number using their first and last names.</p>
+<p>The <code>Find</code> method uses a <code>Searcher</code> object whose <code>Search</code> function it uses to
+find the entry in the slice of people. <code>Searcher</code>'s implementation is not
+essential at this moment.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+	<span style="color:#b84">&#34;errors&#34;</span>
+)
+
+<span style="font-weight:bold">var</span> (
+	ErrMissingArgs   = errors.<span style="color:#900;font-weight:bold">New</span>(<span style="color:#b84">&#34;FirstName and LastName are mandatory arguments&#34;</span>)
+	ErrNoPersonFound = errors.<span style="color:#900;font-weight:bold">New</span>(<span style="color:#b84">&#34;No person found&#34;</span>)
+)
+
+<span style="font-weight:bold">type</span> Searcher <span style="font-weight:bold">interface</span> {
+	<span style="color:#900;font-weight:bold">Search</span>(people []<span style="font-weight:bold">*</span>Person, firstName <span style="color:#458;font-weight:bold">string</span>, lastName <span style="color:#458;font-weight:bold">string</span>) <span style="font-weight:bold">*</span>Person
+}
+
+<span style="font-weight:bold">type</span> Person <span style="font-weight:bold">struct</span> {
+	FirstName <span style="color:#458;font-weight:bold">string</span>
+	LastName  <span style="color:#458;font-weight:bold">string</span>
+	Phone     <span style="color:#458;font-weight:bold">string</span>
+}
+
+<span style="font-weight:bold">type</span> Phonebook <span style="font-weight:bold">struct</span> {
+	People []<span style="font-weight:bold">*</span>Person
+}
+
+<span style="font-weight:bold">func</span> (p <span style="font-weight:bold">*</span>Phonebook) <span style="color:#900;font-weight:bold">Find</span>(searcher Searcher, firstName, lastName <span style="color:#458;font-weight:bold">string</span>) (<span style="color:#458;font-weight:bold">string</span>, <span style="color:#458;font-weight:bold">error</span>) {
+	<span style="font-weight:bold">if</span> firstName <span style="font-weight:bold">==</span> <span style="color:#b84">&#34;&#34;</span> <span style="font-weight:bold">||</span> lastName <span style="font-weight:bold">==</span> <span style="color:#b84">&#34;&#34;</span> {
+		<span style="font-weight:bold">return</span> <span style="color:#b84">&#34;&#34;</span>, ErrMissingArgs
+	}
+
+	person <span style="font-weight:bold">:=</span> searcher.<span style="color:#900;font-weight:bold">Search</span>(p.People, firstName, lastName)
+
+	<span style="font-weight:bold">if</span> person <span style="font-weight:bold">==</span> <span style="font-weight:bold">nil</span> {
+		<span style="font-weight:bold">return</span> <span style="color:#b84">&#34;&#34;</span>, ErrNoPersonFound
+	}
+
+	<span style="font-weight:bold">return</span> person.Phone, <span style="font-weight:bold">nil</span>
+}</code></pre></div>
+<p>Imagine we want to test the <code>Find</code> method of the <code>Phonebook</code>. How would you
+approach it? Here's one way:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> DummySearcher <span style="font-weight:bold">struct</span>{}
+
+<span style="font-weight:bold">func</span> (ds DummySearcher) <span style="color:#900;font-weight:bold">Search</span>(people []<span style="font-weight:bold">*</span>Person, firstName, lastName <span style="color:#458;font-weight:bold">string</span>) <span style="font-weight:bold">*</span>Person {
+	<span style="font-weight:bold">return</span> <span style="font-weight:bold">&amp;</span>Person{}
+}
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestFindReturnsError</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	phonebook <span style="font-weight:bold">:=</span> <span style="font-weight:bold">&amp;</span>Phonebook{}
+
+	want <span style="font-weight:bold">:=</span> ErrMissingArgs
+	_, got <span style="font-weight:bold">:=</span> phonebook.<span style="color:#900;font-weight:bold">Find</span>(DummySearcher{}, <span style="color:#b84">&#34;&#34;</span>, <span style="color:#b84">&#34;&#34;</span>)
+
+	<span style="font-weight:bold">if</span> got <span style="font-weight:bold">!=</span> want {
+		t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span>, want, got)
+	}
+}</code></pre></div>
+<p>To test that the <code>Find</code> method returns an error when one of the arguments is
+blank, we do not care about the implementation of the <code>Searcher</code> argument. In
+such cases, where the functionality of the injected dependency is irrelevant,
+all we need is an instance that we can just pass in, and the compiler won't
+complain.</p>
+<p>Such instances are called dummies. They are test doubles that have no
+functionality and that we don't want people to use.</p>
+<h2 id="stubs">Stubs</h2>
+<p>Using the same example from above, how would we test that the <code>Find</code> method
+when supplied the <code>firstName</code> and <code>lastName</code> arguments will work as expected?</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> StubSearcher <span style="font-weight:bold">struct</span> {
+	phone <span style="color:#458;font-weight:bold">string</span>
+}
+
+<span style="font-weight:bold">func</span> (ss StubSearcher) <span style="color:#900;font-weight:bold">Search</span>(people []<span style="font-weight:bold">*</span>Person, firstName, lastName <span style="color:#458;font-weight:bold">string</span>) <span style="font-weight:bold">*</span>Person {
+	<span style="font-weight:bold">return</span> <span style="font-weight:bold">&amp;</span>Person{
+		FirstName: firstName,
+		LastName:  lastName,
+		Phone:     ss.phone,
+	}
+}
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestFindReturnsPerson</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	fakePhone <span style="font-weight:bold">:=</span> <span style="color:#b84">&#34;+31 65 222 333&#34;</span>
+	phonebook <span style="font-weight:bold">:=</span> <span style="font-weight:bold">&amp;</span>Phonebook{}
+
+	phone, _ <span style="font-weight:bold">:=</span> phonebook.<span style="color:#900;font-weight:bold">Find</span>(StubSearcher{fakePhone}, <span style="color:#b84">&#34;Jane&#34;</span>, <span style="color:#b84">&#34;Doe&#34;</span>)
+
+	<span style="font-weight:bold">if</span> phone <span style="font-weight:bold">!=</span> fakePhone {
+		t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span>, fakePhone, phone)
+	}
+}</code></pre></div>
+<p>When we want to make the <code>Searcher</code> implementation return an actual value that
+we can assert against, we need a stub. Instead of understanding what it would
+take to set up and/or implement a proper <code>Searcher</code>, you just create a stub
+implementation that returns only one value. This is the idea behind stubs.</p>
+<h2 id="spies">Spies</h2>
+<p>Again, using the <code>Phonebook</code> and <code>Searcher</code> example from above, let's imagine
+we would like to write a test where we want to be sure we invoke the
+<code>Searcher.Search</code> function. How can we do that?</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> SpySearcher <span style="font-weight:bold">struct</span> {
+	phone           <span style="color:#458;font-weight:bold">string</span>
+	searchWasCalled <span style="color:#458;font-weight:bold">bool</span>
+}
+
+<span style="font-weight:bold">func</span> (ss <span style="font-weight:bold">*</span>SpySearcher) <span style="color:#900;font-weight:bold">Search</span>(people []<span style="font-weight:bold">*</span>Person, firstName, lastName <span style="color:#458;font-weight:bold">string</span>) <span style="font-weight:bold">*</span>Person {
+	ss.searchWasCalled = <span style="font-weight:bold">true</span>
+	<span style="font-weight:bold">return</span> <span style="font-weight:bold">&amp;</span>Person{
+		FirstName: firstName,
+		LastName:  lastName,
+		Phone:     ss.phone,
+	}
+}
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestFindCallsSearchAndReturnsPerson</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	fakePhone <span style="font-weight:bold">:=</span> <span style="color:#b84">&#34;+31 65 222 333&#34;</span>
+	phonebook <span style="font-weight:bold">:=</span> <span style="font-weight:bold">&amp;</span>Phonebook{}
+	spy <span style="font-weight:bold">:=</span> <span style="font-weight:bold">&amp;</span>SpySearcher{phone: fakePhone}
+
+	phone, _ <span style="font-weight:bold">:=</span> phonebook.<span style="color:#900;font-weight:bold">Find</span>(spy, <span style="color:#b84">&#34;Jane&#34;</span>, <span style="color:#b84">&#34;Doe&#34;</span>)
+
+	<span style="font-weight:bold">if</span> !spy.searchWasCalled {
+		t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Expected to call &#39;Search&#39; in &#39;Find&#39;, but it wasn&#39;t.&#34;</span>)
+	}
+
+	<span style="font-weight:bold">if</span> phone <span style="font-weight:bold">!=</span> fakePhone {
+		t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span>, fakePhone, phone)
+	}
+}</code></pre></div>
+<p>You can think of spies as an upgrade of stubs. While they return a predefined
+value, just like stubs, spies also remember whether we called a specific
+method. Often, spies also keep track of how many times we call a particular
+function.</p>
+<p>That's what spy is - a stub that keeps track of invocations of its methods.</p>
+<h2 id="mocks">Mocks</h2>
+<p>In the beginning, people started using mock for similar (but not the same)
+things, and the word got left hanging in the air without a proper definition.
+Some think of stubs as mocks; others do not even think of mocks as types of
+instances.</p>
+<p>It's generally accepted to use “mocking” when thinking about creating objects
+that simulate the behavior of real objects or units.</p>
+<p>But mocks are a thing of their own. They have the same characteristics as the
+stubs &amp; spies, with a bit more.</p>
+<p>Also, in Go, they are a bit tricky to implement, especially in a generic way.
+Still, for this example, we will do a home-made implementation:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> MockSearcher <span style="font-weight:bold">struct</span> {
+	phone         <span style="color:#458;font-weight:bold">string</span>
+	methodsToCall <span style="font-weight:bold">map</span>[<span style="color:#458;font-weight:bold">string</span>]<span style="color:#458;font-weight:bold">bool</span>
+}
+
+<span style="font-weight:bold">func</span> (ms <span style="font-weight:bold">*</span>MockSearcher) <span style="color:#900;font-weight:bold">Search</span>(people []<span style="font-weight:bold">*</span>Person, firstName, lastName <span style="color:#458;font-weight:bold">string</span>) <span style="font-weight:bold">*</span>Person {
+	ms.methodsToCall[<span style="color:#b84">&#34;Search&#34;</span>] = <span style="font-weight:bold">true</span>
+	<span style="font-weight:bold">return</span> <span style="font-weight:bold">&amp;</span>Person{
+		FirstName: firstName,
+		LastName:  lastName,
+		Phone:     ms.phone,
+	}
+}
+
+<span style="font-weight:bold">func</span> (ms <span style="font-weight:bold">*</span>MockSearcher) <span style="color:#900;font-weight:bold">ExpectToCall</span>(methodName <span style="color:#458;font-weight:bold">string</span>) {
+	<span style="font-weight:bold">if</span> ms.methodsToCall <span style="font-weight:bold">==</span> <span style="font-weight:bold">nil</span> {
+		ms.methodsToCall = <span style="color:#999">make</span>(<span style="font-weight:bold">map</span>[<span style="color:#458;font-weight:bold">string</span>]<span style="color:#458;font-weight:bold">bool</span>)
+	}
+	ms.methodsToCall[methodName] = <span style="font-weight:bold">false</span>
+}
+
+<span style="font-weight:bold">func</span> (ms <span style="font-weight:bold">*</span>MockSearcher) <span style="color:#900;font-weight:bold">Verify</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	<span style="font-weight:bold">for</span> methodName, called <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> ms.methodsToCall {
+		<span style="font-weight:bold">if</span> !called {
+			t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Expected to call &#39;%s&#39;, but it wasn&#39;t.&#34;</span>, methodName)
+		}
+	}
+}
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestFindCallsSearchAndReturnsPersonUsingMock</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	fakePhone <span style="font-weight:bold">:=</span> <span style="color:#b84">&#34;+31 65 222 333&#34;</span>
+	phonebook <span style="font-weight:bold">:=</span> <span style="font-weight:bold">&amp;</span>Phonebook{}
+	mock <span style="font-weight:bold">:=</span> <span style="font-weight:bold">&amp;</span>MockSearcher{phone: fakePhone}
+	mock.<span style="color:#900;font-weight:bold">ExpectToCall</span>(<span style="color:#b84">&#34;Search&#34;</span>)
+
+	phone, _ <span style="font-weight:bold">:=</span> phonebook.<span style="color:#900;font-weight:bold">Find</span>(mock, <span style="color:#b84">&#34;Jane&#34;</span>, <span style="color:#b84">&#34;Doe&#34;</span>)
+
+	<span style="font-weight:bold">if</span> phone <span style="font-weight:bold">!=</span> fakePhone {
+		t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span>, fakePhone, phone)
+	}
+
+	mock.<span style="color:#900;font-weight:bold">Verify</span>(t)
+}</code></pre></div>
+<p>This approach is more involved, but there's no magic to it. The <code>MockSearcher</code>
+implementation has a <code>methodsToCall</code> map, which will store all of the methods
+that we expect to call on an instance of this type.</p>
+<p>The <code>ExpectToCall</code> method will take a method name as an argument. It will store
+the method to the <code>methodsToCall</code> map (as the key) and a <code>false</code> as the value.
+By setting it to <code>false</code>, we set a mark on that method that we expect to call
+it (yet we still haven't called it).</p>
+<p>In <code>MockSearcher</code>'s <code>Search</code> method, we mark the <code>Search</code> method as called. We
+do this by setting the <code>true</code> value for the <code>&quot;Search&quot;</code> key in the
+<code>methodsToCall</code> map. In essence, the key we've set to <code>false</code> in the
+<code>ExpectToCall</code> method we set to <code>true</code> here.</p>
+<p>Lastly, the <code>Verify</code> method will go over all of the methods that we marked as
+to-be-called on the mock. If it finds one still set to <code>false</code>, it will mark
+the test as failed.</p>
+<p>Mocks work by setting certain expectations on them. We implement some stub-like
+functionality while keeping track of the methods that have been called.
+Finally, we ask the mock to verify if our code met all of its expectations.</p>
+<p>It's worth stating that this is a home-made solution, and as such, it has some
+caveats. If you would like to use mocks in your tests, there are some excellent
+Golang libraries out there like <a href="https://github.com/golang/mock">golang/mock</a>
+or <a href="https://github.com/stretchr/testify">stretchr/testify</a>.</p>
+<h2 id="fakes">Fakes</h2>
+<p>These test doubles, unlike stubs, spies, and mocks, truly have an
+implementation. In our example, this would mean that a fake would have an
+actual implementation of the <code>Search</code> method.</p>
+<p>Let's see a <code>Searcher</code> fake in action:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> FakeSearcher <span style="font-weight:bold">struct</span>{}
+
+<span style="font-weight:bold">func</span> (fs FakeSearcher) <span style="color:#900;font-weight:bold">Search</span>(people []<span style="font-weight:bold">*</span>Person, firstName <span style="color:#458;font-weight:bold">string</span>, lastName <span style="color:#458;font-weight:bold">string</span>) <span style="font-weight:bold">*</span>Person {
+	<span style="font-weight:bold">if</span> <span style="color:#999">len</span>(people) <span style="font-weight:bold">==</span> <span style="color:#099">0</span> {
+		<span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>
+	}
+
+	<span style="font-weight:bold">return</span> people[<span style="color:#099">0</span>]
+}
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestFindCallsSearchAndReturnsEmptyStringForNoPerson</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	phonebook <span style="font-weight:bold">:=</span> <span style="font-weight:bold">&amp;</span>Phonebook{}
+	fake <span style="font-weight:bold">:=</span> <span style="font-weight:bold">&amp;</span>FakeSearcher{}
+
+	phone, _ <span style="font-weight:bold">:=</span> phonebook.<span style="color:#900;font-weight:bold">Find</span>(fake, <span style="color:#b84">&#34;Jane&#34;</span>, <span style="color:#b84">&#34;Doe&#34;</span>)
+
+	<span style="font-weight:bold">if</span> phone <span style="font-weight:bold">!=</span> <span style="color:#b84">&#34;&#34;</span> {
+		t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Wanted &#39;&#39;, got &#39;%s&#39;&#34;</span>, phone)
+	}
+}</code></pre></div>
+<p>What you see is a <code>FakeSearcher</code> type, who's <code>Search</code> method has an
+implementation that (kinda) makes sense. If the slice of <code>*Person</code> is empty, it
+will return <code>nil</code>. Otherwise, it will return the first item in the slice.</p>
+<p>While this <code>Search</code> method is not production-ready, because it doesn't make
+much sense, it still has the behavior of a fake <code>Searcher</code>. If we didn't have
+it's implementation accessible (looking at it as a black box), one could think
+it's the real deal instead of a fake.</p>
+<p>That's what fakes are - implementations that look like the real thing. But they
+only do the trick in the scope of the test.</p>
+<p>Another such familiar example in the community is an in-memory database driver
+used as fake to a real database driver.</p>
+<h2 id="when-to-use-what">When To Use What</h2>
+<p>Now that we went through all of the test doubles and their implementations, the
+last question that we need to answer is: what test double should we use in
+which circumstances?</p>
+<p>As with many other things in software development, the answer is: it depends.</p>
+<p>You must keep in mind is <em>what are you really testing</em>. That is also known as
+<em>the unit under test</em>. If the unit under test requires a double of any sort,
+you should provide the simplest test double that will make your test do its
+work and that it will suffice to make the test pass.</p>
+<p>So, refrain from using bloated mocks if a stub does the trick. The rule of
+thumb is: use the simplest test double that you can. And after the test passes,
+see if you can refactor and simplify further.</p>
+<p>And lastly, make sure not to downright mock out everything – sometimes invoking
+the actual implementation (e.g., like in an integration test) can be a great
+idea.</p>
+<p>Additional reading:</p>
+<ul>
+<li><a href="https://blog.cleancoder.com/uncle-bob/2014/05/14/TheLittleMocker.html">&ldquo;The Little
+Mocker&rdquo;</a>
+by Uncle Bob</li>
+<li><a href="https://martinfowler.com/bliki/TestDouble.html">&ldquo;TestDouble&rdquo;</a> by Martin
+Fowler</li>
+<li><a href="https://testing.googleblog.com/2013/07/testing-on-toilet-know-your-test-doubles.html">&ldquo;Testing on the Toilet: Know Your Test
+Doubles&rdquo;</a>
+by Andrew Trenk</li>
+</ul>
+
+
+
+
+
+
+
+<div id="mc_embed_signup">
+<form action="https://pm.us20.list-manage.com/subscribe/post?u=d9a6471309140dcd520d05346&amp;id=2aac491644" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+    <div id="mc_embed_signup_scroll">
+        <div class="heading">Join The Newsletter</div>
+        <p>
+            I write about backend technologies, programming and cloud architectures. Join hundreds of other developers that get my content, twice a month. Unsubscribe whenever. Never spam.
+        </p>
+	<input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Your email address" required>
+        <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
+
+      
+      <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_d9a6471309140dcd520d05346_2aac491644" tabindex="-1" value=""></div>
+
+    <p>You can also subscribe <a href="/index.xml">via RSS</a>.</p>
+    </div>
+</form>
+</div>
+
+
+
+			</div>
+
+			<div class="tags">
+				
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>

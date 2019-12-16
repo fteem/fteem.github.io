@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Create and manage MacOS LaunchAgents using Go - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Create and manage MacOS LaunchAgents using Go" />
+<meta property="og:description" content="If you have ever tried writing a daemon for MacOS you have met with launchd. For those that don&#39;t have the experience, think of it as a framework for starting, stopping and managing daemons, applications, processes, and scripts. If you have any *nix experience the word daemon should not be too alien to you.
+For those unfamiliar, a daemon is a program running in the background without requiring user input. A typical daemon might, for instance, perform daily maintenance tasks or scan a device for malware when connected." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/create-and-manage-macos-launchagents-using-go/" />
+<meta property="og:image" content="https://ieftimov.com/cards/create-manage-macos-launchd-agents-golang.png" />
+<meta property="article:published_time" content="2018-01-30T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/create-manage-macos-launchd-agents-golang.png"/>
+
+<meta name="twitter:title" content="Create and manage MacOS LaunchAgents using Go"/>
+<meta name="twitter:description" content="If you have ever tried writing a daemon for MacOS you have met with launchd. For those that don&#39;t have the experience, think of it as a framework for starting, stopping and managing daemons, applications, processes, and scripts. If you have any *nix experience the word daemon should not be too alien to you.
+For those unfamiliar, a daemon is a program running in the background without requiring user input. A typical daemon might, for instance, perform daily maintenance tasks or scan a device for malware when connected."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.comcss/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.comjs/main.js"></script><script src="https://ieftimov.comjs/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">30</span>
+							<span class="rest">Jan 2018</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Create and manage MacOS LaunchAgents using Go</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>If you have ever tried writing a daemon for MacOS you have met with <code>launchd</code>. For
+those that don't have the experience, think of it as a framework for starting,
+stopping and managing daemons, applications, processes, and scripts. If you have
+any *nix experience the word daemon should not be too alien to you.</p>
+<p>For those unfamiliar, a daemon is a program running in the background without
+requiring user input. A typical daemon might, for instance, perform daily
+maintenance tasks or scan a device for malware when connected.</p>
+<p>This post is aimed at folks that know a little bit about what daemons are, what
+is the common way of using them and know a bit about Go. Also, if you have
+ever written a daemon for any other *nix system, you will have a good idea of
+what we are going to talk here. If you are an absolute beginner in Go or systems
+this might prove to be an overwhelming article. Still, feel free to give it a
+shot and let me know how it goes.</p>
+<p>If you ever find yourself wanting to write a MacOS daemon with Go you would like
+to know most of the stuff we are going to talk about in this article. Without
+further ado, let's dive in.</p>
+<h2 id="what-is-launchd-and-how-it-works">What is <code>launchd</code> and how it works?</h2>
+<p><code>launchd</code> is a unified service-management framework, that starts, stops and manages
+daemons, applications, processes, and scripts in MacOS.</p>
+<p>One of its key features is that it differentiates between agents and daemons.
+In <code>launchd</code> land, an agent runs on behalf of the logged in user while a daemon
+runs on behalf of the root user or any specified user.</p>
+<h3 id="defining-agents-and-daemons">Defining agents and daemons</h3>
+<p>An agent/daemon is defined in an XML file, which states the properties of the
+program that will execute, among a list of other properties. Another aspect to
+keep in mind is that <code>launchd</code> decides if a program will be treated as a daemon
+or an agent by where the program XML is located.</p>
+<p>Over at <a href="https://launchd.info">launchd.info</a>, there's a simple table that shows where
+you would (or not) place your program's XML:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">+----------------+-------------------------------+----------------------------------------------------+
+| Type           | Location                      | Run on behalf of                                   |
++----------------+-------------------------------+----------------------------------------------------+
+| User Agents    | ~/Library/LaunchAgents        | Currently logged in user                           |
+| Global Agents  | /Library/LaunchAgents         | Currently logged in user                           |
+| Global Daemons | /Library/LaunchDaemons        | root or the user specified with the key &#39;UserName&#39; |
+| System Agents  | /System/Library/LaunchAgents  | Currently logged in user                           |
+| System Daemons | /System/Library/LaunchDaemons | root or the user specified with the key &#39;UserName&#39; |
++----------------+-------------------------------+----------------------------------------------------+</code></pre></div>
+<p>This means that when we set our XML file in, for example, the <code>/Library/LaunchAgents</code>
+path our process will be treated as a global agent. The main difference between the
+daemons and agents is that LaunchDaemons will run as root, and are generally
+background processes. On the other hand, LaunchAgents are jobs that will run as
+a user or in the context of userland. These may be scripts or other foreground
+items and they also have access to the MacOS UI (e.g. you can send notifications,
+control the windows, etc.)</p>
+<p>So, how do we define an agent? Let's take a look at a simple XML file that
+<code>launchd</code> understands:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#998;font-style:italic">&lt;!--</span><span style="color:#998;font-style:italic">-</span><span style="color:#998;font-style:italic"> Example blatantly ripped off from http://www.launchd.info/ </span><span style="color:#998;font-style:italic">--&gt;</span>
+<span style="color:#999;font-weight:bold">&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;</span>
+<span style="color:#999;font-weight:bold">&lt;!DOCTYPE plist PUBLIC &#34;-//Apple//DTD PLIST 1.0//EN&#34; &#34;http://www.apple.com/DTDs/PropertyList-1.0.dtd&#34;&gt;</span>
+<span style="color:#000080">&lt;plist</span> <span style="color:#008080">version=</span><span style="color:#b84">&#34;1.0&#34;</span><span style="color:#000080">&gt;</span>
+	<span style="color:#000080">&lt;dict</span><span style="color:#000080">&gt;</span>
+		<span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>Label<span style="color:#000080">&lt;/key&gt;</span>
+		<span style="color:#000080">&lt;string</span><span style="color:#000080">&gt;</span>com.example.app<span style="color:#000080">&lt;/string&gt;</span>
+		<span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>Program<span style="color:#000080">&lt;/key&gt;</span>
+		<span style="color:#000080">&lt;string</span><span style="color:#000080">&gt;</span>/Users/Me/Scripts/cleanup.sh<span style="color:#000080">&lt;/string&gt;</span>
+		<span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>RunAtLoad<span style="color:#000080">&lt;/key&gt;</span>
+		<span style="color:#000080">&lt;true</span><span style="color:#000080">/&gt;</span>
+	<span style="color:#000080">&lt;/dict&gt;</span>
+<span style="color:#000080">&lt;/plist&gt;</span></code></pre></div>
+<p>The XML is quite self-explanatory, unless it's the first time you are seeing
+an XML file. The file has three main properties, with values. In fact, if you
+take a better look you will see the <code>dict</code> keyword which means <code>dictionary</code>. This
+actually means that the XML represents a key-value structure, so in Go it would
+look like:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">map</span>[<span style="color:#458;font-weight:bold">string</span>]<span style="color:#458;font-weight:bold">string</span>{
+        <span style="color:#b84">&#34;Label&#34;</span>:     <span style="color:#b84">&#34;com.example.app&#34;</span>,
+        <span style="color:#b84">&#34;Program&#34;</span>:   <span style="color:#b84">&#34;/Users/Me/Scripts/cleanup.sh&#34;</span>,
+        <span style="color:#b84">&#34;RunAtLoad&#34;</span>: <span style="color:#b84">&#34;true&#34;</span>,
+}</code></pre></div>
+<p>Let’s look at each of the keys:</p>
+<ol>
+<li><code>Label</code> - The job definition or the name of the job. This is the
+unique identifier for the job within the <code>launchd</code> instance. Usually, the label
+(and hence the name) is written in
+<a href="en.wikipedia.org/wiki/Reverse_domain_name_notation">Reverse domain name notation</a>.</li>
+<li><code>Program</code> - This key defines what the job should start, in our case a script
+with the path <code>/Users/Me/Scripts/cleanup.sh</code>.</li>
+<li><code>RunAtLoad</code> - This key specifies when the job should be run, in this case
+right after it's loaded.</li>
+</ol>
+<p>As you can see, the keys used in this XML file are quite self-explanatory. This
+is the case for the remaining 30-40 keys that <code>launchd</code> supports. Last but not
+least these files although have an XML syntax, in fact, they have a <code>.plist</code>
+extension (which means <code>Property List</code>). Makes a lot of sense, right?</p>
+<h2 id="launchd-vs-launchctl"><code>launchd</code> v.s. <code>launchctl</code></h2>
+<p>Before we continue with our little exercise of creating daemons/agents with
+Go, let's first see how <code>launchd</code> allows us to control these jobs. While
+<code>launchd</code>'s job is to boot the system and to load and maintain services, there
+is a different command used for jobs management - <code>launchctl</code>. With <code>launchd</code>
+facilitating jobs, the control of services is centralized in the <code>launchctl</code>
+command.</p>
+<p><code>launchctl</code> has a long list of subcommands that we can use. For example, loading
+or unloading a job is done via:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">launchctl unload/load ~/Library/LaunchAgents/com.example.app.plist</code></pre></div>
+<p>Or, starting/stopping a job is done via:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">launchctl start/stop ~/Library/LaunchAgents/com.example.app.plist</code></pre></div>
+<p>To get any confusion out of the way, <code>load</code> and <code>start</code> are different. While
+<code>start</code> only starts the agent/daemon, <code>load</code> loads the job and it might also
+start it if the job is configured to run on load. This is achieved by setting
+the <code>RunAtLoad</code> property in the property list XML of the job:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#998;font-style:italic">&lt;!--</span><span style="color:#998;font-style:italic">-</span><span style="color:#998;font-style:italic"> Example blatantly ripped off from http://www.launchd.info/ </span><span style="color:#998;font-style:italic">--&gt;</span>
+<span style="color:#999;font-weight:bold">&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;</span>
+<span style="color:#999;font-weight:bold">&lt;!DOCTYPE plist PUBLIC &#34;-//Apple//DTD PLIST 1.0//EN&#34; &#34;http://www.apple.com/DTDs/PropertyList-1.0.dtd&#34;&gt;</span>
+<span style="color:#000080">&lt;plist</span> <span style="color:#008080">version=</span><span style="color:#b84">&#34;1.0&#34;</span><span style="color:#000080">&gt;</span>
+	<span style="color:#000080">&lt;dict</span><span style="color:#000080">&gt;</span>
+		<span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>Label<span style="color:#000080">&lt;/key&gt;</span>
+		<span style="color:#000080">&lt;string</span><span style="color:#000080">&gt;</span>com.example.app<span style="color:#000080">&lt;/string&gt;</span>
+		<span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>Program<span style="color:#000080">&lt;/key&gt;</span>
+		<span style="color:#000080">&lt;string</span><span style="color:#000080">&gt;</span>/Users/Me/Scripts/cleanup.sh<span style="color:#000080">&lt;/string&gt;</span>
+
+		<span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>RunAtLoad<span style="color:#000080">&lt;/key&gt;</span><span style="color:#000080">&lt;true</span><span style="color:#000080">/&gt;</span>
+
+	<span style="color:#000080">&lt;/dict&gt;</span>
+<span style="color:#000080">&lt;/plist&gt;</span></code></pre></div>
+<p>If you would like to see what other commands <code>launchctl</code> supports, you can run
+<code>man launchctl</code> in your terminal and see the options in detail.</p>
+<h2 id="automating-with-go">Automating with Go</h2>
+<p>After getting the basics of <code>launchd</code> and <code>launctl</code> out of the way, why don't we
+see how we can add an agent to any Go package? For our example, we are going to
+write a simple way of plugging in a <code>launchd</code> agent for any of your Go packages.</p>
+<p>As we already established before, <code>launchd</code> speaks in XML. Or, rather, it
+understands XML files, called <em>property lists</em> (or <code>.plist</code>). This means, for
+our Go package to have an agent running on MacOS, it will need to tell <code>launchd</code>
+&ldquo;hey, <code>launchd</code>, run this thing!&quot;. And since <code>launch</code> speaks only in <code>.plist</code>,
+that means our package needs to be capable of generating XML files.</p>
+<h3 id="templates-in-go">Templates in Go</h3>
+<p>While one could have a hardcoded <code>.plist</code> file in their project and copy it
+across to the <code>~/Library/LaunchAgents</code> path, a more programmatical way
+to do this would be to use a template to generate these XML files. The good thing
+is Go's standard library has us covered - the <code>text/template</code> package
+(<a href="https://godoc.org/text/template">docs</a>) does exactly what we need.</p>
+<p>In a nutshell, <code>text/template</code> implements data-driven templates for generating
+textual output. Or in other words, you give it a template and a data structure,
+it will mash them up together and produce a nice and clean text file. Perfect.</p>
+<p>Let's say the <code>.plist</code> we need to generate in our case is the following:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#999;font-weight:bold">&lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;</span>
+<span style="color:#999;font-weight:bold">&lt;!DOCTYPE plist PUBLIC \&#34;-//Apple Computer//DTD PLIST 1.0//EN\&#34; \&#34;http://www.apple.com/DTDs/PropertyList-1.0.dtd\&#34; &gt;</span>
+<span style="color:#000080">&lt;plist</span> <span style="color:#008080">version=</span><span style="color:#b84">&#39;1.0&#39;</span><span style="color:#000080">&gt;</span>
+  <span style="color:#000080">&lt;dict</span><span style="color:#000080">&gt;</span>
+    <span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>Label<span style="color:#000080">&lt;/key&gt;</span><span style="color:#000080">&lt;string</span><span style="color:#000080">&gt;</span>Ticker<span style="color:#000080">&lt;/string&gt;</span>
+    <span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>Program<span style="color:#000080">&lt;/key&gt;</span><span style="color:#000080">&lt;string</span><span style="color:#000080">&gt;</span>/usr/local/bin/ticker<span style="color:#000080">&lt;/string&gt;</span>
+    <span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>StandardOutPath<span style="color:#000080">&lt;/key&gt;</span><span style="color:#000080">&lt;string</span><span style="color:#000080">&gt;</span>/tmp/ticker.out.log<span style="color:#000080">&lt;/string&gt;</span>
+    <span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>StandardErrorPath<span style="color:#000080">&lt;/key&gt;</span><span style="color:#000080">&lt;string</span><span style="color:#000080">&gt;</span>/tmp/ticker.err.log<span style="color:#000080">&lt;/string&gt;</span>
+    <span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>KeepAlive<span style="color:#000080">&lt;/key&gt;</span><span style="color:#000080">&lt;true</span><span style="color:#000080">/&gt;</span>
+    <span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>RunAtLoad<span style="color:#000080">&lt;/key&gt;</span><span style="color:#000080">&lt;true</span><span style="color:#000080">/&gt;</span>
+  <span style="color:#000080">&lt;/dict&gt;</span>
+<span style="color:#000080">&lt;/plist&gt;</span></code></pre></div>
+<p>We want to keep it quite simple in our little exercise. It will contain only
+six properties: <code>Label</code>, <code>Program</code>, <code>StandardOutPath</code>, <code>StandardErrorPath</code>,
+<code>KeepAlive</code> and <code>RunAtLoad</code>. To generate such a XML, its template would look
+something like this:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#999;font-weight:bold">&lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;</span>
+<span style="color:#999;font-weight:bold">&lt;!DOCTYPE plist PUBLIC \&#34;-//Apple Computer//DTD PLIST 1.0//EN\&#34; \&#34;http://www.apple.com/DTDs/PropertyList-1.0.dtd\&#34; &gt;</span>
+<span style="color:#000080">&lt;plist</span> <span style="color:#008080">version=</span><span style="color:#b84">&#39;1.0&#39;</span><span style="color:#000080">&gt;</span>
+  <span style="color:#000080">&lt;dict</span><span style="color:#000080">&gt;</span>
+    <span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>Label<span style="color:#000080">&lt;/key&gt;</span><span style="color:#000080">&lt;string</span><span style="color:#000080">&gt;</span>{{.Label}}<span style="color:#000080">&lt;/string&gt;</span>
+    <span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>Program<span style="color:#000080">&lt;/key&gt;</span><span style="color:#000080">&lt;string</span><span style="color:#000080">&gt;</span>{{.Program}}<span style="color:#000080">&lt;/string&gt;</span>
+    <span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>StandardOutPath<span style="color:#000080">&lt;/key&gt;</span><span style="color:#000080">&lt;string</span><span style="color:#000080">&gt;</span>/tmp/{{.Label}}.out.log<span style="color:#000080">&lt;/string&gt;</span>
+    <span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>StandardErrorPath<span style="color:#000080">&lt;/key&gt;</span><span style="color:#000080">&lt;string</span><span style="color:#000080">&gt;</span>/tmp/{{.Label}}.err.log<span style="color:#000080">&lt;/string&gt;</span>
+    <span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>KeepAlive<span style="color:#000080">&lt;/key&gt;</span><span style="color:#a61717;background-color:#e3d2d2">&lt;</span>{{.KeepAlive}}/&gt;
+    <span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>RunAtLoad<span style="color:#000080">&lt;/key&gt;</span><span style="color:#a61717;background-color:#e3d2d2">&lt;</span>{{.RunAtLoad}}/&gt;
+  <span style="color:#000080">&lt;/dict&gt;</span>
+<span style="color:#000080">&lt;/plist&gt;</span></code></pre></div>
+<p>As you can see, the difference between the two XMLs is that the second one has
+the double curly braces with expressions in them in places where the first XML
+has some sort of a value. These are called &ldquo;actions&rdquo;, which can be data
+evaluations or control structures and are delimited by &ldquo;{{&rdquo; and &ldquo;}}&quot;. Any of the
+text outside actions is copied to the output untouched.</p>
+<h3 id="injecting-your-data">Injecting your data</h3>
+<p>Now that we have our template with its glorious XML and curly braces
+(or actions), let's see how we can inject our data into it. Since things are
+generally simple in Go, especially when it comes to its standard library, you
+should not worry - this will be easy!</p>
+<p>To keep thing simple, we will store the whole XML template in a plain old string.
+Yes, weird, I know. The best way would be to store it in a file and
+read it from there, or embed it in the binary itself, but in our little example
+let's keep it simple:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml">// template.go
+package main
+
+func Template() string {
+	return `
+<span style="color:#999;font-weight:bold">&lt;?xml version=&#39;1.0&#39; encoding=&#39;UTF-8&#39;?&gt;</span>
+ <span style="color:#999;font-weight:bold">&lt;!DOCTYPE plist PUBLIC \&#34;-//Apple Computer//DTD PLIST 1.0//EN\&#34; \&#34;http://www.apple.com/DTDs/PropertyList-1.0.dtd\&#34; &gt;</span>
+ <span style="color:#000080">&lt;plist</span> <span style="color:#008080">version=</span><span style="color:#b84">&#39;1.0&#39;</span><span style="color:#000080">&gt;</span>
+   <span style="color:#000080">&lt;dict</span><span style="color:#000080">&gt;</span>
+     <span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>Label<span style="color:#000080">&lt;/key&gt;</span><span style="color:#000080">&lt;string</span><span style="color:#000080">&gt;</span>{{.Label}}<span style="color:#000080">&lt;/string&gt;</span>
+     <span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>Program<span style="color:#000080">&lt;/key&gt;</span><span style="color:#000080">&lt;string</span><span style="color:#000080">&gt;</span>{{.Program}}<span style="color:#000080">&lt;/string&gt;</span>
+     <span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>StandardOutPath<span style="color:#000080">&lt;/key&gt;</span><span style="color:#000080">&lt;string</span><span style="color:#000080">&gt;</span>/tmp/{{.Label}}.out.log<span style="color:#000080">&lt;/string&gt;</span>
+     <span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>StandardErrorPath<span style="color:#000080">&lt;/key&gt;</span><span style="color:#000080">&lt;string</span><span style="color:#000080">&gt;</span>/tmp/{{.Label}}.err.log<span style="color:#000080">&lt;/string&gt;</span>
+     <span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>KeepAlive<span style="color:#000080">&lt;/key&gt;</span><span style="color:#a61717;background-color:#e3d2d2">&lt;</span>{{.KeepAlive}}/&gt;
+     <span style="color:#000080">&lt;key</span><span style="color:#000080">&gt;</span>RunAtLoad<span style="color:#000080">&lt;/key&gt;</span><span style="color:#a61717;background-color:#e3d2d2">&lt;</span>{{.RunAtLoad}}/&gt;
+   <span style="color:#000080">&lt;/dict&gt;</span>
+<span style="color:#000080">&lt;/plist&gt;</span>
+`
+}</code></pre></div>
+<p>And the program that will use our little template function:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#998;font-style:italic">// main.go
+</span><span style="color:#998;font-style:italic"></span><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+	<span style="color:#b84">&#34;log&#34;</span>
+	<span style="color:#b84">&#34;os&#34;</span>
+	<span style="color:#b84">&#34;text/template&#34;</span>
+)
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	data <span style="font-weight:bold">:=</span> <span style="font-weight:bold">struct</span> {
+		Label     <span style="color:#458;font-weight:bold">string</span>
+		Program   <span style="color:#458;font-weight:bold">string</span>
+		KeepAlive <span style="color:#458;font-weight:bold">bool</span>
+		RunAtLoad <span style="color:#458;font-weight:bold">bool</span>
+	}{
+		Label:     <span style="color:#b84">&#34;ticker&#34;</span>,
+		Program:   <span style="color:#b84">&#34;/usr/local/bin/ticker&#34;</span>,
+		KeepAlive: <span style="font-weight:bold">true</span>,
+		RunAtLoad: <span style="font-weight:bold">true</span>,
+	}
+	t <span style="font-weight:bold">:=</span> template.<span style="color:#900;font-weight:bold">Must</span>(template.<span style="color:#900;font-weight:bold">New</span>(<span style="color:#b84">&#34;launchdConfig&#34;</span>).<span style="color:#900;font-weight:bold">Parse</span>(<span style="color:#900;font-weight:bold">Template</span>()))
+	err <span style="font-weight:bold">:=</span> t.<span style="color:#900;font-weight:bold">Execute</span>(os.Stdout, data)
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		log.<span style="color:#900;font-weight:bold">Fatalf</span>(<span style="color:#b84">&#34;Template generation failed: %s&#34;</span>, err)
+	}
+}</code></pre></div>
+<p>So, what happens there, in the <code>main</code> function? It's actually quite simple:</p>
+<ol>
+<li>We declare a small <code>struct</code>, which has only the properties that will be needed
+in the template, and we immediately initialize it with the values for our program.</li>
+<li>We build a new template, using the <code>template.New</code> function, with the name
+<code>launchdConfig</code>. Then, we invoke the <code>Parse</code> function on it, which takes the
+XML template as an argument.</li>
+<li>We invoke the <code>template.Must</code> function, which takes our built template as
+argument. From the documentation, <code>template.Must</code> is a helper that wraps a call
+to a function returning <code>(*Template, error)</code> and panics if the error is non-<code>nil</code>.
+Actually, <code>template.Must</code> is built to, in a way, validate if the template can be
+understood by the <code>text/template</code> package.</li>
+<li>Finally, we invoke <code>Execute</code> on our built template, which takes a data structure
+and applies its attributes to the actions in the template. Then it sends the
+output to <code>os.Stdout</code>, which does the trick for our example. Of course, the
+output can be sent to any struct that implements the <code>io.Writer</code> interface, like
+a file (<code>os.File</code>).</li>
+</ol>
+<h3 id="make-and-load-my-plist">Make and load my <code>.plist</code></h3>
+<p>Instead of sending all this nice XML to standard out, let's throw in an open
+file descriptor to the <code>Execute</code> function and finally save our <code>.plist</code> file in
+<code>~/Library/LaunchAgents</code>. There are a couple of main points we need to change.</p>
+<p>First, getting the location of the binary. Since it's a Go binary, and we will
+install it via <code>go install</code>, we can assume that the path will be at <code>$GOPATH/bin</code>.
+Second, since we don't know the actual <code>$HOME</code> of the current user, we will have
+to get it through the environment. Both of these can be done via <code>os.Getenv</code>
+(<a href="https://godoc.org/os#Getenv">docs</a>) which takes a variable name and returns
+its value.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#998;font-style:italic">// main.go
+</span><span style="color:#998;font-style:italic"></span><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+	<span style="color:#b84">&#34;log&#34;</span>
+	<span style="color:#b84">&#34;os&#34;</span>
+	<span style="color:#b84">&#34;text/template&#34;</span>
+)
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	data <span style="font-weight:bold">:=</span> <span style="font-weight:bold">struct</span> {
+		Label     <span style="color:#458;font-weight:bold">string</span>
+		Program   <span style="color:#458;font-weight:bold">string</span>
+		KeepAlive <span style="color:#458;font-weight:bold">bool</span>
+		RunAtLoad <span style="color:#458;font-weight:bold">bool</span>
+	}{
+		Label:     <span style="color:#b84">&#34;com.ieftimov.ticker&#34;</span>, <span style="color:#998;font-style:italic">// Reverse-DNS naming convention
+</span><span style="color:#998;font-style:italic"></span>		Program:   fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;%s/bin/ticker&#34;</span>, os.<span style="color:#900;font-weight:bold">Getenv</span>(<span style="color:#b84">&#34;GOPATH&#34;</span>)),
+		KeepAlive: <span style="font-weight:bold">true</span>,
+		RunAtLoad: <span style="font-weight:bold">true</span>,
+	}
+
+        plistPath <span style="font-weight:bold">:=</span> fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;%s/Library/LaunchAgents/%s.plist&#34;</span>, os.<span style="color:#900;font-weight:bold">Getenv</span>(<span style="color:#b84">&#34;HOME&#34;</span>), data.Label)
+        f, err <span style="font-weight:bold">:=</span> os.<span style="color:#900;font-weight:bold">Open</span>(plistPath)
+	t <span style="font-weight:bold">:=</span> template.<span style="color:#900;font-weight:bold">Must</span>(template.<span style="color:#900;font-weight:bold">New</span>(<span style="color:#b84">&#34;launchdConfig&#34;</span>).<span style="color:#900;font-weight:bold">Parse</span>(<span style="color:#900;font-weight:bold">Template</span>()))
+	err <span style="font-weight:bold">:=</span> t.<span style="color:#900;font-weight:bold">Execute</span>(f, data)
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		log.<span style="color:#900;font-weight:bold">Fatalf</span>(<span style="color:#b84">&#34;Template generation failed: %s&#34;</span>, err)
+	}
+}</code></pre></div>
+<p>That's about it. The first part, about setting the correct <code>Program</code> property,
+is done by concatenating the name of the program and <code>$GOPATH</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;%s/bin/ticker&#34;</span>, os.<span style="color:#900;font-weight:bold">Getenv</span>(<span style="color:#b84">&#34;GOPATH&#34;</span>))
+<span style="font-weight:bold">/</span><span style="font-weight:bold">/</span> Output: <span style="font-weight:bold">/</span>Users<span style="font-weight:bold">/</span>&lt;username&gt;<span style="font-weight:bold">/</span><span style="font-weight:bold">go</span><span style="font-weight:bold">/</span>bin<span style="font-weight:bold">/</span>ticker</code></pre></div>
+<p>The second part is slightly more complex, and it's done by concatenating three
+strings, the <code>$HOME</code> environment variable, the <code>Label</code> property of the program
+and the <code>/Library/LaunchAgents</code> string:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;%s/Library/LaunchAgents/%s.plist&#34;</span>, os.<span style="color:#900;font-weight:bold">Getenv</span>(<span style="color:#b84">&#34;HOME&#34;</span>), data.Label)
+<span style="font-weight:bold">/</span><span style="font-weight:bold">/</span> Output: <span style="font-weight:bold">/</span>Users<span style="font-weight:bold">/</span>&lt;username&gt;<span style="font-weight:bold">/</span>Library<span style="font-weight:bold">/</span>LaunchAgents<span style="font-weight:bold">/</span>com.ieftimov.ticker.plist</code></pre></div>
+<p>By having these two paths, opening the file and writing to it is very trivial -
+we open the file via <code>os.Open</code> and we pass in the <code>os.File</code> structure to
+<code>t.Execute</code> which writes to the file descriptor.</p>
+<h2 id="what-about-the-launch-agent">What about the Launch Agent?</h2>
+<p>We will keep this one simple as well. Let's throw in a command to our package,
+make it installable via <code>go install</code> (not that there's much to it) and make it
+runnable by our <code>.plist</code> file:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#998;font-style:italic">// cmd/ticker/main.go
+</span><span style="color:#998;font-style:italic"></span><span style="font-weight:bold">package</span> ticker
+
+<span style="font-weight:bold">import</span> (
+  <span style="color:#b84">&#34;time&#34;</span>
+  <span style="color:#b84">&#34;fmt&#34;</span>
+)
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+    <span style="font-weight:bold">for</span> <span style="font-weight:bold">range</span> time.<span style="color:#900;font-weight:bold">Tick</span>(<span style="color:#099">30</span> <span style="font-weight:bold">*</span> time.Second) {
+            fmt.<span style="color:#900;font-weight:bold">Println</span>(<span style="color:#b84">&#34;tick!&#34;</span>)
+    }
+}</code></pre></div>
+<p>This the <code>ticker</code> program will use <code>time.Tick</code>, to execute an action every 30
+seconds. Since this will be an infinite loop, <code>launchd</code> will kick off the program
+on boot (because <code>RunAtLoad</code> is set to <code>true</code> in the <code>.plist</code> file) and will
+keep it running. But, to make the program controllable from the operating system,
+we need to make the program react to some OS signals, like <code>SIGINT</code> or <code>SIGTERM</code>.</p>
+<h3 id="understanding-and-handling-os-signals">Understanding and handling OS signals</h3>
+<p>While there's quite a bit to be learned about OS signals, in our
+example we will scratch a bit off the surface. (If you know a lot about
+inter-process communication this might be too much of an oversimplification to
+you - and I apologize up front. Feel free to drop some links on the topic in the
+comments so others can learn more!)</p>
+<p>The best way to think about a signal is that it's a message from the operating
+system or another process, to a process. It is an asynchronous notification sent
+to a process or to a specific thread within the same process to notify it of an
+event that occurred.</p>
+<p>There are quite a bit of various signals that can be sent to a process
+(or a thread), like <code>SIGKILL</code> (which kills a process), <code>SIGSTOP</code> (stop), <code>SIGTERM</code>
+(termination), <code>SIGILL</code> and so on and so forth. There's an exhaustive list of
+signal types on <a href="https://en.wikipedia.org/wiki/Signal_(IPC)">Wikipedia's page</a>
+on signals.</p>
+<p>To get back to <code>launchd</code>, if we look at its documentation about stopping a job
+we will notice the following:</p>
+<blockquote>
+<p>Stopping a job will send the signal <code>SIGTERM</code> to the process. Should this not
+stop the process launchd will wait <code>ExitTimeOut</code> seconds (20 seconds by default)
+before sending <code>SIGKILL</code>.</p>
+</blockquote>
+<p>Pretty self-explanatory, right? We need to handle one signal - <code>SIGTERM</code>.
+Why not <code>SIGKILL</code>? Because <code>SIGKILL</code> is a special signal that cannot be caught -
+it kills the process without any chance for a graceful shutdown, no questions
+asked. That's why there's a termination signal and a &ldquo;kill&rdquo; signal.</p>
+<p>Let's throw in a bit of signal handling in our code, so our program knows that
+it needs to exit when it gets told to do so:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+	<span style="color:#b84">&#34;fmt&#34;</span>
+	<span style="color:#b84">&#34;os&#34;</span>
+	<span style="color:#b84">&#34;os/signal&#34;</span>
+	<span style="color:#b84">&#34;syscall&#34;</span>
+	<span style="color:#b84">&#34;time&#34;</span>
+)
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	sigs <span style="font-weight:bold">:=</span> <span style="color:#999">make</span>(<span style="font-weight:bold">chan</span> os.Signal, <span style="color:#099">1</span>)
+	signal.<span style="color:#900;font-weight:bold">Notify</span>(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	<span style="font-weight:bold">go</span> <span style="font-weight:bold">func</span>() {
+		<span style="font-weight:bold">&lt;-</span>sigs
+		os.<span style="color:#900;font-weight:bold">Exit</span>(<span style="color:#099">0</span>)
+	}()
+
+	<span style="font-weight:bold">for</span> <span style="font-weight:bold">range</span> time.<span style="color:#900;font-weight:bold">Tick</span>(<span style="color:#099">30</span> <span style="font-weight:bold">*</span> time.Second) {
+		fmt.<span style="color:#900;font-weight:bold">Println</span>(<span style="color:#b84">&#34;tick!&#34;</span>)
+	}
+}</code></pre></div>
+<p>In the new version, the agent program has two new packages imported: <code>os/signal</code>
+and <code>syscall</code>. <code>os/signal</code> implements access to incoming signals, that are
+primarily used on Unix-like systems. Since in this article we are specifically
+interested in MacOS, this is exactly what we need.</p>
+<p>Package <code>syscall</code> contains an interface to the low-level operating system
+primitives. An important note about <code>syscall</code> is that it is locked down since
+Go v1.4. This means that any code outside of the standard library that uses
+the <code>syscall</code> package should be migrated to use the new <code>golang.org/x/sys</code>
+<a href="https://golang.org/x/sys">package</a>. Since we are using <strong>only</strong> the signals constants of
+<code>syscall</code> we can get away with this.</p>
+<p>(If you want to read more about the package lockdown, you can see
+<a href="https://docs.google.com/document/d/1QXzI9I1pOfZPujQzxhyRy6EeHYTQitKKjHfpq0zpxZs/edit">the rationale on locking it down</a>
+by the Go team and the new <a href="https://golang.org/x/sys">golang.org/s/sys</a> package.)</p>
+<p>Having the basics of the packages out of the way, let's go step by step through
+the new lines of code added:</p>
+<ol>
+<li>We make a buffered channel of type <code>os.Signal</code>, with a size of <code>1</code>. <code>os.Signal</code>
+is a type that represents an operating system signal.</li>
+<li>We call <code>signal.Notify</code> with the new channel as an argument, plus
+<code>syscall.SIGINT</code> and <code>syscall.SIGTERM</code>. This function states &ldquo;when the OS sends
+a <code>SIGINT</code> or a <code>SIGTERM</code> signal to this program, send the signal to the
+channel&rdquo;. This allows us to somehow handle the sent OS signal.</li>
+<li>The new goroutine that we spawn waits for any of the signals to arrive through
+the channel. Since we know that any of the signals that will arrive are about
+shutting down the program, after receiving any signal we use <code>os.Exit(0)</code>
+(<a href="https://godoc.org/os#Exit">docs</a>) to gracefully stop the program. One caveat
+here is that if we had any <code>defer</code>red calls they would not be run.</li>
+</ol>
+<p>Now <code>launchd</code> can run the agent program and we can <code>load</code> and <code>unload</code>,
+<code>start</code> and <code>stop</code> it using <code>launchctl</code>.</p>
+<h2 id="putting-it-all-together">Putting it all together</h2>
+<p>Now that we have all the pieces ready, we need to put them together to a
+good use. Our application will consist of two binaries - a CLI tool and an
+agent (daemon). Both of the programs will be stored in separate subdirectories
+of the <code>cmd</code> directory.</p>
+<p>The CLI tool:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#998;font-style:italic">// cmd/cli/main.go
+</span><span style="color:#998;font-style:italic"></span><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+	<span style="color:#b84">&#34;log&#34;</span>
+	<span style="color:#b84">&#34;os&#34;</span>
+	<span style="color:#b84">&#34;text/template&#34;</span>
+)
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	data <span style="font-weight:bold">:=</span> <span style="font-weight:bold">struct</span> {
+		Label     <span style="color:#458;font-weight:bold">string</span>
+		Program   <span style="color:#458;font-weight:bold">string</span>
+		KeepAlive <span style="color:#458;font-weight:bold">bool</span>
+		RunAtLoad <span style="color:#458;font-weight:bold">bool</span>
+	}{
+		Label:     <span style="color:#b84">&#34;com.ieftimov.ticker&#34;</span>, <span style="color:#998;font-style:italic">// Reverse-DNS naming convention
+</span><span style="color:#998;font-style:italic"></span>		Program:   fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;%s/bin/ticker&#34;</span>, os.<span style="color:#900;font-weight:bold">Getenv</span>(<span style="color:#b84">&#34;GOPATH&#34;</span>)),
+		KeepAlive: <span style="font-weight:bold">true</span>,
+		RunAtLoad: <span style="font-weight:bold">true</span>,
+	}
+
+        plistPath <span style="font-weight:bold">:=</span> fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;%s/Library/LaunchAgents/%s.plist&#34;</span>, os.<span style="color:#900;font-weight:bold">Getenv</span>(<span style="color:#b84">&#34;HOME&#34;</span>), data.Label)
+        f, err <span style="font-weight:bold">:=</span> os.<span style="color:#900;font-weight:bold">Open</span>(plistPath)
+	t <span style="font-weight:bold">:=</span> template.<span style="color:#900;font-weight:bold">Must</span>(template.<span style="color:#900;font-weight:bold">New</span>(<span style="color:#b84">&#34;launchdConfig&#34;</span>).<span style="color:#900;font-weight:bold">Parse</span>(<span style="color:#900;font-weight:bold">Template</span>()))
+	err <span style="font-weight:bold">:=</span> t.<span style="color:#900;font-weight:bold">Execute</span>(f, data)
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		log.<span style="color:#900;font-weight:bold">Fatalf</span>(<span style="color:#b84">&#34;Template generation failed: %s&#34;</span>, err)
+	}
+}</code></pre></div>
+<p>And the ticker program:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#998;font-style:italic">// cmd/ticker/main.go
+</span><span style="color:#998;font-style:italic"></span><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+	<span style="color:#b84">&#34;fmt&#34;</span>
+	<span style="color:#b84">&#34;os&#34;</span>
+	<span style="color:#b84">&#34;os/signal&#34;</span>
+	<span style="color:#b84">&#34;syscall&#34;</span>
+	<span style="color:#b84">&#34;time&#34;</span>
+)
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	sigs <span style="font-weight:bold">:=</span> <span style="color:#999">make</span>(<span style="font-weight:bold">chan</span> os.Signal, <span style="color:#099">1</span>)
+	signal.<span style="color:#900;font-weight:bold">Notify</span>(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	<span style="font-weight:bold">go</span> <span style="font-weight:bold">func</span>() {
+		<span style="font-weight:bold">&lt;-</span>sigs
+		os.<span style="color:#900;font-weight:bold">Exit</span>(<span style="color:#099">0</span>)
+	}()
+
+	<span style="font-weight:bold">for</span> <span style="font-weight:bold">range</span> time.<span style="color:#900;font-weight:bold">Tick</span>(<span style="color:#099">30</span> <span style="font-weight:bold">*</span> time.Second) {
+		fmt.<span style="color:#900;font-weight:bold">Println</span>(<span style="color:#b84">&#34;tick!&#34;</span>)
+	}
+}</code></pre></div>
+<p>To install them both, we need to run <code>go install ./...</code> in the project root. The
+command will install all the sub-packages that are located within the project.
+This will leave us with two available binaries, installed in the <code>$GOPATH/bin</code>
+path.</p>
+<p>To install our launch agent, we need to run only the CLI tool, via the <code>cli</code>
+command. This will generate the <code>.plist</code> file and place it in the
+<code>~/Library/LaunchAgents</code> path. We don't need to touch the <code>ticker</code> binary - that
+one will be managed by <code>launchd</code>.</p>
+<p>To load the newly created <code>.plist</code> file, we need to run:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">launchctl load ~/Library/LaunchAgents/com.ieftimov.ticker.plist</code></pre></div>
+<p>When we run it, we will not see anything immediately, but after 30 seconds
+the ticker will add a <code>tick!</code> line in <code>/tmp/ticker.out.log</code>. We can <code>tail</code>
+the file to see the new lines being added. If we want to unload the agent, we
+can use:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">launchctl unload ~/Library/LaunchAgents/com.ieftimov.ticker.plist</code></pre></div>
+<p>This will unload the launch agent and will stop the ticker from running. Remember
+the signal handling we added? This is the case where it's being used! Also, we
+could have automated the (un)loading of the file via the CLI tool but for
+simplicity, we left it out. You can try to improve the CLI tool by making it a
+bit smarter with subcommands and flags, as a follow-up exercise from this
+tutorial.</p>
+<p>Finally, if you decide to completely delete the launch agent, you can remove the
+<code>.plist</code> file:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">rm ~/Library/LaunchAgents/com.ieftimov.ticker.plist</code></pre></div>
+<h2 id="in-closing">In closing</h2>
+<p>As part of this (quite long!) article, we saw how we can work with <code>launchd</code> and
+Golang. We took a detour, like learning about <code>launchd</code> and
+<code>launchctl</code>, generating XML files using the <code>text/template</code> package, we took
+a look at OS signals and how we can gracefully shutdown a Go program by handling
+the <code>SIGINT</code> and <code>SIGTERM</code> signals. There was quite a bit to learn and see, but
+we got to the end.</p>
+<p>Of course, we only scratched the surface with this article. For example,
+<code>launchd</code> is quite an interesting tool. You can use it also like <code>crontab</code>
+because it allows running programs at explicit time/date combinations or on
+specific days. Or, for example, the XML template can be embedded in the program
+binary using tools like <a href="https://github.com/jteeuwen/go-bindata"><code>go-bindata</code></a>,
+instead of hardcoding it in a function. Also, you explore more about signals,
+how they work and how Go implements these low-level primitives so you can use
+them with ease in your programs. The options are plenty, feel free to explore!</p>
+<p>If you have found any mistakes in the article, feel free to drop a comment
+below - I will appreciate it a ton. I find learning through teaching (blogging)
+a very pleasant experience and would like to have all the details fully
+correct in my posts.</p>
+
+			</div>
+
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/launchagent">launchagent</a></li>
+							
+							<li><a href="/tags/launchd">launchd</a></li>
+							
+							<li><a href="/tags/launchctl">launchctl</a></li>
+							
+							<li><a href="/tags/lpc">lpc</a></li>
+							
+							<li><a href="/tags/signals">signals</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>

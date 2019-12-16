@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Data structures in Go: Linked lists - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Data structures in Go: Linked lists" />
+<meta property="og:description" content="Data structures and algorithms are the bread and butter of computer science. Although sometimes they appear scary to people, most of them have a simple explanation. Also, when explained well with a problem algorithms can be interesting and fun to learn and apply.
+This post is aimed at people that are not comfortable with linked lists, or folks that want to see and learn how to build one with Golang. We will see how we can implement them with Go via a (somewhat) practical example, instead of the plain theory and code examples." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/data-structures-in-go-linked-lists/" />
+<meta property="og:image" content="https://ieftimov.com/cards/golang-datastructures-linked-lists.png" />
+<meta property="article:published_time" content="2018-02-18T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/golang-datastructures-linked-lists.png"/>
+
+<meta name="twitter:title" content="Data structures in Go: Linked lists"/>
+<meta name="twitter:description" content="Data structures and algorithms are the bread and butter of computer science. Although sometimes they appear scary to people, most of them have a simple explanation. Also, when explained well with a problem algorithms can be interesting and fun to learn and apply.
+This post is aimed at people that are not comfortable with linked lists, or folks that want to see and learn how to build one with Golang. We will see how we can implement them with Go via a (somewhat) practical example, instead of the plain theory and code examples."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.comcss/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.comjs/main.js"></script><script src="https://ieftimov.comjs/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">18</span>
+							<span class="rest">Feb 2018</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Data structures in Go: Linked lists</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p><img src="/golang-datastructures-linked-lists/selection.png" alt=""></p>
+<p>Data structures and algorithms are the bread and butter of computer science.
+Although sometimes they appear scary to people, most of them have a simple
+explanation. Also, when explained well with a problem algorithms can be
+interesting and fun to learn and apply.</p>
+<p>This post is aimed at people that are not comfortable with linked lists, or
+folks that want to see and learn how to build one with Golang. We will see
+how we can implement them with Go via a (somewhat) practical example, instead of
+the plain theory and code examples.</p>
+<p>But first, let's touch on a bit of theory.</p>
+<h2 id="linked-lists">Linked lists</h2>
+<p>Linked lists are one of the simpler data structures out there. Wikipedia's
+article on linked lists states that:</p>
+<blockquote>
+<p>In computer science, a linked list is a linear collection of data elements, in
+which linear order is not given by their physical placement in memory.
+Instead, each element points to the next. It is a data structure consisting of
+a group of nodes which together represent a sequence. Under the simplest form,
+each node is composed of data and a reference (in other words, a link) to the
+next node in the sequence.</p>
+</blockquote>
+<p>While all this might look like too much or confusing, let's break it down. A
+linear data structure is the one where it's elements form a sequence of some
+sort. Simple as that. Now, why the physical placement in memory doesn't matter?
+Well, when you have arrays the amount of memory the array takes is fixed, in the
+sense that if you have an array of 5 items, the language will grab only 5 memory
+addresses in the memory, one after another. Because these addresses create a
+sequence, the array knows in what memory range its values will be stored and
+thus the physical placement in-memory of these values create a sequence.</p>
+<p>With linked lists, it's a bit different. In the definition you will notice that
+&ldquo;each element points to the next&rdquo;, using &ldquo;data and a reference (in other words,
+a link) to the next node&rdquo;. This means that each node of the linked list stores
+two things: a value and a reference to the next node in the list. Simple as
+that.</p>
+<p><img src="/golang-datastructures-linked-lists/task.png" alt=""></p>
+<h2 id="streams-of-data">Streams of data</h2>
+<p>Everything that humans perceive around them is some sort of information or
+rather data that our senses and our minds know how to process and convert it
+into a useful piece of information. Whether we look, or smell, or touch we
+process data and find meaning from that data. Or, when we browse our social
+media networks we always resort to a feed of data, ordered chronologically and
+with <em>no end in sight</em>.</p>
+<p>So, how can we use linked lists to model such a news feed? Let's first quickly
+take a glance at a simple Tweet for example:</p>
+<!-- raw HTML omitted -->
+<p>For the purposes of our example social network, let's get inspired by Twitter
+and create a <code>Post</code> type, that has a <code>body</code>, a <code>publishDate</code> and a link to the
+<code>next</code> post:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> Post <span style="font-weight:bold">struct</span> {
+	body         <span style="color:#458;font-weight:bold">string</span>
+	publishDate <span style="color:#458;font-weight:bold">int64</span> <span style="color:#998;font-style:italic">// Unix timestamp
+</span><span style="color:#998;font-style:italic"></span>	next <span style="font-weight:bold">*</span>Post <span style="color:#998;font-style:italic">// link to the next Post
+</span><span style="color:#998;font-style:italic"></span>}</code></pre></div>
+<p>Next, how can we model a feed of posts? Well, if we know that feeds consist of
+posts that are linked to another post, then we can try to create a type like
+that:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> Feed <span style="font-weight:bold">struct</span> {
+	length <span style="color:#458;font-weight:bold">int</span> <span style="color:#998;font-style:italic">// we&#39;ll use it later
+</span><span style="color:#998;font-style:italic"></span>	start  <span style="font-weight:bold">*</span>Post
+}</code></pre></div>
+<p>The <code>Feed</code> struct will have a beginning (or <code>start</code>) which will point to the
+first <code>Post</code> in the feed and a <code>length</code> property which will store the size of
+the <code>Feed</code> at any given moment.</p>
+<p>So, let's say we want to create a <code>Feed</code> with two posts, the first step is to
+create an <code>Append</code> function on the <code>Feed</code> type:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (f <span style="font-weight:bold">*</span>Feed) <span style="color:#900;font-weight:bold">Append</span>(newPost <span style="font-weight:bold">*</span>Post) {
+	<span style="font-weight:bold">if</span> f.length <span style="font-weight:bold">==</span> <span style="color:#099">0</span> {
+		f.start = newPost
+	} <span style="font-weight:bold">else</span> {
+		currentPost <span style="font-weight:bold">:=</span> f.start
+		<span style="font-weight:bold">for</span> currentPost.next <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+			currentPost = currentPost.next
+		}
+		currentPost.next = newPost
+	}
+	f.length<span style="font-weight:bold">++</span>
+}</code></pre></div>
+<p>Then we can invoke it, twice:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+        f <span style="font-weight:bold">:=</span> <span style="font-weight:bold">&amp;</span>Feed{}
+        p1 <span style="font-weight:bold">:=</span> Post{
+            body: <span style="color:#b84">&#34;Lorem ipsum&#34;</span>,
+        }
+	f.<span style="color:#900;font-weight:bold">Append</span>(<span style="font-weight:bold">&amp;</span>p1)
+
+	fmt.<span style="color:#900;font-weight:bold">Printf</span>(<span style="color:#b84">&#34;Length: %v\n&#34;</span>, f.length)
+	fmt.<span style="color:#900;font-weight:bold">Printf</span>(<span style="color:#b84">&#34;First: %v\n&#34;</span>, f.start)
+
+        p2 <span style="font-weight:bold">:=</span> Post{
+            body: <span style="color:#b84">&#34;Dolor sit amet&#34;</span>,
+        }
+	f.<span style="color:#900;font-weight:bold">Append</span>(<span style="font-weight:bold">&amp;</span>p2)
+
+	fmt.<span style="color:#900;font-weight:bold">Printf</span>(<span style="color:#b84">&#34;Length: %v\n&#34;</span>, f.length)
+	fmt.<span style="color:#900;font-weight:bold">Printf</span>(<span style="color:#b84">&#34;First: %v\n&#34;</span>, f.start)
+	fmt.<span style="color:#900;font-weight:bold">Printf</span>(<span style="color:#b84">&#34;Second: %v\n&#34;</span>, f.start.next)
+}</code></pre></div>
+<p>So, what does this code do? First, the <code>main</code> function - it creates a pointer to
+a <code>Feed</code> struct, two <code>Post</code> structs with some dummy content and it invokes twice
+the <code>Append</code> function on the <code>Feed</code>, which results in it having a length of 2.
+We inspect the two values that the <code>Feed</code> has by accessing the <code>start</code> of the
+<code>Feed</code> (which is, in fact, a <code>Post</code>) and the <code>next</code> item after the <code>start</code>,
+which is the second <code>Post</code>.</p>
+<p>When we run the program, the output will look something like:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Length: 1
+First: &amp;{Lorem ipsum 1257894000 &lt;nil&gt;}
+Length: 2
+First: &amp;{Lorem ipsum 1257894000 0x10444280}
+Second: &amp;{Dolor sit amet 1257894000 &lt;nil&gt;}</code></pre></div>
+<p>You can see, after we add the first <code>Post</code> to the <code>Feed</code>, the length is <code>1</code> and
+the first <code>Post</code> has a <code>body</code> and a <code>publishte</code> (as a Unix timestamp), while
+it's <code>next</code> value is <code>nil</code> (because there's no more <code>Post</code>s in the <code>Feed</code>).
+Then, we add the second <code>Post</code> to the <code>Feed</code> and when we inspect the two <code>Post</code>s
+we see that the first one has the same content as before, but with a pointer to
+the <code>next</code> <code>Post</code> in the list. The second also has a <code>body</code> and a <code>publishDate</code>
+but with no pointer to the next <code>Post</code> in the list. Also, the length of the
+<code>Feed</code> increases as we add more <code>Post</code>s to it.</p>
+<p>Let's go back to the <code>Append</code> function now and deconstruct it so we understand
+better how to work with linked lists. First, the function creates a pointer to a
+<code>Post</code> value, with the <code>body</code> argument as <code>body</code> of the <code>Post</code> and the
+<code>publishDate</code> is set to the Unix timestamp representation of the current time.</p>
+<p>Then, we check if the <code>length</code> of the <code>Feed</code> is <code>0</code> - this means that it has no
+<code>Post</code>s and the first one that is added should be set as the starting <code>Post</code>,
+conveniently named <code>start</code>.</p>
+<p>But, if the length of the <code>Feed</code> is more than 0, then our algorithm takes a
+different turn. It will start with the <code>start</code> of the <code>Feed</code> and it will walk
+through all the <code>Post</code>s until it finds one that doesn't have a pointer to a
+<code>next</code> one. Then, it will attach the new <code>Post</code> as the <code>next</code> value on the last
+<code>Post</code> of the list.</p>
+<p><img src="/golang-datastructures-linked-lists/add_content.png" alt=""></p>
+<h3 id="optimising-append">Optimising <code>Append</code></h3>
+<p>Imagine we have a user that scrolls through their <code>Feed</code>, like on any other
+social network. Since posts are chronologically ordered, based on the
+<code>publishDate</code>, the <code>Feed</code> will grow more and more as the user scrolls through it
+and more <code>Post</code>s are attached to the <code>Feed</code>. Given the approach, we took in the
+<code>Append</code> function, as the <code>Feed</code> gets longer and longer the <code>Append</code> function
+will become more and more expensive. Why? Because we have to traverse the whole
+<code>Feed</code> to add a <code>Post</code> at the end of it. If you have heard about <em>Big-O
+notation</em>, this algorithm has an <code>O(n)</code> time complexity, which means that it
+will always traverse the whole <code>Feed</code> before it adds a <code>Post</code> to it.</p>
+<p>As you can imagine, this can be quite inefficient, especially if the <code>Feed</code>
+grows to be quite long. How can we improve the <code>Append</code> function and decrease
+the <a href="https://en.wikipedia.org/wiki/Asymptotic_computational_complexity">asymptotic
+complexity</a>
+of it?</p>
+<p>See, since our <code>Feed</code> data structure is just a list of <code>Post</code>s, to traverse it
+we have to know the beginning of the list (called <code>start</code>) that's a pointer of
+type <code>Post</code>. Because in our example <code>Append</code> always adds a <code>Post</code> to the end of
+the <code>Feed</code>, we could drastically improve the performance of the algorithm if
+<code>Feed</code> knows not just of its <code>start</code>ing element, but also about it's <code>end</code>ing
+element. Of course, there's always a tradeoff with optimisations, and the
+tradeoff here is that the data structure will consume a bit more memory (for the
+new attribute on the <code>Feed</code> structure).</p>
+<p>Extending our <code>Feed</code> data structure is quite easy:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> Feed <span style="font-weight:bold">struct</span> {
+	length <span style="color:#458;font-weight:bold">int</span>
+	start  <span style="font-weight:bold">*</span>Post
+	end    <span style="font-weight:bold">*</span>Post
+}</code></pre></div>
+<p>But our <code>Append</code> algorithm will have to be tweaked to work with the new
+structure of a <code>Feed</code>. This is the version of <code>Append</code> using the <code>end</code> attribute
+of <code>Post</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (f <span style="font-weight:bold">*</span>Feed) <span style="color:#900;font-weight:bold">Append</span>(newPost <span style="font-weight:bold">*</span>Post) {
+	<span style="font-weight:bold">if</span> f.length <span style="font-weight:bold">==</span> <span style="color:#099">0</span> {
+		f.start = newPost
+		f.end = newPost
+	} <span style="font-weight:bold">else</span> {
+		lastPost <span style="font-weight:bold">:=</span> f.end
+		lastPost.next = newPost
+		f.end = newPost
+	}
+	f.length<span style="font-weight:bold">++</span>
+}</code></pre></div>
+<p>That looks a bit simpler, doesn't it? Let me give you some good news:</p>
+<ol>
+<li>The code is simpler and shorter now, and</li>
+<li>We drastically improved the time complexity of the function</li>
+</ol>
+<p>If you look now at the algorithm, it does two things: if the <code>Feed</code> is empty it
+will set the new <code>Post</code> as the beginning and the end of the <code>Feed</code>, otherwise it
+will set the new <code>Post</code> as the <code>end</code> item and it will attach it to the previous
+<code>Post</code> in the list. On top of how simple it is, this will algorithm now has a
+big-O complexity of <code>O(1)</code>, also known as &ldquo;constant time&rdquo;. That means that
+<code>Append</code> will perform the same regardless of the length of the <code>Feed</code> structure.</p>
+<p>Pretty simple, right? But let's imagine that the <code>Feed</code> is actually a list of
+<code>Post</code>s on our profile. Hence they are ours, we should be able to delete them. I
+mean, what kind of a social network doesn't allow it's users to (at least)
+delete their posts?</p>
+<p><img src="/golang-datastructures-linked-lists/throw_down.png" alt=""></p>
+<h2 id="removing-a-post">Removing a <code>Post</code></h2>
+<p>As we established in the previous section, we want the users of our <code>Feed</code>s to
+be able to delete their posts. So, how can we model that? If our <code>Feed</code>s were an
+array, we would just remove the item and be done with it, right?</p>
+<p>Well, this is actually where linked lists shine. When arrays sizes change, the
+runtime has to capture a new memory block to store the items of the array in.
+Linked lists due to their design, each item having a pointer to the next node in
+the list, can be scattered throughout the memory space meaning adding/removing
+nodes from the list is cheap from a space perspective. When one wants to remove
+a node from a linked list only the neighbours of the removed node need to be
+linked, and that is. Garbage collected languages (like Go) make this even easier
+since we don't have to worry about releasing the allocated memory - the GC will
+kick in and remove all unused objects.</p>
+<p>To make our lives a bit easier for this example, let's put a constraint that
+each of the <code>Posts</code> on a <code>Feed</code>will have a unique <code>publishDate</code>.This means a
+publisher can create one <code>Post</code> per second on their <code>Feed</code>. Taking that into
+effect, this is how we can easily remove a <code>Post</code> from a <code>Feed</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (f <span style="font-weight:bold">*</span>Feed) <span style="color:#900;font-weight:bold">Remove</span>(publishDate <span style="color:#458;font-weight:bold">int64</span>) {
+	<span style="font-weight:bold">if</span> f.length <span style="font-weight:bold">==</span> <span style="color:#099">0</span> {
+		<span style="color:#999">panic</span>(errors.<span style="color:#900;font-weight:bold">New</span>(<span style="color:#b84">&#34;Feed is empty&#34;</span>))
+	}
+
+	<span style="font-weight:bold">var</span> previousPost <span style="font-weight:bold">*</span>Post
+	currentPost <span style="font-weight:bold">:=</span> f.start
+
+	<span style="font-weight:bold">for</span> currentPost.publishDate <span style="font-weight:bold">!=</span> publishDate {
+		<span style="font-weight:bold">if</span> currentPost.next <span style="font-weight:bold">==</span> <span style="font-weight:bold">nil</span> {
+			<span style="color:#999">panic</span>(errors.<span style="color:#900;font-weight:bold">New</span>(<span style="color:#b84">&#34;No such Post found.&#34;</span>))
+		}
+
+		previousPost = currentPost
+		currentPost = currentPost.next
+	}
+	previousPost.next = currentPost.next
+
+	f.length<span style="font-weight:bold">--</span>
+}</code></pre></div>
+<p>The <code>Remove</code> function will take a <code>publishDate</code> of a <code>Post</code> as an argument by
+which it will detect what <code>Post</code> needs to be deleted (or unlinked). The function
+is rather small. If it detects that the <code>start</code> item of the <code>Feed</code> is to be
+removed it will just reassign the <code>start</code> of the <code>Feed</code> with the second <code>Post</code>
+in the <code>Feed</code>. Otherwise, it jumps through each of the <code>Post</code>s in the <code>Feed</code>
+until it runs into a <code>Post</code> that has a matching <code>publishDate</code> to the one passed
+as the function argument. When it finds one, it will just connect the previous
+and the next <code>Post</code> in the <code>Feed</code> with each other, effectively dropping the
+middle (matching) one from the <code>Feed</code>.</p>
+<p>There's one edge case that we need to make sure that we cover in our <code>Remove</code>
+function - what if the <code>Feed</code> doesn't have a <code>Post</code> with the specified
+<code>publishDate</code>? To keep it simple, the function checks for the absence of the
+<code>next</code> <code>Post</code> in the <code>Feed</code> before it jumps to it. If the <code>next</code> is <code>nil</code> the
+function <code>panic</code>s, telling us that it couldn't find a <code>Post</code> with such
+<code>publishDate</code>.</p>
+<p><img src="/golang-datastructures-linked-lists/wall_post.png" alt=""></p>
+<h2 id="inserting-a-post">Inserting a <code>Post</code></h2>
+<p>Now that we got appending and removing out of the way, let's take a look at (a
+bit of) a hypothetical case. Imagine that the source that produces the <code>Post</code>s
+sends them to our application in a non-chronological order. This means that the
+<code>Post</code>s need to be put in the correct order in the <code>Feed</code>, based on the
+<code>publishDate</code>. This is how that would look like:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (f <span style="font-weight:bold">*</span>Feed) <span style="color:#900;font-weight:bold">Insert</span>(newPost <span style="font-weight:bold">*</span>Post) {
+	<span style="font-weight:bold">if</span> f.length <span style="font-weight:bold">==</span> <span style="color:#099">0</span> {
+		f.start = newPost
+	} <span style="font-weight:bold">else</span> {
+		<span style="font-weight:bold">var</span> previousPost <span style="font-weight:bold">*</span>Post
+		currentPost <span style="font-weight:bold">:=</span> f.start
+
+		<span style="font-weight:bold">for</span> currentPost.publishDate &lt; newPost.publishDate {
+			previousPost = currentPost
+			currentPost = previousPost.next
+		}
+
+		previousPost.next = newPost
+		newPost.next = currentPost
+	}
+	f.length<span style="font-weight:bold">++</span>
+}</code></pre></div>
+<p>In essence, this is a very similar algorithm to the one in the <code>Remove</code>
+function, because although both of them do a very different thing (adding v.s.
+removing a <code>Post</code> in the <code>Feed</code>), they are both based on a <em>search</em> algorithm.
+That means that both of the functions actually traverse the whole <code>Feed</code>,
+<em>searching</em> for a <code>Post</code> that matches the <code>publishDate</code> with the one received in
+the argument of the function. The only difference is that <code>Insert</code> will actually
+put the new <code>Post</code> in the place where the dates match, while <code>Remove</code> will
+remove the <code>Post</code> from the <code>Feed</code>.</p>
+<p>Additionally, this means that both of these functions carry the same time
+complexity, which is <code>O(n)</code>. This means that in a worst-case scenario, the
+functions will have to traverse the whole <code>Feed</code> to get to the item where the
+new post needs to be inserted (or the removed).</p>
+<h2 id="what-if-we-used-arrays">What if we used arrays?</h2>
+<p>If you are asking that yourself, let me say right up front - you have a point.
+True, we could store all of the <code>Post</code>s in an array (or a slice in Go), easily
+push items onto it and also even have random access with an <code>O(1)</code> complexity.</p>
+<p>Due to the nature of arrays, whose values have to be stored in memory one right
+after another, reading is really fast and cheap. Once you have something stored
+in an array, retrieving it as easy as accessing it by its 0-based index. When it
+comes to inserting an item, whether in the middle or at the end, then arrays
+become less efficient compared to lists. That is because if the array doesn't
+have more memory reserved for the new item(s), it will have to reserve it and
+use it. But, if the next memory addresses are not free, it will have to &ldquo;move&rdquo;
+to a new memory address where there would be space for all of the items in it
+(new and old).</p>
+<p>Looking at all of the examples and discussion we had so far, we can create a
+table with time complexity for each of the algorithms we created, and compare
+them with the same algorithms for arrays:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">╔═══════════╦═════════╦═════════════╗
+║ Action    ║ Array   ║ Linked list ║
+╠═══════════╬═════════╬═════════════╣
+║ Access    ║ O(1)    ║ O(n)        ║
+║ Search    ║ O(n)    ║ O(n)        ║
+║ Prepend   ║ O(1)    ║ O(1)        ║
+║ Append    ║ O(n)    ║ O(1)        ║
+║ Delete    ║ O(n)    ║ O(n)        ║
+╚═══════════╩═════════╩═════════════╝</code></pre></div>
+<p>As you can see, when you are faced with a certain problem, picking the correct
+data structure can really make or break the products you create. For
+ever-growing <code>Feed</code>s, where insertion of <code>Post</code>s is paramount, linked lists do a
+much better job because insertions are really cheap. But, if we had a different
+problem on our hands that requires frequent deletions or lots of
+retrieval/searching, then we would have to pick the correct data structure for
+the problem we are dealing with.</p>
+<p>You can see the whole implementation of the <code>Feed</code> and play with it
+<a href="https://play.golang.org/p/fqLPjf_ekD6">here</a>. Also, Go has it's own linked list
+implementation, with some nice functions already built in. You can see it's
+documentation <a href="https://golang.org/pkg/container/list/">here</a>.</p>
+<p><em>EDIT</em> 20.02.2018 10:00 CET: Previous verion of the article wrongly stated that
+the big-O complexity of the delete function is <code>O(1)</code>. Changed to <code>O(n)</code> after
+pointed out by <a href="https://twitter.com/bartdegoede">Bart de Goede</a>.</p>
+<p><em>EDIT</em> 22.02.2018 23:00 CET: Previous verion of the article wrongly stated that
+the big-O complexity of searching in an array is <code>O(1)</code> instead of <code>O(N)</code>. This
+was a mixup of <em>Access</em> and <em>Search</em> on my side. This is fixed by adding
+separate rows in the table for <em>Search</em> and <em>Access</em> and their respective time
+complexities.</p>
+<p><em>EDIT</em> 25.02.2018 17:00 CET: Previous version of the article had a buggy
+implementation of the <code>Insert</code> function, which was pointed out by Albert Shirima
+in the comments.</p>
+
+
+
+
+
+
+
+<div id="mc_embed_signup">
+<form action="https://pm.us20.list-manage.com/subscribe/post?u=d9a6471309140dcd520d05346&amp;id=2aac491644" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+    <div id="mc_embed_signup_scroll">
+        <div class="heading">Join The Newsletter</div>
+        <p>
+            I write about backend technologies, programming and cloud architectures. Join hundreds of other developers that get my content, twice a month. Unsubscribe whenever. Never spam.
+        </p>
+	<input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Your email address" required>
+        <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
+
+      
+      <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_d9a6471309140dcd520d05346_2aac491644" tabindex="-1" value=""></div>
+
+    <p>You can also subscribe <a href="/index.xml">via RSS</a>.</p>
+    </div>
+</form>
+</div>
+
+
+
+			</div>
+
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/linked-lists">linked lists</a></li>
+							
+							<li><a href="/tags/lists">lists</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>

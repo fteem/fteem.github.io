@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Deep Dive in the Upcoming Go Error Inspection Changes - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Deep Dive in the Upcoming Go Error Inspection Changes" />
+<meta property="og:description" content="The team behind the language started working on a document titled &ldquo;Go 2 Draft Designs&rdquo;. The draft document is part of the design process for Go v2.0. In this article we will zoom in at the proposal for error inspection in Go 2.
+What&#39;s worth noting is that this is still part of a draft proposal. Still, from where we are standing at the moment, it&#39;s certain that these changes will be added to the language starting Go v1." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/deep-dive-in-the-upcoming-go-error-inspection-changes/" />
+<meta property="og:image" content="https://ieftimov.com/cards/deep-dive-in-upcoming-go-error-inspection-changes.png" />
+<meta property="article:published_time" content="2019-04-23T00:00:00+00:00" />
+<meta property="article:modified_time" content="2019-04-23T00:00:00+00:00" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/deep-dive-in-upcoming-go-error-inspection-changes.png"/>
+
+<meta name="twitter:title" content="Deep Dive in the Upcoming Go Error Inspection Changes"/>
+<meta name="twitter:description" content="The team behind the language started working on a document titled &ldquo;Go 2 Draft Designs&rdquo;. The draft document is part of the design process for Go v2.0. In this article we will zoom in at the proposal for error inspection in Go 2.
+What&#39;s worth noting is that this is still part of a draft proposal. Still, from where we are standing at the moment, it&#39;s certain that these changes will be added to the language starting Go v1."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.comcss/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.comjs/main.js"></script><script src="https://ieftimov.comjs/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">23</span>
+							<span class="rest">Apr 2019</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Deep Dive in the Upcoming Go Error Inspection Changes</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>The team behind the language started working on a document titled <a href="https://go.googlesource.com/proposal/+/master/design/go2draft.md">&ldquo;Go 2 Draft
+Designs&rdquo;</a>.
+The draft document is part of the design process for Go v2.0. In this article
+we will zoom in at the proposal for error inspection in Go 2.</p>
+<p>What's worth noting is that this is still part of a draft proposal. Still, from
+where we are standing at the moment, it's certain that these changes will be
+added to the language starting Go v1.13 and v2.0.</p>
+<p>Before we go on, it’s good to note that this article is aimed at folks that
+consider themselves new to the language. Not just with time spent with the
+language, but also in terms of size of projects/codebases. So if that sounds
+like you - keep on reading, I promise it will be helpful to understand the pros
+and cons of errors in Go.</p>
+<p>If you have experience with Go and error handling you might have a good idea
+about the topic. Still, you may find something of value in the article. Let me
+know in the comments section below!</p>
+<h2 id="go-2-draft-designs">Go 2 Draft Designs</h2>
+<p>The intent behind the draft documents is to create a discussion cornerstone for
+the community. They touch three important topics: generics, error handling and
+error value semantics.</p>
+<p>The reason for discussing these three topics is… well, us – the community. The
+Go team got the community’s feedback on the shortcomings of the language via
+the annual Go user survey. And there is no surprise on the prioritised areas
+for v2.0: package management, errors and generics.</p>
+<p>Package management was a big thing, but that area is already addressed with the
+introduction of modules.</p>
+<p>In fact, here's a more detailed breakdown of the biggest challenges that people
+face with Go today:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure class="imagecaption">
+  <img class="caption" src="https://blog.golang.org/survey2018/fig14.svg" title="" alt="">
+  <span class="caption-text"></span>
+</figure>
+
+<p>If you would like to learn more, the Go team
+published <a href="https://blog.golang.org/survey2018-results">a blog post</a> with the
+results and other insights.</p>
+<p>As we said earlier, in this article we will focus on the error inspection
+proposal. The error handling and formatting are quite interesting as well, but
+those are topics for other articles.</p>
+<h2 id="shortcomings-of-the-current-errors-inspection-approach">Shortcomings of the current errors inspection approach</h2>
+<p>Before we go on to see what are the problems with the current situation in the
+ecosystem, let’s get a better understanding of errors first. Looking at the
+topic from my perspective, as a beginner in Go, it’s challenging to understand
+the shortcomings here.</p>
+<p>Go promotes the idea that errors are values. When something is a value, it
+means that we can assign it to a variable. This implies that we can work with
+errors via ordinary programming. No need for special exception flows or rescue
+blocks. For example, this is an error that’s a value:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">r, err <span style="font-weight:bold">:=</span> os.<span style="color:#900;font-weight:bold">Open</span>(src)
+<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+	<span style="font-weight:bold">return</span> err
+}
+<span style="font-weight:bold">defer</span> r.<span style="color:#900;font-weight:bold">Close</span>()</code></pre></div>
+<p>The the <code>os.Open</code> function returns a file for reading or an error. Assigning
+the error to a variable and checking for its presence (<code>err != nil</code>) is
+possible because errors are values. In contrast with other languages, when a
+it's not possible to open a file, we have to catch/handle an exception.</p>
+<p>This flexibility that Go unlocks is great. But also it changes they way we
+perceive and use errors as values in our programs. A side-effect of this is
+that equality checks and type assertion on errors has proved to be tricky and
+have limitations.</p>
+<p>If you read the <a href="https://go.googlesource.com/proposal/+/master/design/go2draft-error-values-overview.md">Problem Overview
+document</a>
+on error values by Russ Cox, he describes four ways of testing for specific
+errors:</p>
+<ol>
+<li>Test for equality with sentinel errors, like <code>io.EOF</code></li>
+<li>Check for an error implementation type using a type assertion or type switch</li>
+<li>Ad-hoc checks, like <code>os.IsNotExist</code>, check for a specific kind of error</li>
+<li>Substring searches in the error text reported by <code>err.Error()</code></li>
+</ol>
+<p>Let's take this a step further.</p>
+<h3 id="error-wrapping">Error wrapping</h3>
+<p>The people in the Go ecosystem have created various packages that aid error
+inspection. For example, one of the most popular packages that serves this
+purpose is <a href="https://github.com/pkg/errors"><code>pkg/errors</code></a>. Another one is Uber's
+<a href="https://github.com/uber-go/multierr"><code>multierr</code></a>. Others include
+<a href="https://godoc.org/github.com/spacemonkeygo/errors"><code>spacemonkeygo/errors</code></a>,
+<a href="https://godoc.org/github.com/hashicorp/errwrap"><code>hashicorp/errwrap</code></a> and
+<a href="https://godoc.org/upspin.io/errors"><code>upspin.io/error</code></a>.</p>
+<p>If you would inspect each of these you would notice different patterns for
+error wrapping. Error wrapping is a technique where we wrap one error value in
+another error value, of a different type. The goal is to add more information
+to it. In 2016 Dave Cheney wrote an article on the topic, titled &ldquo;<a href="https://dave.cheney.net/2016/04/27/dont-just-check-errors-handle-them-gracefully">Don’t just
+check errors, handle them
+gracefully</a>&quot;.</p>
+<p>The basic idea is that any error that happens deeper in the call stack will be
+unavailable for inspection on the surface. We have to annotate errors down the
+stack, so we can inspect and handle the proper error at a certain level in the
+stack.</p>
+<p>Let's look at an example: imagine we want to open a file that doesn't exist.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+	<span style="color:#b84">&#34;fmt&#34;</span>
+	<span style="color:#b84">&#34;os&#34;</span>
+)
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	f, err <span style="font-weight:bold">:=</span> os.<span style="color:#900;font-weight:bold">Open</span>(<span style="color:#b84">&#34;notes.txt&#34;</span>)
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		fmt.<span style="color:#900;font-weight:bold">Print</span>(fmt.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;%+v&#34;</span>, err))
+	}
+	<span style="font-weight:bold">defer</span> f.<span style="color:#900;font-weight:bold">Close</span>()
+}</code></pre></div>
+<p>If we run this small program, we will get the following output:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">$ go run test.go
+open notes.txt: no such file or directory</code></pre></div>
+<p>There is no hint of the type of the error or where this error originated from,
+such as function name or line number. To be able to get more information to
+user, we would have to add annotation to our error:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+	<span style="color:#b84">&#34;fmt&#34;</span>
+	<span style="color:#b84">&#34;os&#34;</span>
+)
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	f, err <span style="font-weight:bold">:=</span> os.<span style="color:#900;font-weight:bold">Open</span>(<span style="color:#b84">&#34;notes.txt&#34;</span>)
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		fmt.<span style="color:#900;font-weight:bold">Print</span>(fmt.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Error opening file: %+v&#34;</span>, err))
+	}
+	<span style="font-weight:bold">defer</span> f.<span style="color:#900;font-weight:bold">Close</span>()
+}</code></pre></div>
+<p>The output:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">$ go run test.go
+Error opening file: open notes.txt: no such file or directory%</code></pre></div>
+<p>A better way to approach this is to use error wrapping.</p>
+<p>Here’s a very simple example: our type will allow attaching of a timestamp to
+the error. It will also print the timestamp as part of the error message. The
+code:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+    <span style="color:#b84">&#34;fmt&#34;</span>
+    <span style="color:#b84">&#34;os&#34;</span>
+    <span style="color:#b84">&#34;time&#34;</span>
+)
+
+<span style="font-weight:bold">type</span> ErrorWithTime <span style="font-weight:bold">struct</span> {
+    err <span style="color:#458;font-weight:bold">error</span> <span style="color:#998;font-style:italic">// the wrapped error
+</span><span style="color:#998;font-style:italic"></span>    t time.Time <span style="color:#998;font-style:italic">// the time when the error happened
+</span><span style="color:#998;font-style:italic"></span>}
+
+<span style="font-weight:bold">func</span> (e <span style="font-weight:bold">*</span>ErrorWithTime) <span style="color:#900;font-weight:bold">Error</span>() <span style="color:#458;font-weight:bold">string</span> {
+    <span style="font-weight:bold">return</span> fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;%v @ %s&#34;</span>, e.err, e.t)
+}
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">wrap</span>(err <span style="color:#458;font-weight:bold">error</span>) <span style="font-weight:bold">*</span>ErrorWithTime {
+    <span style="font-weight:bold">return</span> <span style="font-weight:bold">&amp;</span>ErrorWithTime{err, time.<span style="color:#900;font-weight:bold">Now</span>()}
+}
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">openFile</span>(filename <span style="color:#458;font-weight:bold">string</span>) (<span style="font-weight:bold">*</span>os.File, <span style="color:#458;font-weight:bold">error</span>) {
+    f, err <span style="font-weight:bold">:=</span> os.<span style="color:#900;font-weight:bold">Open</span>(filename)
+    <span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+        <span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>, <span style="color:#900;font-weight:bold">wrap</span>(err)
+    }
+
+    <span style="font-weight:bold">return</span> f, <span style="font-weight:bold">nil</span>
+}
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+    file, err <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">openFile</span>(<span style="color:#b84">&#34;notes.txt&#34;</span>)
+    <span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+        fmt.<span style="color:#900;font-weight:bold">Print</span>(err)
+    }
+    <span style="font-weight:bold">defer</span> file.<span style="color:#900;font-weight:bold">Close</span>()
+}</code></pre></div>
+<p>The <code>ErrorWithTime</code> struct has two attributes: the wrapped error <code>err</code> and the
+time of the error occurrence <code>t</code>. The <code>Error()</code> function will include the
+timestamp of the occurrence alongside with the error itself. The <code>wrap</code>
+function is the one doing the magic. It takes an error as an argument and
+returns the error wrapped in a <code>ErrorWithTime</code>, with the exception timestamp
+attached (set to <code>time.Now()</code>).</p>
+<p>The <code>main</code> function does not care about the type of the error. It checks for
+its presence and <code>print</code>s (if present). If we run the program, this will be
+the output:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">$ go run test.go
+open notes.txt: no such file or directory @ 2019-04-05 21:40:06.055665 +0200 CEST m=+0.000287159%</code></pre></div>
+<p>I admit - the timestamp of the error occurrence might not be that useful in
+this context. What is important is that it paints the idea how we can attach
+more information to errors by wrapping them. If you read Dave’s article I
+linked above, you will see the shortcomings of this approach and the argument
+for unwrapping.</p>
+<p>Now, having this in mind, let's move back to the error inspection proposal
+and see what the authors are proposing.</p>
+<h2 id="go-2-error-inspection">Go 2 Error Inspection</h2>
+<p>While wrapping works, it comes at a certain cost, which the draft design
+document addresses:</p>
+<blockquote>
+<p>If a sentinel error is wrapped, then a program cannot check for the
+sentinel by a simple equality comparison. And if an error of some type T is
+wrapped (presumably in an error of a different type), then type-asserting the
+result to T will fail. If we encourage wrapping, we must also support
+alternatives to the two main techniques that a program can use to act on
+errors, equality checks and type assertions.</p>
+</blockquote>
+<p>So, let's see how the authors of the proposal are going to address the two
+most important aspects of error wrapping: equality comparison and type
+assertion.</p>
+<h3 id="unwrapping">Unwrapping</h3>
+<p>In the draft document the authors acknowledge the need for an unwrapping
+mechanism. The idea behind that to be able to do any comparisons or assertions,
+we have to be able to unwrap errors. This is in fact a simple functionality of
+the custom error type, but it’s of exceptional importance.</p>
+<p>That's why they introduce the <code>Wrapper</code> interface:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> errors
+
+<span style="color:#998;font-style:italic">// A Wrapper is an error implementation
+</span><span style="color:#998;font-style:italic"></span><span style="color:#998;font-style:italic">// wrapping context around another error.
+</span><span style="color:#998;font-style:italic"></span><span style="font-weight:bold">type</span> Wrapper <span style="font-weight:bold">interface</span> {
+	<span style="color:#998;font-style:italic">// Unwrap returns the next error in the error chain.
+</span><span style="color:#998;font-style:italic"></span>	<span style="color:#998;font-style:italic">// If there is no next error, Unwrap returns nil.
+</span><span style="color:#998;font-style:italic"></span>	<span style="color:#900;font-weight:bold">Unwrap</span>() <span style="color:#458;font-weight:bold">error</span>
+}</code></pre></div>
+<p>The <code>Unwrap</code> function here does not have a body because we’re looking at an
+<code>interface</code> definition. This interface is quite important though. All types
+that will implement <code>Wrapper</code> will have inspection of wrapped errors.</p>
+<p>Let's see a contrived example of a custom error type that implements the
+<code>Wrapper</code> interface:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#998;font-style:italic">// ErrorWithTime is an error with a timestamp
+</span><span style="color:#998;font-style:italic"></span><span style="font-weight:bold">type</span> ErrorWithTime <span style="font-weight:bold">struct</span> {
+	err <span style="color:#458;font-weight:bold">error</span>     <span style="color:#998;font-style:italic">// the wrapped error
+</span><span style="color:#998;font-style:italic"></span>	t   time.Time <span style="color:#998;font-style:italic">// the time when the error happened
+</span><span style="color:#998;font-style:italic"></span>}</code></pre></div>
+<p>For the <code>ErrorWithTime</code> to implement the <code>Wrapper</code> interface, it needs to have
+a <code>Unwrap</code> function. The function will return the error that the custom error
+type contains:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (e <span style="font-weight:bold">*</span>ErrorWithTime) <span style="color:#900;font-weight:bold">Unwrap</span>() <span style="color:#458;font-weight:bold">error</span> {
+	<span style="font-weight:bold">return</span> e.err
+}</code></pre></div>
+<p>That's all. This will allow any of the next aspects, that we will discuss
+further, to function well with the <code>ErrorWithTime</code> type.</p>
+<h3 id="type-assertion-using-as">Type assertion using <code>As</code></h3>
+<p>Now, let’s combine two ideas: opening a file that does not exist and returning
+an error that contains a time of occurrence. Let's reintroduce the
+<code>ErrorWithTime</code> type and its related functions:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> ErrorWithTime <span style="font-weight:bold">struct</span> {
+	err <span style="color:#458;font-weight:bold">error</span>     <span style="color:#998;font-style:italic">// the wrapped error
+</span><span style="color:#998;font-style:italic"></span>	t   time.Time <span style="color:#998;font-style:italic">// the time when the error happened
+</span><span style="color:#998;font-style:italic"></span>}
+
+<span style="color:#998;font-style:italic">// Implements the Error interface
+</span><span style="color:#998;font-style:italic"></span><span style="font-weight:bold">func</span> (e <span style="font-weight:bold">*</span>ErrorWithTime) <span style="color:#900;font-weight:bold">Error</span>() <span style="color:#458;font-weight:bold">string</span> {
+	<span style="font-weight:bold">return</span> fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Error: %s, ocurred at: %s\n&#34;</span>, e.err, e.t)
+}
+
+<span style="color:#998;font-style:italic">// Implements the Wrapper interface
+</span><span style="color:#998;font-style:italic"></span><span style="font-weight:bold">func</span> (e <span style="font-weight:bold">*</span>ErrorWithTime) <span style="color:#900;font-weight:bold">Unwrap</span>() <span style="color:#458;font-weight:bold">error</span> {
+	<span style="font-weight:bold">return</span> e.err
+}</code></pre></div>
+<p>To reiterate, the <code>Unwrap</code> function is the one that implements the <code>Wrapper</code>
+interface. And the <code>Error</code> function implements the <code>Error</code> interface. This means
+that we can unwrap any error value of our <code>ErrorWithTime</code> type.</p>
+<p>Now, let's create a simple function that can open a file and return an error
+(if any):</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">openFile</span>(path <span style="color:#458;font-weight:bold">string</span>) <span style="color:#458;font-weight:bold">error</span> {
+	_, err <span style="font-weight:bold">:=</span> os.<span style="color:#900;font-weight:bold">Open</span>(path)
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		<span style="font-weight:bold">return</span> <span style="font-weight:bold">&amp;</span>ErrorWithTime{
+			err: err,
+			t:   time.<span style="color:#900;font-weight:bold">Now</span>(),
+		}
+	}
+	<span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>
+}</code></pre></div>
+<p>This function is a tad useless because it only returns a potential error, but
+it does the trick for our example. If the <code>os.Open</code> call returns an error we
+will wrap it in a <code>ErrorWithTime</code> and attach the current time to it. Then,
+we'll <code>return</code> it.</p>
+<p>Now, let's see the <code>main</code> function:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	err <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">openFile</span>(<span style="color:#b84">&#34;non-existent-file&#34;</span>)
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		<span style="font-weight:bold">var</span> timeError <span style="font-weight:bold">*</span>ErrorWithTime
+		<span style="font-weight:bold">if</span> xerrors.<span style="color:#900;font-weight:bold">As</span>(err, <span style="font-weight:bold">&amp;</span>timeError) {
+			fmt.<span style="color:#900;font-weight:bold">Println</span>(<span style="color:#b84">&#34;Failed at: &#34;</span>, timeError.t)
+		}
+
+                <span style="font-weight:bold">var</span> pathError <span style="font-weight:bold">*</span>os.PathError
+                <span style="font-weight:bold">if</span> xerrors.<span style="color:#900;font-weight:bold">As</span>(err, <span style="font-weight:bold">&amp;</span>pathError) {
+                        fmt.<span style="color:#900;font-weight:bold">Println</span>(<span style="color:#b84">&#34;Failed at path:&#34;</span>, pathError.Path)
+                }
+	}
+}</code></pre></div>
+<p>Here's how the new <code>As</code> function helps by taking care of the type assertion. It
+receives the error from the <code>openFile</code> function and asserts the error's type to
+<code>*ErrorWithTime</code>. If the assertion is successful, it will use its <code>t</code> attribute
+to display the time when the error happened.</p>
+<p>The same goes for asserting the error type to <code>*os.PathError</code>. Again, the
+<code>*ErrorWithTime</code> implements the <code>Wrapper</code> interface. This allows the
+<code>xerrors.As</code> function to unwrap the error and check for the type of the error
+under wraps.  Let’s run the <code>main</code> function:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#a61717;background-color:#e3d2d2">$</span> <span style="font-weight:bold">go</span> run as.<span style="font-weight:bold">go</span>
+Failed at:  <span style="color:#099">2019</span><span style="font-weight:bold">-</span><span style="color:#099">04</span><span style="font-weight:bold">-</span><span style="color:#099">21</span> <span style="color:#099">18</span>:<span style="color:#099">11</span>:<span style="color:#099">01.922332</span> <span style="font-weight:bold">+</span><span style="color:#099">0200</span> CEST m=<span style="font-weight:bold">+</span><span style="color:#099">0.000303480</span>
+Failed at path: non<span style="font-weight:bold">-</span>existent</code></pre></div>
+<p>Note that the error type returned from the <code>openFile</code> function is
+<code>*ErrorWithTime</code>. But, once it’s casted to a <code>*os.PathError</code> we cannot access
+the <code>t</code> attribute. This is because <code>*ErrorWithTime</code> implements <code>t</code> – not
+<code>*os.PathError</code>.</p>
+<p>Let's test that with code:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	err <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">openFile</span>(<span style="color:#b84">&#34;non-existent-file&#34;</span>)
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+                <span style="font-weight:bold">var</span> pathError <span style="font-weight:bold">*</span>os.PathError
+                <span style="font-weight:bold">if</span> xerrors.<span style="color:#900;font-weight:bold">As</span>(err, <span style="font-weight:bold">&amp;</span>pathError) {
+                        fmt.<span style="color:#900;font-weight:bold">Println</span>(<span style="color:#b84">&#34;Failed at path:&#34;</span>, pathError.Path)
+                        fmt.<span style="color:#900;font-weight:bold">Println</span>(<span style="color:#b84">&#34;Failed at:&#34;</span>, pathError.t)
+                }
+	}
+}</code></pre></div>
+<p>This fails with the error:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">./test.go:44:44: pathError.t undefined (type *os.PathError has no field or method t)</code></pre></div>
+<h3 id="value-checking-with-is">Value checking with <code>Is</code></h3>
+<p>While <code>As</code> allows us to take a value and assert its type, Golang has errors
+which are resistive to type assertions. They are special and have a special
+name - sentinel errors. Their name descends from the practice in computer
+programming of using a specific value to signify that no further processing is
+possible.</p>
+<p>When a caller handles a sentinel error, they have to compare the returned error
+value to a predeclared value using the equality operator. Here's an example
+(adapted from <a href="https://tour.golang.org/methods/21">A Tour of Go</a>) that handles
+a <code>io.EOF</code> error:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+	<span style="color:#b84">&#34;io&#34;</span>
+	<span style="color:#b84">&#34;strings&#34;</span>
+)
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	r <span style="font-weight:bold">:=</span> strings.<span style="color:#900;font-weight:bold">NewReader</span>(<span style="color:#b84">&#34;Hello, Reader!&#34;</span>)
+
+	b <span style="font-weight:bold">:=</span> <span style="color:#999">make</span>([]<span style="color:#458;font-weight:bold">byte</span>, <span style="color:#099">8</span>)
+	<span style="font-weight:bold">for</span> {
+		_, err <span style="font-weight:bold">:=</span> r.<span style="color:#900;font-weight:bold">Read</span>(b)
+		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">==</span> io.EOF {
+			<span style="font-weight:bold">break</span>
+		}
+	}
+}</code></pre></div>
+<p>The example above creates a <code>strings.Reader</code> and consumes its output 8 bytes at
+a time. When the reading hits a <code>io.EOF</code> (I/O End Of File) error, it will break
+the <code>for</code> loop and exit the program.</p>
+<p>So, how does the new <code>Is</code> function help us in such cases? Well, if we would use
+the <code>xerrors</code> package in the same example, it would look like this:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+	<span style="color:#b84">&#34;io&#34;</span>
+	<span style="color:#b84">&#34;strings&#34;</span>
+
+	<span style="color:#b84">&#34;golang.org/x/xerrors&#34;</span>
+)
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	r <span style="font-weight:bold">:=</span> strings.<span style="color:#900;font-weight:bold">NewReader</span>(<span style="color:#b84">&#34;Hello, Reader!&#34;</span>)
+
+	b <span style="font-weight:bold">:=</span> <span style="color:#999">make</span>([]<span style="color:#458;font-weight:bold">byte</span>, <span style="color:#099">8</span>)
+	<span style="font-weight:bold">for</span> {
+		_, err <span style="font-weight:bold">:=</span> r.<span style="color:#900;font-weight:bold">Read</span>(b)
+		<span style="font-weight:bold">if</span> xerrors.<span style="color:#900;font-weight:bold">Is</span>(err, io.EOF) {
+			<span style="font-weight:bold">break</span>
+		}
+	}
+}</code></pre></div>
+<p>The change is simple on the surface, but considerable under the hood.
+The <code>Is</code> function takes an error value and a sentinel error as arguments. If
+the error value implements <code>Wrapper</code>, it will unwrap its chain of error until
+it reaches (or not) the sentinel error. Hence, if it finds the sentinel error it
+will return <code>true</code>, otherwise <code>false</code>.</p>
+<p>Let's expand the above example with our <code>ErrorWithTime</code> type and see the <code>Is</code>
+function in action:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+	<span style="color:#b84">&#34;fmt&#34;</span>
+	<span style="color:#b84">&#34;io&#34;</span>
+	<span style="color:#b84">&#34;strings&#34;</span>
+	<span style="color:#b84">&#34;time&#34;</span>
+
+	<span style="color:#b84">&#34;golang.org/x/xerrors&#34;</span>
+)
+
+<span style="font-weight:bold">type</span> ErrorWithTime <span style="font-weight:bold">struct</span> {
+	err <span style="color:#458;font-weight:bold">error</span>     <span style="color:#998;font-style:italic">// the wrapped error
+</span><span style="color:#998;font-style:italic"></span>	t   time.Time <span style="color:#998;font-style:italic">// the time when the error happened
+</span><span style="color:#998;font-style:italic"></span>}
+
+<span style="font-weight:bold">func</span> (e <span style="font-weight:bold">*</span>ErrorWithTime) <span style="color:#900;font-weight:bold">Error</span>() <span style="color:#458;font-weight:bold">string</span> {
+	<span style="font-weight:bold">return</span> fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Error: %s, ocurred at: %s\n&#34;</span>, e.err, e.t)
+}
+
+<span style="font-weight:bold">func</span> (e <span style="font-weight:bold">*</span>ErrorWithTime) <span style="color:#900;font-weight:bold">Unwrap</span>() <span style="color:#458;font-weight:bold">error</span> {
+	<span style="font-weight:bold">return</span> e.err
+}
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">readReader</span>(r io.Reader) <span style="color:#458;font-weight:bold">error</span> {
+	buffer <span style="font-weight:bold">:=</span> <span style="color:#999">make</span>([]<span style="color:#458;font-weight:bold">byte</span>, <span style="color:#099">8</span>)
+	<span style="font-weight:bold">for</span> {
+		_, err <span style="font-weight:bold">:=</span> r.<span style="color:#900;font-weight:bold">Read</span>(buffer)
+		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+			<span style="font-weight:bold">return</span> <span style="font-weight:bold">&amp;</span>ErrorWithTime{
+				err: err,
+				t:   time.<span style="color:#900;font-weight:bold">Now</span>(),
+			}
+		}
+	}
+}
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	r <span style="font-weight:bold">:=</span> strings.<span style="color:#900;font-weight:bold">NewReader</span>(<span style="color:#b84">&#34;Hello, Reader!&#34;</span>)
+
+	err <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">readReader</span>(r)
+
+	<span style="font-weight:bold">if</span> xerrors.<span style="color:#900;font-weight:bold">Is</span>(err, io.EOF) {
+		fmt.<span style="color:#900;font-weight:bold">Println</span>(err)
+	}
+}</code></pre></div>
+<p>When run, this will produce:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">$ go run eof.go
+Error: EOF, ocurred at: 2019-04-21 11:32:41.842139 +0200 CEST m=+0.000228985</code></pre></div>
+<p>The <code>readReader</code> function takes a <code>io.Reader</code> as argument and read it until the
+reading returns an error. When it returns the error, it will wrap it in an
+<code>&amp;ErrorWithTime</code> and returned to the caller (<code>main</code>). The caller then uses
+<code>xerrors.Is</code> to check if the error returned is actually a <code>io.EOF</code> under wraps.
+If it is, it will print the error.</p>
+<p>This works because <code>ErrorWithType</code> implements <code>Wrapper</code>. This allows the caller
+to print the error message from the error value, while still being able to
+detect the error under wraps.</p>
+<h2 id="putting-it-in-practice-with-xerrors">Putting it in practice with <code>xerrors</code></h2>
+<p>So you might be wondering, how you can start using the <code>Is</code> and <code>As</code> functions
+in your current Go programs. Well, as you have noticed in the examples we used
+the <code>xerrors</code> package. This was in fact announced by Marcel van Lohuizen at
+dotGo 2019 in Paris - you can check his talk
+<a href="https://www.dotconferences.com/2019/03/marcel-van-lohuizen-go-2-error-values-today">here</a>.
+(If you're curious how the event was in general, I published a report on it
+<a href="/my-first-dotgo-conference">here</a>.)</p>
+<p>The <code>xerrors</code> package is built to support transitioning to the Go 2 proposal
+for error values. Most of the functions and types from <code>xerrors</code> will be
+incorporated into the standard library’s errors package in Go 1.13. The idea is
+that by using this package you can make your Go 1.12 code be compatible with
+1.13 (and later version 2).</p>
+<p>You can read its <a href="https://godoc.org/golang.org/x/xerrors">documentation</a> and
+check out the examples included.</p>
+<p>It is also worth mentioning that replacing equality checks with <code>xerrors.Is</code>
+and type assertions with <code>xerrors.As</code> will not change the meaning of existing
+programs that do not wrap errors and it will future-proof programs against
+wrapping.</p>
+<p>As with any language changes, there will be situations where the new functions
+will not do the trick. For example, sometimes callers want to perform many
+checks against the same error. One such case would be when the caller would
+compare the error value against more than one sentinel value. In such cases we
+can still use Is and As. The drawback is in the way these functions walk
+through the chain of wrapped errors. This means they would walk up the chain
+multiple times, which is wasteful.</p>
+<p>In any case, improving the situation with error inspection in Go is a good step
+forward. I am used to more conventional error handling. Still, I think that
+this is not a step in the wrong direction when it comes to error inspection.
+Also, I recommend reading the
+<a href="https://go.googlesource.com/proposal/+/master/design/go2draft-error-inspection.md#discussion">discussion</a>
+section of the error inspection draft. It lays out some good guidelines on how
+to define and use your error types.</p>
+<p>What is your opinion on the proposal? Do you think it will simplify your life
+as a Go developer? Or do you maybe prefer a different approach? Let me know in
+the comments below!</p>
+
+			</div>
+
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/errors">errors</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>What happens when you DELETE a resource? - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="What happens when you DELETE a resource?" />
+<meta property="og:description" content="Have you ever found yourself publishing an API, either an internal or a public one? Have your ever heard from the consumers of those same APIs back? Are they happy about the functionality of your APIs and their design? You already know, there is no perfect design, but API design has to be taken very seriously. Why? Because evolving and changing APIS is hard and time consuming.
+Imagine you are on a team in a company, that has set off to design a company-wide API guideline and a blueprint." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/what-happens-when-you-delete-a-resource/" />
+<meta property="og:image" content="https://ieftimov.com/cards/when-you-delete-an-api-resource.png" />
+<meta property="article:published_time" content="2016-10-29T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/when-you-delete-an-api-resource.png"/>
+
+<meta name="twitter:title" content="What happens when you DELETE a resource?"/>
+<meta name="twitter:description" content="Have you ever found yourself publishing an API, either an internal or a public one? Have your ever heard from the consumers of those same APIs back? Are they happy about the functionality of your APIs and their design? You already know, there is no perfect design, but API design has to be taken very seriously. Why? Because evolving and changing APIS is hard and time consuming.
+Imagine you are on a team in a company, that has set off to design a company-wide API guideline and a blueprint."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.comcss/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.comjs/main.js"></script><script src="https://ieftimov.comjs/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">29</span>
+							<span class="rest">Oct 2016</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">What happens when you DELETE a resource?</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>Have you ever found yourself publishing an API, either an internal or a public
+one? Have your ever heard from the consumers of those same APIs back? Are they
+happy about the functionality of your APIs and their design? You already know,
+there is no perfect design, but API design has to be taken very seriously. Why?
+Because evolving and  changing APIS is <strong>hard and time consuming</strong>.</p>
+<p>Imagine you are on a team in a company, that has set off to design a
+company-wide API guideline and a blueprint. As you could imagine, a feat like
+this one takes time - first you have to put in a draft, then let it settle like
+a fine French wine, then review it and apply any needed changes. And repeat
+over, until you have a team wide consensus on the design.</p>
+<p>In situations like this, I have found interesting how your API should behave
+when a resource is <code>DELETE</code>d? Of course, aside from the obvious, that the record
+will be deleted.</p>
+<p>Let's look at couple of points that might be a good food for thought in these
+occasions.</p>
+<h2 id="idempotency">Idempotency</h2>
+<p>We have all heard about idempotency and we have heard that all calls to a REST
+API should be idempotent, except the <code>POST</code> requests. But, what does this mean?</p>
+<p><!-- raw HTML omitted -->_Crickets sound on_<!-- raw HTML omitted --></p>
+<p>From Wikipedia:</p>
+<blockquote>
+<p>Idempotence is the property of certain operations in mathematics and computer
+science, that can be applied multiple times without changing the result beyond
+the initial application.</p>
+</blockquote>
+<p><!-- raw HTML omitted -->_Crickets sound off_<!-- raw HTML omitted --></p>
+<p>Simply put, a call to an idempotent endpoint with a given set of parmeters,
+should always have the same effect. For example, if you have a <code>User</code> resource,
+everytime you call <code>PUT /users/1</code> should have the same effect on the resource.
+Also, a <code>GET /users/1</code> is a safe method (or <em>nullipotent</em>), because it does not
+have any effect on the state of the resource.</p>
+<p><strong>But, is DELETE idempotent?</strong> According to the
+<a href="https://tools.ietf.org/html/rfc7231#section-4.2.2">HTTP specification</a> <code>DELETE</code>
+<em>should</em> be idempotent.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">   +---------+------+------------+
+   | Method  | Safe | Idempotent |
+   +---------+------+------------+
+   | CONNECT | no   | no         |
+   | DELETE  | no   | yes        |
+   | GET     | yes  | yes        |
+   | HEAD    | yes  | yes        |
+   | OPTIONS | yes  | yes        |
+   | POST    | no   | no         |
+   | PUT     | no   | yes        |
+   | TRACE   | yes  | yes        |
+   +---------+------+------------+</code></pre></div>
+<p>This means that whenever a <code>DELETE</code> request is sent, the state of the system
+after fulfilling the request will always be the same, although the server might
+implement non-idempotent effects under the hood.</p>
+<p>So, knowing that a <code>DELETE</code> request will always be idempotent, what should a
+response of that request be? Let's start from the basics, the status code.</p>
+<h2 id="http-status-codes">HTTP status codes</h2>
+<p>We usually take HTTP status codes as an ever-present thing slapped onto a HTTP
+request. Especially if you are a beginner, understanding how useful status codes
+are and how much context they can provide for free, can be hard.</p>
+<p>After executing any HTTP request, the HTTP code that will be returned is always
+contextual, which means, it should be based on the effect (and hence the result)
+of the request. Keeping in mind that a <code>DELETE</code> request is idempotent, what
+would be an appropriate status code?</p>
+<p>Let's look at some status codes that make sense as a response for a <code>DELETE</code>
+request:</p>
+<p><a href="https://httpstatuses.com/204">HTTP 204</a> - No content:</p>
+<blockquote>
+<p>The server has successfully fulfilled the request and that there is no
+additional content to send in the response payload body.</p>
+</blockquote>
+<p>HTTP 204 would work - the server has accepted your <code>DELETE</code> request and it has
+fulfilled it. The server will not return a payload in the response, hence
+<code>204 No content</code>.</p>
+<p><a href="https://httpstatuses.com/202">HTTP 202</a> - Accepted:</p>
+<blockquote>
+<p>The request has been accepted for processing, but the processing has not been
+completed. The request might or might not eventually be acted upon, as it
+might be disallowed when processing actually takes place.</p>
+</blockquote>
+<p>You tell the server to destroy the resource that the URI points to, but since
+it's a long procedure (maybe a background job) to delete the resource, it
+returns a <code>HTTP 202 Accepted</code>. This means that the server basically says &ldquo;Cool,
+I understand, I am on it!&quot;. But, it does not mean that the resource is deleted
+as part of the request/response cycle.</p>
+<p><a href="https://httpstatuses.com/200">HTTP 200</a> OK:</p>
+<blockquote>
+<p>The request has succeeded.</p>
+</blockquote>
+<p>The server received your request and responds with <code>200 OK</code> - which means that
+it understood your request and deletes the resource described by the URI.</p>
+<p>You can notice that all of the status codes are closely tied to the response
+that the API call will return. So, let's talk about the HTTP status codes in
+combination with some response payloads.</p>
+<h2 id="sending-a-meaningful-response">Sending a meaningful response</h2>
+<p>You send a <code>DELETE</code> and the server complies. It executes the logic related to
+the endpoint and the HTTP verb and deletes the record that you wanted gone. So,
+how does it respond back?</p>
+<p>First scenario would be - no response body with HTTP 204. Makes sense. But what
+would this actually mean? Well let's say you have a Rails API that returns
+hypermedia controls in the JSON API spec format. When it returns a resource it
+will also return the URIs of the associated resources. When you delete a record,
+it will perish from the database - but if you have a <code>dependent: :destroy</code> in
+your model, it would remove associated records as well. In this occasion, your
+client would not know if anything else got removed in the same request-response
+lifecycle.</p>
+<p>Another option would be a HTTP 200 OK - but as we saw earlier, 200 OK states
+that you must return a body in the response. In the HTTP spec, we can see the
+following:</p>
+<blockquote>
+<p>The 200 (OK) status code indicates that the request has succeeded. The payload
+sent in a 200 response depends on the request method. For the methods defined
+by this specification, the intended meaning of the payload can be summarized as:</p>
+<ul>
+<li>PUT, DELETE  a representation of the status of the action</li>
+</ul>
+</blockquote>
+<p>This means that, according to the HTTP spec the response body has to be a
+representation of the status of the action. In other words, it needs to send
+back the representation of the resource that has been deleted as a result of the
+request. But, if we do that, we will add an additional load on the endpoint,
+because it will need to serialize the deleted resource, and as we all know
+serialization is expensive.</p>
+<p>A third option would be HTTP 204 - Accepted. But as we saw earlier, <code>Accepted</code>
+as a status code is very contextual on the action under the hood. It can only be
+returned if the request has been accepted, but the action has not been put into
+effect yet.</p>
+<p>Whoa, okay, so where now?</p>
+<h2 id="are-we-overthinking-it">Are we overthinking it?</h2>
+<p>Just like in most of the cases where computer science and engineering is
+involved - <strong>it depends</strong>. You could say that it's easy to keep all of this
+simple, but often we have to be careful. After all, we don't want to be lazy and
+oversimplify our APIs.</p>
+<p>Let's take a tiny example - an API for a blog CMS. We will look at a resource,
+namely the <code>/authors</code> resource. This means that, we will have the following
+endpoints available:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">GET /authors        # returns a collection of authors
+GET /authors/:id    # returns an author with the ID of :id
+POST /authors       # create an author
+PUT /authors/:id    # create/update an author
+DELETE /authors/:id # destroy an author</code></pre></div>
+<p>So, we are interested in the behaviour of the last endpoint, <code>DELETE /authors/:id</code>.
+When a request is succesfully fulfilled on this endpoint, the record which was
+identified by the <code>:id</code> param is destroyed. Since the request is idempotent, it
+means that you can freely request to delete a resource multiple times, but the
+effect on the system will be the same - the resource will not be present.</p>
+<p>In most of the cases, the REST APIs that we use are
+<a href="http://ieftimov.com/sprinkle-some-hateoas-on-rails-apis#level-3">level 3</a>.
+This means that usually we have couple of options on how to respond to this
+request, HTTP 204, or HTTP 200, which we already discussed at the begining of
+this article. But, what happens if you are building a
+<a href="http://ieftimov.com/sprinkle-some-hateoas-on-rails-apis#level-4">level 4</a> REST
+API?</p>
+<h2 id="handling-the-state-in-the-client">Handling the state in the client</h2>
+<p>If you have a hypermedia API, things can get a little bit more complex. For those
+of you that don't know what hypermedia APIs, I recommend reading my previous
+article about REST APIs -
+&ldquo;<a href="http://ieftimov.com/sprinkle-some-hateoas-on-rails-apis">Sprinkle some HATEOAS on your Rails APIs</a>&quot;.
+It covers all of Fielding's REST levels and explains them thoroughly. After you
+get a grasp of hypermedia APIs, you can come back to this to more easily
+understand the issue at hand.</p>
+<p>Hypermedia clients usually have to be a little bit smarter, due to the fact that
+the APIs they use are smarter. This means that when we update the state of the
+hypermedia API's system, the client should be aware of the state change. In
+more concrete wording - when we delete a resource, the client must know that the
+resource does not exist anymore on the server side.</p>
+<p>What does that mean for our API? Well, remember the <code>DELETE /authors/:id</code>
+endpoint? If a request to that endpoint returns an <code>HTTP 204</code> (which explicitly
+states that the reponse body is empty), then our clients need to know that the
+nested resources <em>might</em> be deleted because there might bea cascading delete.</p>
+<p>For example, if the <code>DELETE /authors/:id</code> request also removes all of the posts
+that were written by an author, the client might still think that the posts
+are available. This means that the client will allow a request to
+<code>GET /authors/:id/posts/</code>, and the API needs to know to respond with an
+appropriate response and HTTP status. But, will any of the aforementioned
+statuses cut it in this case? You might think that even <code>HTTP 404</code> would do it,
+but is it semantically correct?</p>
+<p>Sure, <code>HTTP 404</code> states that the resource is not found, but in cases like this
+we actually want to inform the consumer that there was something there before,
+but not anymore. This means that the best HTTP status code in these cases is
+<code>HTTP 410</code>:</p>
+<blockquote>
+<p>HTTP 410 GONE
+The target resource is no longer available at the origin server and that this
+condition is likely to be permanent.</p>
+</blockquote>
+<p>HTTP 410 will inform the consumer and the client that there was something there
+before, but not it's gone (hence the status code). This will be semantically much
+more correct, but it will add implementation implications to the API itself. It
+means that the API will have to know that a resource has existed in a certain
+place. This means that records might have to be flagged as deleted, but not
+actually deleted and so on.</p>
+<p>As you can see, the complexity that hypermedia APIs add to the client can be big,
+and both the client and the API have to be very smartly built to allow proper
+usage and leverage of hypermedia.</p>
+<h2 id="in-closing">In closing</h2>
+<p>As we some in our tiny examples, although things can most often look trivial, if
+we want to have semantically correct APIs, we need to be very careful of every
+aspect of our API. HTTP statuses, although oftern perceived as trivial, if
+applied correctly add a lot of power to our APIs and the clients.</p>
+
+			</div>
+
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/http">HTTP</a></li>
+							
+							<li><a href="/tags/apis">APIs</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>

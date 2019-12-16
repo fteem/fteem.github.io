@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Pattern to pattern: Template Method &amp; Strategy - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Pattern to pattern: Template Method &amp; Strategy" />
+<meta property="og:description" content="Recently I wrote about the Template Method pattern and how it&#39;s implemented in Ruby. In the comments, one of the readers commented that the Template Method pattern is in fact the Strategy pattern. After thinking hard about how I should answer the question, I thought about writing a post comparing the two patterns. So, here it is - my version of design patterns head to head. Let&#39;s see what these two patterns have in common and what are their key differences." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/pattern-to-pattern-template-method-strategy/" />
+<meta property="article:published_time" content="2015-04-22T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Pattern to pattern: Template Method &amp; Strategy"/>
+<meta name="twitter:description" content="Recently I wrote about the Template Method pattern and how it&#39;s implemented in Ruby. In the comments, one of the readers commented that the Template Method pattern is in fact the Strategy pattern. After thinking hard about how I should answer the question, I thought about writing a post comparing the two patterns. So, here it is - my version of design patterns head to head. Let&#39;s see what these two patterns have in common and what are their key differences."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.comcss/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.comjs/main.js"></script><script src="https://ieftimov.comjs/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">22</span>
+							<span class="rest">Apr 2015</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Pattern to pattern: Template Method &amp; Strategy</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>Recently I wrote about the
+<a href="/template-method-pattern-in-ruby/">Template Method pattern</a> and how it's
+implemented in Ruby. In the comments, one of the readers commented that the
+Template Method pattern is in fact the Strategy pattern. After thinking hard
+about how I should answer the question, I thought about writing a post
+comparing the two patterns. So, here it is - my version of design patterns head
+to head. Let's see what these two patterns have in common and what are their
+key differences.</p>
+<h3 id="template-method-pattern">Template Method pattern</h3>
+<p>The most important thing to remember about this pattern is: boilerplate code
+goes in the parent class while the algorithm-specific methods are implemented
+(usually overridden) in the child classes. This means, that all of the child
+classes will share the functionality of the parent class (inheritance, duh!),
+but the parent class will only be a skeletal class, i.e. one cannot create
+objects out of it. On the other hand, the child classes will only override the
+methods that are specific to their domain. You can read more about this in
+<a href="/template-method-pattern-in-ruby/">my recent article on Template Method pattern</a>.</p>
+<h3 id="strategy-pattern">Strategy Pattern</h3>
+<p>In it's core the Strategy Pattern (or SP) is about encapsulating logic into
+objects, making them <strong>interchangeable</strong> and using those objects as part of an
+algorithm. This means that an algorithm (context) can have it's behaviour
+changed <strong>in runtime</strong> by an object (strategy).</p>
+<h4 id="implementing-the-strategy-pattern">Implementing the Strategy pattern</h4>
+<p>Let's see a short example of how we can use the Strategy pattern. Let's create
+a simple <em>Invoice</em> class.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">Invoice</span>
+  <span style="font-weight:bold">attr_accessor</span> <span style="color:#b84">:formatter</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">initialize</span> amount, buyer, seller
+    @amount <span style="font-weight:bold">=</span> amount
+    @buyer <span style="font-weight:bold">=</span> buyer
+    @seller <span style="font-weight:bold">=</span> seller
+    @formatter <span style="font-weight:bold">=</span> <span style="color:#008080">JSONFormatter</span><span style="font-weight:bold">.</span>new
+  <span style="font-weight:bold">end</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">generate</span>
+    @formatter<span style="font-weight:bold">.</span>format! @amount, @buyer, @seller
+  <span style="font-weight:bold">end</span>
+
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>As you can see, the Invoice is consisted of an amount, the name of the buyer
+and the name of the seller.  In it's constructor, a formatter of the Invoice is
+created. The formatter is an object of a class that has a method <strong>format!</strong>
+which takes the buyer, seller and amount as params. When the method is called,
+it will create the invoice in it's specific format. One very important aspect
+of the strategy classes is that the <strong>context class expects the strategy
+classes to implement</strong>, in our example,** a format! method**. For example, in
+Java this is achieved by using interfaces, which force a class to implement
+certain methods. But because Ruby is a dynamic language, there's no such thing
+as an interface and we must think about this aspect in advance. That being
+said, lets take a look at the formatter classes - they're all pretty simple.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">JSONFormatter</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">format!</span> amount, buyer_name, seller_name
+    <span style="color:#b84">%Q{</span><span style="color:#b84">
+</span><span style="color:#b84">      </span><span style="color:#b84">{</span><span style="color:#b84">
+</span><span style="color:#b84">        &#34;buyer&#34; =&gt; &#34;</span><span style="color:#b84">#{</span>buyer_name<span style="color:#b84">}</span><span style="color:#b84">&#34;,
+</span><span style="color:#b84">        &#34;seller&#34; =&gt; &#34;</span><span style="color:#b84">#{</span>seller_name<span style="color:#b84">}</span><span style="color:#b84">&#34;,
+</span><span style="color:#b84">        &#34;amount&#34; =&gt; &#34;</span><span style="color:#b84">#{</span>amount<span style="color:#b84">}</span><span style="color:#b84">&#34;
+</span><span style="color:#b84">      </span><span style="color:#b84">}</span><span style="color:#b84">
+</span><span style="color:#b84">    </span><span style="color:#b84">}</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>The <em>JSONFormatter</em> creates the invoice in JSON format. As a side note, I am
+using the percentage string notation because it's a bit more readable this way.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">XMLFormatter</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">format!</span> amount, buyer_name, seller_name
+    <span style="color:#b84">%Q{</span><span style="color:#b84">
+</span><span style="color:#b84">     &lt;invoice&gt;
+</span><span style="color:#b84">       &lt;buyer&gt;</span><span style="color:#b84">#{</span>buyer_name<span style="color:#b84">}</span><span style="color:#b84">&lt;/buyer&gt;
+</span><span style="color:#b84">       &lt;seller&gt;</span><span style="color:#b84">#{</span>seller_name<span style="color:#b84">}</span><span style="color:#b84">&lt;/seller&gt;
+</span><span style="color:#b84">       &lt;amount&gt;</span><span style="color:#b84">#{</span>amount<span style="color:#b84">}</span><span style="color:#b84">&lt;/amount&gt;
+</span><span style="color:#b84">     &lt;/invoice&gt;
+</span><span style="color:#b84">   </span><span style="color:#b84">}</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>The <em>XMLFormatter</em> creates the invoice in XML format.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">YAMLFormatter</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">format!</span> amount, buyer_name, seller_name
+    <span style="color:#b84">%Q{</span><span style="color:#b84">
+</span><span style="color:#b84">      ---
+</span><span style="color:#b84">      invoice:
+</span><span style="color:#b84">        buyer: </span><span style="color:#b84">#{</span>buyer_name<span style="color:#b84">}</span><span style="color:#b84">
+</span><span style="color:#b84">        seller: </span><span style="color:#b84">#{</span>seller_name<span style="color:#b84">}</span><span style="color:#b84">
+</span><span style="color:#b84">        amount: </span><span style="color:#b84">#{</span>amount<span style="color:#b84">}</span><span style="color:#b84">
+</span><span style="color:#b84">    </span><span style="color:#b84">}</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>And, last but not least, <em>YAMLFormatter</em> creates the invoice in YAML format.
+The beauty of the Strategy Pattern lies in the context (the <em>Invoice</em>) and the
+strategies (the formatters). You see, when we first create the <em>Invoice</em>, we
+can use it to print out a JSON formatted invoice. And it's cool. But the cooler
+thing is that you can <strong>change how the <em>Invoice</em> will behave in runtime</strong>,
+meaning, you can <strong>change the formatter object and the behaviour of the invoice
+will change</strong>. Or, said in a more abstract way, <strong>the context's behaviour can
+change with every different strategy you apply to the context</strong>. So, how this
+applies to our code?</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">invoice <span style="font-weight:bold">=</span> <span style="color:#008080">Invoice</span><span style="font-weight:bold">.</span>new <span style="color:#099">100</span><span style="font-weight:bold"></span>, <span style="color:#b84">&#34;</span><span style="color:#b84">John</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">Jane</span><span style="color:#b84">&#34;</span>
+<span style="color:#999">puts</span> invoice<span style="font-weight:bold">.</span>generate</code></pre></div>
+<p>The first time we generate the Invoice, we use the JSONFormatter and of course
+we get an invoice back in a JSON format.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#000080">&#34;buyer&#34;</span> <span style="color:#a61717;background-color:#e3d2d2">=</span><span style="color:#a61717;background-color:#e3d2d2">&gt;</span> <span style="color:#b84">&#34;John&#34;</span>,
+  <span style="color:#000080">&#34;cashier&#34;</span> <span style="color:#a61717;background-color:#e3d2d2">=</span><span style="color:#a61717;background-color:#e3d2d2">&gt;</span> <span style="color:#b84">&#34;Jane&#34;</span>,
+  <span style="color:#000080">&#34;amount&#34;</span> <span style="color:#a61717;background-color:#e3d2d2">=</span><span style="color:#a61717;background-color:#e3d2d2">&gt;</span> <span style="color:#b84">&#34;100&#34;</span>
+}</code></pre></div>
+<p>Now, if we <strong>change the formatter to that same Invoice object</strong>&hellip;</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">invoice<span style="font-weight:bold">.</span>formatter <span style="font-weight:bold">=</span> <span style="color:#008080">XMLFormatter</span><span style="font-weight:bold">.</span>new
+<span style="color:#999">puts</span> invoice<span style="font-weight:bold">.</span>generate</code></pre></div>
+<p>&hellip;we will get the same invoice, formatted in XML.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#000080">&lt;invoice</span><span style="color:#000080">&gt;</span>
+  <span style="color:#000080">&lt;buyer</span><span style="color:#000080">&gt;</span>John<span style="color:#000080">&lt;/buyer&gt;</span>
+  <span style="color:#000080">&lt;cashier</span><span style="color:#000080">&gt;</span>Jane<span style="color:#000080">&lt;/cashier&gt;</span>
+  <span style="color:#000080">&lt;amount</span><span style="color:#000080">&gt;</span>100<span style="color:#000080">&lt;/amount&gt;</span>
+<span style="color:#000080">&lt;/invoice&gt;</span></code></pre></div>
+<p>You see, our formatters change the behaviour of our <em>Invoice</em>.</p>
+<h3 id="strategy-and-template-method">Strategy and Template Method</h3>
+<p>So what are the similarities and what are the key differences in these two
+design patterns? Well, it might be obvious to some of you, confusing to others
+(as it was for me at the beginning). Both patterns are about encapsulating
+domain-specific algorithms into objects. But, the key difference is that
+Strategy Pattern is about modifying a behaviour of a context in runtime using
+strategies, while Template Method Pattern is about following a skeleton
+implementation of an algorithm and modifying its behaviour by overriding
+methods of the skeleton class in the subclasses.</p>
+
+			</div>
+
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/template-method">template method</a></li>
+							
+							<li><a href="/tags/strategy">strategy</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>

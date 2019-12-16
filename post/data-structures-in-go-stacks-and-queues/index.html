@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Data structures in Go: Stacks and queues - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Data structures in Go: Stacks and queues" />
+<meta property="og:description" content="In a previous post, we took a look at linked lists and how we can apply them in a hypothetical use-case. In this post, we will look at two similar but powerful data structures.
+Modelling actions and history Think about Excel or Google docs. You know, the most ubiquitous applications for composing documents that humanity has invented. We&#39;ve all used them in some capacity. As you might know, these apps come with various actions one can apply to a text." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/data-structures-in-go-stacks-and-queues/" />
+<meta property="og:image" content="https://ieftimov.com/cards/golang-datastructures-stacks-queues.png" />
+<meta property="article:published_time" content="2018-02-24T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/golang-datastructures-stacks-queues.png"/>
+
+<meta name="twitter:title" content="Data structures in Go: Stacks and queues"/>
+<meta name="twitter:description" content="In a previous post, we took a look at linked lists and how we can apply them in a hypothetical use-case. In this post, we will look at two similar but powerful data structures.
+Modelling actions and history Think about Excel or Google docs. You know, the most ubiquitous applications for composing documents that humanity has invented. We&#39;ve all used them in some capacity. As you might know, these apps come with various actions one can apply to a text."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.comcss/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.comjs/main.js"></script><script src="https://ieftimov.comjs/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">24</span>
+							<span class="rest">Feb 2018</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Data structures in Go: Stacks and queues</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p><img src="/golang-datastructures-stacks-queues/queue.png" alt=""></p>
+<p>In a <a href="/golang-datastructures-linked-lists">previous post</a>, we took a look at
+linked lists and how we can apply them in a hypothetical use-case. In this post,
+we will look at two similar but powerful data structures.</p>
+<h2 id="modelling-actions-and-history">Modelling actions and history</h2>
+<p>Think about Excel or Google docs. You know, the most ubiquitous applications
+for composing documents that humanity has invented. We've all used them in some
+capacity. As you might know, these apps come with various actions one can
+apply to a text. Like adding colour to the text, underline, various fonts and
+sizes or organising the content in tables. The list is long, but there's one
+ubiquitous functionality that we expect from these tools - the ability to
+&ldquo;Undo&rdquo; and &ldquo;Redo&rdquo; the actions we have applied.</p>
+<p>Have you ever considered how you would program such functionality if given the
+opportunity? Let's explore a data structure that can help us with such a task.</p>
+<p><img src="https://i.imgur.com/Y9Jbm5A.png" alt=""></p>
+<p>Let’s try to think how we would model the actions each of these applications
+have. Also, later on, we will see how we can keep the history of the actions
+and &ldquo;Undo&rdquo; them.</p>
+<p>A simple <code>Action</code> <code>struct</code> would look something like:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> Action <span style="font-weight:bold">struct</span> {
+	name <span style="color:#458;font-weight:bold">string</span>
+	metadata Meta
+	<span style="color:#998;font-style:italic">// Probably some other data here...
+</span><span style="color:#998;font-style:italic"></span>}</code></pre></div>
+<p>We will store only the name at the moment, while the real-deal would have much
+more options compared to our example. So now, when the user of the editor
+applies a function to a bunch of text, we want to store that action in some
+sort of a collection so we can &ldquo;Undo&rdquo; it later.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> ActionHistory <span style="font-weight:bold">struct</span> {
+  top <span style="font-weight:bold">*</span>Action
+  size <span style="color:#458;font-weight:bold">int</span>
+}</code></pre></div>
+<p>Looking at this <code>ActionHistory</code> data structure, we store a pointer to the
+<code>Action</code> at the top of the stack and the size of the stack. Once an action is
+applied, we will link it to the <code>top</code> item. So, when applying an action to the
+document, this is what could go under the hood.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (history <span style="font-weight:bold">*</span>ActionHistory) <span style="color:#900;font-weight:bold">Apply</span>(newAction <span style="font-weight:bold">*</span>Action) {
+	<span style="font-weight:bold">if</span> history.top <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		oldTop <span style="font-weight:bold">:=</span> history.top
+		newAction.next = oldTop
+	}
+	history.top = newAction
+	history.size<span style="font-weight:bold">++</span>
+}</code></pre></div>
+<p>An <code>Add</code> function would add the latest <code>Action</code> to the top of the
+<code>ActionHistory</code>. If the history struct has an action present at the top, it
+would push it down the history by linking it to the new action. Otherwise, it
+will attach the new action to the top of the list. Now, if you know about
+linked lists (or read <a href="https://ieftimov.com/golang-datastructures-linked-lists">my last post about linked lists in
+Go</a>) you might see the
+resemblance here. So far, what we use here is essentially a linked list, none
+the less.</p>
+<p>What about undoing an action? This is what an <code>Undo</code> function would look like:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (history <span style="font-weight:bold">*</span>ActionHistory) <span style="color:#900;font-weight:bold">Undo</span>() <span style="font-weight:bold">*</span>Action {
+	topAction <span style="font-weight:bold">:=</span> history.top
+	<span style="font-weight:bold">if</span> topAction <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		history.top = topAction.next
+	} <span style="font-weight:bold">else</span> <span style="font-weight:bold">if</span> topAction.next <span style="font-weight:bold">==</span> <span style="font-weight:bold">nil</span> {
+		history.top = <span style="font-weight:bold">nil</span>
+	}
+	historyAction.size<span style="font-weight:bold">--</span>
+	<span style="font-weight:bold">return</span> topAction
+}</code></pre></div>
+<p>If you are paying close attention you can notice that this is a bit different
+than just removing a node from a linked list. Due to the nature of an
+<code>ActionHistory</code>, we want the <strong>last</strong> applied action to be the one that
+will be <code>Undo</code>ed <strong>first</strong>. Which makes sense, right?</p>
+<p>This is the default behaviour of a stack. A stack is a data structure where you
+can only insert or delete items at the top of the stack. Think of it like a
+stack of papers, or stack of plates in your kitchen drawer.  If you want to
+take the bottom plate from a stack you are going to have a hard time. But
+taking the one at the top is plain simple. Stacks are also considered LIFO
+structures - meaning Last In First Out, because of the behaviour we explained
+above.</p>
+<p>That is basically what our <code>Undo</code> function does. If the stack (a.k.a.
+<code>ActionHistory</code>) has more than one <code>Action</code> in it, it will set the top link for
+the second item. Otherwise, it will empty up the <code>ActionHistory</code> by setting the
+<code>top</code> element to <code>nil</code>.</p>
+<p>From a big-O perspective, searching through a stack has <code>O(n)</code> complexity,
+but insertion and deletion from a stack are super quick - <code>O(1)</code>. This is
+because traversing the whole stack, in worst case scenario, will still take
+going all <code>n</code> items in it, while inserting and removing items is constant time
+because we always insert and remove from the top of the stack.</p>
+<p>You can play with the working version of this code
+<a href="https://play.golang.org/p/Eu8_-HTDBY_A">here</a>.</p>
+<p><img src="/golang-datastructures-stacks-queues/subway.png" alt=""></p>
+<h2 id="luggage-control">Luggage control</h2>
+<p>Most of us have travelled by plane and know all of the security checks that a
+person has to go through to get on the plane. Sure, it’s for own our safety but
+sometimes it’s unnecessarily stressful to get through all of the scans, checks
+and tests.</p>
+<p>One of the usual sights at airports security checkpoints are the long queues of
+people and luggage being put on the strip of the X-ray machines while people
+walk through metal detector gates. Probably there’s more to it that we even
+don’t know about it, but let’s focus on the X-ray machines that scan our bags.</p>
+<p>Have you thought how would you model the interactions that happen on that
+machine? Of course, at least the visible ones. Let’s explore this idea for a
+moment. We would have to somehow represent the luggage on the strip as a
+collection of items, and the x-ray machine that scans the luggage one piece at
+a time.</p>
+<p>The <code>Luggage</code> would be simple, for now:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> Luggage <span style="font-weight:bold">struct</span> {
+	weight <span style="color:#458;font-weight:bold">int</span>
+	passenger <span style="color:#458;font-weight:bold">string</span>
+}</code></pre></div>
+<p>We can also add a simple constructor function for the <code>Luggage</code> type as well:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">NewLuggage</span>(weight <span style="color:#458;font-weight:bold">int</span>, passenger <span style="color:#458;font-weight:bold">string</span>) <span style="font-weight:bold">*</span>Luggage {
+	l <span style="font-weight:bold">:=</span> Luggage{
+		weight:    weight,
+		passenger: passenger, <span style="color:#998;font-style:italic">// just as an identifier
+</span><span style="color:#998;font-style:italic"></span>	}
+	<span style="font-weight:bold">return</span> <span style="font-weight:bold">&amp;</span>l
+}</code></pre></div>
+<p>Then, we can create a <code>Belt</code> where the <code>Luggage</code> is put on and taken to the
+x-ray scanner:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> Belt []<span style="font-weight:bold">*</span>Luggage</code></pre></div>
+<p>Not what you were expecting? Well, what we create is a <code>Belt</code> type that is
+actually a slice of <code>Luggage</code> pointers. Which is what exactly the machine belt
+is - just a collection of bags that get scanned one by one.</p>
+<p>So now we need to add a function that knows how to add <code>Luggage</code> to the <code>Belt</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (belt <span style="font-weight:bold">*</span>Belt) <span style="color:#900;font-weight:bold">Add</span>(newLuggage <span style="font-weight:bold">*</span>Luggage) {
+	<span style="font-weight:bold">*</span>belt = <span style="color:#999">append</span>(<span style="font-weight:bold">*</span>belt, newLuggage)
+}</code></pre></div>
+<p>Since <code>Belt</code> is actually a slice, we can use the built-in <code>append</code> function
+which will add the <code>newLuggage</code> to the <code>Belt</code>.  The cool part about this
+implementation the time complexity - because we use <code>append</code>, which is a
+built-in method, we get an <strong>amortised</strong> <code>O(1)</code> for insertion. Of course, this
+comes at space cost, due to <a href="https://blog.golang.org/go-slices-usage-and-internals">the way slices in Go
+work</a>.</p>
+<p>As the <code>Belt</code> moves and takes <code>Luggage</code> to the x-ray machine, we will need to
+somehow take this luggage off and load it into the machine for inspection. But
+because of the nature of the <code>Belt</code>, the first item that’s put on it is the
+first item to be scanned. And the last one that is added will be the last one
+to be scanned. So, we can say that the <code>Belt</code> is a FIFO (First in, first out)
+data structure.</p>
+<p>This is what the function <code>Take</code>  would look like, keeping in mind the details
+above:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (belt <span style="font-weight:bold">*</span>Belt) <span style="color:#900;font-weight:bold">Take</span>() <span style="font-weight:bold">*</span>Luggage {
+	first, rest <span style="font-weight:bold">:=</span> (<span style="font-weight:bold">*</span>belt)[<span style="color:#099">0</span>], (<span style="font-weight:bold">*</span>belt)[<span style="color:#099">1</span>:]
+	<span style="font-weight:bold">*</span>belt = rest
+	<span style="font-weight:bold">return</span> first
+}</code></pre></div>
+<p>It will take the first item and return it, and it will assign everything else
+in the collection to the beginning of it,  so the second item becomes first and
+so on. If you were wondering, this has a <code>O(1)</code> time complexity since it always
+takes the first item from the queue.</p>
+<p>Using our new types and functions can be done as such:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	belt <span style="font-weight:bold">:=</span> <span style="font-weight:bold">&amp;</span>Belt{}
+	belt.<span style="color:#900;font-weight:bold">Add</span>(<span style="color:#900;font-weight:bold">NewLuggage</span>(<span style="color:#099">3</span>, <span style="color:#b84">&#34;Elmer Fudd&#34;</span>))
+	belt.<span style="color:#900;font-weight:bold">Add</span>(<span style="color:#900;font-weight:bold">NewLuggage</span>(<span style="color:#099">5</span>, <span style="color:#b84">&#34;Sylvester&#34;</span>))
+	belt.<span style="color:#900;font-weight:bold">Add</span>(<span style="color:#900;font-weight:bold">NewLuggage</span>(<span style="color:#099">2</span>, <span style="color:#b84">&#34;Yosemite Sam&#34;</span>))
+	belt.<span style="color:#900;font-weight:bold">Add</span>(<span style="color:#900;font-weight:bold">NewLuggage</span>(<span style="color:#099">10</span>, <span style="color:#b84">&#34;Daffy Duck&#34;</span>))
+	belt.<span style="color:#900;font-weight:bold">Add</span>(<span style="color:#900;font-weight:bold">NewLuggage</span>(<span style="color:#099">1</span>, <span style="color:#b84">&#34;Bugs Bunny&#34;</span>))
+
+	fmt.<span style="color:#900;font-weight:bold">Println</span>(<span style="color:#b84">&#34;Belt:&#34;</span>, belt, <span style="color:#b84">&#34;Length:&#34;</span>, <span style="color:#999">len</span>(<span style="font-weight:bold">*</span>belt))
+	first <span style="font-weight:bold">:=</span> belt.<span style="color:#900;font-weight:bold">Take</span>()
+	fmt.<span style="color:#900;font-weight:bold">Println</span>(<span style="color:#b84">&#34;First luggage:&#34;</span>, first)
+	fmt.<span style="color:#900;font-weight:bold">Println</span>(<span style="color:#b84">&#34;Belt:&#34;</span>, belt, <span style="color:#b84">&#34;Length:&#34;</span>, <span style="color:#999">len</span>(<span style="font-weight:bold">*</span>belt))
+}</code></pre></div>
+<p>The output of the <code>main</code> function will be something like:
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Belt: &amp;[0x1040a0c0 0x1040a0d0 0x1040a0e0 0x1040a100 0x1040a110] Length: 5
+First luggage: &amp;{3 Elmer Fudd}
+Belt: &amp;[0x1040a0d0 0x1040a0e0 0x1040a100 0x1040a110] Length: 4</code></pre></div></p>
+<p>Basically what happens is we add five different <code>Luggage</code> structs on the <code>Belt</code>
+and we take the first one off, which is the one printed on the second line of
+the output.</p>
+<p>You can play with the code from this example
+<a href="https://play.golang.org/p/DTFUkWeZ4H8">here</a>.</p>
+<p><img src="/golang-datastructures-stacks-queues/businesswoman.png" alt=""></p>
+<h3 id="what-about-first-class-passengers">What about first-class passengers?</h3>
+<p>Yeah, what about them? I mean, they’ve paid so much money for their ticket that
+it just doesn’t make sense for them to wait in queues as the economy ticket
+holders. So, how can we prioritise these passengers? What if their luggage has
+some sort of priority, where the higher the priority is the faster they get
+through the queue?</p>
+<p>Let’s modify our <code>Luggage</code> struct to enable this:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> Luggage <span style="font-weight:bold">struct</span> {
+	weight    <span style="color:#458;font-weight:bold">int</span>
+	priority  <span style="color:#458;font-weight:bold">int</span>
+	passenger <span style="color:#458;font-weight:bold">string</span>
+}</code></pre></div>
+<p>Also, all <code>Luggage</code> created in the <code>NewLuggage</code> function will have to take the
+<code>priority</code> level as an argument:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">NewLuggage</span>(weight <span style="color:#458;font-weight:bold">int</span>, priority <span style="color:#458;font-weight:bold">int</span>, passenger <span style="color:#458;font-weight:bold">string</span>) <span style="font-weight:bold">*</span>Luggage {
+	l <span style="font-weight:bold">:=</span> Luggage{
+		weight:    weight,
+		priority:  priority,
+		passenger: passenger,
+	}
+	<span style="font-weight:bold">return</span> <span style="font-weight:bold">&amp;</span>l
+}</code></pre></div>
+<p>Let’s think this through again. Basically, when a new <code>Luggage</code> is put on the
+<code>Belt</code>, we need to detect it’s <code>priority</code> and put it as close to the beginning
+of the <code>Belt</code> as possible based on the detected <code>priority</code>.</p>
+<p>Let’s modify our <code>Add</code> function:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (belt <span style="font-weight:bold">*</span>Belt) <span style="color:#900;font-weight:bold">Add</span>(newLuggage <span style="font-weight:bold">*</span>Luggage) {
+	<span style="font-weight:bold">if</span> <span style="color:#999">len</span>(<span style="font-weight:bold">*</span>belt) <span style="font-weight:bold">==</span> <span style="color:#099">0</span> {
+		<span style="font-weight:bold">*</span>belt = <span style="color:#999">append</span>(<span style="font-weight:bold">*</span>belt, newLuggage)
+	} <span style="font-weight:bold">else</span> {
+		added <span style="font-weight:bold">:=</span> <span style="font-weight:bold">false</span>
+		<span style="font-weight:bold">for</span> i, placedLuggage <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> <span style="font-weight:bold">*</span>belt {
+			<span style="font-weight:bold">if</span> newLuggage.priority &gt; placedLuggage.priority {
+				<span style="font-weight:bold">*</span>belt = <span style="color:#999">append</span>((<span style="font-weight:bold">*</span>belt)[:i], <span style="color:#999">append</span>(Belt{newLuggage}, (<span style="font-weight:bold">*</span>belt)[i:]<span style="font-weight:bold">...</span>)<span style="font-weight:bold">...</span>)
+				added = <span style="font-weight:bold">true</span>
+				<span style="font-weight:bold">break</span>
+			}
+		}
+		<span style="font-weight:bold">if</span> !added {
+			<span style="font-weight:bold">*</span>belt = <span style="color:#999">append</span>(<span style="font-weight:bold">*</span>belt, newLuggage)
+		}
+	}
+}</code></pre></div>
+<p>Compared to the previous implementation, this is rather complicated. There are
+a couple of things going on here and the first case is quite simple. If the
+belt is empty,  we just put the new luggage on the belt and we are done. The
+<code>Belt</code> will have only one item on it and that one will be the first that can be
+taken off of it.</p>
+<p>The second case, when there’s more than one item on the <code>Belt</code>, loops through
+all of the luggage on the <code>Belt</code> and compares their <code>priority</code> with the new one
+coming on. Then it finds a <code>Luggage</code> that has a smaller priority it bypasses it
+and puts the new luggage in front of it. This means, the higher the <code>priority</code>
+the <code>Luggage</code> has the further to the beginning of the <code>Belt</code> it will be placed.</p>
+<p>Of course, if the loop doesn’t find such a <code>Luggage</code> it will just append it to
+the end of the <code>Belt</code>. Our new <code>Add</code> function has a time complexity of <code>O(n)</code>
+because in worst case scenario it will have to traverse the whole slice before
+it inserts the new <code>Luggage</code> struct. Inherently, searching and accessing any
+item in our queue will cost us the same - <code>O(n)</code>.</p>
+<p>To demonstrate the new <code>Add</code> functionality, we can run the following code:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	belt <span style="font-weight:bold">:=</span> <span style="color:#999">make</span>(Belt, <span style="color:#099">0</span>)
+	belt.<span style="color:#900;font-weight:bold">Add</span>(<span style="color:#900;font-weight:bold">NewLuggage</span>(<span style="color:#099">3</span>, <span style="color:#099">1</span>, <span style="color:#b84">&#34;Elmer Fudd&#34;</span>))
+	belt.<span style="color:#900;font-weight:bold">Add</span>(<span style="color:#900;font-weight:bold">NewLuggage</span>(<span style="color:#099">3</span>, <span style="color:#099">1</span>, <span style="color:#b84">&#34;Sylvester&#34;</span>))
+	belt.<span style="color:#900;font-weight:bold">Add</span>(<span style="color:#900;font-weight:bold">NewLuggage</span>(<span style="color:#099">3</span>, <span style="color:#099">1</span>, <span style="color:#b84">&#34;Yosemite Sam&#34;</span>))
+	belt.<span style="color:#900;font-weight:bold">Inspect</span>()
+
+	belt.<span style="color:#900;font-weight:bold">Add</span>(<span style="color:#900;font-weight:bold">NewLuggage</span>(<span style="color:#099">3</span>, <span style="color:#099">2</span>, <span style="color:#b84">&#34;Daffy Duck&#34;</span>))
+	belt.<span style="color:#900;font-weight:bold">Inspect</span>()
+
+	belt.<span style="color:#900;font-weight:bold">Add</span>(<span style="color:#900;font-weight:bold">NewLuggage</span>(<span style="color:#099">3</span>, <span style="color:#099">3</span>, <span style="color:#b84">&#34;Bugs Bunny&#34;</span>))
+	belt.<span style="color:#900;font-weight:bold">Inspect</span>()
+
+	belt.<span style="color:#900;font-weight:bold">Add</span>(<span style="color:#900;font-weight:bold">NewLuggage</span>(<span style="color:#099">100</span>, <span style="color:#099">2</span>, <span style="color:#b84">&#34;Wile E. Coyote&#34;</span>))
+	belt.<span style="color:#900;font-weight:bold">Inspect</span>()
+}</code></pre></div>
+<p>First, it will create a <code>Belt</code> with three <code>Luggage</code> structs on it, each of them
+with a priority of <code>1</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">0. &amp;{3 1 Elmer Fudd}
+1. &amp;{3 1 Sylvester}
+2. &amp;{3 1 Yosemite Sam}
+</code></pre></div><p>Then, it will add a new <code>Luggage</code> with a priority of <code>2</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">0. &amp;{3 2 Daffy Duck}
+1. &amp;{3 1 Elmer Fudd}
+2. &amp;{3 1 Sylvester}
+3. &amp;{3 1 Yosemite Sam}</code></pre></div>
+<p>You see, the new luggage with the highest priority got promoted to the first
+place in the <code>Belt</code>. Next, we add a new one with even higher priority (<code>3</code>):</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">0. &amp;{3 3 Bugs Bunny}
+1. &amp;{3 2 Daffy Duck}
+2. &amp;{3 1 Elmer Fudd}
+3. &amp;{3 1 Sylvester}
+4. &amp;{3 1 Yosemite Sam}</code></pre></div>
+<p>As expected, the one with the highest priority was put on the first spot in the
+<code>Belt</code>. Lastly, we add another <code>Luggage</code>, this time with priority <code>2</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">0. &amp;{3 3 Bugs Bunny}
+1. &amp;{3 2 Daffy Duck}
+2. &amp;{100 2 Wile E. Coyote}
+3. &amp;{3 1 Elmer Fudd}
+4. &amp;{3 1 Sylvester}
+5. &amp;{3 1 Yosemite Sam}</code></pre></div>
+<p>The new <code>Luggage</code> was added right after the <code>Luggage</code> with the same priority as
+the new one and of course, not at the beginning of the <code>Belt</code>. Basically, our
+<code>Belt</code> gets implicitly sorted by the priority as we add new <code>Luggage</code> to it.</p>
+<p>If you are knowledgeable about queues you might think that these are not the
+most performant ways of implementing priority queues and you are quite right.
+Implementing priority queues can be done more performant using heaps, that
+we’ll take a look at in another post.</p>
+<p>There’s more interesting knowledge around priority queues that we can explore.
+Until then you can take a look at priority queues’ <a href="https://en.wikipedia.org/wiki/Priority_queue">Wiki
+page</a>. If you are knowledgeable
+about queues you might think that these are not the most performant ways of
+implementing priority queues and you are quite right.  Implementing priority
+queues can be done more performant using heaps, that we’ll take a look at in
+another post.), especially the “Implementation” section.</p>
+<p>You can see and play with the code from this example
+<a href="https://play.golang.org/p/Eu8_-HTDBY_A">here</a>.</p>
+<h2 id="closing-thoughts">Closing thoughts</h2>
+<p>In this post, we took a look at what stacks and queues are and we tried to mimic
+some interesting real-world application to them. I strongly believe that when
+we learn a topic (especially in computer science) it’s much better to do it
+through examples and application to a problem and I hope I managed to do
+exactly that.</p>
+<p>In further posts we will look at some more priority queues (using heaps), but
+before we get there we will take a look at some a bit simpler data structures.</p>
+<!-- raw HTML omitted -->
+
+
+
+
+
+
+
+<div id="mc_embed_signup">
+<form action="https://pm.us20.list-manage.com/subscribe/post?u=d9a6471309140dcd520d05346&amp;id=2aac491644" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+    <div id="mc_embed_signup_scroll">
+        <div class="heading">Join The Newsletter</div>
+        <p>
+            I write about backend technologies, programming and cloud architectures. Join hundreds of other developers that get my content, twice a month. Unsubscribe whenever. Never spam.
+        </p>
+	<input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Your email address" required>
+        <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
+
+      
+      <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_d9a6471309140dcd520d05346_2aac491644" tabindex="-1" value=""></div>
+
+    <p>You can also subscribe <a href="/index.xml">via RSS</a>.</p>
+    </div>
+</form>
+</div>
+
+
+
+			</div>
+
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/queues">queues</a></li>
+							
+							<li><a href="/tags/priority-queues">priority queues</a></li>
+							
+							<li><a href="/tags/stacks">stacks</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>

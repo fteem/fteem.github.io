@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Variable hoisting in Ruby - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Variable hoisting in Ruby" />
+<meta property="og:description" content="Have you ever heard of hoisting? Well, regardless if you have or you have not, Ruby has an interesting hositing mechanism built-in. Let&#39;s take a dive and see how it creates variables and do some experiments with it.
+Hoisting What is hoisting? Well, according to Google &ldquo;hoist&rdquo; means to raise something. Apparently, with with ropes and pulleys. At least, back in the day.
+Well, when it comes to variable hoisting, it&#39;s basically a mechanism by which the language, in our context - Ruby, declares and defines variables." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/variable-hoisting-in-ruby/" />
+<meta property="article:published_time" content="2015-08-21T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Variable hoisting in Ruby"/>
+<meta name="twitter:description" content="Have you ever heard of hoisting? Well, regardless if you have or you have not, Ruby has an interesting hositing mechanism built-in. Let&#39;s take a dive and see how it creates variables and do some experiments with it.
+Hoisting What is hoisting? Well, according to Google &ldquo;hoist&rdquo; means to raise something. Apparently, with with ropes and pulleys. At least, back in the day.
+Well, when it comes to variable hoisting, it&#39;s basically a mechanism by which the language, in our context - Ruby, declares and defines variables."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.comcss/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.comjs/main.js"></script><script src="https://ieftimov.comjs/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">21</span>
+							<span class="rest">Aug 2015</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Variable hoisting in Ruby</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>Have you ever heard of hoisting? Well, regardless if you have or you have not,
+Ruby has an interesting hositing mechanism built-in. Let's take a dive and see
+how it creates variables and do some experiments with it.</p>
+<h2 id="hoisting">Hoisting</h2>
+<p>What is hoisting? Well, according to Google &ldquo;hoist&rdquo; means to raise something. Apparently,
+with with ropes and pulleys. At least, back in the day.</p>
+<p><img src="http://i.imgur.com/9fXszXs.jpg" alt=""></p>
+<p>Well, when it comes to variable hoisting, it's basically a mechanism by which the
+language, in our context - Ruby, declares and defines variables. Okay, that sounds
+cool. Well, there are couple of quirks in Ruby that you should be aware of.</p>
+<h2 id="bit-of-weirdness">Bit of weirdness</h2>
+<p>Take this code for example, and run it in console:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#998;font-style:italic"># weird_1.rb</span>
+<span style="color:#999">puts</span> x</code></pre></div>
+<p>We will get an error, obviously. <code>x</code> is not defined therefore you get an error:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#b84">NameError</span>: undefined local variable <span style="font-weight:bold">or</span> <span style="color:#999">method</span> <span style="color:#b84">`</span><span style="color:#b84">x&#39; for main:Object</span></code></pre></div>
+<p>That is normal. Next, try this:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#998;font-style:italic"># weird_2.rb</span>
+<span style="font-weight:bold">if</span> <span style="font-weight:bold">true</span>
+  x <span style="font-weight:bold">=</span> <span style="color:#099">1</span>
+<span style="font-weight:bold"></span><span style="font-weight:bold">end</span>
+<span style="color:#999">puts</span> x</code></pre></div>
+<p>This will output 1, which is expected. Now, let's try something else:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#998;font-style:italic"># weird_3.rb</span>
+<span style="font-weight:bold">if</span> <span style="font-weight:bold">false</span>
+  x <span style="font-weight:bold">=</span> <span style="color:#099">1</span>
+<span style="font-weight:bold"></span><span style="font-weight:bold">end</span>
+<span style="color:#999">puts</span> x</code></pre></div>
+<p>What should this output? An error? Or nil? Or maybe 1, if somehow we live in a
+parallel universe? If we try to run this code, we will get a <code>nil</code>. You don't believe me?</p>
+<p>Try adding this to the bottom of the script:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#998;font-style:italic"># weird_4.rb</span>
+<span style="color:#999">puts</span> x<span style="font-weight:bold">.</span>class
+<span style="color:#998;font-style:italic">#=&gt; NilClass</span></code></pre></div>
+<p>You see, if we try to call an undefined variable we will get a <code>NameError</code>.
+But, if we define the variable in a part of the code that <strong>will not be run at all</strong>
+we will get a nil.</p>
+<p>What on Earth is going on here, right? <strong>Right?!</strong></p>
+<h2 id="hoisting-1">Hoisting</h2>
+<p>Well, it's not that complicated really. But, it's a quirk that most of us have not
+ran across. The &ldquo;magic&rdquo; here is done by Ruby's parser.</p>
+<p>Basically, when the parser runs over the if-clause (look in weird_3.rb example file)
+it first declares the variable, regardless of whether it will actually be executed.
+This means that when the parser sees <code>x=1</code>, it will actually declare the variable,
+by assigning it to <code>nil</code> and let the interpreter than figure out if the <code>x = 1</code>
+line will ever get executed.</p>
+<p>Don't confuse the parser with the interpreter. The parser does not care whether <code>x</code>
+ever gets a value. The job of the parser is just to go over the code, find any local
+variables and allocate &ldquo;space&rdquo; for those variables. More specifically, set them to <code>nil</code>.</p>
+<p>On the other hand, it's the interpreter that will follow the logical path of the program
+and see if/when <code>x</code> will get a value and act on it.</p>
+<p>Last but not least, if you know about hoisting in JavaScript, it's worth mentioning
+that Ruby's hoisting is much different. In Ruby every variable is available only after the line where the variable has been assigned, regardless if that line will be executed or not.</p>
+<p><!-- raw HTML omitted --> <!-- raw HTML omitted --> <!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+Update #1 - 21 Aug 2015: Article updated with Pablo Herrero's point on Ruby's v.s. JavaScript's hoisting.
+<!-- raw HTML omitted --></p>
+
+			</div>
+
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/hoisting">hoisting</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>

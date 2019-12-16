@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Building a Weather Widget using RxJS - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Building a Weather Widget using RxJS" />
+<meta property="og:description" content="Reactive Programming is a very interesting programming paradigm that I started pondering with last week, which ended up in an article on this blog. Today, I will show you how you can write a very simple weather widget with reactive programming, using RxJS. Or, in other words, how to do HTTP calls in reactive programming fashion.
+RxJS RxJS is an acronym for Reactive Extensions for JavaScript. Simply put, it is a set of libraries to do asynchronous and event-based programming using observable collections and iterators." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/building-a-weather-widget-using-rxjs/" />
+<meta property="og:image" content="https://ieftimov.com/cards/build-weather-widget-rxjs.png" />
+<meta property="article:published_time" content="2016-01-24T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/build-weather-widget-rxjs.png"/>
+
+<meta name="twitter:title" content="Building a Weather Widget using RxJS"/>
+<meta name="twitter:description" content="Reactive Programming is a very interesting programming paradigm that I started pondering with last week, which ended up in an article on this blog. Today, I will show you how you can write a very simple weather widget with reactive programming, using RxJS. Or, in other words, how to do HTTP calls in reactive programming fashion.
+RxJS RxJS is an acronym for Reactive Extensions for JavaScript. Simply put, it is a set of libraries to do asynchronous and event-based programming using observable collections and iterators."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.comcss/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.comjs/main.js"></script><script src="https://ieftimov.comjs/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">24</span>
+							<span class="rest">Jan 2016</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Building a Weather Widget using RxJS</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>Reactive Programming is a very interesting programming paradigm that I started
+pondering with last week, which ended up in
+<a href="/reactive-programming-rxruby">an article</a> on this blog. Today, I will show you
+how you can write a very simple weather widget with reactive programming,
+using <a href="https://github.com/Reactive-Extensions/RxJS">RxJS</a>. Or, in other words,
+how to do HTTP calls in reactive programming fashion.</p>
+<h2 id="rxjs">RxJS</h2>
+<p>RxJS is an acronym for Reactive Extensions for JavaScript. Simply put, it is a
+set of libraries to do asynchronous and event-based programming using observable
+collections and iterators. Simple as that. If you are interested in diving into
+RxJS, which I recommend, you can start with
+<a href="https://github.com/Reactive-Extensions/RxJS/blob/master/readme.md">the README</a>.
+It has plenty of informations and links that you can use to learn Rx.</p>
+<h2 id="the-ui">The UI</h2>
+<p>After getting (some of) the RxJS syntax and functions under my belt, I tried to
+go on and implement something super simple. In the past, I have worked with the
+Open Weather Map's API, so I said to myself, let's build a simple weather widget.</p>
+<p>The widget that we will be building will look like this:</p>
+<p><img src="http://i.imgur.com/1wnzEDA.jpg" alt=""></p>
+<p>This is the default (start) state of the widget. The other state is when the
+used populates the input field with his location. Then, the widget fetches the
+weather data and shows it:</p>
+<p><img src="http://i.imgur.com/XXrUi65.jpg" alt=""></p>
+<p>Very simple, but sufficient for the purpose of this article. As a sidenote, I
+will not cover the HTML/CSS part of the widget, as it is quite simple and it's
+beside the point of this article.</p>
+<h2 id="the-code">The code</h2>
+<p>We will use the part of the
+<a href="http://openweathermap.org/current">Open Weather Map API</a> which returns the
+current weather for a location. First, in our code, we will need to define the
+endpoint and the <code>API_KEY</code> (to get yours, just register).</p>
+<p>Also, make sure you include <code>RxJS</code> in your project, whether via a simple
+<code>&lt;script&gt;&lt;/script&gt;</code> tag in your HTML file, or via any package manager that you
+prefer. We will use the ES6/Babel syntax in this article.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="font-weight:bold">const</span> API_KEY <span style="font-weight:bold">=</span> <span style="color:#b84">&#34;YOUR_API_KEY_HERE&#34;</span>;
+<span style="font-weight:bold">const</span> API_URL <span style="font-weight:bold">=</span> <span style="color:#b84">`</span><span style="color:#b84">http://api.openweathermap.org/data/2.5/weather?appid=</span><span style="color:#b84">${</span>API_KEY<span style="color:#b84">}</span><span style="color:#b84">`</span>;
+</code></pre></div>
+<p>Easy as that. Next, we will need to get both of the DOM elements that we need to
+work with - the input field and the text paragraph where the temperature will
+be shown:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="font-weight:bold">var</span> weatherText <span style="font-weight:bold">=</span> <span style="color:#999">document</span>.querySelector(<span style="color:#b84">&#39;#weather&#39;</span>);
+<span style="font-weight:bold">var</span> searchInput <span style="font-weight:bold">=</span> <span style="color:#999">document</span>.querySelector(<span style="color:#b84">&#39;#location-input&#39;</span>);
+</code></pre></div>
+<p>Now, this is where <code>Rx</code> kicks in. We want to grab the <code>keyup</code> event on the
+input field and kick off a HTTP request after it. This is achievable via the
+<code>Rx.Observable.fromEvent</code> function, which takes the DOM element and event type
+as arguments:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">Rx.Observable.fromEvent(element, <span style="color:#b84">&#39;event-type&#39;</span>);
+</code></pre></div>
+<p>Or, in our specific case, we want to grab the <code>keyup</code> event on the <code>searchInput</code>
+DOM element:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="font-weight:bold">var</span> searchInputSource <span style="font-weight:bold">=</span> Rx.Observable
+  .fromEvent(searchInput, <span style="color:#b84">&#39;keyup&#39;</span>)
+  .debounce(<span style="color:#099">500</span>);
+</code></pre></div>
+<p>As you can see, this is really easy with <code>RxJS</code>. As a UX nicety, we use the
+<code>debounce</code> function, which will make <code>RxJS</code> register events 500ms after the last
+one is done. Any intermediary events will be rejected. The <code>searchInputSource</code>
+will be the event source stream. From there, we will map our events, build our
+request streams and send the HTTP requests to the API.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="font-weight:bold">var</span> requestOnFindStream <span style="font-weight:bold">=</span> searchInputSource.map(ev =&gt; {
+    <span style="font-weight:bold">return</span> API_URL <span style="font-weight:bold">+</span> <span style="color:#b84">&#34;&amp;q=&#34;</span> <span style="font-weight:bold">+</span> ev.target.value;
+  });
+</code></pre></div>
+<p>Now, this section of the code will <code>map</code> all of the events coming through the
+<code>searchInputSource</code> and build the full request API URLs. At the end of the
+<code>API_URL</code> it will append a query string with the location specified in the
+input field.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="font-weight:bold">var</span> responseStream <span style="font-weight:bold">=</span> requestOnFindStream
+  .flatMap(requestUrl =&gt; {
+    <span style="font-weight:bold">return</span> Rx.Observable.fromPromise($.getJSON(requestUrl));
+  })
+  .map(response =&gt; convertToCelsius(response.main.temp))
+  .startWith(<span style="color:#099">0</span>);
+</code></pre></div>
+<p>Now, here's where all of the magic happens. On the <code>requestOnFindStream</code> we
+apply the <code>flatMap</code> function, whose role here is to build a stream of new
+streams. I know, this looks confusing, but bear with me.</p>
+<p>In the <code>flatMap</code> function, we wrap any incoming <code>requestUrl</code> from the
+<code>requestOnFindStream</code> and we create a new <code>Rx.Observable</code> from a jQuery promise.
+Later on, when we subscribe on the observable (the <code>responseStream</code>), the promise
+will be invoked and the data will pass through all of the chained functions.</p>
+<p>After the <code>flatMap</code>, we map all of the responses that we will get from the
+resolved promise and we use the <code>convertToCelsius</code> function:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="font-weight:bold">function</span> convertToCelsius(kelvin) {
+  <span style="font-weight:bold">return</span> (kelvin <span style="font-weight:bold">-</span> <span style="color:#099">273.15</span>).toFixed(<span style="color:#099">1</span>);
+}
+</code></pre></div>
+<p>The function is rather simple - it converts Kelvin degrees from Celsius degrees.
+After that, we return only the converted temperature from the response body. At
+the end, the <code>startWith</code> functions just sets a default value for the
+<code>responseStream</code>, so instead of showing a blank widget, we show 0 degrees
+temperature.</p>
+<p>As a last step, we need to subscribe to the <code>requestStream</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript">responseStream.subscribe(temp =&gt; {
+  weatherText.innerHTML <span style="font-weight:bold">=</span> <span style="color:#b84">`</span><span style="color:#b84">${</span>temp<span style="color:#b84">}</span><span style="color:#b84"> °C</span><span style="color:#b84">`</span>;
+});
+</code></pre></div>
+<p>This is rather simple - we subscribe to the data stream and set a callback. The
+callback will be invoked any time we get any data through the stream. It will
+only update the HTML on the widget, showing the temperature to the user.</p>
+<p>If you want to see the source of and/or play with this widget,
+<a href="http://jsbin.com/fimibi/2/embed?output">here</a> it is.</p>
+<h2 id="outro">Outro</h2>
+<p>Although Reactive Programming requires a bit of a mindset switch, I found that
+programming in the paradigm is quite interesting and challenging. If you want
+to dig deeper, I would recommend heading over to Egghead.io and checking their
+<a href="https://egghead.io/series/introduction-to-reactive-programming">courses on Reactive Programming</a>.
+Also, if you are interested in Reactive Programming with Ruby, check my latest
+<a href="/reactive-programming-rxruby">post on RxRuby</a>.</p>
+
+			</div>
+
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/weather">weather</a></li>
+							
+							<li><a href="/tags/widget">widget</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>

@@ -1,345 +1,106 @@
 <!DOCTYPE html>
-<html lang="en" itemscope itemtype="http://schema.org/WebPage">
+<html>
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Testing in Go: Writing Practical Failure Messages - Ilija Eftimov</title>
-  
-
-<meta name="renderer" content="webkit" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
-
-<meta name="MobileOptimized" content="width"/>
-<meta name="HandheldFriendly" content="true"/>
-
-
-<meta name="applicable-device" content="pc,mobile">
-
-<meta name="theme-color" content="#f8f5ec" />
-<meta name="msapplication-navbutton-color" content="#f8f5ec">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
-
-<meta name="mobile-web-app-capable" content="yes">
-
-<meta name="author" content="Ilija Eftimov" />
-  <meta name="description" content="I remember it was summer and it the A/C was blasting in the office. My mentor and I were looking at one of the screens on my desk. It was the biggest screen I&amp;rsquo;ve ever worked on - a 24 inch 720p Dell. It meant a lot to me - I felt like a real programmer, whatever that means, looking at these vast areas of black screen and many split terminals, with tons of white characters on the black background." />
-
-  <meta name="keywords" content="Software, Programming, Computer Science, Products" />
-
-
-
-
-
-
-<meta name="generator" content="Hugo 0.55.6" />
-
-
-<link rel="canonical" href="https://ieftimov.com/post/testing-in-go-writing-practical-failure-messages/" />
-
-
-
-<link rel="icon" href="/favicon.ico" />
-
-
-
-
-
-
-
-
-
-
-
-<link rel="stylesheet" href="/sass/jane.min.ec807d8b802a40889537c26e014f733206312ea440d42e1f0dabed80918de1ac.css" integrity="sha256-7IB9i4AqQIiVN8JuAU9zMgYxLqRA1C4fDavtgJGN4aw=" media="screen" crossorigin="anonymous">
-
-
-
-
-<link rel="stylesheet" href="/css/overrides.css">
-
-<link rel="stylesheet" href="/css/subscribe.css">
-
-
-<meta property="og:title" content="Testing in Go: Writing Practical Failure Messages" />
-<meta property="og:description" content="I remember it was summer and it the A/C was blasting in the office. My mentor and I were looking at one of the screens on my desk. It was the biggest screen I&rsquo;ve ever worked on - a 24 inch 720p Dell. It meant a lot to me - I felt like a real programmer, whatever that means, looking at these vast areas of black screen and many split terminals, with tons of white characters on the black background." />
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Testing in Go: Writing Practical Failure Messages - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Testing in Go: Writing Practical Failure Messages" />
+<meta property="og:description" content="I remember it was summer and it the A/C was blasting in the office. My mentor and I were looking at one of the screens on my desk. It was the biggest screen I&#39;ve ever worked on - a 24 inch 720p Dell. It meant a lot to me - I felt like a real programmer, whatever that means, looking at these vast areas of black screen and many split terminals, with tons of white characters on the black background." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://ieftimov.com/post/testing-in-go-writing-practical-failure-messages/" />
-
 <meta property="og:image" content="https://ieftimov.com/cards/testing-in-go-writing-practical-failure-messages.png" />
-<meta property="article:published_time" content="2019-06-15T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2019-06-15T00:00:00&#43;00:00"/>
-
-<meta itemprop="name" content="Testing in Go: Writing Practical Failure Messages">
-<meta itemprop="description" content="I remember it was summer and it the A/C was blasting in the office. My mentor and I were looking at one of the screens on my desk. It was the biggest screen I&rsquo;ve ever worked on - a 24 inch 720p Dell. It meant a lot to me - I felt like a real programmer, whatever that means, looking at these vast areas of black screen and many split terminals, with tons of white characters on the black background.">
-
-
-<meta itemprop="datePublished" content="2019-06-15T00:00:00&#43;00:00" />
-<meta itemprop="dateModified" content="2019-06-15T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="3445">
-
-  <meta itemprop="image" content="https://ieftimov.com/cards/testing-in-go-writing-practical-failure-messages.png">
-
-
-
-<meta itemprop="keywords" content="" />
+<meta property="article:published_time" content="2019-06-15T00:00:00+00:00" />
+<meta property="article:modified_time" content="2019-06-15T00:00:00+00:00" />
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://ieftimov.com/cards/testing-in-go-writing-practical-failure-messages.png"/>
 
 <meta name="twitter:title" content="Testing in Go: Writing Practical Failure Messages"/>
-<meta name="twitter:description" content="I remember it was summer and it the A/C was blasting in the office. My mentor and I were looking at one of the screens on my desk. It was the biggest screen I&rsquo;ve ever worked on - a 24 inch 720p Dell. It meant a lot to me - I felt like a real programmer, whatever that means, looking at these vast areas of black screen and many split terminals, with tons of white characters on the black background."/>
-
-<!--[if lte IE 9]>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
-<![endif]-->
-
-<!--[if lt IE 9]>
-  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
-<![endif]-->
-
-
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-	ga('create', 'UA-11264459-2', 'auto');
+<meta name="twitter:description" content="I remember it was summer and it the A/C was blasting in the office. My mentor and I were looking at one of the screens on my desk. It was the biggest screen I&#39;ve ever worked on - a 24 inch 720p Dell. It meant a lot to me - I felt like a real programmer, whatever that means, looking at these vast areas of black screen and many split terminals, with tons of white characters on the black background."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.comcss/overrides.css" />
 	
-	ga('send', 'pageview');
-}
-</script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
-
-<script type='text/javascript'>
-window.Tooltip||function(t,e){var o={
-url:"https://cdn.tooltip.io/static/player.js",
-key:"189f262e-7c0e-4a30-b1dd-1e425f03fe5e",
-async:true
-};
-window.Tooltip={cs:[],_apiKey:o.key};for(
-var r=["identify","goal","updateUserData","start","stop","refresh","show","hide","on"],
-i={},n=0;n<r.length;n++){var a=r[n];i[a]=function(t){return function(){var e=Array.prototype.slice.call(arguments);
-window.Tooltip.cs.push({method:t,args:e})}}(a)}window.Tooltip.API=i;var n=t.createElement(e),s=t.getElementsByTagName(e)[0];
-n.type="text/javascript",n.async=o.async,s.parentNode.insertBefore(n,s),n.src=o.url}(document,"script");
-</script>
-
-
-
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.comjs/main.js"></script><script src="https://ieftimov.comjs/tooltip.js"></script>
 </head>
+
 <body>
-  <div id="mobile-navbar" class="mobile-navbar">
-  <div class="mobile-header-logo">
-    <a href="/" class="logo">Ilija Eftimov</a>
-  </div>
-  <div class="mobile-navbar-icon">
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
-</div>
-<nav id="mobile-menu" class="mobile-menu slideout-menu">
-  <ul class="mobile-menu-list">
-    <li class="mobile-menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
-          
-        
-      </li><li class="mobile-menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
-          
-        
-      </li><li class="mobile-menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/about/">About</a>
-          
-        
-      </li>
-    
-  </ul>
-</nav>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
 
-
-  
-    
-
-
-
-
-
-
-  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
-  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
-
-
-
-
-<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
-
-<div class="pswp__bg"></div>
-
-<div class="pswp__scroll-wrap">
-    
-    <div class="pswp__container">
-      <div class="pswp__item"></div>
-      <div class="pswp__item"></div>
-      <div class="pswp__item"></div>
-    </div>
-    
-    <div class="pswp__ui pswp__ui--hidden">
-    <div class="pswp__top-bar">
-      
-      <div class="pswp__counter"></div>
-      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
-      <button class="pswp__button pswp__button--share" title="Share"></button>
-      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
-      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
-      
-      
-      <div class="pswp__preloader">
-        <div class="pswp__preloader__icn">
-          <div class="pswp__preloader__cut">
-            <div class="pswp__preloader__donut"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-      <div class="pswp__share-tooltip"></div>
-    </div>
-    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
-    </button>
-    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
-    </button>
-    <div class="pswp__caption">
-      <div class="pswp__caption__center"></div>
-    </div>
-    </div>
-    </div>
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
 </div>
 
-  
 
-  
-
-  <header id="header" class="header container">
-    <div class="logo-wrapper">
-  <a href="/" class="logo">
-    
-      Ilija Eftimov
-    
-  </a>
-</div>
-
-<nav class="site-navbar">
-  <ul id="menu" class="menu">
-    
-    
-        <li class="menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
-          
-
-        
-
-      </li>
-    
-        <li class="menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
-          
-
-        
-
-      </li>
-    
-        <li class="menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/about/">About</a>
-          
-
-        
-
-      </li>
-    
-    
-  </ul>
-</nav>
-
-  </header>
-
-  <div id="mobile-panel">
-    <main id="main" class="main bg-llight">
-      <div class="content-wrapper">
-        <div id="content" class="content container">
-          <article class="post bg-white">
-    
-    <header class="post-header">
-      <h1 class="post-title">Testing in Go: Writing Practical Failure Messages</h1>
-      
-      <div class="post-meta">
-        <time datetime="2019-06-15" class="post-time">
-          15-06-2019
-        </time>
-        <div class="post-category">
-            <a href="https://ieftimov.com/categories/go/"> go </a>
-            <a href="https://ieftimov.com/categories/testing-in-go/"> testing-in-go </a>
-            
-          </div>
-        
-
-        
-        
-
-        
-        
-      </div>
-    </header>
-
-    
-    
-
-    
-    <div class="post-content">
-      
-
-<p><img src="/testing-in-go-writing-practical-failure-messages/pair_programming.png" alt="" /></p>
-
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">15</span>
+							<span class="rest">Jun 2019</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Testing in Go: Writing Practical Failure Messages</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p><img src="/testing-in-go-writing-practical-failure-messages/pair_programming.png" alt=""></p>
 <p>I remember it was summer and it the A/C was blasting in the office. My mentor
 and I were looking at one of the screens on my desk. It was the biggest screen
-I&rsquo;ve ever worked on - a 24 inch 720p Dell. It meant a lot to me - I felt like a
+I've ever worked on - a 24 inch 720p Dell. It meant a lot to me - I felt like a
 real programmer, whatever that means, looking at these vast areas of black
 screen and many split terminals, with tons of white characters on the black
 background.</p>
-
-<p>&ldquo;Let&rsquo;s try stubbing this method call here - the problem might be in its
-invocation&rdquo; I said. He agreed, it&rsquo;s worth a shot. We were deep in this
+<p>&ldquo;Let's try stubbing this method call here - the problem might be in its
+invocation&rdquo; I said. He agreed, it's worth a shot. We were deep in this
 debugging session. We felt that we were close to the fix but we still had
 couple of more steps. Upon changing the stub a different failure greeted us.
 &ldquo;Oh, a different error?&rdquo; I said, with a dose of frustration in my voice. &ldquo;Yes,
-but that&rsquo;s progress!&rdquo; he said, excited at the prospect of us approaching our
+but that's progress!&rdquo; he said, excited at the prospect of us approaching our
 debugging destination.</p>
-
 <p>Later that day, after we fixed the issue, we were in the kitchen, making
 another cup of coffee. We were expressing eachothers frustration with the
 architecture, reflecting on how we could simplify it, improve the code and make
 it more testable. We continued about how we would design this feature in the
 perfect world, if there was such a thing or place. It was always an interesting
 thought exercise.</p>
-
 <p>Then, I asked him about his remark that a different error means progress. For
 me, it was a strange way of looking at errors. The idea seemed somehow
 provocative at that time. How could errors mean progress? How are errors even
@@ -348,162 +109,99 @@ reverberating in my head. After a short discussion I realised that while we all
 appreciate code that works, we spend much of our working hours debugging
 existing code. When fixing existing code, what our test failures communicate is
 paramount to the debugging experience we have.</p>
-
-<p>That&rsquo;s why in this article we will look at what it means to write a meaningful
+<p>That's why in this article we will look at what it means to write a meaningful
 test failure message. We will look at its structure and how we can use some
-simple techniques to improve our test failure messages. Whether it&rsquo;s a
+simple techniques to improve our test failure messages. Whether it's a
 colleague of ours, or our future selves, a great error message can make
-people&rsquo;s lifes easier and they&rsquo;ll be grateful for it.</p>
-
-<p><img src="/testing-in-go-writing-practical-failure-messages/under_construction.png" alt="" /></p>
-
+people's lifes easier and they'll be grateful for it.</p>
+<p><img src="/testing-in-go-writing-practical-failure-messages/under_construction.png" alt=""></p>
 <h2 id="anatomy-of-a-test-case">Anatomy of a test case</h2>
-
 <p>Before we continue on exploring failure messages and their traits, we should
 create a function that we can test. When talking about test failures without
-having some actual code to test would be a waste of our time. Let&rsquo;s start
+having some actual code to test would be a waste of our time. Let's start
 simple - a very small function <code>Max</code> that receives a slice of <code>int</code>s as
 arguments and returns the biggest <code>int</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#998;font-style:italic">// max.go
+</span><span style="color:#998;font-style:italic"></span><span style="font-weight:bold">package</span> main
 
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="c1">// max.go
-</span><span class="c1"></span><span class="kn">package</span> <span class="nx">main</span>
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">Max</span>(numbers []<span style="color:#458;font-weight:bold">int</span>) <span style="color:#458;font-weight:bold">int</span> {
+	<span style="font-weight:bold">var</span> max <span style="color:#458;font-weight:bold">int</span>
 
-<span class="kd">func</span> <span class="nf">Max</span><span class="p">(</span><span class="nx">numbers</span> <span class="p">[]</span><span class="kt">int</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
-	<span class="kd">var</span> <span class="nx">max</span> <span class="kt">int</span>
+	<span style="font-weight:bold">for</span> _, number <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> numbers {
+		<span style="font-weight:bold">if</span> number &gt; max {
+			max = number
+		}
+	}
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">number</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">numbers</span> <span class="p">{</span>
-		<span class="k">if</span> <span class="nx">number</span> <span class="p">&gt;</span> <span class="nx">max</span> <span class="p">{</span>
-			<span class="nx">max</span> <span class="p">=</span> <span class="nx">number</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-
-	<span class="k">return</span> <span class="nx">max</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
+	<span style="font-weight:bold">return</span> max
+}</code></pre></div>
 <p>The function traverses the slice of <code>int</code>s and it compares each of its
 elements, assigning the larger one to the <code>max</code> variable. At the end, it
 returns the <code>max</code> as the result. We will use table-driven tests to test this
 function. After that, we can disuss its anatomy.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestMax</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	cases <span style="font-weight:bold">:=</span> []<span style="font-weight:bold">struct</span>{
+                input []<span style="color:#458;font-weight:bold">int</span>
+                expected <span style="color:#458;font-weight:bold">int</span>
+        }{
+		{
+			input:    []<span style="color:#458;font-weight:bold">int</span>{<span style="color:#099">1</span>, <span style="color:#099">2</span>, <span style="color:#099">3</span>, <span style="color:#099">4</span>, <span style="color:#099">5</span>},
+			expected: <span style="color:#099">100</span>,
+		},
+		{
+			input:    []<span style="color:#458;font-weight:bold">int</span>{<span style="font-weight:bold">-</span><span style="color:#099">1</span>, <span style="font-weight:bold">-</span><span style="color:#099">2</span>, <span style="font-weight:bold">-</span><span style="color:#099">3</span>, <span style="font-weight:bold">-</span><span style="color:#099">4</span>, <span style="font-weight:bold">-</span><span style="color:#099">5</span>},
+			expected: <span style="color:#099">100</span>,
+		},
+		{
+			input:    []<span style="color:#458;font-weight:bold">int</span>{<span style="color:#099">0</span>},
+			expected: <span style="color:#099">1</span>,
+		},
+	}
 
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestMax</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">cases</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span><span class="p">{</span>
-                <span class="nx">input</span> <span class="p">[]</span><span class="kt">int</span>
-                <span class="nx">expected</span> <span class="kt">int</span>
-        <span class="p">}{</span>
-		<span class="p">{</span>
-			<span class="nx">input</span><span class="p">:</span>    <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">},</span>
-			<span class="nx">expected</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">input</span><span class="p">:</span>    <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">},</span>
-			<span class="nx">expected</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">input</span><span class="p">:</span>    <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">0</span><span class="p">},</span>
-			<span class="nx">expected</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+	<span style="font-weight:bold">for</span> _, c <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> cases {
+		actual <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">Max</span>(c.input)
+		expected <span style="font-weight:bold">:=</span> c.expected
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">c</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">cases</span> <span class="p">{</span>
-		<span class="nx">actual</span> <span class="o">:=</span> <span class="nf">Max</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">input</span><span class="p">)</span>
-		<span class="nx">expected</span> <span class="o">:=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span>
-
-		<span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="nx">expected</span> <span class="p">{</span>
-			<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Expected %d, got %d&#34;</span><span class="p">,</span> <span class="nx">expected</span><span class="p">,</span> <span class="nx">actual</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
+		<span style="font-weight:bold">if</span> actual <span style="font-weight:bold">!=</span> expected {
+			t.<span style="color:#900;font-weight:bold">Fatalf</span>(<span style="color:#b84">&#34;Expected %d, got %d&#34;</span>, expected, actual)
+		}
+	}
+}</code></pre></div>
 <p>Running the tests will produce the following output:</p>
-
-<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">› go test
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">› go test
 --- FAIL: TestMax (0.00s)
-    max_test.go Expected 100, got 5
+    max_test.go:31: Expected 100, got 5
 FAIL
 exit status 1
 FAIL	_/Users/Ilija/Documents/testing	0.004s</code></pre></div>
-
 <p>Great, now that we have something working, we can dissect our test function.
 The function has three main parts:</p>
-
 <ol>
-<li><p><strong>The setup</strong>: in our example we use table-driven tests, where each of the
+<li>
+<p><strong>The setup</strong>: in our example we use table-driven tests, where each of the
 structs has an <code>input</code> and an <code>expected</code> output. When the <code>input</code> is passed
 to the function, the expected result is the <code>expected</code> attribute of the case
 struct. When testing more complicated functions, this is where we would do
 any other setup that would be mandatory for the test to run. Some examples
 are loading more complicated fixtures (from fixture files) or opening a
-connection to a database and querying some data.</p></li>
-
-<li><p><strong>Building the assertion</strong>: this is where the testing happens. In table
+connection to a database and querying some data.</p>
+</li>
+<li>
+<p><strong>Building the assertion</strong>: this is where the testing happens. In table
 driven tests, this usually means that we have some sort of a <code>for</code> loop that
 traverses the <code>struct</code>s and passes the <code>input</code> to the function under test
 (in this case <code>Max</code>). Then, we compare the <code>output</code> and the <code>expected</code>
-value, which will inform us if the function has passed the test.</p></li>
-
-<li><p><strong>Reporting</strong>: when the assertion is false, meaning the result and the
+value, which will inform us if the function has passed the test.</p>
+</li>
+<li>
+<p><strong>Reporting</strong>: when the assertion is false, meaning the result and the
 expected value are not the same, the test function has to report that
 something went wrong. This is where we will focus for the rest of this
-article.</p></li>
+article.</p>
+</li>
 </ol>
-
-<p>Now that we understand the anatomy of a common test case, let&rsquo;s open the
+<p>Now that we understand the anatomy of a common test case, let's open the
 discussion of what are the traits of a good and a bad test failure message.</p>
-
 
 
 
@@ -516,7 +214,7 @@ discussion of what are the traits of a good and a bad test failure message.</p>
     <div id="mc_embed_signup_scroll">
         <div class="heading">Join The Newsletter</div>
         <p>
-            I write about backend technologies, programming and cloud architectures. Join hundreds of other developers that get my content, twice a month. Unsubscribe whenever. Never any spam, ads, or affiliate links.
+            I write about backend technologies, programming and cloud architectures. Join hundreds of other developers that get my content, twice a month. Unsubscribe whenever. Never spam.
         </p>
 	<input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Your email address" required>
         <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
@@ -524,56 +222,44 @@ discussion of what are the traits of a good and a bad test failure message.</p>
       
       <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_d9a6471309140dcd520d05346_2aac491644" tabindex="-1" value=""></div>
 
-    <p>You can also subscribe <a href="https://ieftimov.com/index.xml">via RSS</a>.</p>
+    <p>You can also subscribe <a href="/index.xml">via RSS</a>.</p>
     </div>
 </form>
 </div>
 
 
-
 <h2 id="traits-of-an-failure-message">Traits of an failure message</h2>
-
-<p>To define the traits of an test failure message, let&rsquo;s examine the output of
+<p>To define the traits of an test failure message, let's examine the output of
 the failed test from the previous section:</p>
-
-<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">› go test -v
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">› go test -v
 === RUN   TestMax
 --- FAIL: TestMax (0.00s)
-    max_test.go Expected 100, got 5
+    max_test.go:31: Expected 100, got 5
 FAIL
 exit status 1
 FAIL	_/Users/Ilija/Documents/testing	0.004s</code></pre></div>
-
 <p>It has three segments:</p>
-
 <ol>
 <li>Test status (pass or fail)</li>
 <li>Function name that was run and failed</li>
 <li>Failure message(s)</li>
 </ol>
-
 <p>Although the failure message is the one where we get most of the information
 about the failure of the test, we rely on the output as a whole to get useful
 information/context about the failure. In the failure message, we can see that
 it contains two parts: what was expected and what was received.</p>
-
 <p>Is this good enough? I would say: yes and no.</p>
-
 <p>Yes, because it succintly communicates what our test case expected, and what it
 received. No, because it does not provide any other context, although there is
 plenty of it in the test function. This hidden knowledge can hinder us when
 fixing the test.</p>
-
 <p>So, back to the original question: what are the traits of a bad and a good
 test failure message?</p>
-
 <p>Bad failure messages in failed test(s) hide data and behaviour from the
 programmer, obstructing them in fixing the failing test(s). Good failure
 messages, on the other hand, contain just enough information so the programmer
 can make the test pass.</p>
-
-<p>Here&rsquo;s a list of data points that we could expose in our test failure messages:</p>
-
+<p>Here's a list of data points that we could expose in our test failure messages:</p>
 <ul>
 <li>the line number of the failed test in the source file</li>
 <li>the source file of the test itself</li>
@@ -582,113 +268,66 @@ can make the test pass.</p>
 <li>the surrounding state - values of the variables participating in the
 expression that failed</li>
 </ul>
-
 <p>Keep in mind that these are just guidelines and there is no hard and fast rule.
 There have been times where my tests have included enough information, and
 still debugging and fixing them was hard. There are many times when a small
 refactoring exercise can do wonders for your functions - make sure you run the
 tests often and add some more as you go.</p>
-
 <p>In theory such rich failure messages should be useful. But, how do we actually
 create them in practice? At the center of all this is a very simple and common
 technique - inspecting values of types.</p>
-
 <h2 id="inspecting-primitive-types">Inspecting Primitive Types</h2>
-
 <p>Golang has a quite a list of primitive types and always having a value is a
 trait they share. Even variables that were only declared have a value without
 explicitly defining it, called <a href="https://tour.golang.org/basics/12">zero
 values</a>. Inspecting primitive types in a
 test failure means we only have to look at their value.</p>
-
 <p>Unsurprisingly, this is simple in Golang. To inspect a value of a primitive
-type we only need to print its value using a comibnation of <code>fmt</code>&rsquo;s <code>Sprintf</code>
+type we only need to print its value using a comibnation of <code>fmt</code>'s <code>Sprintf</code>
 and <code>Println</code> functions. <code>Sprintf</code> requires a format verb, which will be <code>%v</code>
 (stands for <code>value</code>).</p>
-
-<p>Here&rsquo;s a simple program that inspects a few primitive types, priting their
+<p>Here's a simple program that inspects a few primitive types, priting their
 values:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> main
 
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+<span style="font-weight:bold">import</span> <span style="color:#b84">&#34;fmt&#34;</span>
 
-<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
-
-<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Boolean: %v&#34;</span><span class="p">,</span> <span class="kc">true</span><span class="p">))</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Integer: %v&#34;</span><span class="p">,</span> <span class="mi">42</span><span class="p">))</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;String: %v&#34;</span><span class="p">,</span> <span class="s">&#34;Hello world&#34;</span><span class="p">))</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Float: %v&#34;</span><span class="p">,</span> <span class="mf">3.14</span><span class="p">))</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	fmt.<span style="color:#900;font-weight:bold">Println</span>(fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Boolean: %v&#34;</span>, <span style="font-weight:bold">true</span>))
+	fmt.<span style="color:#900;font-weight:bold">Println</span>(fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Integer: %v&#34;</span>, <span style="color:#099">42</span>))
+	fmt.<span style="color:#900;font-weight:bold">Println</span>(fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;String: %v&#34;</span>, <span style="color:#b84">&#34;Hello world&#34;</span>))
+	fmt.<span style="color:#900;font-weight:bold">Println</span>(fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Float: %v&#34;</span>, <span style="color:#099">3.14</span>))
+}</code></pre></div>
 <p>The <code>main</code> function prints four different values, each of them of a primitive
-type. We&rsquo;ve added the type names in the printing statements to aid visual
+type. We've added the type names in the printing statements to aid visual
 inspection. If we would run it, the program would produce the following output:</p>
-
-<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">› go run whatever.go
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">› go run whatever.go
 Boolean: true
 Integer: 42
 String: Hello world
 Float: 3.14</code></pre></div>
-
 <p>This is a very simple way to inspect any values of primitive type - pass them
 to <code>Sprintf</code> (with the <code>%v</code> formatting verb) and send its output to <code>Println</code>.
 If we look at our tests from earlier, you will notice that we actually already
 use it:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#998;font-style:italic">// Snipped...
+</span><span style="color:#998;font-style:italic"></span><span style="font-weight:bold">for</span> _, c <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> cases {
+	actual <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">Max</span>(c.input)
 
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="c1">// Snipped...
-</span><span class="c1"></span><span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">c</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">cases</span> <span class="p">{</span>
-	<span class="nx">actual</span> <span class="o">:=</span> <span class="nf">Max</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">input</span><span class="p">)</span>
-
-	<span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span> <span class="p">{</span>
-		<span class="nx">out</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Running: Max(%v)\n&#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">input</span><span class="p">)</span> <span class="o">+</span>
-			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Argument: %v \n&#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">input</span><span class="p">)</span> <span class="o">+</span>
-			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Expected result: %d\n&#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span><span class="p">)</span> <span class="o">+</span>
-			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Actual result: %d\n&#34;</span><span class="p">,</span> <span class="nx">actual</span><span class="p">)</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="nx">out</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
+	<span style="font-weight:bold">if</span> actual <span style="font-weight:bold">!=</span> c.expected {
+		out <span style="font-weight:bold">:=</span> fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Running: Max(%v)\n&#34;</span>, c.input) <span style="font-weight:bold">+</span>
+			fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Argument: %v \n&#34;</span>, c.input) <span style="font-weight:bold">+</span>
+			fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Expected result: %d\n&#34;</span>, c.expected) <span style="font-weight:bold">+</span>
+			fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Actual result: %d\n&#34;</span>, actual)
+		t.<span style="color:#900;font-weight:bold">Fatalf</span>(out)
+	}
+}</code></pre></div>
 <p>We print the input and the argument using the <code>%v</code> verb and we print the
 expected and actual results using the <code>%d</code> – denoting a base 10 integer
 representation of the value. Using this approach we are able to send any output
 to the person battling the failed specs. Here are some other formatting verbs
 that we can use:</p>
-
-<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">Boolean:
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Boolean:
 - %t	the word true or false
 
 Integer:
@@ -700,276 +339,149 @@ Integer:
 String:
 - %s	the uninterpreted bytes of the string or slice
 - %q	a double-quoted string safely escaped with Go syntax</code></pre></div>
-
 <p>There are more verbs available in the <code>fmt</code> package, head over to <a href="https://golang.org/pkg/fmt/#Sprintf">the
 documentation</a> to check them out.</p>
-
-<p><img src="/testing-in-go-writing-practical-failure-messages/searching.png" alt="" /></p>
-
+<p><img src="/testing-in-go-writing-practical-failure-messages/searching.png" alt=""></p>
 <h2 id="inspecting-custom-types">Inspecting Custom Types</h2>
-
 <p>When it comes to inspecting state of custom types, things can easily get hairy.
 All custom types start simple, with few attributes. But as codebases grow, the
 size and complexity of custom types can (read: will) grow. A test that once
 used a very simple type to check a behaviour of certain function, now might
 produce an output containing a huge struct.</p>
-
 <p>So, in such cases how can we show only the relevant values when the tests fail?</p>
-
 <p>Just like with the primitive types, printing the internals of a custom type is
-a simple exercise in Go - using the <code>fmt</code> package&rsquo;s <code>Sprintf</code>, using the verbs
+a simple exercise in Go - using the <code>fmt</code> package's <code>Sprintf</code>, using the verbs
 <code>%v</code> and <code>%+v</code>.</p>
-
-<p>To look at <code>Sprintf</code>&rsquo;s workings in combination with structs, we will create a
+<p>To look at <code>Sprintf</code>'s workings in combination with structs, we will create a
 type <code>Person</code>. It has two attributes <code>age</code> (with type <code>int64</code>) and <code>name</code> (with
 type <code>string</code>):</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">Person</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">age</span>  <span class="kt">int64</span>
-	<span class="nx">name</span> <span class="kt">string</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> Person <span style="font-weight:bold">struct</span> {
+	age  <span style="color:#458;font-weight:bold">int64</span>
+	name <span style="color:#458;font-weight:bold">string</span>
+}</code></pre></div>
 <p>The <code>Person</code> will implement a function <code>older</code> which will return a <code>bool</code>ean,
 when a <code>Person</code> is older than another <code>Person</code>. It will do that by comparing
 the ages of the two <code>Person</code> structs:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">p</span> <span class="o">*</span><span class="nx">Person</span><span class="p">)</span> <span class="nf">older</span><span class="p">(</span><span class="nx">other</span> <span class="o">*</span><span class="nx">Person</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-	<span class="k">return</span> <span class="nx">p</span><span class="p">.</span><span class="nx">age</span> <span class="p">&gt;</span> <span class="nx">other</span><span class="p">.</span><span class="nx">age</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>Having the topic of testing in the focus here, let&rsquo;s also add a test function
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (p <span style="font-weight:bold">*</span>Person) <span style="color:#900;font-weight:bold">older</span>(other <span style="font-weight:bold">*</span>Person) <span style="color:#458;font-weight:bold">bool</span> {
+	<span style="font-weight:bold">return</span> p.age &gt; other.age
+}</code></pre></div>
+<p>Having the topic of testing in the focus here, let's also add a test function
 for the <code>older</code> function:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestOlder</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	cases <span style="font-weight:bold">:=</span> []<span style="font-weight:bold">struct</span> {
+		person1  <span style="font-weight:bold">*</span>Person
+		person2  <span style="font-weight:bold">*</span>Person
+		expected <span style="color:#458;font-weight:bold">bool</span>
+	}{
+		{
+			person1: <span style="font-weight:bold">&amp;</span>Person{
+				name: <span style="color:#b84">&#34;Jane&#34;</span>,
+				age:  <span style="color:#099">22</span>,
+			},
+			person2: <span style="font-weight:bold">&amp;</span>Person{
+				name: <span style="color:#b84">&#34;John&#34;</span>,
+				age:  <span style="color:#099">23</span>,
+			},
+			expected: <span style="font-weight:bold">false</span>,
+		},
+		{
+			person1: <span style="font-weight:bold">&amp;</span>Person{
+				name: <span style="color:#b84">&#34;Michelle&#34;</span>,
+				age:  <span style="color:#099">55</span>,
+			},
+			person2: <span style="font-weight:bold">&amp;</span>Person{
+				name: <span style="color:#b84">&#34;Michael&#34;</span>,
+				age:  <span style="color:#099">40</span>,
+			},
+			expected: <span style="font-weight:bold">true</span>,
+		},
+		{
+			person1: <span style="font-weight:bold">&amp;</span>Person{
+				name: <span style="color:#b84">&#34;Ellen&#34;</span>,
+				age:  <span style="color:#099">80</span>,
+			},
+			person2: <span style="font-weight:bold">&amp;</span>Person{
+				name: <span style="color:#b84">&#34;Elliot&#34;</span>,
+				age:  <span style="color:#099">80</span>,
+			},
+			expected: <span style="font-weight:bold">true</span>,
+		},
+	}
 
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
-</span><span class="lnt">51
-</span><span class="lnt">52
-</span><span class="lnt">53
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestOlder</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">cases</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
-		<span class="nx">person1</span>  <span class="o">*</span><span class="nx">Person</span>
-		<span class="nx">person2</span>  <span class="o">*</span><span class="nx">Person</span>
-		<span class="nx">expected</span> <span class="kt">bool</span>
-	<span class="p">}{</span>
-		<span class="p">{</span>
-			<span class="nx">person1</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">Person</span><span class="p">{</span>
-				<span class="nx">name</span><span class="p">:</span> <span class="s">&#34;Jane&#34;</span><span class="p">,</span>
-				<span class="nx">age</span><span class="p">:</span>  <span class="mi">22</span><span class="p">,</span>
-			<span class="p">},</span>
-			<span class="nx">person2</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">Person</span><span class="p">{</span>
-				<span class="nx">name</span><span class="p">:</span> <span class="s">&#34;John&#34;</span><span class="p">,</span>
-				<span class="nx">age</span><span class="p">:</span>  <span class="mi">23</span><span class="p">,</span>
-			<span class="p">},</span>
-			<span class="nx">expected</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">person1</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">Person</span><span class="p">{</span>
-				<span class="nx">name</span><span class="p">:</span> <span class="s">&#34;Michelle&#34;</span><span class="p">,</span>
-				<span class="nx">age</span><span class="p">:</span>  <span class="mi">55</span><span class="p">,</span>
-			<span class="p">},</span>
-			<span class="nx">person2</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">Person</span><span class="p">{</span>
-				<span class="nx">name</span><span class="p">:</span> <span class="s">&#34;Michael&#34;</span><span class="p">,</span>
-				<span class="nx">age</span><span class="p">:</span>  <span class="mi">40</span><span class="p">,</span>
-			<span class="p">},</span>
-			<span class="nx">expected</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">person1</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">Person</span><span class="p">{</span>
-				<span class="nx">name</span><span class="p">:</span> <span class="s">&#34;Ellen&#34;</span><span class="p">,</span>
-				<span class="nx">age</span><span class="p">:</span>  <span class="mi">80</span><span class="p">,</span>
-			<span class="p">},</span>
-			<span class="nx">person2</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">Person</span><span class="p">{</span>
-				<span class="nx">name</span><span class="p">:</span> <span class="s">&#34;Elliot&#34;</span><span class="p">,</span>
-				<span class="nx">age</span><span class="p">:</span>  <span class="mi">80</span><span class="p">,</span>
-			<span class="p">},</span>
-			<span class="nx">expected</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+	<span style="font-weight:bold">for</span> _, c <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> cases {
+		actual <span style="font-weight:bold">:=</span> c.person1.<span style="color:#900;font-weight:bold">older</span>(c.person2)
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">c</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">cases</span> <span class="p">{</span>
-		<span class="nx">actual</span> <span class="o">:=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">person1</span><span class="p">.</span><span class="nf">older</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">person2</span><span class="p">)</span>
-
-		<span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span> <span class="p">{</span>
-			<span class="nx">out</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Running: older(%v)\n&#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">person2</span><span class="p">)</span> <span class="o">+</span>
-				<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Argument: %v \n&#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">person2</span><span class="p">)</span> <span class="o">+</span>
-				<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Expected result: %t\n&#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span><span class="p">)</span> <span class="o">+</span>
-				<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Actual result: %t\n&#34;</span><span class="p">,</span> <span class="nx">actual</span><span class="p">)</span>
-			<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="nx">out</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
+		<span style="font-weight:bold">if</span> actual <span style="font-weight:bold">!=</span> c.expected {
+			out <span style="font-weight:bold">:=</span> fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Running: older(%v)\n&#34;</span>, c.person2) <span style="font-weight:bold">+</span>
+				fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Argument: %v \n&#34;</span>, c.person2) <span style="font-weight:bold">+</span>
+				fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Expected result: %t\n&#34;</span>, c.expected) <span style="font-weight:bold">+</span>
+				fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Actual result: %t\n&#34;</span>, actual)
+			t.<span style="color:#900;font-weight:bold">Fatalf</span>(out)
+		}
+	}
+}</code></pre></div>
 <p>As you can see, we use the same table-driven tests approach and similar
 formatting for the failure output. If we run the test, we should expect the
 last test case to fail, because the two persons that we will compare are not
 older than the other.</p>
-
-<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">› go test
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">› go test
 --- FAIL: TestOlder (0.00s)
-    person_test.go Running: older(&amp;{80 Elliot})
+    person_test.go:57: Running: older(&amp;{80 Elliot})
         Argument: &amp;{80 Elliot}
         Expected result: true
         Actual result: false
 FAIL
 exit status 1
 FAIL	_/Users/Ilija/Documents/testing_person	0.004s</code></pre></div>
-
 <p>Here we can observe a similar output to the one we had in the previous
 examples. The only difference is in the way the struct is formatted: while we
 see the values of its attributes, we cannot see the names of the attributes. To
 fix this, we can apply the <code>%+v</code> formatting verb, which will produce the
 following output:</p>
-
-<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">› go test
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">› go test
 --- FAIL: TestOlder (0.00s)
-    person_test.go Running: older(&amp;{age:80 name:Elliot})
+    person_test.go:57: Running: older(&amp;{age:80 name:Elliot})
         Argument: &amp;{age:80 name:Elliot}
         Expected result: true
         Actual result: false
 FAIL
 exit status 1
 FAIL	_/Users/Ilija/Documents/testing_person	0.004s</code></pre></div>
-
 <p>The <code>%+v</code> formatting verb when printing structs adds field names to the values,
 so it is easier for us to understand the state of the struct. Obviously, this
 way of printing all attributes can be problematic when we are facing big
 structs.</p>
-
-<p>In such cases, there&rsquo;s a neat trick that we can use: defining a <code>String</code>
+<p>In such cases, there's a neat trick that we can use: defining a <code>String</code>
 function for the struct. By having a <code>String</code> method, our type will implicitly
 implement the <code>Stringer</code> interface. A <code>Stringer</code> is a type that can describe
 itself as a string. The <code>fmt</code> package (and many others) look for this interface
 to print values.</p>
-
 <p>If we would implement a <code>String</code> function for our type, our custom type will be
 able to describe itself. The cool part is that we could have the <code>String</code>
 function in the test file itself (<code>person_test.go</code>), or in the file with the
 type definition (<code>person.go</code>). Wherever Golang finds the function it will use
 it when printing the struct.</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="c1">// person_test.go
-</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">p</span> <span class="o">*</span><span class="nx">Person</span><span class="p">)</span> <span class="nf">String</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
-	<span class="nx">out</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;\nAge: %d\n&#34;</span><span class="p">,</span> <span class="nx">p</span><span class="p">.</span><span class="nx">age</span><span class="p">)</span> <span class="o">+</span>
-		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Name: %s\n&#34;</span><span class="p">,</span> <span class="nx">p</span><span class="p">.</span><span class="nx">name</span><span class="p">)</span>
-	<span class="k">return</span> <span class="nx">out</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#998;font-style:italic">// person_test.go
+</span><span style="color:#998;font-style:italic"></span><span style="font-weight:bold">func</span> (p <span style="font-weight:bold">*</span>Person) <span style="color:#900;font-weight:bold">String</span>() <span style="color:#458;font-weight:bold">string</span> {
+	out <span style="font-weight:bold">:=</span> fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;\nAge: %d\n&#34;</span>, p.age) <span style="font-weight:bold">+</span>
+		fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Name: %s\n&#34;</span>, p.name)
+	<span style="font-weight:bold">return</span> out
+}</code></pre></div>
 <p>By having the <code>String</code> function, we can change the approach we use in the
 failure reporting in the test itself:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span> <span class="p">{</span>
-        <span class="nx">out</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprint</span><span class="p">(</span><span class="s">&#34;Argument: &#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">person2</span><span class="p">)</span> <span class="o">+</span>
-                <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Expected result: %t\n&#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span><span class="p">)</span> <span class="o">+</span>
-                <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Actual result: %t\n&#34;</span><span class="p">,</span> <span class="nx">actual</span><span class="p">)</span>
-        <span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="nx">out</span><span class="p">)</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">if</span> actual <span style="font-weight:bold">!=</span> c.expected {
+        out <span style="font-weight:bold">:=</span> fmt.<span style="color:#900;font-weight:bold">Sprint</span>(<span style="color:#b84">&#34;Argument: &#34;</span>, c.person2) <span style="font-weight:bold">+</span>
+                fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Expected result: %t\n&#34;</span>, c.expected) <span style="font-weight:bold">+</span>
+                fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Actual result: %t\n&#34;</span>, actual)
+        t.<span style="color:#900;font-weight:bold">Fatalf</span>(out)
+}</code></pre></div>
 <p>Note that in the line where we build the output we use just <code>fmt.Sprint</code> with
 the argument of <code>c.person2</code>, which is the struct itself. We do not specify what
 attributes will be printed, the <code>String</code> function takes care of everything.</p>
-
 <p>The output will be:</p>
-
-<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">› go test
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">› go test
 --- FAIL: TestOlder (0.00s)
-    person_test.go Argument:
+    person_test.go:62: Argument:
         Age: 80
         Name: Elliot
         Expected result: true
@@ -977,13 +489,10 @@ attributes will be printed, the <code>String</code> function takes care of every
 FAIL
 exit status 1
 FAIL	_/Users/Ilija/Documents/testing_person	0.004s</code></pre></div>
-
-<p>By implementing the <code>Stringer</code> interface, we let our Golang&rsquo;s <code>fmt</code> package
+<p>By implementing the <code>Stringer</code> interface, we let our Golang's <code>fmt</code> package
 take care of the printing.</p>
-
 <p>But, could we take this idea further? Imagine if the structs that we use to
 build our table-driven tests could actually describe themselves?</p>
-
 
 
 
@@ -996,7 +505,7 @@ build our table-driven tests could actually describe themselves?</p>
     <div id="mc_embed_signup_scroll">
         <div class="heading">Join The Newsletter</div>
         <p>
-            I write about backend technologies, programming and cloud architectures. Join hundreds of other developers that get my content, twice a month. Unsubscribe whenever. Never any spam, ads, or affiliate links.
+            I write about backend technologies, programming and cloud architectures. Join hundreds of other developers that get my content, twice a month. Unsubscribe whenever. Never spam.
         </p>
 	<input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Your email address" required>
         <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
@@ -1004,155 +513,78 @@ build our table-driven tests could actually describe themselves?</p>
       
       <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_d9a6471309140dcd520d05346_2aac491644" tabindex="-1" value=""></div>
 
-    <p>You can also subscribe <a href="https://ieftimov.com/index.xml">via RSS</a>.</p>
+    <p>You can also subscribe <a href="/index.xml">via RSS</a>.</p>
     </div>
 </form>
 </div>
 
 
-
 <h3 id="self-describing-test-cases">Self-describing test cases</h3>
-
-<p>From our test that we wrote earlier, let&rsquo;s extract a type (<code>TestCase</code>) and use
+<p>From our test that we wrote earlier, let's extract a type (<code>TestCase</code>) and use
 it in our <code>TestOlder</code> test function:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> TestCase <span style="font-weight:bold">struct</span> {
+	person1  <span style="font-weight:bold">*</span>Person
+	person2  <span style="font-weight:bold">*</span>Person
+	expected <span style="color:#458;font-weight:bold">bool</span>
+}
 
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">TestCase</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">person1</span>  <span class="o">*</span><span class="nx">Person</span>
-	<span class="nx">person2</span>  <span class="o">*</span><span class="nx">Person</span>
-	<span class="nx">expected</span> <span class="kt">bool</span>
-<span class="p">}</span>
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestOlder</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	cases <span style="font-weight:bold">:=</span> []TestCase{
+		{
+			person1: <span style="font-weight:bold">&amp;</span>Person{
+				name: <span style="color:#b84">&#34;Ellen&#34;</span>,
+				age:  <span style="color:#099">80</span>,
+			},
+			person2: <span style="font-weight:bold">&amp;</span>Person{
+				name: <span style="color:#b84">&#34;Elliot&#34;</span>,
+				age:  <span style="color:#099">80</span>,
+			},
+			expected: <span style="font-weight:bold">true</span>,
+		},
+	}
 
-<span class="kd">func</span> <span class="nf">TestOlder</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">cases</span> <span class="o">:=</span> <span class="p">[]</span><span class="nx">TestCase</span><span class="p">{</span>
-		<span class="p">{</span>
-			<span class="nx">person1</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">Person</span><span class="p">{</span>
-				<span class="nx">name</span><span class="p">:</span> <span class="s">&#34;Ellen&#34;</span><span class="p">,</span>
-				<span class="nx">age</span><span class="p">:</span>  <span class="mi">80</span><span class="p">,</span>
-			<span class="p">},</span>
-			<span class="nx">person2</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">Person</span><span class="p">{</span>
-				<span class="nx">name</span><span class="p">:</span> <span class="s">&#34;Elliot&#34;</span><span class="p">,</span>
-				<span class="nx">age</span><span class="p">:</span>  <span class="mi">80</span><span class="p">,</span>
-			<span class="p">},</span>
-			<span class="nx">expected</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+	<span style="font-weight:bold">for</span> _, c <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> cases {
+		actual <span style="font-weight:bold">:=</span> c.person1.<span style="color:#900;font-weight:bold">older</span>(c.person2)
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">c</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">cases</span> <span class="p">{</span>
-		<span class="nx">actual</span> <span class="o">:=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">person1</span><span class="p">.</span><span class="nf">older</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">person2</span><span class="p">)</span>
-
-		<span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span> <span class="p">{</span>
-			<span class="nx">out</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprint</span><span class="p">(</span><span class="s">&#34;Argument: &#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">person2</span><span class="p">)</span> <span class="o">+</span>
-				<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Expected result: %t\n&#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span><span class="p">)</span> <span class="o">+</span>
-				<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Actual result: %t\n&#34;</span><span class="p">,</span> <span class="nx">actual</span><span class="p">)</span>
-			<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="nx">out</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
+		<span style="font-weight:bold">if</span> actual <span style="font-weight:bold">!=</span> c.expected {
+			out <span style="font-weight:bold">:=</span> fmt.<span style="color:#900;font-weight:bold">Sprint</span>(<span style="color:#b84">&#34;Argument: &#34;</span>, c.person2) <span style="font-weight:bold">+</span>
+				fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Expected result: %t\n&#34;</span>, c.expected) <span style="font-weight:bold">+</span>
+				fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Actual result: %t\n&#34;</span>, actual)
+			t.<span style="color:#900;font-weight:bold">Fatalf</span>(out)
+		}
+	}
+}</code></pre></div>
 <p>(I also removed two of the test cases for brewity.)</p>
-
 <p>This will not change the output of the test - we extracted a type that we
 defined inline in the previous versions of the test. If we think about the
-failure output that our test function produces, couldn&rsquo;t our new type
+failure output that our test function produces, couldn't our new type
 <code>TestCase</code> implement the <code>Stringer</code> interface too? What if we define a <code>String</code>
 function on <code>TestCase</code> which will print out every test failure in the same,
 structured format, standardized across all our test functions in this test
 file?</p>
+<p>Here's an example of a <code>String</code> function that <code>TestCase</code> can implement:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (tc TestCase) <span style="color:#900;font-weight:bold">String</span>() <span style="color:#458;font-weight:bold">string</span> {
+	out <span style="font-weight:bold">:=</span> fmt.<span style="color:#900;font-weight:bold">Sprint</span>(<span style="color:#b84">&#34;Person 1: &#34;</span>, tc.person1, <span style="color:#b84">&#34;\n&#34;</span>) <span style="font-weight:bold">+</span>
+		fmt.<span style="color:#900;font-weight:bold">Sprint</span>(<span style="color:#b84">&#34;Person 2: &#34;</span>, tc.person2, <span style="color:#b84">&#34;\n&#34;</span>) <span style="font-weight:bold">+</span>
+		fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Expected result: %t\n&#34;</span>, tc.expected)
 
-<p>Here&rsquo;s an example of a <code>String</code> function that <code>TestCase</code> can implement:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">tc</span> <span class="nx">TestCase</span><span class="p">)</span> <span class="nf">String</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
-	<span class="nx">out</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprint</span><span class="p">(</span><span class="s">&#34;Person 1: &#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">person1</span><span class="p">,</span> <span class="s">&#34;\n&#34;</span><span class="p">)</span> <span class="o">+</span>
-		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprint</span><span class="p">(</span><span class="s">&#34;Person 2: &#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">person2</span><span class="p">,</span> <span class="s">&#34;\n&#34;</span><span class="p">)</span> <span class="o">+</span>
-		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Expected result: %t\n&#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">expected</span><span class="p">)</span>
-
-	<span class="k">return</span> <span class="nx">out</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
+	<span style="font-weight:bold">return</span> out
+}</code></pre></div>
 <p>To put this function in action, we need to make a small modification to the
 assertion in the test function:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">for</span> _, c <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> cases {
+        actual <span style="font-weight:bold">:=</span> c.person1.<span style="color:#900;font-weight:bold">older</span>(c.person2)
 
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span><span class="lnt">9
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">c</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">cases</span> <span class="p">{</span>
-        <span class="nx">actual</span> <span class="o">:=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">person1</span><span class="p">.</span><span class="nf">older</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">person2</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span> <span class="p">{</span>
-                <span class="nx">out</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprint</span><span class="p">(</span><span class="nx">c</span><span class="p">)</span> <span class="o">+</span>
-                        <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Actual result: %t&#34;</span><span class="p">,</span> <span class="nx">actual</span><span class="p">)</span>
-                <span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="nx">out</span><span class="p">)</span>
-        <span class="p">}</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
+        <span style="font-weight:bold">if</span> actual <span style="font-weight:bold">!=</span> c.expected {
+                out <span style="font-weight:bold">:=</span> fmt.<span style="color:#900;font-weight:bold">Sprint</span>(c) <span style="font-weight:bold">+</span>
+                        fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Actual result: %t&#34;</span>, actual)
+                t.<span style="color:#900;font-weight:bold">Fatalf</span>(out)
+        }
+}</code></pre></div>
 <p>And the output, on failure, will look like:</p>
-
-<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">› go test
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">› go test
 --- FAIL: TestOlder (0.00s)
-    person_test.go Person 1:
+    person_test.go:71: Person 1:
         Age: 80
         Name: Ellen
 
@@ -1165,33 +597,24 @@ assertion in the test function:</p>
 FAIL
 exit status 1
 FAIL	_/Users/Ilija/Documents/testing_person	0.004s</code></pre></div>
-
 <p>Now, we can see very clearly what was the expected result, the actual result
 and the state of the variables that are in play for the particular test case.
 We can improve the formatting of the output even more, but for our purposes
 this will do fine.</p>
-
-<p>I hope that this makes it clear that tests are just code. If we use Golang&rsquo;s
+<p>I hope that this makes it clear that tests are just code. If we use Golang's
 power to construct test cases as structs and use them in tests, we can also use
 other Golang goodies like the <code>Stringer</code> interface and make our test cases
 report their failures better.</p>
-
-<p><img src="/testing-in-go-writing-practical-failure-messages/typewriter.png" alt="" /></p>
-
+<p><img src="/testing-in-go-writing-practical-failure-messages/typewriter.png" alt=""></p>
 <h2 id="simplicity-and-verbosity">Simplicity and verbosity</h2>
-
-<p>Before we wrap up this walkthrough that we embarked on, there&rsquo;s one last thing
+<p>Before we wrap up this walkthrough that we embarked on, there's one last thing
 that I would like us to discuss. I would go on a limb and say that you are
 probably asking yourself one of these two questions already:</p>
-
-<p>Is there a simpler way to do this? Why can&rsquo;t we let a testing library or
+<p>Is there a simpler way to do this? Why can't we let a testing library or
 framework take care of the failures messages for us?</p>
-
 <p>The answer would be: sure, you can totally do that.</p>
-
 <p>But before you opt-in to use a testing library, I want to you understand few
 things so you can make better choices for your projects in the future.</p>
-
 <ol>
 <li>Go is simple by design. If you look at the <a href="https://golang.org/ref/spec">The Go Programming Language
 Specification</a> you can see how simple and short
@@ -1204,268 +627,60 @@ Naming a test file, writing the tests and running them should all be simple
 actions. Analogous to that, a test assertion should be a very simple
 comparison between two values.</li>
 </ol>
-
 <p>Having these three principles in mind, I hope you can appreciate why writing
 some failures messages in Golang tests can be a verbose but simple thing to do.
-As Rob Pike, one of Golang&rsquo;s authors, says in his &ldquo;<a href="https://www.youtube.com/watch?v=PAAkCSZUG1c&amp;t=14m35s">Go
+As Rob Pike, one of Golang's authors, says in his &ldquo;<a href="https://www.youtube.com/watch?v=PAAkCSZUG1c&amp;t=14m35s">Go
 Proverbs</a>&rdquo; talk:</p>
-
 <blockquote>
 <p>Clear is better than clever&hellip; There are languages where cleverness is
-considered a virtue. Go doesn&rsquo;t work that way. Especially when you&rsquo;re
+considered a virtue. Go doesn't work that way. Especially when you're
 learning Go out of the box, you should be thinking of writing simple and
 clear code. That has a lot to do with maintability, stability and the
 ability of other people to read your code.</p>
 </blockquote>
 
-    </div>
+			</div>
 
-    
-    
+			<div class="tags">
+				
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
 
-
-    
-    
-
-    <footer class="post-footer">
-      
-
-      
-      <nav class="post-nav">
-        
-          <a class="prev" href="/post/testing-in-go-naming-conventions/">
-            
-            <i class="iconfont">
-              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="18" height="18">
-  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
-</svg>
-
-            </i>
-            <span class="prev-text nav-default">Testing in Go: Naming Conventions</span>
-            <span class="prev-text nav-mobile">Prev</span>
-          </a>
-        
-          <a class="next" href="/post/testing-in-go-failing-tests/">
-            <span class="next-text nav-default">Testing in Go: Failing Tests</span>
-            <span class="prev-text nav-mobile">Next</span>
-            
-            <i class="iconfont">
-              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="18" height="18">
-  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
-</svg>
-
-            </i>
-          </a>
-      </nav>
-    </footer>
-  </article>
-
-  
-  
-
-  
-  
-
-  
-
-  
-  
-
-  
-
-  
-
-  <div class="disqus-comment">
-  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
-    Show Disqus Comments
-  </div>
-  <div id="disqus_thread"></div>
-  <script type="text/javascript">
-    var disqus_config = function () {
-      this.page.url = "https://ieftimov.com/post/testing-in-go-writing-practical-failure-messages/";
-    };
-    function load_disqus() {
-      
-      
-      if (window.location.hostname === 'localhost') return;
-
-      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-      var disqus_shortname = 'eftimov';
-      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-
-      $('#load_disqus').remove();
-    };
-  </script>
-  <noscript>Please enable JavaScript to view the
-    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-  </noscript>
-  
-  </div>
-
-    
-
-        </div>
-      </div>
-    </main>
-
-    <footer id="footer" class="footer">
-      <div class="icon-links">
-  
-  
-    <a href="https://stackoverflow.com/users/601555/ilija-eftimov" rel="me noopener" class="iconfont"
-      title="stack-overflow"  target="_blank"
-      >
-      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="36" height="36">
-  <path d="M809.714286 932.571429l-638.857143 0 0-274.285714-91.428571 0 0 365.714286 821.714286 0 0-365.714286-91.428571 0 0 274.285714zm-538.285714-299.428571l18.857143-89.714286 447.428571 94.285714-18.857143 89.142857zm58.857143-213.714286l38.285714-83.428571 414.285714 193.714286-38.285714 82.857143zm114.857143-203.428571l58.285714-70.285714 350.857143 293.142857-58.285714 70.285714zm226.857143-216l272.571429 366.285714-73.142857 54.857143-272.571429-366.285714zm-410.285714 840.571429l0-90.857143 457.142857 0 0 90.857143-457.142857 0z"></path>
-</svg>
-
-    </a>
-  
-    <a href="https://twitter.com/fteem" rel="me noopener" class="iconfont"
-      title="twitter"  target="_blank"
-      >
-      <svg class="icon" viewBox="0 0 1264 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="36" height="36">
-  <path d="M1229.8616 18.043658c0 0-117.852626 63.135335-164.151872 67.344358-105.225559-164.151872-505.082682-92.598492-437.738325 223.078185C278.622548 312.675223 89.216542 47.506814 89.216542 47.506814s-117.852626 189.406006 75.762402 345.139833C127.097743 396.85567 55.544363 371.601535 55.544363 371.601535S26.081207 535.753407 253.368414 615.724832c-21.045112 29.463156-113.643603 8.418045-113.643603 8.418045s25.254134 143.10676 231.496229 180.987961c-143.10676 130.479693-387.230056 92.598492-370.393967 105.225559 206.242095 189.406006 1119.599946 231.496229 1128.01799-643.98042C1179.353331 249.539887 1263.533778 123.269217 1263.533778 123.269217s-130.479693 37.881201-138.897738 33.672179C1225.652577 98.015083 1229.8616 18.043658 1229.8616 18.043658"></path>
-</svg>
-
-    </a>
-  
-    <a href="https://www.linkedin.com/in/ieftimov/" rel="me noopener" class="iconfont"
-      title="linkedin"  target="_blank"
-      >
-      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="33" height="33">
-  <path d="M872.405333 872.618667h-151.637333v-237.610667c0-56.661333-1.152-129.578667-79.018667-129.578667-79.061333 0-91.136 61.653333-91.136 125.397334v241.792H398.976V384h145.664v66.602667h1.962667c20.352-38.4 69.845333-78.933333 143.786666-78.933334 153.642667 0 182.058667 101.12 182.058667 232.746667v268.202667zM227.712 317.141333a87.978667 87.978667 0 0 1-88.021333-88.106666 88.064 88.064 0 1 1 88.021333 88.106666z m76.032 555.477334H151.68V384h152.064v488.618667zM948.266667 0H75.562667C33.792 0 0 33.024 0 73.770667v876.458666C0 991.018667 33.792 1024 75.562667 1024h872.576C989.866667 1024 1024 991.018667 1024 950.229333V73.770667C1024 33.024 989.866667 0 948.138667 0h0.128z"></path>
-</svg>
-
-    </a>
-  
-    <a href="https://github.com/fteem" rel="me noopener" class="iconfont"
-      title="github"  target="_blank"
-      >
-      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="36" height="36">
-  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
-</svg>
-
-    </a>
-  
-    <a href="blog@ieftimov.com" rel="me noopener" class="iconfont"
-      title="email"  target="_blank"
-      >
-      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="36" height="36">
-  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
-</svg>
-
-    </a>
-
-
-<a href="https://ieftimov.com/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
-    class="iconfont" title="rss" target="_blank">
-    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="30" height="30">
-  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
-</svg>
-
-  </a>
-   
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
 </div>
 
-<div class="copyright">
-  <span class="power-by">
-    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
-  </span>
-  <span class="division">|</span>
-  <span class="theme-info">
-    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
-  </span>
 
-  <span class="copyright-year">
-    &copy;
-    
-      2014 -
-    2019
-    <span class="heart">
-      
-      <i class="iconfont">
-        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="14" height="14">
-  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
-   fill="#8a8a8a"></path>
-</svg>
-
-      </i>
-    </span><span class="author">
-        Ilija Eftimov
-        
-      </span></span>
-
-  
-  
-
-  
-</div>
-
-    </footer>
-
-    <div class="back-to-top" id="back-to-top">
-      <i class="iconfont">
-        
-        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="35" height="35">
-  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
-</svg>
-
-      </i>
-    </div>
-  </div>
-  
-<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
-  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
-
-
-
-
-<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
-
-
-
-
-
-
-  
-    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
-    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
-    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
 </body>
 </html>

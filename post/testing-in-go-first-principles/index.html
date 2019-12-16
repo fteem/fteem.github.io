@@ -1,106 +1,424 @@
 <!DOCTYPE html>
-<html lang="en" itemscope itemtype="http://schema.org/WebPage">
+<html>
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Testing in Go: First Principles - Ilija Eftimov</title>
-  
-
-<meta name="renderer" content="webkit" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
-
-<meta name="MobileOptimized" content="width"/>
-<meta name="HandheldFriendly" content="true"/>
-
-
-<meta name="applicable-device" content="pc,mobile">
-
-<meta name="theme-color" content="#f8f5ec" />
-<meta name="msapplication-navbutton-color" content="#f8f5ec">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
-
-<meta name="mobile-web-app-capable" content="yes">
-
-<meta name="author" content="Ilija Eftimov" />
-  <meta name="description" content="If you have any programming experience, whether that&amp;rsquo;s as a student or a professional, there&amp;rsquo;s a good chance you have heard about testing. It&amp;rsquo;s an omnipresent topic, be it on conferences, books or articles. (See what I did there?)
-Also, it seems like a topic that everyone agrees on - yes, testing is good and we should do it. There are many reasons why folks consider testing good for you code." />
-
-  <meta name="keywords" content="Software, Programming, Computer Science, Products" />
-
-
-
-
-
-
-<meta name="generator" content="Hugo 0.55.6" />
-
-
-<link rel="canonical" href="https://ieftimov.com/post/testing-in-go-first-principles/" />
-
-
-
-<link rel="icon" href="/favicon.ico" />
-
-
-
-
-
-
-
-
-
-
-
-<link rel="stylesheet" href="/sass/jane.min.ec807d8b802a40889537c26e014f733206312ea440d42e1f0dabed80918de1ac.css" integrity="sha256-7IB9i4AqQIiVN8JuAU9zMgYxLqRA1C4fDavtgJGN4aw=" media="screen" crossorigin="anonymous">
-
-
-
-
-<link rel="stylesheet" href="/css/overrides.css">
-
-<link rel="stylesheet" href="/css/subscribe.css">
-
-
-<meta property="og:title" content="Testing in Go: First Principles" />
-<meta property="og:description" content="If you have any programming experience, whether that&rsquo;s as a student or a professional, there&rsquo;s a good chance you have heard about testing. It&rsquo;s an omnipresent topic, be it on conferences, books or articles. (See what I did there?)
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Testing in Go: First Principles - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Testing in Go: First Principles" />
+<meta property="og:description" content="If you have any programming experience, whether that&#39;s as a student or a professional, there&#39;s a good chance you have heard about testing. It&#39;s an omnipresent topic, be it on conferences, books or articles. (See what I did there?)
 Also, it seems like a topic that everyone agrees on - yes, testing is good and we should do it. There are many reasons why folks consider testing good for you code." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://ieftimov.com/post/testing-in-go-first-principles/" />
-
 <meta property="og:image" content="https://ieftimov.com/cards/testing-in-go-first-principles.png" />
-<meta property="article:published_time" content="2019-05-08T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2019-05-08T00:00:00&#43;00:00"/>
-
-<meta itemprop="name" content="Testing in Go: First Principles">
-<meta itemprop="description" content="If you have any programming experience, whether that&rsquo;s as a student or a professional, there&rsquo;s a good chance you have heard about testing. It&rsquo;s an omnipresent topic, be it on conferences, books or articles. (See what I did there?)
-Also, it seems like a topic that everyone agrees on - yes, testing is good and we should do it. There are many reasons why folks consider testing good for you code.">
-
-
-<meta itemprop="datePublished" content="2019-05-08T00:00:00&#43;00:00" />
-<meta itemprop="dateModified" content="2019-05-08T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="2224">
-
-  <meta itemprop="image" content="https://ieftimov.com/cards/testing-in-go-first-principles.png">
-
-
-
-<meta itemprop="keywords" content="" />
+<meta property="article:published_time" content="2019-05-08T00:00:00+00:00" />
+<meta property="article:modified_time" content="2019-05-08T00:00:00+00:00" />
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://ieftimov.com/cards/testing-in-go-first-principles.png"/>
 
 <meta name="twitter:title" content="Testing in Go: First Principles"/>
-<meta name="twitter:description" content="If you have any programming experience, whether that&rsquo;s as a student or a professional, there&rsquo;s a good chance you have heard about testing. It&rsquo;s an omnipresent topic, be it on conferences, books or articles. (See what I did there?)
+<meta name="twitter:description" content="If you have any programming experience, whether that&#39;s as a student or a professional, there&#39;s a good chance you have heard about testing. It&#39;s an omnipresent topic, be it on conferences, books or articles. (See what I did there?)
 Also, it seems like a topic that everyone agrees on - yes, testing is good and we should do it. There are many reasons why folks consider testing good for you code."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.comcss/overrides.css" />
+	
 
-<!--[if lte IE 9]>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
-<![endif]-->
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.comjs/main.js"></script><script src="https://ieftimov.comjs/tooltip.js"></script>
+</head>
 
-<!--[if lt IE 9]>
-  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
-<![endif]-->
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">08</span>
+							<span class="rest">May 2019</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Testing in Go: First Principles</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>If you have any programming experience, whether that's as a student or a
+professional, there's a good chance you have heard about testing. It's an
+omnipresent topic, be it on conferences, books or articles. (See what I did
+there?)</p>
+<p>Also, it seems like a topic that everyone agrees on - yes, testing is good and
+we should do it. There are many reasons why folks consider testing good for you
+code. But, before we go down the rabbit hole and discuss the pros and cons of
+testing, let's learn how we can test our Go code.</p>
+<p>Of course, through actual examples that you can follow along.</p>
+<h2 id="what-is-testing">What is testing?</h2>
+<p>Now, before we go on, I'll take you on a short trip down memory lane. At this
+moment of my carreer I have probably written thousands (if not tens of
+thousands) of test cases. And I have failed quite a bit at testing, especially
+as a novice. So if you are new to test or just haven't gotten it under your
+belt yet – worry not, I got you covered.</p>
+<p>Before you start with testing there's one idea I would like you to know: just
+like your programs are consisted of code, also your tests are code. And really,
+that's something you have to remember. It's simple - test are code.</p>
+<p>What this testing code does is it invokes the code that powers your programs
+and checks if what it returns is what is expected. Quite simple, innit?</p>
+<p>It all revolves around setting expectations and then making your program meet
+these expectations. Usually languages provide you with packages or libraries to
+test your code, with each language or library having its own conventions on
+what testing looks like. But really, it's just that - meeting expectations.</p>
+<p>That's testing in a nutshell. Let's move on.</p>
+<h2 id="what-is-a-test">What is a test?</h2>
+<p>So, what is a test then?</p>
+<p>It's quite simple - repeatable steps by which one can verify if something is
+working as it is supposed to.</p>
+<p>What is a test in Go terms?</p>
+<p>Quite similarly, it's a piece of code that you can run many times and it will
+check if your code is working as intended.</p>
+<p>That's it. Shall we write one?</p>
+<p><img src="/testing-in-go-first-principles/drawing.png" alt=""></p>
+<h2 id="testing-our-go-code">Testing our Go code</h2>
+<p>To write a test, we first have to have a program to test. Let's implement a simple
+function that will take a slice of <code>int</code> and return its biggest number:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">Max</span>(numbers []<span style="color:#458;font-weight:bold">int</span>) <span style="color:#458;font-weight:bold">int</span> {
+	<span style="font-weight:bold">var</span> max <span style="color:#458;font-weight:bold">int</span>
+
+	<span style="font-weight:bold">for</span> _, number <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> numbers {
+		<span style="font-weight:bold">if</span> number &gt; max {
+			max = number
+		}
+	}
+
+	<span style="font-weight:bold">return</span> max
+}</code></pre></div>
+<p>Pretty simple. We take a slice of <code>int</code>s and return the largest. So, how can we
+test that our code works as expected?</p>
+<p>Let's write a function that will take two arguments: a slice of <code>int</code>s and the
+maximum of the <code>int</code>s in that slice. We will call it <code>TestMax</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestMax</span>(numbers []<span style="color:#458;font-weight:bold">int</span>, expected <span style="color:#458;font-weight:bold">int</span>) <span style="color:#458;font-weight:bold">string</span> {
+	output <span style="font-weight:bold">:=</span> <span style="color:#b84">&#34;Pass&#34;</span>
+	actual <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">Max</span>(numbers)
+	<span style="font-weight:bold">if</span> actual <span style="font-weight:bold">!=</span> expected {
+		output = fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Expected %v, but instead got %v!&#34;</span>, expected, actual)
+	}
+	<span style="font-weight:bold">return</span> output
+}</code></pre></div>
+<p>The <code>TestMax</code> function will check if the result of the <code>Max</code> function call
+matches the <code>expected</code> result. If it does, it will simply return <code>&quot;Pass&quot;</code>,
+otherwise it will return an informative string with what it was expecting and
+what it got.</p>
+<p>Let's use it in our <code>main</code> function:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	fmt.<span style="color:#900;font-weight:bold">Println</span>(<span style="color:#900;font-weight:bold">TestMax</span>([]<span style="color:#458;font-weight:bold">int</span>{<span style="color:#099">1</span>, <span style="color:#099">2</span>, <span style="color:#099">3</span>, <span style="color:#099">4</span>}, <span style="color:#099">4</span>))
+}</code></pre></div>
+<p>The <code>main</code> function will invoke the <code>TestMax</code> once here, with a slice that
+contains <code>1,2,3,4</code> as argument and <code>4</code>  as the expected maximum.</p>
+<p>You might already be thinking that the example will pass. Let's run it:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#a61717;background-color:#e3d2d2">$</span> <span style="font-weight:bold">go</span> run max.<span style="font-weight:bold">go</span>
+Pass</code></pre></div>
+<p>As expected - the example passed. Let's add two more:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	fmt.<span style="color:#900;font-weight:bold">Println</span>(<span style="color:#900;font-weight:bold">TestMax</span>([]<span style="color:#458;font-weight:bold">int</span>{<span style="color:#099">1</span>, <span style="color:#099">2</span>, <span style="color:#099">3</span>, <span style="color:#099">4</span>}, <span style="color:#099">4</span>))
+	fmt.<span style="color:#900;font-weight:bold">Println</span>(<span style="color:#900;font-weight:bold">TestMax</span>([]<span style="color:#458;font-weight:bold">int</span>{<span style="color:#099">4</span>, <span style="color:#099">2</span>, <span style="color:#099">1</span>, <span style="color:#099">4</span>}, <span style="color:#099">3</span>))
+	fmt.<span style="color:#900;font-weight:bold">Println</span>(<span style="color:#900;font-weight:bold">TestMax</span>([]<span style="color:#458;font-weight:bold">int</span>{<span style="color:#099">0</span>, <span style="color:#099">0</span>, <span style="color:#099">0</span>, <span style="color:#099">0</span>}, <span style="color:#099">1</span>))
+}</code></pre></div>
+<p>Here we add two more examples, with two different pairs of arguments:</p>
+<ol>
+<li>A slice containing <code>4,2,1,4</code> and <code>3</code>, the expected maximum</li>
+<li>A slice containing four zeroes, and <code>1</code> as the expected maximum</li>
+</ol>
+<p>If we would run it, both of these examples would fail. The reason for the
+failures would be that none of the two slices of <code>int</code>s that we added do not
+match the expected maximum that we pass as a second argument to both of the
+calls. In the second example the maximum is <code>4</code>, while we expect a <code>3</code>. In the
+third example, the maximum is <code>0</code> while we expect <code>1</code>.</p>
+<p>Testing our <code>Max</code> function can be done with just one function (<code>TestMax</code>). As
+long as we can supply an input for the function and an expected output we can
+test our functions.</p>
+<p>What is important to understand here is that testing can be very simple. Here,
+we are able to check if our function is working as expected without any fancy
+frameworks and libraries - just plain Go code. If you have any experience with
+testing you already know that this approach does not scale too far, but it's
+very good to understand the idea that tests are just code.</p>
+<p>Using this approach, we could technically even write our own testing
+framework/library. The good thing is that Go already has a testing package
+included in its standard library, so we can avoid that.</p>
+
+
+
+
+
+
+
+<div id="mc_embed_signup">
+<form action="https://pm.us20.list-manage.com/subscribe/post?u=d9a6471309140dcd520d05346&amp;id=2aac491644" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+    <div id="mc_embed_signup_scroll">
+        <div class="heading">Join The Newsletter</div>
+        <p>
+            I write about backend technologies, programming and cloud architectures. Join hundreds of other developers that get my content, twice a month. Unsubscribe whenever. Never spam.
+        </p>
+	<input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Your email address" required>
+        <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
+
+      
+      <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_d9a6471309140dcd520d05346_2aac491644" tabindex="-1" value=""></div>
+
+    <p>You can also subscribe <a href="/index.xml">via RSS</a>.</p>
+    </div>
+</form>
+</div>
+
+
+<h2 id="testing-with-gos-testing-package">Testing with Go's <code>testing</code> package</h2>
+<p>Golang's <a href="https://golang.org/pkg/testing/"><code>testing</code></a> package provides support
+for automated testing of Go packages. It exposes a set of useful functions that
+we can use to get couple of benefits: a better looking code, standardised
+approach to testing and nicer looking output. Also, we eliminate the need to
+create our own reporting of failed/passed tests.</p>
+<p>Let's see how we could test our <code>Max</code> function using the <code>testing</code> package.</p>
+<p>First, we need to create a <code>max_test.go</code> file, which will be the test
+counterpart to our <code>max.go</code> (where our <code>Max</code> function is defined). Most
+imporantly, both of the files have to be part of the same package (in our
+example <code>main</code>):</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#998;font-style:italic">// max_test.go
+</span><span style="color:#998;font-style:italic"></span><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> <span style="color:#b84">&#34;testing&#34;</span>
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestMax</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	actual <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">Max</span>([]<span style="color:#458;font-weight:bold">int</span>{<span style="color:#099">1</span>, <span style="color:#099">2</span>, <span style="color:#099">3</span>, <span style="color:#099">4</span>})
+	<span style="font-weight:bold">if</span> actual <span style="font-weight:bold">!=</span> <span style="color:#099">4</span> {
+		t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Expected %d, got %d&#34;</span>, <span style="color:#099">4</span>, actual)
+	}
+}</code></pre></div>
+<p>The <code>testing</code> package that is imported allows for benchmarking and testing. In
+our test we use the <code>testing.T</code> type, which when passed to Test functions
+manages the test state and formats the test logs.</p>
+<p>Within the <code>TestMax</code> function, we get the result of the <code>Max</code> function and we
+assign it to <code>actual</code>. Then, we compare <code>actual</code> to the expected result (<code>4</code>).
+If the comparison fails, then we make the test fail by using the <code>t.Errorf</code>
+function and we supply the error message.</p>
+<h2 id="what-happens-when-we-run-go-test">What happens when we run <code>go test</code></h2>
+<p>Golang's <code>testing</code> package also comes with its buddy – the <code>go test</code> command.
+This command automates testing the packages named by the import paths. <code>go test</code> recompiles each package along with any files with names matching the file
+pattern <code>*_test.go</code>.</p>
+<p>To run this file, we have to use the <code>go test</code> command:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">› go test
+PASS
+ok  	github.com/fteem/testing_in_go	0.007s</code></pre></div>
+<p>As you can see, we did not need to tell Golang which tests to run - it figured
+this out on its own. This is because <code>go test</code> is smartly done, with two
+different running modes.</p>
+<p>The first mode, is called local directory mode. This mode is active whe the
+command invoked with no arguments. In local directory mode, <code>go test</code> will
+compile the package sources and the tests found in the current directory and
+then will run the resulting test binary.</p>
+<p>After the package test finishes, <code>go test</code> prints a summary line showing the
+test status (<code>ok</code> or <code>FAIL</code>), package name, and elapsed time. This is what
+we actually see in our output - our test have passed. Looking at the output
+above we can also see that they passed in <code>0.007s</code>. Pretty fast!</p>
+<p>The second mode is called package list mode. This mode is activated when the
+command is invoked with explicit arguments. In this mode, <code>go test</code> will
+compile and test each of the packages listed as arguments. If a package test
+passes, <code>go test</code> prints only the final &lsquo;ok&rsquo; summary line. If a package test
+fails, go test prints the full test output.</p>
+<p>For now, we can stick with using the first mode. We will see when and how to
+use the second mode in one of the next articles.</p>
+<p><img src="/testing-in-go-first-principles/cancel.png" alt=""></p>
+<h2 id="dealing-with-test-failures">Dealing with test failures</h2>
+<p>Now that we have a passing example, let's see what tests failures look like. Let's
+add another example, which we will purposely fail:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestMaxInvalid</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	actual <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">Max</span>([]<span style="color:#458;font-weight:bold">int</span>{<span style="color:#099">1</span>, <span style="color:#099">2</span>, <span style="color:#099">3</span>, <span style="color:#099">4</span>})
+	<span style="font-weight:bold">if</span> actual <span style="font-weight:bold">!=</span> <span style="color:#099">5</span> {
+		t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Expected %d, got %d&#34;</span>, <span style="color:#099">5</span>, actual)
+	}
+}</code></pre></div>
+<p>The <code>TestMaxInvalid</code> is very similar to the test function we had before, with
+having the wrong expectations being the only difference. Simply put - we know
+that <code>Max</code> will return <code>4</code> here, but we are expecting a <code>5</code>.</p>
+<p>While we are here, let's add one more example where we would pass an empty slice
+as an argument to <code>Max</code> and expect <code>-1</code> as a result:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestMaxEmpty</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	actual <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">Max</span>([]<span style="color:#458;font-weight:bold">int</span>{})
+	<span style="font-weight:bold">if</span> actual <span style="font-weight:bold">!=</span> <span style="font-weight:bold">-</span><span style="color:#099">1</span> {
+		t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Expected %v, got %d&#34;</span>, <span style="font-weight:bold">-</span><span style="color:#099">1</span>, actual)
+	}
+}</code></pre></div>
+<p>Let's run <code>go test</code> again and see the output:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#a61717;background-color:#e3d2d2">$</span> <span style="font-weight:bold">go</span> test
+<span style="font-weight:bold">--</span><span style="font-weight:bold">-</span> FAIL: <span style="color:#900;font-weight:bold">TestMaxInvalid</span> (<span style="color:#099">0.00</span>s)
+    max_test.<span style="font-weight:bold">go</span>:<span style="color:#099">15</span>: Expected <span style="color:#099">5</span>, got <span style="color:#099">4</span>
+<span style="font-weight:bold">--</span><span style="font-weight:bold">-</span> FAIL: <span style="color:#900;font-weight:bold">TestMaxEmpty</span> (<span style="color:#099">0.00</span>s)
+    max_test.<span style="font-weight:bold">go</span>:<span style="color:#099">22</span>: Expected <span style="font-weight:bold">-</span><span style="color:#099">1</span>, got <span style="color:#099">0</span>
+FAIL
+exit status <span style="color:#099">1</span>
+FAIL	github.com<span style="font-weight:bold">/</span>fteem<span style="font-weight:bold">/</span>testing_in_go	<span style="color:#099">0.009</span>s</code></pre></div>
+<p>The two new tests failed unsurprisingly. If we inspect the output here we will
+notice that there are two lines per failed tests. Both of these lines, start
+with <code>--- FAIL: </code> and have the test function name after. At the end of the line
+there's also the time it took for the test function to run.</p>
+<p>In the second lines, we see the test file name with the line number of where the
+failure occurred. More specifically, this is where in both of our test files
+we invoke <code>t.Errorf</code>.</p>
+<p>Let's make our tests pass. First, we need to fix the expectation in the
+<code>TestMaxInvalid</code> test function:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestMaxInvalid</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	actual <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">Max</span>([]<span style="color:#458;font-weight:bold">int</span>{<span style="color:#099">1</span>, <span style="color:#099">2</span>, <span style="color:#099">3</span>, <span style="color:#099">4</span>})
+	<span style="font-weight:bold">if</span> actual <span style="font-weight:bold">!=</span> <span style="color:#099">4</span> {
+		t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Expected %d, got %d&#34;</span>, <span style="color:#099">4</span>, actual)
+	}
+}</code></pre></div>
+<p>Now, when we run it we should see one less failure:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">› go test
+--- FAIL: TestMaxEmpty (0.00s)
+    max_test.go:22: Expected -1, got 0
+FAIL
+exit status 1
+FAIL	github.com/fteem/testing_in_go	0.006s</code></pre></div>
+<p>Good. We could technically remove the <code>TestMaxInvalid</code> as it is the same as the
+<code>TestMax</code> function. To make the other test pass, we need to return <code>-1</code> when the
+slice received as argument in <code>Max</code> is empty:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">Max</span>(numbers []<span style="color:#458;font-weight:bold">int</span>) <span style="color:#458;font-weight:bold">int</span> {
+	<span style="font-weight:bold">if</span> <span style="color:#999">len</span>(numbers) <span style="font-weight:bold">==</span> <span style="color:#099">0</span> {
+		<span style="font-weight:bold">return</span> <span style="font-weight:bold">-</span><span style="color:#099">1</span>
+	}
+
+	<span style="font-weight:bold">var</span> max <span style="color:#458;font-weight:bold">int</span>
+
+	<span style="font-weight:bold">for</span> _, number <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> numbers {
+		<span style="font-weight:bold">if</span> number &gt; max {
+			max = number
+		}
+	}
+
+	<span style="font-weight:bold">return</span> max
+}</code></pre></div>
+<p>The <code>len</code> function will check the length of the <code>numbers</code> slice. If it's <code>0</code>,
+it will return <code>-1</code>. Let's run the tests again:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">› go test
+PASS
+ok  	github.com/fteem/testing_in_go	0.006s</code></pre></div>
+<p>Back to passing tests. With our new change the <code>Max</code> function will return <code>-1</code>
+when the slice in arguments is empty.</p>
+
+
+
+
+
+
+
+<div id="mc_embed_signup">
+<form action="https://pm.us20.list-manage.com/subscribe/post?u=d9a6471309140dcd520d05346&amp;id=2aac491644" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+    <div id="mc_embed_signup_scroll">
+        <div class="heading">Join The Newsletter</div>
+        <p>
+            I write about backend technologies, programming and cloud architectures. Join hundreds of other developers that get my content, twice a month. Unsubscribe whenever. Never spam.
+        </p>
+	<input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Your email address" required>
+        <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
+
+      
+      <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_d9a6471309140dcd520d05346_2aac491644" tabindex="-1" value=""></div>
+
+    <p>You can also subscribe <a href="/index.xml">via RSS</a>.</p>
+    </div>
+</form>
+</div>
+
+
+<h2 id="in-closing">In closing</h2>
+<p>What we talked about in this article is about what tests are in fact. We
+understood that testing is useful and that test are just code - nothing more.
+We saw how we could test our own code without any libraries or frameworks, with
+just simple Golang code.</p>
+<p>Then, we went on to explore Golang's <code>testing</code> package. We saw how an actual
+test function looks like. We talked about function definitions, the <code>testing.T</code>
+argument that we have to pass in and how to fail a test. Then we added some
+more tests for our <code>Max</code> function and made its tests pass.</p>
+<p>As you can see, testing in a nutshell is a very simple but powerful technique.
+With a little bit of simple code we can assure that our code functions in an
+expected matter, that we can control. And with any new functionality added to
+our code, we can easily throw in another test to make sure it is covered.</p>
+<p>Obviously, there is much more to testing that we will explore in other
+articles, but now that we are confident with these basic ideas and approaches
+we can build our knowledge on top of.</p>
+<p>Before we stop here, please let me know in the comments what you like and
+dislike about testing your code? Also, what topics in testing you find
+confusing or challenging?</p>
+
+			</div>
+
+			<div class="tags">
+				
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
 
 
 <script type="application/javascript">
@@ -113,974 +431,6 @@ if (!doNotTrack) {
 }
 </script>
 <script async src='https://www.google-analytics.com/analytics.js'></script>
-
-
-<script type='text/javascript'>
-window.Tooltip||function(t,e){var o={
-url:"https://cdn.tooltip.io/static/player.js",
-key:"189f262e-7c0e-4a30-b1dd-1e425f03fe5e",
-async:true
-};
-window.Tooltip={cs:[],_apiKey:o.key};for(
-var r=["identify","goal","updateUserData","start","stop","refresh","show","hide","on"],
-i={},n=0;n<r.length;n++){var a=r[n];i[a]=function(t){return function(){var e=Array.prototype.slice.call(arguments);
-window.Tooltip.cs.push({method:t,args:e})}}(a)}window.Tooltip.API=i;var n=t.createElement(e),s=t.getElementsByTagName(e)[0];
-n.type="text/javascript",n.async=o.async,s.parentNode.insertBefore(n,s),n.src=o.url}(document,"script");
-</script>
-
-
-
-</head>
-<body>
-  <div id="mobile-navbar" class="mobile-navbar">
-  <div class="mobile-header-logo">
-    <a href="/" class="logo">Ilija Eftimov</a>
-  </div>
-  <div class="mobile-navbar-icon">
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
-</div>
-<nav id="mobile-menu" class="mobile-menu slideout-menu">
-  <ul class="mobile-menu-list">
-    <li class="mobile-menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
-          
-        
-      </li><li class="mobile-menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
-          
-        
-      </li><li class="mobile-menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/about/">About</a>
-          
-        
-      </li>
-    
-  </ul>
-</nav>
-
-
-  
-    
-
-
-
-
-
-
-  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
-  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
-
-
-
-
-<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
-
-<div class="pswp__bg"></div>
-
-<div class="pswp__scroll-wrap">
-    
-    <div class="pswp__container">
-      <div class="pswp__item"></div>
-      <div class="pswp__item"></div>
-      <div class="pswp__item"></div>
-    </div>
-    
-    <div class="pswp__ui pswp__ui--hidden">
-    <div class="pswp__top-bar">
-      
-      <div class="pswp__counter"></div>
-      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
-      <button class="pswp__button pswp__button--share" title="Share"></button>
-      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
-      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
-      
-      
-      <div class="pswp__preloader">
-        <div class="pswp__preloader__icn">
-          <div class="pswp__preloader__cut">
-            <div class="pswp__preloader__donut"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-      <div class="pswp__share-tooltip"></div>
-    </div>
-    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
-    </button>
-    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
-    </button>
-    <div class="pswp__caption">
-      <div class="pswp__caption__center"></div>
-    </div>
-    </div>
-    </div>
-</div>
-
-  
-
-  
-
-  <header id="header" class="header container">
-    <div class="logo-wrapper">
-  <a href="/" class="logo">
-    
-      Ilija Eftimov
-    
-  </a>
-</div>
-
-<nav class="site-navbar">
-  <ul id="menu" class="menu">
-    
-    
-        <li class="menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
-          
-
-        
-
-      </li>
-    
-        <li class="menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
-          
-
-        
-
-      </li>
-    
-        <li class="menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/about/">About</a>
-          
-
-        
-
-      </li>
-    
-    
-  </ul>
-</nav>
-
-  </header>
-
-  <div id="mobile-panel">
-    <main id="main" class="main bg-llight">
-      <div class="content-wrapper">
-        <div id="content" class="content container">
-          <article class="post bg-white">
-    
-    <header class="post-header">
-      <h1 class="post-title">Testing in Go: First Principles</h1>
-      
-      <div class="post-meta">
-        <time datetime="2019-05-08" class="post-time">
-          08-05-2019
-        </time>
-        <div class="post-category">
-            <a href="https://ieftimov.com/categories/go/"> go </a>
-            <a href="https://ieftimov.com/categories/testing-in-go/"> testing-in-go </a>
-            
-          </div>
-        
-
-        
-        
-
-        
-        
-      </div>
-    </header>
-
-    
-    
-
-    
-    <div class="post-content">
-      
-
-<p>If you have any programming experience, whether that&rsquo;s as a student or a
-professional, there&rsquo;s a good chance you have heard about testing. It&rsquo;s an
-omnipresent topic, be it on conferences, books or articles. (See what I did
-there?)</p>
-
-<p>Also, it seems like a topic that everyone agrees on - yes, testing is good and
-we should do it. There are many reasons why folks consider testing good for you
-code. But, before we go down the rabbit hole and discuss the pros and cons of
-testing, let&rsquo;s learn how we can test our Go code.</p>
-
-<p>Of course, through actual examples that you can follow along.</p>
-
-<h2 id="what-is-testing">What is testing?</h2>
-
-<p>Now, before we go on, I&rsquo;ll take you on a short trip down memory lane. At this
-moment of my carreer I have probably written thousands (if not tens of
-thousands) of test cases. And I have failed quite a bit at testing, especially
-as a novice. So if you are new to test or just haven&rsquo;t gotten it under your
-belt yet – worry not, I got you covered.</p>
-
-<p>Before you start with testing there&rsquo;s one idea I would like you to know: just
-like your programs are consisted of code, also your tests are code. And really,
-that&rsquo;s something you have to remember. It&rsquo;s simple - test are code.</p>
-
-<p>What this testing code does is it invokes the code that powers your programs
-and checks if what it returns is what is expected. Quite simple, innit?</p>
-
-<p>It all revolves around setting expectations and then making your program meet
-these expectations. Usually languages provide you with packages or libraries to
-test your code, with each language or library having its own conventions on
-what testing looks like. But really, it&rsquo;s just that - meeting expectations.</p>
-
-<p>That&rsquo;s testing in a nutshell. Let&rsquo;s move on.</p>
-
-<h2 id="what-is-a-test">What is a test?</h2>
-
-<p>So, what is a test then?</p>
-
-<p>It&rsquo;s quite simple - repeatable steps by which one can verify if something is
-working as it is supposed to.</p>
-
-<p>What is a test in Go terms?</p>
-
-<p>Quite similarly, it&rsquo;s a piece of code that you can run many times and it will
-check if your code is working as intended.</p>
-
-<p>That&rsquo;s it. Shall we write one?</p>
-
-<p><img src="/testing-in-go-first-principles/drawing.png" alt="" /></p>
-
-<h2 id="testing-our-go-code">Testing our Go code</h2>
-
-<p>To write a test, we first have to have a program to test. Let&rsquo;s implement a simple
-function that will take a slice of <code>int</code> and return its biggest number:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">Max</span><span class="p">(</span><span class="nx">numbers</span> <span class="p">[]</span><span class="kt">int</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
-	<span class="kd">var</span> <span class="nx">max</span> <span class="kt">int</span>
-
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">number</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">numbers</span> <span class="p">{</span>
-		<span class="k">if</span> <span class="nx">number</span> <span class="p">&gt;</span> <span class="nx">max</span> <span class="p">{</span>
-			<span class="nx">max</span> <span class="p">=</span> <span class="nx">number</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-
-	<span class="k">return</span> <span class="nx">max</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>Pretty simple. We take a slice of <code>int</code>s and return the largest. So, how can we
-test that our code works as expected?</p>
-
-<p>Let&rsquo;s write a function that will take two arguments: a slice of <code>int</code>s and the
-maximum of the <code>int</code>s in that slice. We will call it <code>TestMax</code>:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestMax</span><span class="p">(</span><span class="nx">numbers</span> <span class="p">[]</span><span class="kt">int</span><span class="p">,</span> <span class="nx">expected</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
-	<span class="nx">output</span> <span class="o">:=</span> <span class="s">&#34;Pass&#34;</span>
-	<span class="nx">actual</span> <span class="o">:=</span> <span class="nf">Max</span><span class="p">(</span><span class="nx">numbers</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="nx">expected</span> <span class="p">{</span>
-		<span class="nx">output</span> <span class="p">=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Expected %v, but instead got %v!&#34;</span><span class="p">,</span> <span class="nx">expected</span><span class="p">,</span> <span class="nx">actual</span><span class="p">)</span>
-	<span class="p">}</span>
-	<span class="k">return</span> <span class="nx">output</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>The <code>TestMax</code> function will check if the result of the <code>Max</code> function call
-matches the <code>expected</code> result. If it does, it will simply return <code>&quot;Pass&quot;</code>,
-otherwise it will return an informative string with what it was expecting and
-what it got.</p>
-
-<p>Let&rsquo;s use it in our <code>main</code> function:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nf">TestMax</span><span class="p">([]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">},</span> <span class="mi">4</span><span class="p">))</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>The <code>main</code> function will invoke the <code>TestMax</code> once here, with a slice that
-contains <code>1,2,3,4</code> as argument and <code>4</code>  as the expected maximum.</p>
-
-<p>You might already be thinking that the example will pass. Let&rsquo;s run it:</p>
-
-<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="err">$</span> <span class="k">go</span> <span class="nx">run</span> <span class="nx">max</span><span class="p">.</span><span class="k">go</span>
-<span class="nx">Pass</span></code></pre></div>
-
-<p>As expected - the example passed. Let&rsquo;s add two more:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nf">TestMax</span><span class="p">([]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">},</span> <span class="mi">4</span><span class="p">))</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nf">TestMax</span><span class="p">([]</span><span class="kt">int</span><span class="p">{</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">},</span> <span class="mi">3</span><span class="p">))</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nf">TestMax</span><span class="p">([]</span><span class="kt">int</span><span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">},</span> <span class="mi">1</span><span class="p">))</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>Here we add two more examples, with two different pairs of arguments:</p>
-
-<ol>
-<li>A slice containing <code>4,2,1,4</code> and <code>3</code>, the expected maximum</li>
-<li>A slice containing four zeroes, and <code>1</code> as the expected maximum</li>
-</ol>
-
-<p>If we would run it, both of these examples would fail. The reason for the
-failures would be that none of the two slices of <code>int</code>s that we added do not
-match the expected maximum that we pass as a second argument to both of the
-calls. In the second example the maximum is <code>4</code>, while we expect a <code>3</code>. In the
-third example, the maximum is <code>0</code> while we expect <code>1</code>.</p>
-
-<p>Testing our <code>Max</code> function can be done with just one function (<code>TestMax</code>). As
-long as we can supply an input for the function and an expected output we can
-test our functions.</p>
-
-<p>What is important to understand here is that testing can be very simple. Here,
-we are able to check if our function is working as expected without any fancy
-frameworks and libraries - just plain Go code. If you have any experience with
-testing you already know that this approach does not scale too far, but it&rsquo;s
-very good to understand the idea that tests are just code.</p>
-
-<p>Using this approach, we could technically even write our own testing
-framework/library. The good thing is that Go already has a testing package
-included in its standard library, so we can avoid that.</p>
-
-
-
-
-
-
-
-
-<div id="mc_embed_signup">
-<form action="https://pm.us20.list-manage.com/subscribe/post?u=d9a6471309140dcd520d05346&amp;id=2aac491644" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
-    <div id="mc_embed_signup_scroll">
-        <div class="heading">Join The Newsletter</div>
-        <p>
-            I write about backend technologies, programming and cloud architectures. Join hundreds of other developers that get my content, twice a month. Unsubscribe whenever. Never any spam, ads, or affiliate links.
-        </p>
-	<input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Your email address" required>
-        <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
-
-      
-      <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_d9a6471309140dcd520d05346_2aac491644" tabindex="-1" value=""></div>
-
-    <p>You can also subscribe <a href="https://ieftimov.com/index.xml">via RSS</a>.</p>
-    </div>
-</form>
-</div>
-
-
-
-<h2 id="testing-with-go-s-testing-package">Testing with Go&rsquo;s <code>testing</code> package</h2>
-
-<p>Golang&rsquo;s <a href="https://golang.org/pkg/testing/"><code>testing</code></a> package provides support
-for automated testing of Go packages. It exposes a set of useful functions that
-we can use to get couple of benefits: a better looking code, standardised
-approach to testing and nicer looking output. Also, we eliminate the need to
-create our own reporting of failed/passed tests.</p>
-
-<p>Let&rsquo;s see how we could test our <code>Max</code> function using the <code>testing</code> package.</p>
-
-<p>First, we need to create a <code>max_test.go</code> file, which will be the test
-counterpart to our <code>max.go</code> (where our <code>Max</code> function is defined). Most
-imporantly, both of the files have to be part of the same package (in our
-example <code>main</code>):</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="c1">// max_test.go
-</span><span class="c1"></span><span class="kn">package</span> <span class="nx">main</span>
-
-<span class="kn">import</span> <span class="s">&#34;testing&#34;</span>
-
-<span class="kd">func</span> <span class="nf">TestMax</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">actual</span> <span class="o">:=</span> <span class="nf">Max</span><span class="p">([]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">})</span>
-	<span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="mi">4</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected %d, got %d&#34;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="nx">actual</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>The <code>testing</code> package that is imported allows for benchmarking and testing. In
-our test we use the <code>testing.T</code> type, which when passed to Test functions
-manages the test state and formats the test logs.</p>
-
-<p>Within the <code>TestMax</code> function, we get the result of the <code>Max</code> function and we
-assign it to <code>actual</code>. Then, we compare <code>actual</code> to the expected result (<code>4</code>).
-If the comparison fails, then we make the test fail by using the <code>t.Errorf</code>
-function and we supply the error message.</p>
-
-<h2 id="what-happens-when-we-run-go-test">What happens when we run <code>go test</code></h2>
-
-<p>Golang&rsquo;s <code>testing</code> package also comes with its buddy – the <code>go test</code> command.
-This command automates testing the packages named by the import paths. <code>go
-test</code> recompiles each package along with any files with names matching the file
-pattern <code>*_test.go</code>.</p>
-
-<p>To run this file, we have to use the <code>go test</code> command:</p>
-
-<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">› go test
-PASS
-ok  	github.com/fteem/testing_in_go	0.007s</code></pre></div>
-
-<p>As you can see, we did not need to tell Golang which tests to run - it figured
-this out on its own. This is because <code>go test</code> is smartly done, with two
-different running modes.</p>
-
-<p>The first mode, is called local directory mode. This mode is active whe the
-command invoked with no arguments. In local directory mode, <code>go test</code> will
-compile the package sources and the tests found in the current directory and
-then will run the resulting test binary.</p>
-
-<p>After the package test finishes, <code>go test</code> prints a summary line showing the
-test status (<code>ok</code> or <code>FAIL</code>), package name, and elapsed time. This is what
-we actually see in our output - our test have passed. Looking at the output
-above we can also see that they passed in <code>0.007s</code>. Pretty fast!</p>
-
-<p>The second mode is called package list mode. This mode is activated when the
-command is invoked with explicit arguments. In this mode, <code>go test</code> will
-compile and test each of the packages listed as arguments. If a package test
-passes, <code>go test</code> prints only the final &lsquo;ok&rsquo; summary line. If a package test
-fails, go test prints the full test output.</p>
-
-<p>For now, we can stick with using the first mode. We will see when and how to
-use the second mode in one of the next articles.</p>
-
-<p><img src="/testing-in-go-first-principles/cancel.png" alt="" /></p>
-
-<h2 id="dealing-with-test-failures">Dealing with test failures</h2>
-
-<p>Now that we have a passing example, let&rsquo;s see what tests failures look like. Let&rsquo;s
-add another example, which we will purposely fail:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestMaxInvalid</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">actual</span> <span class="o">:=</span> <span class="nf">Max</span><span class="p">([]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">})</span>
-	<span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="mi">5</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected %d, got %d&#34;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="nx">actual</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>The <code>TestMaxInvalid</code> is very similar to the test function we had before, with
-having the wrong expectations being the only difference. Simply put - we know
-that <code>Max</code> will return <code>4</code> here, but we are expecting a <code>5</code>.</p>
-
-<p>While we are here, let&rsquo;s add one more example where we would pass an empty slice
-as an argument to <code>Max</code> and expect <code>-1</code> as a result:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestMaxEmpty</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">actual</span> <span class="o">:=</span> <span class="nf">Max</span><span class="p">([]</span><span class="kt">int</span><span class="p">{})</span>
-	<span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected %v, got %d&#34;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nx">actual</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>Let&rsquo;s run <code>go test</code> again and see the output:</p>
-
-<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="err">$</span> <span class="k">go</span> <span class="nx">test</span>
-<span class="o">---</span> <span class="nx">FAIL</span><span class="p">:</span> <span class="nf">TestMaxInvalid</span> <span class="p">(</span><span class="mf">0.00</span><span class="nx">s</span><span class="p">)</span>
-    <span class="nx">max_test</span><span class="p">.</span><span class="k">go</span> <span class="nx">Expected</span> <span class="mi">5</span><span class="p">,</span> <span class="nx">got</span> <span class="mi">4</span>
-<span class="o">---</span> <span class="nx">FAIL</span><span class="p">:</span> <span class="nf">TestMaxEmpty</span> <span class="p">(</span><span class="mf">0.00</span><span class="nx">s</span><span class="p">)</span>
-    <span class="nx">max_test</span><span class="p">.</span><span class="k">go</span> <span class="nx">Expected</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nx">got</span> <span class="mi">0</span>
-<span class="nx">FAIL</span>
-<span class="nx">exit</span> <span class="nx">status</span> <span class="mi">1</span>
-<span class="nx">FAIL</span>	<span class="nx">github</span><span class="p">.</span><span class="nx">com</span><span class="o">/</span><span class="nx">fteem</span><span class="o">/</span><span class="nx">testing_in_go</span>	<span class="mf">0.009</span><span class="nx">s</span></code></pre></div>
-
-<p>The two new tests failed unsurprisingly. If we inspect the output here we will
-notice that there are two lines per failed tests. Both of these lines, start
-with <code>--- FAIL:</code> and have the test function name after. At the end of the line
-there&rsquo;s also the time it took for the test function to run.</p>
-
-<p>In the second lines, we see the test file name with the line number of where the
-failure occurred. More specifically, this is where in both of our test files
-we invoke <code>t.Errorf</code>.</p>
-
-<p>Let&rsquo;s make our tests pass. First, we need to fix the expectation in the
-<code>TestMaxInvalid</code> test function:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestMaxInvalid</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">actual</span> <span class="o">:=</span> <span class="nf">Max</span><span class="p">([]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">})</span>
-	<span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="mi">4</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected %d, got %d&#34;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="nx">actual</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>Now, when we run it we should see one less failure:</p>
-
-<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">› go test
---- FAIL: TestMaxEmpty (0.00s)
-    max_test.go Expected -1, got 0
-FAIL
-exit status 1
-FAIL	github.com/fteem/testing_in_go	0.006s</code></pre></div>
-
-<p>Good. We could technically remove the <code>TestMaxInvalid</code> as it is the same as the
-<code>TestMax</code> function. To make the other test pass, we need to return <code>-1</code> when the
-slice received as argument in <code>Max</code> is empty:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
-
-<span class="kd">func</span> <span class="nf">Max</span><span class="p">(</span><span class="nx">numbers</span> <span class="p">[]</span><span class="kt">int</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
-	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">numbers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
-	<span class="p">}</span>
-
-	<span class="kd">var</span> <span class="nx">max</span> <span class="kt">int</span>
-
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">number</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">numbers</span> <span class="p">{</span>
-		<span class="k">if</span> <span class="nx">number</span> <span class="p">&gt;</span> <span class="nx">max</span> <span class="p">{</span>
-			<span class="nx">max</span> <span class="p">=</span> <span class="nx">number</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-
-	<span class="k">return</span> <span class="nx">max</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>The <code>len</code> function will check the length of the <code>numbers</code> slice. If it&rsquo;s <code>0</code>,
-it will return <code>-1</code>. Let&rsquo;s run the tests again:</p>
-
-<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">› go test
-PASS
-ok  	github.com/fteem/testing_in_go	0.006s</code></pre></div>
-
-<p>Back to passing tests. With our new change the <code>Max</code> function will return <code>-1</code>
-when the slice in arguments is empty.</p>
-
-
-
-
-
-
-
-
-<div id="mc_embed_signup">
-<form action="https://pm.us20.list-manage.com/subscribe/post?u=d9a6471309140dcd520d05346&amp;id=2aac491644" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
-    <div id="mc_embed_signup_scroll">
-        <div class="heading">Join The Newsletter</div>
-        <p>
-            I write about backend technologies, programming and cloud architectures. Join hundreds of other developers that get my content, twice a month. Unsubscribe whenever. Never any spam, ads, or affiliate links.
-        </p>
-	<input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Your email address" required>
-        <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
-
-      
-      <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_d9a6471309140dcd520d05346_2aac491644" tabindex="-1" value=""></div>
-
-    <p>You can also subscribe <a href="https://ieftimov.com/index.xml">via RSS</a>.</p>
-    </div>
-</form>
-</div>
-
-
-
-<h2 id="in-closing">In closing</h2>
-
-<p>What we talked about in this article is about what tests are in fact. We
-understood that testing is useful and that test are just code - nothing more.
-We saw how we could test our own code without any libraries or frameworks, with
-just simple Golang code.</p>
-
-<p>Then, we went on to explore Golang&rsquo;s <code>testing</code> package. We saw how an actual
-test function looks like. We talked about function definitions, the <code>testing.T</code>
-argument that we have to pass in and how to fail a test. Then we added some
-more tests for our <code>Max</code> function and made its tests pass.</p>
-
-<p>As you can see, testing in a nutshell is a very simple but powerful technique.
-With a little bit of simple code we can assure that our code functions in an
-expected matter, that we can control. And with any new functionality added to
-our code, we can easily throw in another test to make sure it is covered.</p>
-
-<p>Obviously, there is much more to testing that we will explore in other
-articles, but now that we are confident with these basic ideas and approaches
-we can build our knowledge on top of.</p>
-
-<p>Before we stop here, please let me know in the comments what you like and
-dislike about testing your code? Also, what topics in testing you find
-confusing or challenging?</p>
-
-    </div>
-
-    
-    
-
-
-    
-    
-
-    <footer class="post-footer">
-      
-
-      
-      <nav class="post-nav">
-        
-          <a class="prev" href="/post/testing-in-go-failing-tests/">
-            
-            <i class="iconfont">
-              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="18" height="18">
-  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
-</svg>
-
-            </i>
-            <span class="prev-text nav-default">Testing in Go: Failing Tests</span>
-            <span class="prev-text nav-mobile">Prev</span>
-          </a>
-        
-          <a class="next" href="/post/deep-dive-in-upcoming-go-error-inspection-changes/">
-            <span class="next-text nav-default">Deep Dive in the Upcoming Go Error Inspection Changes</span>
-            <span class="prev-text nav-mobile">Next</span>
-            
-            <i class="iconfont">
-              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="18" height="18">
-  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
-</svg>
-
-            </i>
-          </a>
-      </nav>
-    </footer>
-  </article>
-
-  
-  
-
-  
-  
-
-  
-
-  
-  
-
-  
-
-  
-
-  <div class="disqus-comment">
-  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
-    Show Disqus Comments
-  </div>
-  <div id="disqus_thread"></div>
-  <script type="text/javascript">
-    var disqus_config = function () {
-      this.page.url = "https://ieftimov.com/post/testing-in-go-first-principles/";
-    };
-    function load_disqus() {
-      
-      
-      if (window.location.hostname === 'localhost') return;
-
-      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-      var disqus_shortname = 'eftimov';
-      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-
-      $('#load_disqus').remove();
-    };
-  </script>
-  <noscript>Please enable JavaScript to view the
-    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-  </noscript>
-  
-  </div>
-
-    
-
-        </div>
-      </div>
-    </main>
-
-    <footer id="footer" class="footer">
-      <div class="icon-links">
-  
-  
-    <a href="https://stackoverflow.com/users/601555/ilija-eftimov" rel="me noopener" class="iconfont"
-      title="stack-overflow"  target="_blank"
-      >
-      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="36" height="36">
-  <path d="M809.714286 932.571429l-638.857143 0 0-274.285714-91.428571 0 0 365.714286 821.714286 0 0-365.714286-91.428571 0 0 274.285714zm-538.285714-299.428571l18.857143-89.714286 447.428571 94.285714-18.857143 89.142857zm58.857143-213.714286l38.285714-83.428571 414.285714 193.714286-38.285714 82.857143zm114.857143-203.428571l58.285714-70.285714 350.857143 293.142857-58.285714 70.285714zm226.857143-216l272.571429 366.285714-73.142857 54.857143-272.571429-366.285714zm-410.285714 840.571429l0-90.857143 457.142857 0 0 90.857143-457.142857 0z"></path>
-</svg>
-
-    </a>
-  
-    <a href="https://twitter.com/fteem" rel="me noopener" class="iconfont"
-      title="twitter"  target="_blank"
-      >
-      <svg class="icon" viewBox="0 0 1264 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="36" height="36">
-  <path d="M1229.8616 18.043658c0 0-117.852626 63.135335-164.151872 67.344358-105.225559-164.151872-505.082682-92.598492-437.738325 223.078185C278.622548 312.675223 89.216542 47.506814 89.216542 47.506814s-117.852626 189.406006 75.762402 345.139833C127.097743 396.85567 55.544363 371.601535 55.544363 371.601535S26.081207 535.753407 253.368414 615.724832c-21.045112 29.463156-113.643603 8.418045-113.643603 8.418045s25.254134 143.10676 231.496229 180.987961c-143.10676 130.479693-387.230056 92.598492-370.393967 105.225559 206.242095 189.406006 1119.599946 231.496229 1128.01799-643.98042C1179.353331 249.539887 1263.533778 123.269217 1263.533778 123.269217s-130.479693 37.881201-138.897738 33.672179C1225.652577 98.015083 1229.8616 18.043658 1229.8616 18.043658"></path>
-</svg>
-
-    </a>
-  
-    <a href="https://www.linkedin.com/in/ieftimov/" rel="me noopener" class="iconfont"
-      title="linkedin"  target="_blank"
-      >
-      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="33" height="33">
-  <path d="M872.405333 872.618667h-151.637333v-237.610667c0-56.661333-1.152-129.578667-79.018667-129.578667-79.061333 0-91.136 61.653333-91.136 125.397334v241.792H398.976V384h145.664v66.602667h1.962667c20.352-38.4 69.845333-78.933333 143.786666-78.933334 153.642667 0 182.058667 101.12 182.058667 232.746667v268.202667zM227.712 317.141333a87.978667 87.978667 0 0 1-88.021333-88.106666 88.064 88.064 0 1 1 88.021333 88.106666z m76.032 555.477334H151.68V384h152.064v488.618667zM948.266667 0H75.562667C33.792 0 0 33.024 0 73.770667v876.458666C0 991.018667 33.792 1024 75.562667 1024h872.576C989.866667 1024 1024 991.018667 1024 950.229333V73.770667C1024 33.024 989.866667 0 948.138667 0h0.128z"></path>
-</svg>
-
-    </a>
-  
-    <a href="https://github.com/fteem" rel="me noopener" class="iconfont"
-      title="github"  target="_blank"
-      >
-      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="36" height="36">
-  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
-</svg>
-
-    </a>
-  
-    <a href="blog@ieftimov.com" rel="me noopener" class="iconfont"
-      title="email"  target="_blank"
-      >
-      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="36" height="36">
-  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
-</svg>
-
-    </a>
-
-
-<a href="https://ieftimov.com/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
-    class="iconfont" title="rss" target="_blank">
-    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="30" height="30">
-  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
-</svg>
-
-  </a>
-   
-</div>
-
-<div class="copyright">
-  <span class="power-by">
-    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
-  </span>
-  <span class="division">|</span>
-  <span class="theme-info">
-    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
-  </span>
-
-  <span class="copyright-year">
-    &copy;
-    
-      2014 -
-    2019
-    <span class="heart">
-      
-      <i class="iconfont">
-        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="14" height="14">
-  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
-   fill="#8a8a8a"></path>
-</svg>
-
-      </i>
-    </span><span class="author">
-        Ilija Eftimov
-        
-      </span></span>
-
-  
-  
-
-  
-</div>
-
-    </footer>
-
-    <div class="back-to-top" id="back-to-top">
-      <i class="iconfont">
-        
-        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="35" height="35">
-  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
-</svg>
-
-      </i>
-    </div>
-  </div>
-  
-<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
-  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
-
-
-
-
-<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
-
-
-
-
-
-
-  
-    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
-    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
-    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
+<script>feather.replace()</script>
 </body>
 </html>

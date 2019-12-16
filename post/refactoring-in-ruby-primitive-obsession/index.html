@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Refactoring in Ruby: Primitive Obsession - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Refactoring in Ruby: Primitive Obsession" />
+<meta property="og:description" content="We&#39;ve all been at this point where we have bloated our classes with primitive values all over the place. Usually, we drop in primitive constants that, for whatever reason, we think that are a good fit to the class. Or sometimes, we just dump primitive values instead of small objects, thinking &ldquo;it&#39;s okay, it&#39;s just an attribute in the class&rdquo;. But, does it always make sense?
+The problem Say we have a project for a finance journalist who wants us to automate his text editor to do some random fixes to his texts, on the fly." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/refactoring-in-ruby-primitive-obsession/" />
+<meta property="og:image" content="https://ieftimov.com/cards/primitive-obsession-ruby.png" />
+<meta property="article:published_time" content="2016-03-08T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/primitive-obsession-ruby.png"/>
+
+<meta name="twitter:title" content="Refactoring in Ruby: Primitive Obsession"/>
+<meta name="twitter:description" content="We&#39;ve all been at this point where we have bloated our classes with primitive values all over the place. Usually, we drop in primitive constants that, for whatever reason, we think that are a good fit to the class. Or sometimes, we just dump primitive values instead of small objects, thinking &ldquo;it&#39;s okay, it&#39;s just an attribute in the class&rdquo;. But, does it always make sense?
+The problem Say we have a project for a finance journalist who wants us to automate his text editor to do some random fixes to his texts, on the fly."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.comcss/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.comjs/main.js"></script><script src="https://ieftimov.comjs/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">08</span>
+							<span class="rest">Mar 2016</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Refactoring in Ruby: Primitive Obsession</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>We've all been at this point where we have bloated our classes with primitive
+values all over the place. Usually, we drop in primitive constants that, for
+whatever reason, we think that are a good fit to the class. Or sometimes, we just
+dump primitive values instead of small objects, thinking &ldquo;it's okay, it's just
+an attribute in the class&rdquo;. But, does it always make sense?</p>
+<h2 id="the-problem">The problem</h2>
+<p>Say we have a project for a finance journalist who wants us to automate his text
+editor to do some random fixes to his texts, on the fly. The automation is
+basically adding his name and date to the footer of the text that he's writing,
+and to change currencies abbreviations to symbols. The good thing for us is that
+his editor is written in Ruby, and has the ability to add custom I/O streams to
+it's I/O stack.</p>
+<p>So, our specification for this I/O stream, is:</p>
+<ul>
+<li>limit text to no more than 10000 words</li>
+<li>append journalist name to end of article</li>
+<li>swap popular currency names abbreviations with symbols</li>
+</ul>
+<p>After a bit of work, we come up with this quick hack for a I/O stream:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#999">require</span> <span style="color:#b84">&#39;stringio&#39;</span>
+
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">FinanceIO</span>
+  <span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">MaximumLengthExceeded</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">StandardError</span>; <span style="font-weight:bold">end</span>
+
+  <span style="color:#008080">MAX_WORDS</span> <span style="font-weight:bold">=</span> <span style="color:#099">10000</span>
+  <span style="font-weight:bold"></span><span style="color:#008080">MIN_WORDS</span> <span style="font-weight:bold">=</span> <span style="color:#099">2000</span>
+  <span style="font-weight:bold"></span><span style="color:#008080">AUTHOR_NAME</span>  <span style="font-weight:bold">=</span> <span style="color:#b84">&#34;</span><span style="color:#b84">John Smith</span><span style="color:#b84">&#34;</span>
+  <span style="color:#008080">AUTHOR_EMAIL</span> <span style="font-weight:bold">=</span> <span style="color:#b84">&#34;</span><span style="color:#b84">j.smith@nytimes.com</span><span style="color:#b84">&#34;</span>
+  <span style="color:#008080">CURRENCIES</span> <span style="font-weight:bold">=</span> <span style="font-weight:bold">[</span>
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">USD</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">$</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">GBP</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">£</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">JPY</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">¥</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">CHF</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">₣</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">EUR</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">€</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">INR</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">₹</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">GEN</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">¤</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>  <span style="color:#998;font-style:italic"># General currency sign</span>
+  <span style="font-weight:bold">]</span>
+  
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">initialize</span>
+    @io <span style="font-weight:bold">=</span> <span style="color:#008080">StringIO</span><span style="font-weight:bold">.</span>new
+  <span style="font-weight:bold">end</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">puts</span>(arg)
+    <span style="font-weight:bold">if</span> @io<span style="font-weight:bold">.</span>string<span style="font-weight:bold">.</span>split(<span style="color:#b84">&#34;</span><span style="color:#b84">&#34;</span>)<span style="font-weight:bold">.</span>length <span style="font-weight:bold">&gt;</span><span style="font-weight:bold">=</span> <span style="color:#008080">MAX_WORDS</span> <span style="font-weight:bold">||</span> @io<span style="font-weight:bold">.</span>string<span style="font-weight:bold">.</span>split(<span style="color:#b84">&#34;</span><span style="color:#b84">&#34;</span>)<span style="font-weight:bold">.</span>length <span style="font-weight:bold">=</span><span style="font-weight:bold">&lt;</span> <span style="color:#008080">MIN_WORDS</span>
+      <span style="font-weight:bold">raise</span> <span style="color:#008080">TextLengthExceeded</span><span style="font-weight:bold">.</span>new(<span style="color:#b84">&#34;</span><span style="color:#b84">The text must be within </span><span style="color:#b84">#{</span><span style="color:#008080">MIN_WORDS</span><span style="color:#b84">}</span><span style="color:#b84"> and </span><span style="color:#b84">#{</span><span style="color:#008080">MAX_WORDS</span><span style="color:#b84">}</span><span style="color:#b84"> words.</span><span style="color:#b84">&#34;</span>)
+    <span style="font-weight:bold">else</span>
+      <span style="color:#008080">CURRENCIES</span><span style="font-weight:bold">.</span>each <span style="font-weight:bold">do</span> <span style="font-weight:bold">|</span>abbrv, symbol<span style="font-weight:bold">|</span>
+        arg<span style="font-weight:bold">.</span>gsub!(abbrv,symbol)
+      <span style="font-weight:bold">end</span>
+      @io<span style="font-weight:bold">.</span>puts(arg)
+    <span style="font-weight:bold">end</span>
+  <span style="font-weight:bold">end</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">on_exit</span>
+    append_author
+  <span style="font-weight:bold">end</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">method_missing</span>(method_name, <span style="font-weight:bold">*</span>args, <span style="font-weight:bold">&amp;</span>block)
+    <span style="font-weight:bold">if</span> @io<span style="font-weight:bold">.</span>respond_to?(method_name)
+      @io<span style="font-weight:bold">.</span>send(method_name, <span style="font-weight:bold">*</span>args)
+    <span style="font-weight:bold">else</span>
+      <span style="font-weight:bold">super</span>(method_name, <span style="font-weight:bold">*</span>args, <span style="font-weight:bold">&amp;</span>block)
+    <span style="font-weight:bold">end</span>
+  <span style="font-weight:bold">end</span>
+
+  <span style="font-weight:bold">private</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">append_author</span>
+    @io<span style="font-weight:bold">.</span>puts(<span style="color:#b84">&#34;</span><span style="color:#b84">\n</span><span style="color:#b84">&#34;</span>)
+    @io<span style="font-weight:bold">.</span>puts(<span style="color:#008080">AUTHOR_NAME</span>)
+    @io<span style="font-weight:bold">.</span>puts(<span style="color:#b84">&#34;</span><span style="color:#b84">\n</span><span style="color:#b84">&#34;</span>)
+    @io<span style="font-weight:bold">.</span>puts(<span style="color:#008080">AUTHOR_EMAIL</span>)
+    @io<span style="font-weight:bold">.</span>puts(<span style="color:#b84">&#34;</span><span style="color:#b84">\n</span><span style="color:#b84">&#34;</span>)
+  <span style="font-weight:bold">end</span>
+
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>The <code>FinanceIO</code> class is a wrapper around a <code>StringIO</code>, which overrides a couple
+of methods, but relays any other method calls to the wrapped <code>StringIO</code> object.
+This allows us to do our work easily, while not breaking when any object of the
+I/O stack tries to call a built-in method on our object.</p>
+<p>Let's break down the example. The <code>MAX_WORDS</code> and <code>MIN_WORDS</code> is a limitation
+that our client (the journalist) has been given by the newspaper he works for,
+or in other words, his articles cannot be loger than 10000 words. The
+<code>AUTHOR_NAME</code> constant is the name of our author. We don't need to enable
+customization for this piece of data, because our client wanted to make our life
+easier by agreeing that he will not change his name any time soon. The
+<code>AUTHOR_EMAIL</code> constant is the author public email address. Next, the
+<code>CURRENCIES</code> constant is a two-dimensional array which contains the abbreviations
+and the symbols of the most popular currencies that the journalist uses while
+writing his finance articles.</p>
+<p>Most of the functionality described in the spec is done within the
+<code>FinanceIO#puts</code> method:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">puts</span>(arg)
+  <span style="font-weight:bold">if</span> @io<span style="font-weight:bold">.</span>string<span style="font-weight:bold">.</span>split(<span style="color:#b84">&#34;</span><span style="color:#b84">&#34;</span>)<span style="font-weight:bold">.</span>length <span style="font-weight:bold">&gt;</span><span style="font-weight:bold">=</span> <span style="color:#008080">MAX_WORDS</span> <span style="font-weight:bold">||</span> @io<span style="font-weight:bold">.</span>string<span style="font-weight:bold">.</span>split(<span style="color:#b84">&#34;</span><span style="color:#b84">&#34;</span>)<span style="font-weight:bold">.</span>length <span style="font-weight:bold">=</span><span style="font-weight:bold">&lt;</span> <span style="color:#008080">MIN_WORDS</span>
+    <span style="font-weight:bold">raise</span> <span style="color:#008080">TextLengthExceeded</span><span style="font-weight:bold">.</span>new(<span style="color:#b84">&#34;</span><span style="color:#b84">The text must be within </span><span style="color:#b84">#{</span>@limitations<span style="font-weight:bold">.</span>min_words<span style="color:#b84">}</span><span style="color:#b84"> and </span><span style="color:#b84">#{</span>@limitations<span style="font-weight:bold">.</span>max_words<span style="color:#b84">}</span><span style="color:#b84"> words.</span><span style="color:#b84">&#34;</span>)
+  <span style="font-weight:bold">else</span>
+    <span style="color:#008080">CURRENCIES</span><span style="font-weight:bold">.</span>each <span style="font-weight:bold">do</span> <span style="font-weight:bold">|</span>abbrv, symbol<span style="font-weight:bold">|</span>
+      arg<span style="font-weight:bold">.</span>gsub!(abbrv,symbol)
+    <span style="font-weight:bold">end</span>
+    @io<span style="font-weight:bold">.</span>puts(arg)
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>The <code>puts</code> method takes a string as an argument, and saves it to the stream. But,
+before it does that, it checks if the text is longer than 10000 words. If it is,
+it will raise an exception that the text editor will handle gracefully. If not,
+it will carry on to substitute any of the currency abbreviations in the text with
+the corresponding symbol.</p>
+<p>Also, the <code>FinanceIO#on_exit</code> is a method which will append the author name
+in the footer of the text.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">on_exit</span>
+  append_author
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>This will get automatically invoked by the editor, as an callback before the
+journalist closes his editor.</p>
+<p>This will surely work, and it complies with our imaginary text editor. Sure,
+it might be a bit dirty, but it does the trick. Now, a question to ourselves -
+what should we do about the data in the constants? There seems to be much
+behaviour in connection with these constants. Aside of that, it's just plain data
+and it doesn't really add too much noise to our class and the functionality is
+easy to follow&hellip; right?</p>
+<h2 id="the-code-smell">The Code Smell</h2>
+<p>Well, sure, the fields don't do much noise, but this is exactly the way of
+thinking that creates these code smells. You could argue that the <code>FinanceIO</code>
+class is pretty simple to follow, and you would be right. The problem lies in the
+practice, which will eventually bloat the class with so much &ldquo;static&rdquo; data,
+to a point of total confusion. Sure, our journalist could be happy with our hack,
+which is great, but he will surely come back one day with more specs for
+customizations. That's what usually happy customers do - they return for more
+stuff.</p>
+<p>Although this code smell is not that dangerous at first, it <strong>will</strong> cause havoc
+in the near future. The <strong>Primitive Obsession</strong> code smell is one of the simplest
+ones. It can be spotted in classes where primitives are used to &ldquo;simulate&rdquo; types.
+This means that instead of separating a data type for the primitives, we keep
+some sort of a primitive value, whether it's a string, or a number or an array of
+any values. As a next step, we usually add simple names to these primitive values
+(see our class above), and we keep on thinking that it is very clear what these
+values do.</p>
+<p>Another occurance of this code smell is creating a &ldquo;field simulation&rdquo;. This
+happens when we add an array of primitive values to the class, which contains
+some data that is used in the class logic, somewhere.</p>
+<p>Sure, three to five values are easy to track. What happens when you get to
+twenty? Thirty maybe? Yeah, I have seen some classes where these primitive values
+are all over the place, and let me tell you, it's no fun!</p>
+<p>So, how can we avoid and/or detect this code smell? Let's see!</p>
+<h2 id="refactoring">Refactoring</h2>
+<p>When it comes to refactoring this code smell, you can take multiple paths. For
+example, if you have a large variety of these primitives, you can always look for
+logical links between them. Another way is, if these primitive values are used as
+method parameters, we could introduce a parameter objects, or we could change
+arrays into objects as well. There are more forms of this code smell, but let's
+tackle them one by one and see the approaches to refactoring.</p>
+<h3 id="logical-linking">Logical linking</h3>
+<p>Like we saw earlier, often these primitive values have some logial link between
+them. Although our list of primitives is not that long, you can see the logical
+link between <code>AUTHOR_NAME</code> and <code>AUTHOR_EMAIL</code>, right?</p>
+<p>Since the logical link between these two primitives and the
+<code>FinanceIO#append_author</code> method are easily noticable, we know that these two
+constants and the method should be grouped in some way. Here, we can refactor the
+values with an object, which will be called <code>Author</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">Author</span>
+  <span style="font-weight:bold">attr_reader</span> <span style="color:#b84">:first_name</span>, <span style="color:#b84">:last_name</span>, <span style="color:#b84">:email</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">initialize</span>(first_name <span style="font-weight:bold">=</span> <span style="color:#b84">&#34;</span><span style="color:#b84">John</span><span style="color:#b84">&#34;</span>, last_name <span style="font-weight:bold">=</span> <span style="color:#b84">&#34;</span><span style="color:#b84">Smith</span><span style="color:#b84">&#34;</span>, email <span style="font-weight:bold">=</span> <span style="color:#b84">&#34;</span><span style="color:#b84">j.smith@nytimes.com</span><span style="color:#b84">&#34;</span>)
+    @first_name <span style="font-weight:bold">=</span> first_name
+    @last_name <span style="font-weight:bold">=</span> last_name
+    @email   <span style="font-weight:bold">=</span> email
+  <span style="font-weight:bold">end</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">full_name</span>
+    last_name <span style="font-weight:bold">+</span> <span style="color:#b84">&#34;</span><span style="color:#b84"> </span><span style="color:#b84">&#34;</span> <span style="font-weight:bold">+</span> first_name
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>Pretty straight forward. Now, if you think about it, you can notice that the
+<code>FinanceIO#append_author</code> is basically the signature of the journalist. So, we
+can extract that method into our new <code>Author</code> class:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">signature</span>
+<span style="color:#b84">%Q{</span><span style="color:#b84">
+</span><span style="color:#b84">  </span><span style="color:#b84">#{</span>full_name<span style="color:#b84">}</span><span style="color:#b84">
+</span><span style="color:#b84"> 
+</span><span style="color:#b84">  </span><span style="color:#b84">#{</span>email<span style="color:#b84">}</span><span style="color:#b84">
+</span><span style="color:#b84"></span><span style="color:#b84">}</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>Now, having the behaviour and the values extracted to a separate class, we can
+refactor <code>FinanceIO</code> a bit:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#999">require</span> <span style="color:#b84">&#39;stringio&#39;</span>
+
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">FinanceIO</span>
+  <span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">MaximumLengthExceeded</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">StandardError</span>; <span style="font-weight:bold">end</span>
+
+  <span style="color:#008080">MAX_WORDS</span> <span style="font-weight:bold">=</span> <span style="color:#099">10000</span>
+  <span style="font-weight:bold"></span><span style="color:#008080">MIN_WORDS</span> <span style="font-weight:bold">=</span> <span style="color:#099">2000</span>
+  <span style="font-weight:bold"></span><span style="color:#008080">CURRENCIES</span> <span style="font-weight:bold">=</span> <span style="font-weight:bold">[</span>
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">USD</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">$</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">GBP</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">£</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">JPY</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">¥</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">CHF</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">₣</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">EUR</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">€</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">INR</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">₹</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">GEN</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">¤</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>  <span style="color:#998;font-style:italic"># General currency sign</span>
+  <span style="font-weight:bold">]</span>
+  
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">initialize</span>
+    @io <span style="font-weight:bold">=</span> <span style="color:#008080">StringIO</span><span style="font-weight:bold">.</span>new
+    @author <span style="font-weight:bold">=</span> <span style="color:#008080">Author</span><span style="font-weight:bold">.</span>new
+  <span style="font-weight:bold">end</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">puts</span>(arg)
+    <span style="font-weight:bold">if</span> @io<span style="font-weight:bold">.</span>string<span style="font-weight:bold">.</span>split(<span style="color:#b84">&#34;</span><span style="color:#b84">&#34;</span>)<span style="font-weight:bold">.</span>length <span style="font-weight:bold">&gt;</span><span style="font-weight:bold">=</span> <span style="color:#008080">MAX_WORDS</span> <span style="font-weight:bold">||</span> @io<span style="font-weight:bold">.</span>string<span style="font-weight:bold">.</span>split(<span style="color:#b84">&#34;</span><span style="color:#b84">&#34;</span>)<span style="font-weight:bold">.</span>length <span style="font-weight:bold">=</span><span style="font-weight:bold">&lt;</span> <span style="color:#008080">MIN_WORDS</span>
+      <span style="font-weight:bold">raise</span> <span style="color:#008080">TextLengthExceeded</span><span style="font-weight:bold">.</span>new(<span style="color:#b84">&#34;</span><span style="color:#b84">The text must be within </span><span style="color:#b84">#{</span><span style="color:#008080">MIN_WORDS</span><span style="color:#b84">}</span><span style="color:#b84"> and </span><span style="color:#b84">#{</span><span style="color:#008080">MAX_WORDS</span><span style="color:#b84">}</span><span style="color:#b84"> words.</span><span style="color:#b84">&#34;</span>)
+    <span style="font-weight:bold">else</span>
+      <span style="color:#008080">CURRENCIES</span><span style="font-weight:bold">.</span>each <span style="font-weight:bold">do</span> <span style="font-weight:bold">|</span>abbrv, symbol<span style="font-weight:bold">|</span>
+        arg<span style="font-weight:bold">.</span>gsub!(abbrv,symbol)
+      <span style="font-weight:bold">end</span>
+      @io<span style="font-weight:bold">.</span>puts(arg)
+    <span style="font-weight:bold">end</span>
+  <span style="font-weight:bold">end</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">on_exit</span>
+    @io<span style="font-weight:bold">.</span>puts(@author<span style="font-weight:bold">.</span>signature)
+  <span style="font-weight:bold">end</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">method_missing</span>(method_name, <span style="font-weight:bold">*</span>args, <span style="font-weight:bold">&amp;</span>block)
+    <span style="font-weight:bold">if</span> @io<span style="font-weight:bold">.</span>respond_to?(method_name)
+      @io<span style="font-weight:bold">.</span>send(method_name, <span style="font-weight:bold">*</span>args)
+    <span style="font-weight:bold">else</span>
+      <span style="font-weight:bold">super</span>(method_name, <span style="font-weight:bold">*</span>args, <span style="font-weight:bold">&amp;</span>block)
+    <span style="font-weight:bold">end</span>
+  <span style="font-weight:bold">end</span>
+
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>Much cleaner, right? We have the values and the behaviour extracted to a separate
+class, and the <code>Author#signature</code> method clearly shows that the behaviour
+revolving the author signature should be a part of the <code>Author</code> class.</p>
+<p>Now, since the first name, last name and email are set to default parameters on
+the <code>Author#initialize</code> method, we could go a step further and extract them to
+a <code>DefaultAuthor</code> subclass:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">DefaultAuthor</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">Author</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">initialize</span>
+    <span style="font-weight:bold">super</span>(<span style="color:#b84">&#34;</span><span style="color:#b84">John</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">Smith</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">j.smith@nytimes.com</span><span style="color:#b84">&#34;</span>)
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>Having this class, we can easily customize our <code>FinanceIO</code> stream and use a
+non-default author just by tweaking the constructor by using dependency
+injection:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">FinanceIO</span>
+  <span style="color:#998;font-style:italic"># snipped..</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">initialize</span>(author <span style="font-weight:bold">=</span> <span style="color:#008080">DefaultAuthor</span><span style="font-weight:bold">.</span>new)
+    @io     <span style="font-weight:bold">=</span> <span style="color:#008080">StringIO</span><span style="font-weight:bold">.</span>new
+    @author <span style="font-weight:bold">=</span> author
+  <span style="font-weight:bold">end</span>
+
+  <span style="color:#998;font-style:italic"># snipped..</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<h3 id="replacing-the-array-with-something-meaningful">Replacing the array with&hellip; something meaningful</h3>
+<p>When we got to this step I assume you were wondering what we will do with the
+<code>CURRENCIES</code> two-dimensional array. Well, let's disect the array a bit and see
+what we are actually dealing with.</p>
+<p>Well, just like the array name states, we are dealing with a bunch of currencies
+here, ergo, we need a <code>Currency</code> class to encapsulate the abbreviation and the
+symbol:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">Currency</span>
+  <span style="font-weight:bold">attr_reader</span> <span style="color:#b84">:abbreviation</span>, <span style="color:#b84">:symbol</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">initialize</span>(abbreviation, symbol)
+    @abbreviation <span style="font-weight:bold">=</span> abbreviation
+    @symbol       <span style="font-weight:bold">=</span> symbol
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>So, how can we eliminate the array from the <code>FinanceIO</code> class and move it
+somewhere else? Let's start moving the array step by step - first, by extracting
+it into the <code>Currency</code> class. We will move the collection and we will also add a
+utility method <code>Currency.all</code> which will return a collection of all the
+currencies, as <code>Currency</code> objects:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">Currency</span>
+  <span style="color:#008080">DEFAULT_CURRENCIES</span> <span style="font-weight:bold">=</span> <span style="font-weight:bold">[</span>
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">USD</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">$</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">GBP</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">£</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">JPY</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">¥</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">CHF</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">₣</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">EUR</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">€</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">INR</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">₹</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+    <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">GEN</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">¤</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span> 
+  <span style="font-weight:bold">]</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold">self</span><span style="font-weight:bold">.</span><span style="color:#900;font-weight:bold">all</span>(currencies_list <span style="font-weight:bold">=</span> <span style="color:#008080">DEFAULT_CURRENCIES</span>)
+    currencies_list<span style="font-weight:bold">.</span>collect <span style="font-weight:bold">do</span> <span style="font-weight:bold">|</span>abbr, sym<span style="font-weight:bold">|</span>
+      <span style="font-weight:bold">new</span>(abbr, sym)
+    <span style="font-weight:bold">end</span>
+  <span style="font-weight:bold">end</span>
+
+  <span style="font-weight:bold">attr_reader</span> <span style="color:#b84">:abbreviation</span>, <span style="color:#b84">:symbol</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">initialize</span>(abbreviation, symbol)
+    @abbreviation <span style="font-weight:bold">=</span> abbreviation
+    @symbol       <span style="font-weight:bold">=</span> symbol
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>Now, refactoring the <code>FinanceIO#puts</code> method should be straight forward:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">puts</span>(arg)
+  <span style="font-weight:bold">if</span> @io<span style="font-weight:bold">.</span>string<span style="font-weight:bold">.</span>split(<span style="color:#b84">&#34;</span><span style="color:#b84">&#34;</span>)<span style="font-weight:bold">.</span>length <span style="font-weight:bold">&gt;</span><span style="font-weight:bold">=</span> <span style="color:#008080">MAX_WORDS</span> <span style="font-weight:bold">||</span> @io<span style="font-weight:bold">.</span>string<span style="font-weight:bold">.</span>split(<span style="color:#b84">&#34;</span><span style="color:#b84">&#34;</span>)<span style="font-weight:bold">.</span>length <span style="font-weight:bold">=</span><span style="font-weight:bold">&lt;</span> <span style="color:#008080">MIN_WORDS</span>
+    <span style="font-weight:bold">return</span> <span style="color:#008080">MaximumLengthExceeded</span><span style="font-weight:bold">.</span>new(<span style="color:#b84">&#34;</span><span style="color:#b84">You&#39;ve reached the maximum length.</span><span style="color:#b84">&#34;</span>)
+  <span style="font-weight:bold">else</span>
+    <span style="color:#008080">Currency</span><span style="font-weight:bold">.</span>all<span style="font-weight:bold">.</span>each <span style="font-weight:bold">do</span> <span style="font-weight:bold">|</span>currency<span style="font-weight:bold">|</span>
+      arg<span style="font-weight:bold">.</span>gsub!(currency<span style="font-weight:bold">.</span>abbreviation, currency<span style="font-weight:bold">.</span>symbol)
+    <span style="font-weight:bold">end</span>
+    @io<span style="font-weight:bold">.</span>puts(arg)
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>Sure, this could work, but we still have a bit of polution in the <code>Currency</code>
+class. What we could do, instead of keeping the currencies as a constant, we
+could move them to a method, or better yet, move them to a new class, with a
+method that would return all of them:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">DefaultCurrencies</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold">self</span><span style="font-weight:bold">.</span><span style="color:#900;font-weight:bold">all</span>
+    <span style="font-weight:bold">[</span>
+      <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">USD</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">$</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+      <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">GBP</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">£</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+      <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">JPY</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">¥</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+      <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">CHF</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">₣</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+      <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">EUR</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">€</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+      <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">INR</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">₹</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>,
+      <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">GEN</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">¤</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span> 
+    <span style="font-weight:bold">]</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>Then, adding this class as a depenency to the <code>Currency</code> class will be pretty
+easy. But also, <strong>uncoupling</strong> it will be also easy, if we decide to move these
+hardcoded primitive values to a database:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">Currency</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold">self</span><span style="font-weight:bold">.</span><span style="color:#900;font-weight:bold">all</span>
+    <span style="color:#008080">DefaultCurrencies</span><span style="font-weight:bold">.</span>all<span style="font-weight:bold">.</span>collect <span style="font-weight:bold">do</span> <span style="font-weight:bold">|</span>abbr, sym<span style="font-weight:bold">|</span>
+      <span style="font-weight:bold">new</span>(abbr, sym)
+    <span style="font-weight:bold">end</span>
+  <span style="font-weight:bold">end</span>
+
+  <span style="font-weight:bold">attr_reader</span> <span style="color:#b84">:abbreviation</span>, <span style="color:#b84">:symbol</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">initialize</span>(abbreviation, symbol)
+    @abbreviation <span style="font-weight:bold">=</span> abbreviation
+    @symbol       <span style="font-weight:bold">=</span> symbol
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>With this step we have encapsulated our collection of data, and made it easy to
+replace in next iteration of our program. Our <code>Currency</code> class only depends
+on a class method, which would return a two-dimensional array with the currencies
+data. With this in place, we can come back to the <code>FinanceIO</code> class and polish it
+up.</p>
+<h3 id="introducing-a-parameter-object">Introducing a parameter object</h3>
+<p>Let's look at the state of our <code>FinanceIO</code> class now. The only leftovers from our
+refactoring are the <code>MAX_WORDS</code> and <code>MIN_WORDS</code> primitives. Their purpose is to
+limit the length of the text that the author can write. Let's see how we can
+refactor it out of the class.</p>
+<p>If you look at the <code>FinanceIO#puts</code> method, you can notice that these constants
+are used only as a parameter, to check if the length words are within the limit.</p>
+<p>Having this in mind, we can extract a <strong>Parameter Object</strong>. Parameter objects
+are usually like containers for data that has same or similar role. Our
+limitation primitives are a nice example - they do not belong to the <code>FinanceIO</code>
+class, but their only purpose is to validate the input of the user. Let's
+extract them out to a separate class:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">EditorialLimitations</span>
+  <span style="font-weight:bold">attr_reader</span> <span style="color:#b84">:max_words</span>, <span style="color:#b84">:min_words</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">initialize</span>
+    @max_words <span style="font-weight:bold">=</span> <span style="color:#099">10000</span>
+    <span style="font-weight:bold"></span>@min_words <span style="font-weight:bold">=</span> <span style="color:#099">2000</span>
+  <span style="font-weight:bold"></span><span style="font-weight:bold">end</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">within?</span>(text)
+    text_length <span style="font-weight:bold">=</span> words(text)
+    text_length <span style="font-weight:bold">&gt;</span><span style="font-weight:bold">=</span> @min_words <span style="font-weight:bold">&amp;&amp;</span> text_length <span style="font-weight:bold">=</span><span style="font-weight:bold">&lt;</span> @max_words
+  <span style="font-weight:bold">end</span>
+
+  <span style="font-weight:bold">private</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">words</span>(txt)
+    txt<span style="font-weight:bold">.</span>split(<span style="color:#b84">&#34;</span><span style="color:#b84">&#34;</span>)<span style="font-weight:bold">.</span>length
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>As you can see, by extracting this parameter object, we are even able to extract
+the logic which will validate the text of the journalist. Now, let's use our
+newly created class in the program:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#999">require</span> <span style="color:#b84">&#39;stringio&#39;</span>
+
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">FinanceIO</span>
+  <span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">MaximumLengthExceeded</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">StandardError</span>; <span style="font-weight:bold">end</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">initialize</span>
+    @io          <span style="font-weight:bold">=</span> <span style="color:#008080">StringIO</span><span style="font-weight:bold">.</span>new
+    @author      <span style="font-weight:bold">=</span> <span style="color:#008080">Author</span><span style="font-weight:bold">.</span>new
+    @limitations <span style="font-weight:bold">=</span> <span style="color:#008080">EditorialLimitations</span><span style="font-weight:bold">.</span>new
+  <span style="font-weight:bold">end</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">puts</span>(arg)
+    <span style="font-weight:bold">if</span> @limitations<span style="font-weight:bold">.</span>within?(io<span style="font-weight:bold">.</span>string)
+      <span style="color:#008080">Currency</span><span style="font-weight:bold">.</span>all<span style="font-weight:bold">.</span>each <span style="font-weight:bold">do</span> <span style="font-weight:bold">|</span>currency<span style="font-weight:bold">|</span>
+        arg<span style="font-weight:bold">.</span>gsub!(currency<span style="font-weight:bold">.</span>abbreviation, currency<span style="font-weight:bold">.</span>symbol)
+      <span style="font-weight:bold">end</span>
+    <span style="font-weight:bold">else</span>
+      <span style="font-weight:bold">raise</span> <span style="color:#008080">TextLengthExceeded</span><span style="font-weight:bold">.</span>new(<span style="color:#b84">&#34;</span><span style="color:#b84">The text must be within </span><span style="color:#b84">#{</span>@limitations<span style="font-weight:bold">.</span>min_words<span style="color:#b84">}</span><span style="color:#b84"> and </span><span style="color:#b84">#{</span>@limitations<span style="font-weight:bold">.</span>max_words<span style="color:#b84">}</span><span style="color:#b84"> words.</span><span style="color:#b84">&#34;</span>)
+    <span style="font-weight:bold">end</span>
+    @io<span style="font-weight:bold">.</span>puts(arg)
+  <span style="font-weight:bold">end</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">on_exit</span>
+    @io<span style="font-weight:bold">.</span>puts(@author<span style="font-weight:bold">.</span>signature)
+  <span style="font-weight:bold">end</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">method_missing</span>(method_name, <span style="font-weight:bold">*</span>args, <span style="font-weight:bold">&amp;</span>block)
+    <span style="font-weight:bold">if</span> @io<span style="font-weight:bold">.</span>respond_to?(method_name)
+      @io<span style="font-weight:bold">.</span>send(method_name, <span style="font-weight:bold">*</span>args)
+    <span style="font-weight:bold">else</span>
+      <span style="font-weight:bold">super</span>(method_name, <span style="font-weight:bold">*</span>args, <span style="font-weight:bold">&amp;</span>block)
+    <span style="font-weight:bold">end</span>
+  <span style="font-weight:bold">end</span>
+
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>As you can see, although there's still a lot going on in the <code>FinanceIO#puts</code>
+method, it's much easier to understand what's going on. Also, if we would write
+tests around this code, testing would be much easier.</p>
+<h2 id="outro">Outro</h2>
+<p>We could do more refactoring here, especially in the <code>FinanceIO#puts</code> method, but
+for the scope of this article we will stop there. I encourage you to carry on
+with refactoring the code, and writing some tests - practice makes it perfect,
+doesn't it?</p>
+<p>Until next time!</p>
+
+			</div>
+
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/primitive-obsession">primitive obsession</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>

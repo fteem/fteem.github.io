@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Barebones model of Spotify&#39;s &#39;Recently Played&#39; screen using a Least Recently Used (LRU) cache in Golang - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Barebones model of Spotify&#39;s &#39;Recently Played&#39; screen using a Least Recently Used (LRU) cache in Golang" />
+<meta property="og:description" content="One of the most used caching schemes is Least Recently Used (LRU). Caches that use this eviction strategy will remove the least recently used item when their size reaches their capacity. That means that such caches have to keep a track of the order of access of the cached items, so it would evict the correct items.
+Before we go too much into details about the implementation of an LRU cache, let&#39;s first see what are the possible applications of this caching scheme." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/barebones-model-of-spotifys-recently-played-screen-using-a-least-recently-used-lru-cache-in-golang/" />
+<meta property="og:image" content="https://ieftimov.com/cards/spotify-recently-played-least-recently-used-cache-golang.png" />
+<meta property="article:published_time" content="2019-03-11T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/spotify-recently-played-least-recently-used-cache-golang.png"/>
+
+<meta name="twitter:title" content="Barebones model of Spotify&#39;s &#39;Recently Played&#39; screen using a Least Recently Used (LRU) cache in Golang"/>
+<meta name="twitter:description" content="One of the most used caching schemes is Least Recently Used (LRU). Caches that use this eviction strategy will remove the least recently used item when their size reaches their capacity. That means that such caches have to keep a track of the order of access of the cached items, so it would evict the correct items.
+Before we go too much into details about the implementation of an LRU cache, let&#39;s first see what are the possible applications of this caching scheme."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.comcss/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.comjs/main.js"></script><script src="https://ieftimov.comjs/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">11</span>
+							<span class="rest">Mar 2019</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Barebones model of Spotify&#39;s &#39;Recently Played&#39; screen using a Least Recently Used (LRU) cache in Golang</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p><img src="/spotify-recently-played-least-recently-used-cache-golang/music.png" alt=""></p>
+<p>One of the most used caching schemes is Least Recently Used (LRU). Caches that
+use this eviction strategy will remove the least recently used item when their
+size reaches their capacity. That means that such caches have to keep a track
+of the order of access of the cached items, so it would evict the correct
+items.</p>
+<p>Before we go too much into details about the implementation of an LRU cache,
+let's first see what are the possible applications of this caching scheme.</p>
+<h2 id="applications">Applications</h2>
+<p>LRU cache applications are diverse. The LRU cache eviction scheme is one of the
+most widespread and used scheme. Due to its nature, it often does the trick for
+conventional problems in commercial programming. For example, if one has a
+fixed amount of memory, the most natural way to cache is to keep recently
+accessed items.</p>
+<p>So, what would be one potential application of a LRU cache? Let's see an
+example.</p>
+<p>Open your Spotify application (if you have one). Don't have one? Here's a
+screenshot of mine:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure class="imagecaption">
+  <img class="caption" src="/golang-lru-cache/spotify.png" title="" alt="">
+  <span class="caption-text"></span>
+</figure>
+
+<p>You can see in the screenshot above that I have chosen the &ldquo;Recently played&rdquo;
+view. To no one's surprise, it shows all my recently played media. If you’ve
+never thought about the implementation of such a screen, let me break the magic
+down for you. This view is a GUI that lives on top of some sort of an LRU
+cache.</p>
+<p>Curious how we would model such a &ldquo;Recently played&rdquo; view? Let's take a deeper
+look.</p>
+<h2 id="establishing-basic-types">Establishing basic types</h2>
+<p>Let's define couple of types that would represent the <code>Playlist</code>s and <code>Song</code>s
+found on Spotify:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> Song <span style="font-weight:bold">struct</span> {
+	duration  <span style="color:#458;font-weight:bold">int64</span> <span style="color:#998;font-style:italic">// seconds
+</span><span style="color:#998;font-style:italic"></span>	title     <span style="color:#458;font-weight:bold">string</span>
+	artist    <span style="font-weight:bold">*</span>Artist
+}</code></pre></div>
+<p>No surprises here - a <code>Song</code> has a <code>duration</code>, a <code>title</code> and an <code>artist</code>. Let's
+look at a <code>Playlist</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> Playlist <span style="font-weight:bold">struct</span> {
+	title       <span style="color:#458;font-weight:bold">string</span>
+	descrption  <span style="color:#458;font-weight:bold">string</span>
+	duration    <span style="color:#458;font-weight:bold">int64</span> <span style="color:#998;font-style:italic">// seconds
+</span><span style="color:#998;font-style:italic"></span>	publishedAt <span style="color:#458;font-weight:bold">int32</span> <span style="color:#998;font-style:italic">// Unix timestamp
+</span><span style="color:#998;font-style:italic"></span>	songs       []<span style="font-weight:bold">*</span>Song
+}</code></pre></div>
+<p>A <code>Playlist</code> has a <code>title</code>, <code>description</code>, <code>duration</code> (which is the sum of the
+durations of all songs in it). Also, a <code>publishedAt</code> which is the date of the
+publishing of the playlist. Finally it has <code>songs</code> - a slice of <code>Song</code> pointers
+representing the songs in the playlist.</p>
+<p>Such structure of the <code>Playlist</code> <code>struct</code> will allow users to find a playlist
+and &ldquo;just play it&rdquo;.</p>
+<h2 id="recently-played">Recently played</h2>
+<p>The &ldquo;Recently played&rdquo; screen in Spotify has 30 items only, where each of the
+items can be a playlist, an artist or an album. For simplicity of our example
+here, we will agree that we will only keep track of the recently played
+playlists. This means that we'll ignore the artists or albums in our version of
+the &ldquo;Recently Played&rdquo; screen.</p>
+<p>A typical implementation of a LRU cache uses a combination of two simple data
+structures: a hash table and a linked list. Why? Well, as I mentioned in
+<a href="https://ieftimov.com/when-why-least-frequently-used-cache-implementation-golang">another article on caching</a>,
+caches have to be fast along two dimensions:</p>
+<ol>
+<li>Ensuring that as many of the requests for files go to it (cache hit), not
+over the network or to main memory (cache miss);</li>
+<li>The overhead of using it should be small: testing membership and deciding
+when to replace a <code>Playlist</code> should be as fast as possible.</li>
+</ol>
+<p>On the first point, we have agreed that LRU will do the job because of the
+nature of the &ldquo;Recently played&rdquo; screen. This means that we have to keep track
+of what <code>Playlist</code>s are recently played. A data structure that allows us to do
+this is a linked list. Since Go already provides us a doubly-linked list
+implementation, there is no need to reinvent the wheel. We will use the
+<code>container/list</code> package <sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>.</p>
+<p>On the second point, the data structure that comes to mind for a scalable
+membership tests is a hash table. <sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup> As you might know, hash tables have
+unique keys for every value. If our program can create a unique key for a
+<code>Playlist</code>, it will be easy for us to check if the <code>Playlist</code> is in the cache
+or not.</p>
+<p>Knowing this, let's define the <code>RecentlyPlayed</code> struct and its constructor
+function:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> RecentlyPlayed <span style="font-weight:bold">struct</span> {
+	capacity <span style="color:#458;font-weight:bold">int</span>
+	size     <span style="color:#458;font-weight:bold">int</span>
+	cache    <span style="font-weight:bold">map</span>[<span style="color:#458;font-weight:bold">int</span>]<span style="font-weight:bold">*</span>list.Element
+	lru      <span style="font-weight:bold">*</span>list.List
+}</code></pre></div>
+<p>Things are pretty self explanatory here. <code>capacity</code> will hold the maximum
+capacity of the cache and <code>size</code> will be the current size of the recently
+played screen. We will use the <code>cache</code> hash table to retrieve the elements from
+cache.  The <code>lru</code> is a linked list (from the <code>container/list</code> package) that we
+will use to keep track of the recently played playlists.</p>
+<p>Let's first create a small function that will spawn up a new <code>RecentlyPlayed</code>
+struct with some sane defaults:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">NewRecentlyPlayed</span>(capacity <span style="color:#458;font-weight:bold">int</span>) <span style="font-weight:bold">*</span>RecentlyPlayed {
+	rp <span style="font-weight:bold">:=</span> RecentlyPlayed{
+		capacity: capacity,
+                size:     <span style="color:#099">0</span>,
+		lru:      list.<span style="color:#900;font-weight:bold">New</span>(),
+		cache:    <span style="color:#999">make</span>(<span style="font-weight:bold">map</span>[<span style="color:#458;font-weight:bold">string</span>]<span style="font-weight:bold">*</span>list.Element),
+	}
+
+	<span style="font-weight:bold">return</span> <span style="font-weight:bold">&amp;</span>rp
+}</code></pre></div>
+<p>This function sets the defaults to the struct and returns a pointer to it.
+Before we continue, let's make a quick stop. Let's take a moment to understand
+how each of these two data structures will work together.</p>
+<p>First, <code>cache</code> is going to be a <code>map</code> that will have a key of type <code>string</code> and
+a value of type <code>*list.Element</code>. The <code>string</code> will be a hash of the <code>Playlist</code>
+that will be stored there, while the <code>*list.Element</code> will be a pointer to the
+element in the doubly-linked list. By having this pointer, we can get the
+<code>Playlist</code> stored inside it (it's <code>Value</code>). Also, it will be easy to reposition
+it in the <code>lru</code> list when we play the Playlist.</p>
+<p><img src="/spotify-recently-played-least-recently-used-cache-golang/media_player.png" alt=""></p>
+<h2 id="introducing-the-player">Introducing the player</h2>
+<p>To have a &ldquo;Recently played&rdquo; list of playlists, we obviously need to put it in
+some sort of a player, that will have a <code>Play</code> function.</p>
+<p>Here's a quick sketch of it, so we can move to the meat of our implementation:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> Player <span style="font-weight:bold">struct</span> {
+	playProgress       <span style="color:#458;font-weight:bold">int</span>
+	RecentlyPlayedList <span style="font-weight:bold">*</span>RecentlyPlayed
+}</code></pre></div>
+<p>For the purpose of this example, we can keep the <code>Player</code> quite simple - only
+the progress of the song currently playing (<code>playProgress</code>) and the recently
+played list of playlists (<code>RecentlyPlayedList</code>).</p>
+<p>We will also add a small constructor function for the <code>Player</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">NewPlayer</span>() <span style="font-weight:bold">*</span>Player {
+	p <span style="font-weight:bold">:=</span> Player{
+		RecentlyPlayedList: <span style="color:#900;font-weight:bold">NewRecentlyPlayed</span>(<span style="color:#099">30</span>),
+	}
+	<span style="font-weight:bold">return</span> <span style="font-weight:bold">&amp;</span>p
+}</code></pre></div>
+<p>Now we need to add the <code>Play</code> function and understand what are the functions
+related to <code>RecentlyPlayed</code> that <code>Play</code> will have to invoke.</p>
+<p><img src="/spotify-recently-played-least-recently-used-cache-golang/selection.png" alt=""></p>
+<h2 id="playing-a-playlist">Playing a <code>Playlist</code></h2>
+<p>Obviously, there'a already an entity that will have to play the <code>Playlist</code> - the
+<code>Player</code>. Let's add a function <code>Play</code> to our <code>Player</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (player <span style="font-weight:bold">*</span>Player) <span style="color:#900;font-weight:bold">Play</span>(playlist <span style="font-weight:bold">*</span>Playlist) {
+	<span style="font-weight:bold">if</span> cached, playlist <span style="font-weight:bold">:=</span> player.RecentlyPlayedList.<span style="color:#900;font-weight:bold">Get</span>(playlist.<span style="color:#900;font-weight:bold">hash</span>()); cached {
+		<span style="color:#998;font-style:italic">// Play from cache...
+</span><span style="color:#998;font-style:italic"></span>	} <span style="font-weight:bold">else</span> {
+		<span style="color:#998;font-style:italic">// Fetch over the network and start playing...
+</span><span style="color:#998;font-style:italic"></span>		player.RecentlyPlayedList.<span style="color:#900;font-weight:bold">Set</span>(playlist)
+	}
+}</code></pre></div>
+<!-- raw HTML omitted -->
+<pre><code>  Before we continue...
+</code></pre>
+<!-- raw HTML omitted -->
+<p>If you thought that I'd show you how we'll actually play a media file or stream
+it over the network I am sorry to disappoint. That's a tad out of the scope of
+this article.</p>
+<p>That being said, I am always looking for topic ideas to write on, although I
+have a huge list already, so if that's something you'd like to read on drop a
+comment below.</p>
+<!-- raw HTML omitted -->
+<p>Let's dissect the <code>Play</code> function:</p>
+<ol>
+<li>
+<p>The <code>player.RecentlyPlayedList</code> struct is of type <code>*RecentlyPlayed</code>. It has
+a function <code>Get</code> which will return a <code>bool</code> and a playlist which our player
+can then play.</p>
+</li>
+<li>
+<p>If it doesn’t find a cached playlist it will fetch/start streaming the
+playlist over the network. Then, it will cache it using the <code>Set</code> function
+of the <code>RecentlyPlayedLists</code> struct.</p>
+</li>
+</ol>
+<p>So, what is the behaviour and the internals of these two new methods, <code>Get</code> and
+<code>Set</code>?</p>
+<h2 id="getting-a-playlist-from-cache"><code>Get</code>ting a <code>Playlist</code> from cache</h2>
+<p>To retrieve a <code>Playlist</code> from cache is actually a cheap task, from time
+perspective. Our cache is hash table-backed which has a <code>O(1)</code> time complexity
+for the access operation. The trick is once we access an item in <code>cache</code> we
+also have to move it to the beginning of the <code>lru</code> list.</p>
+<p>In other words, we need to promote it as the most recently used item in the
+<code>RecentlyPlayedList</code>. Given that we use a linked list-backed cache, we have
+to take our item from the list and move it to the front.</p>
+<p>Let's see how that would work in our context:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (rp <span style="font-weight:bold">*</span>RecentlyPlayed) <span style="color:#900;font-weight:bold">Get</span>(key <span style="color:#458;font-weight:bold">string</span>) (<span style="font-weight:bold">*</span>Playlist, <span style="color:#458;font-weight:bold">bool</span>) {
+	<span style="font-weight:bold">if</span> elem, present <span style="font-weight:bold">:=</span> rp.cache[key]; present {
+                rp.lru.<span style="color:#900;font-weight:bold">MoveToFront</span>(elem)
+		<span style="font-weight:bold">return</span> elem.Value.(<span style="font-weight:bold">*</span>Playlist), <span style="font-weight:bold">true</span>
+	} <span style="font-weight:bold">else</span> {
+		<span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>, <span style="font-weight:bold">false</span>
+	}
+}</code></pre></div>
+<p>In case you were expecting some magic here – sorry to disappoint, but this is
+pretty simple. Its a three step function:</p>
+<ol>
+<li>Checks if it finds the item in the cache. If not it returns a <code>nil</code>.</li>
+<li>Otherwise, it moves the element to the beginning of the LRU list, and</li>
+<li>It returns the value of the <code>*list.Element</code>, which is the pointer
+to the <code>Playlist</code> that our player will play</li>
+</ol>
+<p>That's it, pretty simple.</p>
+<h2 id="hash-table-key-for-a-playlist">Hash table key for a <code>Playlist</code></h2>
+<p>Before we move on to <code>Set</code>, let's quickly discuss the implementation of the
+<code>hash</code> function.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (playlist <span style="font-weight:bold">*</span>Playlist) <span style="color:#900;font-weight:bold">hash</span>() <span style="color:#458;font-weight:bold">string</span> {
+	hash <span style="font-weight:bold">:=</span> sha1.<span style="color:#900;font-weight:bold">New</span>()
+	s <span style="font-weight:bold">:=</span> fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(
+		<span style="color:#b84">&#34;%d-%s-%s-%d&#34;</span>,
+		playlist.duration,
+		playlist.title,
+		playlist.description,
+		playlist.publishedAt,
+	)
+	hash.<span style="color:#900;font-weight:bold">Write</span>([]<span style="color:#999">byte</span>(s))
+	sum <span style="font-weight:bold">:=</span> hash.<span style="color:#900;font-weight:bold">Sum</span>(<span style="font-weight:bold">nil</span>)
+	<span style="font-weight:bold">return</span> fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;%x&#34;</span>, sum)
+}</code></pre></div>
+<p>As you can see, it's a simple one - it's goal is just to generate a
+reproducible hash for a <code>Playlist</code>. It basically concatenates the attributes of
+the <code>Playlist</code> struct and then applies a <code>SHA1</code> hashing sum on it. As the last
+step, it returns the hash in a hexidecimal format.</p>
+<h2 id="setting-a-playlist-to-cache"><code>Set</code>ting a <code>Playlist</code> to cache</h2>
+<p>Now that we have the <code>hash</code> function out of the way, let's look at the code of
+the <code>Set</code> function. After, we can discuss the steps this function takes to add
+a <code>Playlist</code> to the cache:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (rp <span style="font-weight:bold">*</span>RecentlyPlayed) <span style="color:#900;font-weight:bold">Set</span>(playlist <span style="font-weight:bold">*</span>Playlist) {
+	key <span style="font-weight:bold">:=</span> playlist.<span style="color:#900;font-weight:bold">hash</span>()
+	<span style="font-weight:bold">if</span> elem, present <span style="font-weight:bold">:=</span> rp.cache[key]; present {
+		rp.lru.<span style="color:#900;font-weight:bold">MoveToFront</span>(elem)
+	} <span style="font-weight:bold">else</span> {
+		elem <span style="font-weight:bold">:=</span> rp.lru.<span style="color:#900;font-weight:bold">PushFront</span>(playlist)
+		rp.size<span style="font-weight:bold">++</span>
+	}
+	rp.cache[key] = elem
+}</code></pre></div>
+<p>The Set function takes a <code>*Playlist</code> as an argument. It is then hashed using the
+<code>hash</code> method that implemented by <code>RecentlyPlayed</code>. It returns a unique key based
+on some attributes of the <code>Playlist</code>. The key is then used when the <code>Playlist</code>
+is added in the hash table <code>caches</code>.</p>
+<p>But before we add it to the hash table <code>cache</code>, we will check if there's
+already a value in the <code>cache</code> hash table with the same <code>key</code>. If so, we will
+only move the <code>*Playlist</code> to the front of the <code>lru</code> linked list.</p>
+<p>If not, we push the <code>*Playlist</code> to the front of the <code>lru</code> linked list, as the
+most recently used item. This returns a <code>*list.Element</code>, which for its <code>Value</code>
+expects an <code>interface{}</code> (which is the Go way to say &ldquo;any type&rdquo;). The
+<code>*list.Element</code> will wrap the <code>*Playlist</code> as its <code>Value</code>.</p>
+<p>This means that any time we access the <code>elem.Value</code> we will have to cast it to
+its proper type, since <code>*list.Element</code> does not know the type of its <code>Value</code>
+(remember, it accepts any type).</p>
+<p>After the playlist is added to the front of the <code>lru</code> list, the <code>Set</code> function
+will increment the <code>RecentlyPlayed</code>'s <code>size</code> due to the new item added to the
+list.</p>
+<p>Finally, the function will cache the <code>*list.Element</code> in the <code>cache</code> hash table</p>
+<ul>
+<li>which we will use to retrieve the playlist with a <code>O(1)</code> time complexity.</li>
+</ul>
+<p><img src="/spotify-recently-played-least-recently-used-cache-golang/empty_cart.png" alt=""></p>
+<h2 id="eviction">Eviction</h2>
+<p>Now that we know how the <code>Get</code> and <code>Set</code> functions work, we need to take one
+more thing into consideration. That is Spotify’s limitation of the size of the
+recently played screen. It means that once the number of playlists reaches a
+threshold, it removes the least recently played playlist. This will make the
+room to add a new one to the list.</p>
+<p>This is the eviction algorithm that we have to write for our LRU cache, which
+powers the recently played screen. In our implementation we'll call the
+function <code>increment</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (rp <span style="font-weight:bold">*</span>RecentlyPlayed) <span style="color:#900;font-weight:bold">increment</span>(element <span style="font-weight:bold">*</span>list.Element) {
+	rp.lru.<span style="color:#900;font-weight:bold">MoveToFront</span>(element)
+	<span style="font-weight:bold">if</span> rp.size <span style="font-weight:bold">==</span> rp.capacity {
+		lruItem <span style="font-weight:bold">:=</span> rp.lru.<span style="color:#900;font-weight:bold">Back</span>()
+		rp.lru.<span style="color:#900;font-weight:bold">Remove</span>(lruItem)
+		rp.size<span style="font-weight:bold">--</span>
+	}
+}</code></pre></div>
+<p>Every time we want to increment the usage of a certain <code>*list.Element</code>, the
+function will take these two steps:</p>
+<ol>
+<li>Move the accessed element to be beginning of the <code>lru</code> linked list, and</li>
+<li>When the <code>size</code> of the <code>RecentlyPlayed</code> struct has reached its <code>capacity</code>,
+remove the last item in the <code>lru</code> linked list</li>
+</ol>
+<p>This function will allow us to handle the eviction of the least recently used
+item in the list of playlists. Now, we can revisit our <code>Set</code> and <code>Get</code>
+functions and drop this function in:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (rp <span style="font-weight:bold">*</span>RecentlyPlayed) <span style="color:#900;font-weight:bold">Set</span>(playlist <span style="font-weight:bold">*</span>Playlist) {
+	key <span style="font-weight:bold">:=</span> playlist.<span style="color:#900;font-weight:bold">hash</span>()
+	<span style="font-weight:bold">if</span> elem, present <span style="font-weight:bold">:=</span> rp.cache[key]; present {
+		rp.<span style="color:#900;font-weight:bold">increment</span>(elem) <span style="color:#998;font-style:italic">// &lt;- the change
+</span><span style="color:#998;font-style:italic"></span>	} <span style="font-weight:bold">else</span> {
+		elem <span style="font-weight:bold">:=</span> rp.lru.<span style="color:#900;font-weight:bold">PushFront</span>(playlist)
+		rp.size<span style="font-weight:bold">++</span>
+	}
+	rp.cache[key] = elem
+}
+
+<span style="font-weight:bold">func</span> (rp <span style="font-weight:bold">*</span>RecentlyPlayed) <span style="color:#900;font-weight:bold">Get</span>(key <span style="color:#458;font-weight:bold">string</span>) (<span style="font-weight:bold">*</span>Playlist, <span style="color:#458;font-weight:bold">bool</span>) {
+	<span style="font-weight:bold">if</span> elem, present <span style="font-weight:bold">:=</span> rp.cache[key]; present {
+		rp.<span style="color:#900;font-weight:bold">increment</span>(elem) <span style="color:#998;font-style:italic">// &lt;- the change
+</span><span style="color:#998;font-style:italic"></span>		<span style="font-weight:bold">return</span> elem.Value.(<span style="font-weight:bold">*</span>Playlist), <span style="font-weight:bold">true</span>
+	} <span style="font-weight:bold">else</span> {
+		<span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>, <span style="font-weight:bold">false</span>
+	}
+}</code></pre></div>
+<p>Now that we have the <code>increment</code> function, we will use it in the <code>Set</code> and
+<code>Get</code> functions. By doing this, we will update the list of recently used items
+every time we play a <code>Playlist</code>.</p>
+<p>This change will unlock two things for our recently played screen:</p>
+<ol>
+<li>It will change the order of the cached playlists, based on the how recently
+the playlists are played</li>
+<li>It will remove any playlists once <code>size</code> exceeds <code>capacity</code></li>
+</ol>
+<h2 id="in-closing">In closing</h2>
+<p>Now that we have a Go-powered sketch of Spotify's recently played screen, let's
+do a quick recap.</p>
+<p>To shine some light on the shortcomings:</p>
+<ol>
+<li>This is a barebones model - it lacks any mechanisms to stream/download the
+playlists via the internet. We agreed that although interesting, this would
+be hard to cover in this article.</li>
+<li>The model does not take into account any restarting of the application. This
+means if we stop and start the program the cached playlists will be gone.
+This is because our implementation does not store the data on disk (only in
+memory).</li>
+<li>We do not have any graphical user interface to interact with the application
+- only a couple of functions that we can invoke.</li>
+</ol>
+<p>While all the above is a shortcoming of our implementation, it still paints the
+picture of how we could write such a program using Go. The combination of a
+linked list &amp; a hash table works nice for solving the problem at hand. From
+time complexity perspective, it scales well. And, for our tiny scenario, the
+hit-to-miss ratio should is optimal.</p>
+<p>If you would like to read more of my rambling about caching algorithms, you can
+also read &ldquo;When and Why to use a Least Frequently Used (LFU) cache with an
+implementation in Golang&rdquo; <sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup>.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p>Package that implements a doubly linked list: <a href="https://golang.org/pkg/container/list/">https://golang.org/pkg/container/list/</a> <a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2" role="doc-endnote">
+<p>Or a bloom filter - good article on the topic: <a href="https://bart.degoe.de/bloom-filters-bit-arrays-recommendations-caches-bitcoin/">https://bart.degoe.de/bloom-filters-bit-arrays-recommendations-caches-bitcoin/</a> <a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:3" role="doc-endnote">
+<p>Article I published on this very blog: <a href="https://ieftimov.com/when-why-least-frequently-used-cache-implementation-golang">https://ieftimov.com/when-why-least-frequently-used-cache-implementation-golang</a> <a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</section>
+
+			</div>
+
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/caching">caching</a></li>
+							
+							<li><a href="/tags/lru">lru</a></li>
+							
+							<li><a href="/tags/last-recently-used">last recently used</a></li>
+							
+							<li><a href="/tags/golang">golang</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>

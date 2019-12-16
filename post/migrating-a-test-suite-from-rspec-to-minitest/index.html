@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Migrating a test suite from RSpec to Minitest - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Migrating a test suite from RSpec to Minitest" />
+<meta property="og:description" content="I have always wanted to have some fun with Minitest but until this weekend I never got the chance to do it. For those of you that don&#39;t know, Minitest is a suite of testing facilities, that support TDD, BDD, mocking and benchmarking. Having wanted to play with Minitest, this weekend I decided that I will migrate the test suite of a gem of mine, from RSpec to Minitest. Read on to see how it all went." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/migrating-a-test-suite-from-rspec-to-minitest/" />
+<meta property="article:published_time" content="2015-07-14T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Migrating a test suite from RSpec to Minitest"/>
+<meta name="twitter:description" content="I have always wanted to have some fun with Minitest but until this weekend I never got the chance to do it. For those of you that don&#39;t know, Minitest is a suite of testing facilities, that support TDD, BDD, mocking and benchmarking. Having wanted to play with Minitest, this weekend I decided that I will migrate the test suite of a gem of mine, from RSpec to Minitest. Read on to see how it all went."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.comcss/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.comcss/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.comjs/main.js"></script><script src="https://ieftimov.comjs/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">14</span>
+							<span class="rest">Jul 2015</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Migrating a test suite from RSpec to Minitest</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>I have always wanted to have some fun with <a href="https://github.com/seattlerb/minitest">Minitest</a> but
+until this weekend I never got the chance to do it. For those of you that don't know,
+Minitest is a suite of testing facilities, that support TDD, BDD, mocking and benchmarking.
+Having wanted to play with Minitest, this weekend I decided that I will migrate the test
+suite of a gem of mine, from RSpec to Minitest. Read on to see how it all went.</p>
+<p>The gem that I worked with is called <a href="https://github.com/fteem/forecastr">Forecastr</a>.
+It is a very minimal gem that serves as a wrapper for the
+<a href="http://openweathermap.org">Open Weather Map</a> API.
+It supports only current forecast: temperature, pressure, humidity, min/max
+temperatures and wind (speed and direction).</p>
+<h2 id="the-setup">The setup</h2>
+<p>After checking out to a new Git branch (duh!) I first went to the gemspec and
+changed the RSpec dependency to Minitest.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">spec<span style="font-weight:bold">.</span>add_development_dependency <span style="color:#b84">&#34;</span><span style="color:#b84">minitest</span><span style="color:#b84">&#34;</span></code></pre></div>
+<p>Setup-wise, the first difference that I noticed is that while RSpec's specs live in <code>spec/forecastr</code>,
+Minitest's tests live in <code>test/forecastr</code>. Although this is the default, it's
+not the only way to do it. When creating the new Rake task for running the Minitest tests, which
+I'll get to shortly, one can specify the path where she/he wants the tests to live.</p>
+<p>In the newly created <code>test/forecastr</code> path, I had to add the <code>test_helper.rb</code>.
+The purpose of the file is the same as <code>spec_helper.rb</code> in RSpec. Instead of requiring
+RSpec, now I had to require:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#999">require</span> <span style="color:#b84">&#39;minitest/autorun&#39;</span>  <span style="color:#998;font-style:italic"># the test runner</span>
+<span style="color:#999">require</span> <span style="color:#b84">&#39;minitest/pride&#39;</span>    <span style="color:#998;font-style:italic"># adds some formatting to the test output</span></code></pre></div>
+<p>The last important thing was the Rake task. To run all the tests one needs to add
+a built-in Rake task to the Rakefile:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#999">require</span> <span style="color:#b84">&#34;</span><span style="color:#b84">rake/testtask</span><span style="color:#b84">&#34;</span>
+
+<span style="color:#008080">Rake</span><span style="font-weight:bold">::</span><span style="color:#008080">TestTask</span><span style="font-weight:bold">.</span>new <span style="font-weight:bold">do</span> <span style="font-weight:bold">|</span>t<span style="font-weight:bold">|</span>
+  t<span style="font-weight:bold">.</span>libs <span style="font-weight:bold">&lt;&lt;</span> <span style="color:#b84">&#39;test&#39;</span>
+  t<span style="font-weight:bold">.</span>pattern <span style="font-weight:bold">=</span> <span style="color:#b84">&#34;</span><span style="color:#b84">test/**/*_test.rb</span><span style="color:#b84">&#34;</span>
+  t<span style="font-weight:bold">.</span>warning <span style="font-weight:bold">=</span> <span style="font-weight:bold">true</span>
+<span style="font-weight:bold">end</span>
+
+task <span style="color:#b84">default</span>: <span style="color:#b84">:test</span></code></pre></div>
+<p>The <code>Rake::TestTask</code> object is the task that will be called when running <code>rake test</code>
+in command line. As you can see, it takes a small configuration block. In it, one can
+set the path of the tests (what I mentioned before). On the last line, I made this
+task to be the default one, because it's more convenient for me and I don't need to
+run any other tasks.</p>
+<h2 id="the-first-test">The first test</h2>
+<p>I started by migrating one test at a time from the spec directory to the test directory.
+What was interesting to me is that every test file in Minitest is a class that
+inherits from <code>Minitest::Test</code>. Also, every test case is a method, which of course
+makes sense since the test file is a class. In contrast to RSpec, Minitest is very
+verbose, while RSpec hides a lot of complexity for you with it's huge collection of
+helper methods.</p>
+<p>At the beginning I had a bit of problem with naming the methods because I was used
+to the &ldquo;free text&rdquo; way of describing test cases in RSpec. I eventually got the first one:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#999">require</span> <span style="color:#b84">&#39;test_helper&#39;</span>
+
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">Forecastr</span><span style="font-weight:bold">::</span><span style="color:#008080">WindTest</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">Minitest</span><span style="font-weight:bold">::</span><span style="color:#008080">Test</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">setup</span>
+    @wind <span style="font-weight:bold">=</span> <span style="color:#008080">Forecastr</span><span style="font-weight:bold">::</span><span style="color:#008080">Wind</span><span style="font-weight:bold">.</span>new(<span style="color:#099">2</span><span style="font-weight:bold"></span><span style="font-weight:bold">.</span><span style="color:#099">5</span><span style="font-weight:bold"></span>, <span style="font-weight:bold">-</span><span style="color:#099">37</span><span style="font-weight:bold"></span>)
+  <span style="font-weight:bold">end</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">test_speed_in_ms</span>
+    assert_equal @wind<span style="font-weight:bold">.</span>speed, <span style="color:#b84">&#34;</span><span style="color:#b84">2.5 m/s</span><span style="color:#b84">&#34;</span>
+  <span style="font-weight:bold">end</span>
+
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">test_direction</span>
+    assert_equal @wind<span style="font-weight:bold">.</span>direction, <span style="color:#b84">&#34;</span><span style="color:#b84">NNW</span><span style="color:#b84">&#34;</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>What was interesting to me is that I got really cool warnings when running the tests:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">/Users/ie/dev/forecastr/lib/forecastr/wind.rb:12: warning: method redefined; discarding old speed
+/Users/ie/dev/forecastr/lib/forecastr/wind.rb:16: warning: method redefined; discarding old direction</code></pre></div>
+<p>The reason behind these errors is that, back in the day when I was writing the <code>Wind</code> class,
+I had added <code>attr_reader</code> for <code>speed</code> and <code>direction</code>. Although I had these
+in place, I had overridden the methods, so the warning was spot on.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">module</span> <span style="color:#555">Forecastr</span>
+  <span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">Wind</span>
+    <span style="color:#008080">DIRECTIONS</span> <span style="font-weight:bold">=</span> <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">N</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">NNE</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">NE</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">ENE</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">E</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">ESE</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">SE</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">SSE</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">S</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">SSW</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">SW</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">WSW</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">W</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">WNW</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">NW</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">NNW</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>
+
+    <span style="font-weight:bold">attr_reader</span> <span style="color:#b84">:speed</span>, <span style="color:#b84">:direction</span> <span style="color:#998;font-style:italic"># &lt;--- useless...</span>
+
+    <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">initialize</span>(speed, angle)
+      @speed <span style="font-weight:bold">=</span> speed
+      @angle <span style="font-weight:bold">=</span> angle
+    <span style="font-weight:bold">end</span>
+
+    <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">speed</span>
+      <span style="color:#b84">&#34;</span><span style="color:#b84">#{</span>@speed<span style="color:#b84">}</span><span style="color:#b84"> m/s</span><span style="color:#b84">&#34;</span>
+    <span style="font-weight:bold">end</span>
+
+    <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">direction</span>
+      val <span style="font-weight:bold">=</span> ((@angle<span style="font-weight:bold">/</span><span style="color:#099">22</span><span style="font-weight:bold"></span><span style="font-weight:bold">.</span><span style="color:#099">5</span><span style="font-weight:bold"></span>) <span style="font-weight:bold">+</span> <span style="color:#099">0</span><span style="font-weight:bold"></span><span style="font-weight:bold">.</span><span style="color:#099">5</span><span style="font-weight:bold"></span>)<span style="font-weight:bold">.</span>to_i
+      <span style="color:#008080">DIRECTIONS</span><span style="font-weight:bold">[</span>val <span style="font-weight:bold">%</span> <span style="color:#099">16</span><span style="font-weight:bold"></span><span style="font-weight:bold">]</span>
+    <span style="font-weight:bold">end</span>
+
+    <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">to_s</span>
+      <span style="color:#b84">&#34;</span><span style="color:#b84">#{</span>speed<span style="color:#b84">}</span><span style="color:#b84"> </span><span style="color:#b84">#{</span>direction<span style="color:#b84">}</span><span style="color:#b84">&#34;</span>
+    <span style="font-weight:bold">end</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>After removing the unneeded attr_readers the warnings went away.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">module</span> <span style="color:#555">Forecastr</span>
+  <span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">Wind</span>
+    <span style="color:#008080">DIRECTIONS</span> <span style="font-weight:bold">=</span> <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">N</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">NNE</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">NE</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">ENE</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">E</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">ESE</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">SE</span><span style="color:#b84">&#34;</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">SSE</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">S</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">SSW</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">SW</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">WSW</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">W</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">WNW</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">NW</span><span style="color:#b84">&#34;</span>,<span style="color:#b84">&#34;</span><span style="color:#b84">NNW</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span>
+
+    <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">initialize</span>(speed, angle)
+      @speed <span style="font-weight:bold">=</span> speed
+      @angle <span style="font-weight:bold">=</span> angle
+    <span style="font-weight:bold">end</span>
+
+    <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">speed</span>
+      <span style="color:#b84">&#34;</span><span style="color:#b84">#{</span>@speed<span style="color:#b84">}</span><span style="color:#b84"> m/s</span><span style="color:#b84">&#34;</span>
+    <span style="font-weight:bold">end</span>
+
+    <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">direction</span>
+      val <span style="font-weight:bold">=</span> ((@angle<span style="font-weight:bold">/</span><span style="color:#099">22</span><span style="font-weight:bold"></span><span style="font-weight:bold">.</span><span style="color:#099">5</span><span style="font-weight:bold"></span>) <span style="font-weight:bold">+</span> <span style="color:#099">0</span><span style="font-weight:bold"></span><span style="font-weight:bold">.</span><span style="color:#099">5</span><span style="font-weight:bold"></span>)<span style="font-weight:bold">.</span>to_i
+      <span style="color:#008080">DIRECTIONS</span><span style="font-weight:bold">[</span>val <span style="font-weight:bold">%</span> <span style="color:#099">16</span><span style="font-weight:bold"></span><span style="font-weight:bold">]</span>
+    <span style="font-weight:bold">end</span>
+
+    <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">to_s</span>
+      <span style="color:#b84">&#34;</span><span style="color:#b84">#{</span>speed<span style="color:#b84">}</span><span style="color:#b84"> </span><span style="color:#b84">#{</span>direction<span style="color:#b84">}</span><span style="color:#b84">&#34;</span>
+    <span style="font-weight:bold">end</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>Although this is a nice feature of Minitest, I ended up turning it off because it started
+reporting warnings for libraries that weren't under my control:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">/Users/ie/.rbenv/versions/2.2.2/lib/ruby/gems/2.2.0/gems/webmock-1.15.0/lib/webmock/http_lib_adapters/net_http.rb:100: warning: assigned but unused variable - response</code></pre></div>
+<p>After some fun with the test, I got it passing:</p>
+<p><img src="http://i.imgur.com/Z8fIdPI.png" alt=""></p>
+<p>Fabulous!</p>
+<h2 id="the-flow">The flow</h2>
+<p>After migrating two classes from RSpec to Minitest, I noticed a change in my workflow.
+I was running <code>rake</code>, which runs the complete suite, to run just one test.
+The only way I could find to run a single test seems a bit too verbose for me.
+Since I am very used to RSpec, running a test with the line number is one of
+my most used features of RSpec.</p>
+<p>In this sense, Minitest gave me a tiny disappointment. Running a huge command
+with four arguments every time I want to run a single test is a flow-killer. True, I could
+use Guard to run the test when it gets changed. But also, I often want to run
+tests by hand without any hassle.</p>
+<p>Thanks to Nick Quaranto who wrote the <a href="https://github.com/qrush/m">m</a> gem.
+The gem is quite simple - just a Test::Unit runner that can run tests by line number.
+Although simple, it is exactly what I needed!</p>
+<p>This means that, instead of running a single test with:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ruby -Itest test/lib/test.rb --name /some_test/</code></pre></div>
+<p><strong>m</strong> allowes one to do the same with:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">m test/lib/test.rb:12</code></pre></div>
+<p>Fabulous!</p>
+<h2 id="minitestspecdsl">Minitest::Spec::DSL</h2>
+<p>After getting all my tests green, I took a look at Minitest's Spec DSL. Mintest::Spec is
+a functionally complete spec engine. It turns the test assertions
+into spec expectations. This basically allows the developers to use Minitest just as RSpec.
+The syntax is pretty much the same, so migrating RSpec suite to Minitest is much much
+easier with Minitest::Spec in the mix.</p>
+<p>My personal preference in this case was to stay away from spec expectations and
+think more in a test assertions way. Although they are basically the same, this
+experience was much more joyful for me. Or maybe I just needed to have fun with something
+new.</p>
+<h2 id="output-formatting">Output Formatting</h2>
+<p>The basic output, or the one that comes with <code>minitest/pride</code> wasn't really cutting it for me.
+When looking for other formatting options, I ran into <a href="https://github.com/kern/minitest-reporters">minitest-reporters</a> -
+a gem for creating customizable Minitest output formats.</p>
+<p>The setup is quite easy - just require the library in the <code>test_helper.rb</code> and
+call <code>Minitest::Reporters.use!</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#999">require</span> <span style="color:#b84">&#34;</span><span style="color:#b84">forecastr</span><span style="color:#b84">&#34;</span>
+<span style="color:#999">require</span> <span style="color:#b84">&#34;</span><span style="color:#b84">minitest/autorun</span><span style="color:#b84">&#34;</span>
+<span style="color:#999">require</span> <span style="color:#b84">&#34;</span><span style="color:#b84">minitest/reporters</span><span style="color:#b84">&#34;</span>
+
+<span style="color:#008080">Minitest</span><span style="font-weight:bold">::</span><span style="color:#008080">Reporters</span><span style="font-weight:bold">.</span>use! <span style="color:#008080">Minitest</span><span style="font-weight:bold">::</span><span style="color:#008080">Reporters</span><span style="font-weight:bold">::</span><span style="color:#008080">SpecReporter</span><span style="font-weight:bold">.</span>new</code></pre></div>
+<p>The gem has couple of built-in reporters, and I went for the <code>Minitest::Reporters::SpecReporter</code>.
+With this gem one can also create his own reporters and formatting.</p>
+<h2 id="so-whats-next">So, what's next?</h2>
+<p>Although Forecastr's codebase might not be big with lots of challenges in it, this was defnitely
+a really nice exercise for a hot Saturday afternoon. I just wish I had the chance to work
+with Fixtures and some fake objects.</p>
+<p>All in all, what I can say now is that using Minitest was a real joy. It seems to be
+very simple to setup, extend and use. But, although simple, in my opinion it is
+as powerful as the other alternatives.</p>
+<p>You can see the whole RSpec to Minitest migration on <a href="https://github.com/fteem/forecastr/commit/39264e419dc932f4562d622a293d920634218af6">this commit</a>.</p>
+
+			</div>
+
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/migrate">migrate</a></li>
+							
+							<li><a href="/tags/rspec">rspec</a></li>
+							
+							<li><a href="/tags/minitest">minitest</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>
