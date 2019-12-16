@@ -4,7 +4,8 @@
 	<meta charset="utf-8" />
 	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Testing in Go: Writing Practical Failure Messages - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta property="og:title" content="Testing in Go: Writing Practical Failure Messages" />
-<meta property="og:description" content="I remember it was summer and it the A/C was blasting in the office. My mentor and I were looking at one of the screens on my desk. It was the biggest screen I&#39;ve ever worked on - a 24 inch 720p Dell. It meant a lot to me - I felt like a real programmer, whatever that means, looking at these vast areas of black screen and many split terminals, with tons of white characters on the black background." />
+<meta property="og:description" content="All developers appreciate code that works, yet we spend much of our working hours debugging existing code. When fixing existing code, what our test failures communicate is paramount to the debugging experience we have.
+That&#39;s why in this article we will look at what it means to write a meaningful test failure message. We will look at its structure and how we can use some simple techniques to improve our test failure messages." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://ieftimov.com/post/testing-in-go-writing-practical-failure-messages/" />
 <meta property="og:image" content="https://ieftimov.com/cards/testing-in-go-writing-practical-failure-messages.png" />
@@ -14,7 +15,8 @@
 <meta name="twitter:image" content="https://ieftimov.com/cards/testing-in-go-writing-practical-failure-messages.png"/>
 
 <meta name="twitter:title" content="Testing in Go: Writing Practical Failure Messages"/>
-<meta name="twitter:description" content="I remember it was summer and it the A/C was blasting in the office. My mentor and I were looking at one of the screens on my desk. It was the biggest screen I&#39;ve ever worked on - a 24 inch 720p Dell. It meant a lot to me - I felt like a real programmer, whatever that means, looking at these vast areas of black screen and many split terminals, with tons of white characters on the black background."/>
+<meta name="twitter:description" content="All developers appreciate code that works, yet we spend much of our working hours debugging existing code. When fixing existing code, what our test failures communicate is paramount to the debugging experience we have.
+That&#39;s why in this article we will look at what it means to write a meaningful test failure message. We will look at its structure and how we can use some simple techniques to improve our test failure messages."/>
 <link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
 	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/normalize.css" />
 	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/main.css" />
@@ -81,40 +83,31 @@
 			</div>
 					
 			<div class="markdown">
-				<p><img src="/testing-in-go-writing-practical-failure-messages/pair_programming.png" alt=""></p>
-<p>I remember it was summer and it the A/C was blasting in the office. My mentor
-and I were looking at one of the screens on my desk. It was the biggest screen
-I've ever worked on - a 24 inch 720p Dell. It meant a lot to me - I felt like a
-real programmer, whatever that means, looking at these vast areas of black
-screen and many split terminals, with tons of white characters on the black
-background.</p>
-<p>&ldquo;Let's try stubbing this method call here - the problem might be in its
-invocation&rdquo; I said. He agreed, it's worth a shot. We were deep in this
-debugging session. We felt that we were close to the fix but we still had
-couple of more steps. Upon changing the stub a different failure greeted us.
-&ldquo;Oh, a different error?&rdquo; I said, with a dose of frustration in my voice. &ldquo;Yes,
-but that's progress!&rdquo; he said, excited at the prospect of us approaching our
-debugging destination.</p>
-<p>Later that day, after we fixed the issue, we were in the kitchen, making
-another cup of coffee. We were expressing eachothers frustration with the
-architecture, reflecting on how we could simplify it, improve the code and make
-it more testable. We continued about how we would design this feature in the
-perfect world, if there was such a thing or place. It was always an interesting
-thought exercise.</p>
-<p>Then, I asked him about his remark that a different error means progress. For
-me, it was a strange way of looking at errors. The idea seemed somehow
-provocative at that time. How could errors mean progress? How are errors even
-good? What is he talking about? These were some of the questions that were
-reverberating in my head. After a short discussion I realised that while we all
-appreciate code that works, we spend much of our working hours debugging
-existing code. When fixing existing code, what our test failures communicate is
-paramount to the debugging experience we have.</p>
+				<p>All developers appreciate code that works, yet we spend much of our working
+hours debugging existing code. When fixing existing code, what our test
+failures communicate is paramount to the debugging experience we have.</p>
 <p>That's why in this article we will look at what it means to write a meaningful
 test failure message. We will look at its structure and how we can use some
 simple techniques to improve our test failure messages. Whether it's a
 colleague of ours, or our future selves, a great error message can make
 people's lifes easier and they'll be grateful for it.</p>
-<p><img src="/testing-in-go-writing-practical-failure-messages/under_construction.png" alt=""></p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure class="imagecaption">
+  <img class="caption" src="/testing-in-go-writing-practical-failure-messages/under_construction.png" title="Image taken from Undraw." alt="Two people working on the same computer">
+  <span class="caption-text">Image taken from <a href="https://undraw.co/">Undraw</a>.</span>
+</figure>
+
 <h2 id="anatomy-of-a-test-case">Anatomy of a test case</h2>
 <p>Before we continue on exploring failure messages and their traits, we should
 create a function that we can test. When talking about test failures without
@@ -202,32 +195,6 @@ article.</p>
 </ol>
 <p>Now that we understand the anatomy of a common test case, let's open the
 discussion of what are the traits of a good and a bad test failure message.</p>
-
-
-
-
-
-
-
-<div id="mc_embed_signup">
-<form action="https://pm.us20.list-manage.com/subscribe/post?u=d9a6471309140dcd520d05346&amp;id=2aac491644" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
-    <div id="mc_embed_signup_scroll">
-        <div class="heading">Join The Newsletter</div>
-        <p>
-            I write about backend technologies, programming and cloud architectures. Join hundreds of other developers that get my content, twice a month. Unsubscribe whenever. Never spam.
-        </p>
-	<input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Your email address" required>
-        <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
-
-      
-      <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_d9a6471309140dcd520d05346_2aac491644" tabindex="-1" value=""></div>
-
-    <p>You can also subscribe <a href="/index.xml">via RSS</a>.</p>
-    </div>
-</form>
-</div>
-
-
 <h2 id="traits-of-an-failure-message">Traits of an failure message</h2>
 <p>To define the traits of an test failure message, let's examine the output of
 the failed test from the previous section:</p>
@@ -341,7 +308,23 @@ String:
 - %q	a double-quoted string safely escaped with Go syntax</code></pre></div>
 <p>There are more verbs available in the <code>fmt</code> package, head over to <a href="https://golang.org/pkg/fmt/#Sprintf">the
 documentation</a> to check them out.</p>
-<p><img src="/testing-in-go-writing-practical-failure-messages/searching.png" alt=""></p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure class="imagecaption">
+  <img class="caption" src="/testing-in-go-writing-practical-failure-messages/searching.png" title="Image taken from Undraw." alt="Magnifying glass">
+  <span class="caption-text">Image taken from <a href="https://undraw.co/">Undraw</a>.</span>
+</figure>
+
 <h2 id="inspecting-custom-types">Inspecting Custom Types</h2>
 <p>When it comes to inspecting state of custom types, things can easily get hairy.
 All custom types start simple, with few attributes. But as codebases grow, the
@@ -493,32 +476,6 @@ FAIL	_/Users/Ilija/Documents/testing_person	0.004s</code></pre></div>
 take care of the printing.</p>
 <p>But, could we take this idea further? Imagine if the structs that we use to
 build our table-driven tests could actually describe themselves?</p>
-
-
-
-
-
-
-
-<div id="mc_embed_signup">
-<form action="https://pm.us20.list-manage.com/subscribe/post?u=d9a6471309140dcd520d05346&amp;id=2aac491644" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
-    <div id="mc_embed_signup_scroll">
-        <div class="heading">Join The Newsletter</div>
-        <p>
-            I write about backend technologies, programming and cloud architectures. Join hundreds of other developers that get my content, twice a month. Unsubscribe whenever. Never spam.
-        </p>
-	<input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Your email address" required>
-        <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
-
-      
-      <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_d9a6471309140dcd520d05346_2aac491644" tabindex="-1" value=""></div>
-
-    <p>You can also subscribe <a href="/index.xml">via RSS</a>.</p>
-    </div>
-</form>
-</div>
-
-
 <h3 id="self-describing-test-cases">Self-describing test cases</h3>
 <p>From our test that we wrote earlier, let's extract a type (<code>TestCase</code>) and use
 it in our <code>TestOlder</code> test function:</p>
@@ -605,7 +562,23 @@ this will do fine.</p>
 power to construct test cases as structs and use them in tests, we can also use
 other Golang goodies like the <code>Stringer</code> interface and make our test cases
 report their failures better.</p>
-<p><img src="/testing-in-go-writing-practical-failure-messages/typewriter.png" alt=""></p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure class="imagecaption">
+  <img class="caption" src="/testing-in-go-writing-practical-failure-messages/typewriter.png" title="Image taken from Undraw." alt="Huge typewriter and two persons">
+  <span class="caption-text">Image taken from <a href="https://undraw.co/">Undraw</a>.</span>
+</figure>
+
 <h2 id="simplicity-and-verbosity">Simplicity and verbosity</h2>
 <p>Before we wrap up this walkthrough that we embarked on, there's one last thing
 that I would like us to discuss. I would go on a limb and say that you are
