@@ -1,904 +1,423 @@
 <!DOCTYPE html>
-<html lang="en" itemscope itemtype="http://schema.org/WebPage">
+<html>
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Understanding why and how to add idempotent requests to your APIs - Ilija Eftimov</title>
-  
-
-<meta name="renderer" content="webkit" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
-
-<meta name="MobileOptimized" content="width"/>
-<meta name="HandheldFriendly" content="true"/>
-
-
-<meta name="applicable-device" content="pc,mobile">
-
-<meta name="theme-color" content="#f8f5ec" />
-<meta name="msapplication-navbutton-color" content="#f8f5ec">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
-
-<meta name="mobile-web-app-capable" content="yes">
-
-<meta name="author" content="Ilija Eftimov" />
-  <meta name="description" content="Idempotency is an often used term in computer science. It&amp;rsquo;s meaning to some might not be known, to others it&amp;rsquo;s very well known. The explanation for idempotency on Wikipedia is:
- &amp;hellip; the property of certain operations in mathematics and computer science that they can be applied multiple times without changing the result beyond the initial application.
- Essentially, idempotency is the mathematical way of saying &amp;ldquo;one can apply a certain operation on something many times, without changing the result of the operation after the first time the operation is applied&amp;rdquo;." />
-
-  <meta name="keywords" content="Software, Programming, Computer Science, Products" />
-
-
-
-
-
-
-<meta name="generator" content="Hugo 0.55.6" />
-
-
-<link rel="canonical" href="https://ieftimov.com/post/understand-how-why-add-idempotent-requests-api/" />
-
-
-
-<link rel="icon" href="/favicon.ico" />
-
-
-
-
-
-
-
-
-
-
-
-<link rel="stylesheet" href="/sass/jane.min.ec807d8b802a40889537c26e014f733206312ea440d42e1f0dabed80918de1ac.css" integrity="sha256-7IB9i4AqQIiVN8JuAU9zMgYxLqRA1C4fDavtgJGN4aw=" media="screen" crossorigin="anonymous">
-
-
-
-
-<link rel="stylesheet" href="/css/overrides.css">
-
-<link rel="stylesheet" href="/css/subscribe.css">
-
-
-<meta property="og:title" content="Understanding why and how to add idempotent requests to your APIs" />
-<meta property="og:description" content="Idempotency is an often used term in computer science. It&rsquo;s meaning to some might not be known, to others it&rsquo;s very well known. The explanation for idempotency on Wikipedia is:
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Understanding why and how to add idempotent requests to your APIs - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Understanding why and how to add idempotent requests to your APIs" />
+<meta property="og:description" content="Idempotency is an often used term in computer science. It&#39;s meaning to some might not be known, to others it&#39;s very well known. The explanation for idempotency on Wikipedia is:
  &hellip; the property of certain operations in mathematics and computer science that they can be applied multiple times without changing the result beyond the initial application.
  Essentially, idempotency is the mathematical way of saying &ldquo;one can apply a certain operation on something many times, without changing the result of the operation after the first time the operation is applied&rdquo;." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://ieftimov.com/post/understand-how-why-add-idempotent-requests-api/" />
-
 <meta property="og:image" content="https://ieftimov.com/cards/understand-how-why-add-idempotent-requests-api.png" />
-<meta property="article:published_time" content="2017-11-02T00:00:00&#43;00:00"/>
+<meta property="article:published_time" content="2017-11-02T00:00:00+00:00" />
 
-
-<meta itemprop="name" content="Understanding why and how to add idempotent requests to your APIs">
-<meta itemprop="description" content="Idempotency is an often used term in computer science. It&rsquo;s meaning to some might not be known, to others it&rsquo;s very well known. The explanation for idempotency on Wikipedia is:
- &hellip; the property of certain operations in mathematics and computer science that they can be applied multiple times without changing the result beyond the initial application.
- Essentially, idempotency is the mathematical way of saying &ldquo;one can apply a certain operation on something many times, without changing the result of the operation after the first time the operation is applied&rdquo;.">
-
-
-
-<meta itemprop="wordCount" content="4578">
-
-  <meta itemprop="image" content="https://ieftimov.com/cards/understand-how-why-add-idempotent-requests-api.png">
-
-
-
-<meta itemprop="keywords" content="idempotency,redis,stripe," />
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://ieftimov.com/cards/understand-how-why-add-idempotent-requests-api.png"/>
 
 <meta name="twitter:title" content="Understanding why and how to add idempotent requests to your APIs"/>
-<meta name="twitter:description" content="Idempotency is an often used term in computer science. It&rsquo;s meaning to some might not be known, to others it&rsquo;s very well known. The explanation for idempotency on Wikipedia is:
+<meta name="twitter:description" content="Idempotency is an often used term in computer science. It&#39;s meaning to some might not be known, to others it&#39;s very well known. The explanation for idempotency on Wikipedia is:
  &hellip; the property of certain operations in mathematics and computer science that they can be applied multiple times without changing the result beyond the initial application.
  Essentially, idempotency is the mathematical way of saying &ldquo;one can apply a certain operation on something many times, without changing the result of the operation after the first time the operation is applied&rdquo;."/>
-
-<!--[if lte IE 9]>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
-<![endif]-->
-
-<!--[if lt IE 9]>
-  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
-<![endif]-->
-
-
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-	ga('create', 'UA-11264459-2', 'auto');
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.com/css/overrides.css" />
 	
-	ga('send', 'pageview');
-}
-</script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
 
-
-<script type='text/javascript'>
-window.Tooltip||function(t,e){var o={
-url:"https://cdn.tooltip.io/static/player.js",
-key:"189f262e-7c0e-4a30-b1dd-1e425f03fe5e",
-async:true
-};
-window.Tooltip={cs:[],_apiKey:o.key};for(
-var r=["identify","goal","updateUserData","start","stop","refresh","show","hide","on"],
-i={},n=0;n<r.length;n++){var a=r[n];i[a]=function(t){return function(){var e=Array.prototype.slice.call(arguments);
-window.Tooltip.cs.push({method:t,args:e})}}(a)}window.Tooltip.API=i;var n=t.createElement(e),s=t.getElementsByTagName(e)[0];
-n.type="text/javascript",n.async=o.async,s.parentNode.insertBefore(n,s),n.src=o.url}(document,"script");
-</script>
-
-
-
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.com/js/main.js"></script><script src="https://ieftimov.com/js/tooltip.js"></script>
 </head>
+
 <body>
-  <div id="mobile-navbar" class="mobile-navbar">
-  <div class="mobile-header-logo">
-    <a href="/" class="logo">Ilija Eftimov</a>
-  </div>
-  <div class="mobile-navbar-icon">
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
-</div>
-<nav id="mobile-menu" class="mobile-menu slideout-menu">
-  <ul class="mobile-menu-list">
-    <li class="mobile-menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
-          
-        
-      </li><li class="mobile-menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
-          
-        
-      </li><li class="mobile-menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/about/">About</a>
-          
-        
-      </li>
-    
-  </ul>
-</nav>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com/">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com/">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
 
-
-  
-    
-
-
-
-
-
-
-  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
-  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
-
-
-
-
-<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
-
-<div class="pswp__bg"></div>
-
-<div class="pswp__scroll-wrap">
-    
-    <div class="pswp__container">
-      <div class="pswp__item"></div>
-      <div class="pswp__item"></div>
-      <div class="pswp__item"></div>
-    </div>
-    
-    <div class="pswp__ui pswp__ui--hidden">
-    <div class="pswp__top-bar">
-      
-      <div class="pswp__counter"></div>
-      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
-      <button class="pswp__button pswp__button--share" title="Share"></button>
-      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
-      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
-      
-      
-      <div class="pswp__preloader">
-        <div class="pswp__preloader__icn">
-          <div class="pswp__preloader__cut">
-            <div class="pswp__preloader__donut"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-      <div class="pswp__share-tooltip"></div>
-    </div>
-    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
-    </button>
-    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
-    </button>
-    <div class="pswp__caption">
-      <div class="pswp__caption__center"></div>
-    </div>
-    </div>
-    </div>
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
 </div>
 
-  
 
-  
-
-  <header id="header" class="header container">
-    <div class="logo-wrapper">
-  <a href="/" class="logo">
-    
-      Ilija Eftimov
-    
-  </a>
-</div>
-
-<nav class="site-navbar">
-  <ul id="menu" class="menu">
-    
-    
-        <li class="menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
-          
-
-        
-
-      </li>
-    
-        <li class="menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
-          
-
-        
-
-      </li>
-    
-        <li class="menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/about/">About</a>
-          
-
-        
-
-      </li>
-    
-    
-  </ul>
-</nav>
-
-  </header>
-
-  <div id="mobile-panel">
-    <main id="main" class="main bg-llight">
-      <div class="content-wrapper">
-        <div id="content" class="content container">
-          <article class="post bg-white">
-    
-    <header class="post-header">
-      <h1 class="post-title">Understanding why and how to add idempotent requests to your APIs</h1>
-      
-      <div class="post-meta">
-        <time datetime="2017-11-02" class="post-time">
-          02-11-2017
-        </time>
-        <div class="post-category">
-            <a href="https://ieftimov.com/categories/ruby/"> ruby </a>
-            <a href="https://ieftimov.com/categories/rails/"> rails </a>
-            <a href="https://ieftimov.com/categories/apis/"> apis </a>
-            
-          </div>
-        
-
-        
-        
-
-        
-        
-      </div>
-    </header>
-
-    
-    
-
-    
-    <div class="post-content">
-      
-
-<p>Idempotency is an often used term in computer science. It&rsquo;s meaning to some might
-not be known, to others it&rsquo;s very well known. The explanation for idempotency on
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">02</span>
+							<span class="rest">Nov 2017</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Understanding why and how to add idempotent requests to your APIs</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>Idempotency is an often used term in computer science. It's meaning to some might
+not be known, to others it's very well known. The explanation for idempotency on
 <a href="https://en.wikipedia.org/wiki/Idempotence">Wikipedia</a> is:</p>
-
 <blockquote>
 <p>&hellip; the property of certain operations in mathematics and computer science that
 they can be applied multiple times without changing the result beyond the
 initial application.</p>
 </blockquote>
-
 <p>Essentially, idempotency is the mathematical way of saying &ldquo;one can apply a
 certain operation on something many times, without changing the result of the
 operation after the first time the operation is applied&rdquo;.</p>
-
 <p>A common example of this would be an <code>UPDATE</code> statement in SQL. For example,
-imagine you have a SQL table full of student&rsquo;s first and last names, like in a
+imagine you have a SQL table full of student's first and last names, like in a
 school system. Updating a name of a student, would look like this:</p>
-
-<div class="highlight"><pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">UPDATE</span> <span class="n">students</span> <span class="k">SET</span> <span class="n">first_name</span> <span class="o">=</span> <span class="s1">&#39;John&#39;</span> <span class="k">WHERE</span> <span class="n">id</span> <span class="o">=</span> <span class="mi">123</span><span class="p">;</span></code></pre></div>
-
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="font-weight:bold">UPDATE</span> students <span style="font-weight:bold">SET</span> first_name <span style="font-weight:bold">=</span> <span style="color:#b84">&#39;</span><span style="color:#b84">John</span><span style="color:#b84">&#39;</span> <span style="font-weight:bold">WHERE</span> id <span style="font-weight:bold">=</span> <span style="color:#099">123</span>;</code></pre></div>
 <p>Applying this query is idempotent, because the first time you run it it will
 update the name of student with id <code>123</code>, but if you run it a milion times more
 after, the result will not change - the name will still stay <code>John</code>.</p>
-
-<p>Let&rsquo;s think a bit about APIs now. Imagine you have an API to do bank transactions,
+<p>Let's think a bit about APIs now. Imagine you have an API to do bank transactions,
 what would happen if in the middle of a API call for performing a transaction
 the server throws an exception and the call fails? What if the client crashes
 and it never receives the message? Or, what if the connection drops mid-way and
 the client never gets the response of the server, but the server executes the
 transaction?</p>
-
 <p>As you can imagine, there can be many causes of an API call failing, but how
 would we know if the operation failed or it succeeded? How would we known if
 a transaction went through, or not?</p>
-
 <p>Imagine if our APIs were smart enough so we could selectively make calls to the
 API idempotent?</p>
-
 <h2 id="the-problem-at-hand">The problem at hand</h2>
-
 <p>I work in Catawiki, where we do auctions. For those not familiar with auctions -
 auctions are group of items (called lots) that people can bid on during a period
 of time. Bidding is the process of offering up a price for an item, within the
 aforementioned time period.</p>
-
-<p>If you are reminded of early eBay days, that&rsquo;s perfect. Knowing about how eBay
+<p>If you are reminded of early eBay days, that's perfect. Knowing about how eBay
 used to work back in the day is enough knowledge about auctions you need for
 this blog post.</p>
-
 <p>So people come to the website, they browse through the various auctions running,
 they view the items they would like to own and they bid on them. As you can
 imagine, placing a bid on an item is the most important action in an auction
 site and the user must know when their bid has been accepted (or not). So, what
-would happen if the request dies in mid-flight? Or maybe our user&rsquo;s browser gets
+would happen if the request dies in mid-flight? Or maybe our user's browser gets
 stuck, and the user tries to click multiple times on the bid button while the
 browser sits unresponsive.</p>
-
 <p>How can we know if the actual bid was placed or not?</p>
-
 <h2 id="idempotent-apis">Idempotent APIs</h2>
-
 <p>When we are dealing with similar systems, one of the way one could tackle this
 problem is designing APIs that have the ability to be idempotent. Since we already
 established what idempotency means, idempotent APIs are APIs where any write
 operations can have effect only once for a given set of parameters.</p>
-
 <p>In fact, some companies have already implemented solutions for this, and one
 of the better examples out there is <a href="https://stripe.com/blog/idempotency">Stripe</a>.</p>
-
-<p>Stripe&rsquo;s API does that via a HTTP header, called <code>Idempotency-Key</code>, which is
+<p>Stripe's API does that via a HTTP header, called <code>Idempotency-Key</code>, which is
 a random set of characters. An example cURL request looks like this:</p>
-
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">curl https://api.stripe.com/v1/charges <span class="se">\
-</span><span class="se"></span>       -u sk_test_BQokikJOvBiI2HlWgH4olfQ2: <span class="se">\
-</span><span class="se"></span>       -H <span class="s2">&#34;Idempotency-Key: AGJ6FJMkGQIpHUTX&#34;</span> <span class="se">\
-</span><span class="se"></span>       -d <span class="nv">amount</span><span class="o">=</span><span class="m">2000</span> <span class="se">\
-</span><span class="se"></span>       -d <span class="nv">currency</span><span class="o">=</span>usd <span class="se">\
-</span><span class="se"></span>       -d <span class="nv">description</span><span class="o">=</span><span class="s2">&#34;Charge for Brandur&#34;</span> <span class="se">\
-</span><span class="se"></span>       -d <span class="nv">customer</span><span class="o">=</span>cus_A8Z5MHwQS7jUmZ</code></pre></div>
-
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">curl https://api.stripe.com/v1/charges <span style="color:#b84">\
+</span><span style="color:#b84"></span>       -u sk_test_BQokikJOvBiI2HlWgH4olfQ2: <span style="color:#b84">\
+</span><span style="color:#b84"></span>       -H <span style="color:#b84">&#34;Idempotency-Key: AGJ6FJMkGQIpHUTX&#34;</span> <span style="color:#b84">\
+</span><span style="color:#b84"></span>       -d <span style="color:#008080">amount</span><span style="font-weight:bold">=</span><span style="color:#099">2000</span> <span style="color:#b84">\
+</span><span style="color:#b84"></span>       -d <span style="color:#008080">currency</span><span style="font-weight:bold">=</span>usd <span style="color:#b84">\
+</span><span style="color:#b84"></span>       -d <span style="color:#008080">description</span><span style="font-weight:bold">=</span><span style="color:#b84">&#34;Charge for Brandur&#34;</span> <span style="color:#b84">\
+</span><span style="color:#b84"></span>       -d <span style="color:#008080">customer</span><span style="font-weight:bold">=</span>cus_A8Z5MHwQS7jUmZ</code></pre></div>
 <p>As you can imagine, just like with bidding, designing APIs whose consumers can
 do actual money transactions are quite important to be very safe from various
 failures, especially where the sending or the receiving party cannot process
 the request/response fully.</p>
-
 <p>So, how could we design and implement an idempotent API solution for our auctions
-website? Let&rsquo;s start off by some wishful thinking.</p>
-
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">curl https://api.example.com/v1/item/:item_id/bid <span class="se">\
-</span><span class="se"></span>       -X POST <span class="se">\
-</span><span class="se"></span>       -H <span class="s2">&#34;X-Auth-Token: BGT9FJMkd1Ow&#34;</span> <span class="se">\
-</span><span class="se"></span>       -H <span class="s2">&#34;Idempotency-Key: AGJ6FJMkGQIpHUTX&#34;</span> <span class="se">\
-</span><span class="se"></span>       -d <span class="nv">amount</span><span class="o">=</span><span class="m">2000</span></code></pre></div>
-
+website? Let's start off by some wishful thinking.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">curl https://api.example.com/v1/item/:item_id/bid <span style="color:#b84">\
+</span><span style="color:#b84"></span>       -X POST <span style="color:#b84">\
+</span><span style="color:#b84"></span>       -H <span style="color:#b84">&#34;X-Auth-Token: BGT9FJMkd1Ow&#34;</span> <span style="color:#b84">\
+</span><span style="color:#b84"></span>       -H <span style="color:#b84">&#34;Idempotency-Key: AGJ6FJMkGQIpHUTX&#34;</span> <span style="color:#b84">\
+</span><span style="color:#b84"></span>       -d <span style="color:#008080">amount</span><span style="font-weight:bold">=</span><span style="color:#099">2000</span></code></pre></div>
 <p>Our API would have an endpoint, called <code>POST /v1/item/:item_id/bid</code>, which would
-create a bid for our item on auction. The request, in it&rsquo;s payload, would
+create a bid for our item on auction. The request, in it's payload, would
 contain the amount for the bid, and in the headers it would contain the API
 token and the idempotency key.</p>
-
 <p>Simple enough for a first iteration of our solution, but complicated just
 enough to do the trick for us.</p>
-
 <h2 id="adding-the-endpoint">Adding the endpoint</h2>
-
-<p>In our simple example auction application, we&rsquo;ll have the following models
+<p>In our simple example auction application, we'll have the following models
 (and respective associations):</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">Auction</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">ApplicationRecord</span>
+  has_many <span style="color:#b84">:lots</span>
+<span style="font-weight:bold">end</span>
 
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">Auction</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
-  <span class="n">has_many</span> <span class="ss">:lots</span>
-<span class="k">end</span>
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">Lot</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">ApplicationRecord</span>
+  has_many <span style="color:#b84">:bids</span>
+  belongs_to <span style="color:#b84">:auction</span>
+<span style="font-weight:bold">end</span>
 
-<span class="k">class</span> <span class="nc">Lot</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
-  <span class="n">has_many</span> <span class="ss">:bids</span>
-  <span class="n">belongs_to</span> <span class="ss">:auction</span>
-<span class="k">end</span>
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">Bid</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">ApplicationRecord</span>
+  belongs_to <span style="color:#b84">:lot</span>
+  belongs_to <span style="color:#b84">:user</span>
 
-<span class="k">class</span> <span class="nc">Bid</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
-  <span class="n">belongs_to</span> <span class="ss">:lot</span>
-  <span class="n">belongs_to</span> <span class="ss">:user</span>
+  validates <span style="color:#b84">:amount</span>, <span style="color:#b84">presence</span>: <span style="font-weight:bold">true</span>, <span style="color:#b84">numericality</span>: <span style="font-weight:bold">true</span>
+<span style="font-weight:bold">end</span>
 
-  <span class="n">validates</span> <span class="ss">:amount</span><span class="p">,</span> <span class="ss">presence</span><span class="p">:</span> <span class="kp">true</span><span class="p">,</span> <span class="ss">numericality</span><span class="p">:</span> <span class="kp">true</span>
-<span class="k">end</span>
-
-<span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
-  <span class="n">has_many</span> <span class="ss">:bids</span>
-<span class="k">end</span></code></pre></td></tr></table>
-</div>
-</div>
-
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">User</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">ApplicationRecord</span>
+  has_many <span style="color:#b84">:bids</span>
+<span style="font-weight:bold">end</span></code></pre></div>
 <p>Personally, I am used to using <a href="https://github.com/ruby-grape/grape">Grape</a>
 on a daily basis to build REST APIs with, so the syntax you will be seeing here
 will be from Grape. But the general approach and solution can be transfered to
 other frameworks and languages.</p>
-
 <p>Our endpoint would look something like this:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">module</span> <span style="color:#555">API</span>
+  <span style="font-weight:bold">module</span> <span style="color:#555">V1</span>
+    <span style="font-weight:bold">module</span> <span style="color:#555">Lots</span>
+      <span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">Bids</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">Grape</span><span style="font-weight:bold">::</span><span style="color:#008080">API</span>
+        resource <span style="color:#b84">:lots</span> <span style="font-weight:bold">do</span>
+          route_param <span style="color:#b84">:lot_id</span> <span style="font-weight:bold">do</span>
+            params <span style="font-weight:bold">do</span>
+              requires <span style="color:#b84">:lot_id</span>, <span style="color:#b84">type</span>: <span style="color:#999">Integer</span>, <span style="color:#b84">desc</span>: <span style="color:#b84">&#39;Lot ID&#39;</span>
+            <span style="font-weight:bold">end</span>
+            resource <span style="color:#b84">:bids</span> <span style="font-weight:bold">do</span>
+              params <span style="font-weight:bold">do</span>
+                requires <span style="color:#b84">:amount</span>, <span style="color:#b84">type</span>: <span style="color:#999">Integer</span>, <span style="color:#b84">desc</span>: <span style="color:#b84">&#39;Amount&#39;</span>
+              <span style="font-weight:bold">end</span>
+              desc <span style="color:#b84">&#39;Create a bid for a lot&#39;</span>
+              post <span style="font-weight:bold">do</span>
+                lot <span style="font-weight:bold">=</span> <span style="color:#008080">Lot</span><span style="font-weight:bold">.</span>find(params<span style="font-weight:bold">[</span><span style="color:#b84">:lot_id</span><span style="font-weight:bold">]</span>)
+                lot<span style="font-weight:bold">.</span>bids<span style="font-weight:bold">.</span>create!(<span style="color:#b84">amount</span>: params<span style="font-weight:bold">[</span><span style="color:#b84">:amount</span><span style="font-weight:bold">]</span>)
 
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">module</span> <span class="nn">API</span>
-  <span class="k">module</span> <span class="nn">V1</span>
-    <span class="k">module</span> <span class="nn">Lots</span>
-      <span class="k">class</span> <span class="nc">Bids</span> <span class="o">&lt;</span> <span class="no">Grape</span><span class="o">::</span><span class="no">API</span>
-        <span class="n">resource</span> <span class="ss">:lots</span> <span class="k">do</span>
-          <span class="n">route_param</span> <span class="ss">:lot_id</span> <span class="k">do</span>
-            <span class="n">params</span> <span class="k">do</span>
-              <span class="n">requires</span> <span class="ss">:lot_id</span><span class="p">,</span> <span class="ss">type</span><span class="p">:</span> <span class="nb">Integer</span><span class="p">,</span> <span class="ss">desc</span><span class="p">:</span> <span class="s1">&#39;Lot ID&#39;</span>
-            <span class="k">end</span>
-            <span class="n">resource</span> <span class="ss">:bids</span> <span class="k">do</span>
-              <span class="n">params</span> <span class="k">do</span>
-                <span class="n">requires</span> <span class="ss">:amount</span><span class="p">,</span> <span class="ss">type</span><span class="p">:</span> <span class="nb">Integer</span><span class="p">,</span> <span class="ss">desc</span><span class="p">:</span> <span class="s1">&#39;Amount&#39;</span>
-              <span class="k">end</span>
-              <span class="n">desc</span> <span class="s1">&#39;Create a bid for a lot&#39;</span>
-              <span class="n">post</span> <span class="k">do</span>
-                <span class="n">lot</span> <span class="o">=</span> <span class="no">Lot</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">params</span><span class="o">[</span><span class="ss">:lot_id</span><span class="o">]</span><span class="p">)</span>
-                <span class="n">lot</span><span class="o">.</span><span class="n">bids</span><span class="o">.</span><span class="n">create!</span><span class="p">(</span><span class="ss">amount</span><span class="p">:</span> <span class="n">params</span><span class="o">[</span><span class="ss">:amount</span><span class="o">]</span><span class="p">)</span>
-
-                <span class="n">body</span> <span class="kp">false</span>
-              <span class="k">end</span>
-            <span class="k">end</span>
-          <span class="k">end</span>
-        <span class="k">end</span>
-      <span class="k">end</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>As you can notice, this is a very simple endpoint. It&rsquo;s URI is
+                body <span style="font-weight:bold">false</span>
+              <span style="font-weight:bold">end</span>
+            <span style="font-weight:bold">end</span>
+          <span style="font-weight:bold">end</span>
+        <span style="font-weight:bold">end</span>
+      <span style="font-weight:bold">end</span>
+    <span style="font-weight:bold">end</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>As you can notice, this is a very simple endpoint. It's URI is
 <code>POST /lots/:lot_id/bids</code>, and in the request body it accepts the amount of the
 bid as an integer. If you would like to see how the endpoint performs, you can
 fetch the <a href="https://github/fteem/auctionz">repo</a>, set it up locally and play with
 it.</p>
-
 <p>The first step to adding idempotency token support is to be able to easily
 send it. If you are using a API browser like Postman or Paw, you have that
 ability out of the box. These API browsers allow us to send any type of params
 or headers. For example, this is what a successful request to this endpoint looks
 like, via Postman:</p>
-
-<p><img src="/idempotency-key-bids-successful-request.png" alt="" /></p>
-
+<p><img src="/idempotency-key-bids-successful-request.png" alt=""></p>
 <p>As you can notice, we explicitly set the endpoint to return no body which will
 set the HTTP status to 204, therefore providing enough context if and when the
 bid is accepted by the system.</p>
-
 <p>The internals of the endpoint are quite simple - we find the lot by the <code>lot_id</code>
 from the URI, and we create a <code>Bid</code> for it with the <code>amount</code> sent in the
 <code>params</code>. No magic, very simple endpoint.</p>
-
 <p>As you can imagine, when bidding for an item on auction, every bid has to be
 bigger than the previous one. Therefore, adding a validation on the <code>Bid</code> model
 to do these kind of checks is required. This is what our <code>Bid</code> model will look
 like:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">Bid</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">ApplicationRecord</span>
+  belongs_to <span style="color:#b84">:lot</span>
 
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">Bid</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
-  <span class="n">belongs_to</span> <span class="ss">:lot</span>
+  validates <span style="color:#b84">:amount</span>, <span style="color:#b84">presence</span>: <span style="font-weight:bold">true</span>, <span style="color:#b84">numericality</span>: <span style="font-weight:bold">true</span>
+  validate <span style="color:#b84">:amount_larger_than_previous_bid</span>
 
-  <span class="n">validates</span> <span class="ss">:amount</span><span class="p">,</span> <span class="ss">presence</span><span class="p">:</span> <span class="kp">true</span><span class="p">,</span> <span class="ss">numericality</span><span class="p">:</span> <span class="kp">true</span>
-  <span class="n">validate</span> <span class="ss">:amount_larger_than_previous_bid</span>
+  <span style="font-weight:bold">private</span>
 
-  <span class="kp">private</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">amount_larger_than_previous_bid</span>
+    <span style="font-weight:bold">return</span> <span style="font-weight:bold">true</span> <span style="font-weight:bold">if</span> lot<span style="font-weight:bold">.</span>bids<span style="font-weight:bold">.</span>none?
+    <span style="font-weight:bold">return</span> <span style="font-weight:bold">true</span> <span style="font-weight:bold">if</span> amount <span style="font-weight:bold">&gt;</span> lot<span style="font-weight:bold">.</span>bids<span style="font-weight:bold">.</span>last<span style="font-weight:bold">.</span>amount
 
-  <span class="k">def</span> <span class="nf">amount_larger_than_previous_bid</span>
-    <span class="k">return</span> <span class="kp">true</span> <span class="k">if</span> <span class="n">lot</span><span class="o">.</span><span class="n">bids</span><span class="o">.</span><span class="n">none?</span>
-    <span class="k">return</span> <span class="kp">true</span> <span class="k">if</span> <span class="n">amount</span> <span class="o">&gt;</span> <span class="n">lot</span><span class="o">.</span><span class="n">bids</span><span class="o">.</span><span class="n">last</span><span class="o">.</span><span class="n">amount</span>
-
-    <span class="n">errors</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="ss">:amount</span><span class="p">,</span> <span class="s1">&#39;must to be larger than previous bid&#39;</span><span class="p">)</span>
-  <span class="k">end</span>
-<span class="n">en</span></code></pre></td></tr></table>
-</div>
-</div>
-
+    errors<span style="font-weight:bold">.</span>add(<span style="color:#b84">:amount</span>, <span style="color:#b84">&#39;must to be larger than previous bid&#39;</span>)
+  <span style="font-weight:bold">end</span>
+en</code></pre></div>
 <p>In the model, the <code>Bid#amount_larger_than_previous_bid</code> method will do this
 check for us, and add the appropriate errors to the amount attribute, if needed.
 If we try to send another bid to the same lot from before, this is what we will
 get back:</p>
-
-<p><img src="/idempotency-key-bids-unsuccessful-request.png" alt="" /></p>
-
+<p><img src="/idempotency-key-bids-unsuccessful-request.png" alt=""></p>
 <h2 id="introducing-the-key">Introducing the key</h2>
-
 <p>Adding the key to the header, from the perspective of the client, is a very
 simple feat. Postman, just like any standard HTTP library, allows us to set the
 headers to our requests. For example, in Postman that would look like:</p>
-
-<p><img src="/idempotency-key-header-example.png" alt="" /></p>
-
+<p><img src="/idempotency-key-header-example.png" alt=""></p>
 <p>This will apply the <code>Idempotency-Key</code> header to the request, for our API to pick
 up and validate. So, how would our API accomplish this?</p>
-
 <p>In cases like this one, I personally prefer opaque approaches, meaning, an
 approach that the stack can work with without any additional hassle to the daily
 work of the developers of the APIs. One of those approaches is by adding a
 middleware that will take care of logging the idempotency keys and returning
 the saved responses.</p>
-
 <p>But, before we jump in to the middleware, we have to think of how we can store
 the headers that will be used, and the responses that will be coupled to each
 of these idempotency headers.</p>
-
 <p>Of course, the simplest solution that we could work with is using our database.
 I already feel some of you frowning at this and saying &ldquo;WTF is wrong with this
-guy?!&ldquo;. I agree, this is not even near optimal, but bear with me for the sake of
-the example. Let&rsquo;s introduce a tiny <code>IdempotentAction</code> model, which will have
+guy?!&quot;. I agree, this is not even near optimal, but bear with me for the sake of
+the example. Let's introduce a tiny <code>IdempotentAction</code> model, which will have
 <code>idempotency_key</code>, <code>body</code>, <code>headers</code> and <code>status</code> attributes.</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">IdempotentAction</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
-  <span class="n">validate_presence_of</span> <span class="ss">:idempotency_key</span><span class="p">,</span> <span class="ss">:body</span><span class="p">,</span> <span class="ss">:status</span><span class="p">,</span> <span class="ss">:headers</span>
-<span class="k">end</span></code></pre></td></tr></table>
-</div>
-</div>
-
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">IdempotentAction</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">ApplicationRecord</span>
+  validate_presence_of <span style="color:#b84">:idempotency_key</span>, <span style="color:#b84">:body</span>, <span style="color:#b84">:status</span>, <span style="color:#b84">:headers</span>
+<span style="font-weight:bold">end</span></code></pre></div>
 <p>This will do it for now. This model can store all of the idempotency keys that
 have been sent to the API, together with the body, status and headers of the
 response. Now, back to the middleware.</p>
-
 <p>We want whenever a client of our APIs sends a request using a <code>Idempotency-Key</code>
 header to check if that key has been used (and return the saved response if so)
 or save a new entry to our table with idempotent requests and respond with the
 response of the API.</p>
+<p>Let's take a look at skeleton of this middleware:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#998;font-style:italic"># lib/idempotent_request.rb</span>
 
-<p>Let&rsquo;s take a look at skeleton of this middleware:</p>
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">IdempotentRequest</span>
+  <span style="color:#008080">IDEMPOTENCY_HEADER</span> <span style="font-weight:bold">=</span> <span style="color:#b84">&#39;HTTP_IDEMPOTENCY_KEY&#39;</span><span style="font-weight:bold">.</span>freeze
 
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># lib/idempotent_request.rb</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">initialize</span> app
+    @app <span style="font-weight:bold">=</span> app
+  <span style="font-weight:bold">end</span>
 
-<span class="k">class</span> <span class="nc">IdempotentRequest</span>
-  <span class="no">IDEMPOTENCY_HEADER</span> <span class="o">=</span> <span class="s1">&#39;HTTP_IDEMPOTENCY_KEY&#39;</span><span class="o">.</span><span class="n">freeze</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">call</span> env
+    <span style="color:#999">dup</span><span style="font-weight:bold">.</span>_call env
+  <span style="font-weight:bold">end</span>
 
-  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">app</span>
-    <span class="vi">@app</span> <span class="o">=</span> <span class="n">app</span>
-  <span class="k">end</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">_call</span> env
+    idempotency_key <span style="font-weight:bold">=</span> env<span style="font-weight:bold">[</span><span style="color:#008080">IDEMPOTENCY_HEADER</span><span style="font-weight:bold">]</span>
 
-  <span class="k">def</span> <span class="nf">call</span> <span class="n">env</span>
-    <span class="nb">dup</span><span class="o">.</span><span class="n">_call</span> <span class="n">env</span>
-  <span class="k">end</span>
-
-  <span class="k">def</span> <span class="nf">_call</span> <span class="n">env</span>
-    <span class="n">idempotency_key</span> <span class="o">=</span> <span class="n">env</span><span class="o">[</span><span class="no">IDEMPOTENCY_HEADER</span><span class="o">]</span>
-
-    <span class="k">if</span> <span class="n">idempotency_key</span><span class="o">.</span><span class="n">present?</span>
-      <span class="c1"># Check if action has been persisted</span>
-    <span class="k">else</span>
-      <span class="vi">@app</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></td></tr></table>
-</div>
-</div>
-
+    <span style="font-weight:bold">if</span> idempotency_key<span style="font-weight:bold">.</span>present?
+      <span style="color:#998;font-style:italic"># Check if action has been persisted</span>
+    <span style="font-weight:bold">else</span>
+      @app<span style="font-weight:bold">.</span>call(env)
+    <span style="font-weight:bold">end</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
 <p>This middleware will check each of the requests coming in to the application,
 fetch if the <code>Idempotency-Key</code> is present in the headers and based on that do a
-certain action. Let&rsquo;s see what those actions will be:</p>
+certain action. Let's see what those actions will be:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">IdempotentRequest</span>
+  <span style="color:#008080">IDEMPOTENCY_HEADER</span> <span style="font-weight:bold">=</span> <span style="color:#b84">&#39;HTTP_IDEMPOTENCY_KEY&#39;</span><span style="font-weight:bold">.</span>freeze
 
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">IdempotentRequest</span>
-  <span class="no">IDEMPOTENCY_HEADER</span> <span class="o">=</span> <span class="s1">&#39;HTTP_IDEMPOTENCY_KEY&#39;</span><span class="o">.</span><span class="n">freeze</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">initialize</span> app
+    @app <span style="font-weight:bold">=</span> app
+  <span style="font-weight:bold">end</span>
 
-  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">app</span>
-    <span class="vi">@app</span> <span class="o">=</span> <span class="n">app</span>
-  <span class="k">end</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">call</span> env
+    <span style="color:#999">dup</span><span style="font-weight:bold">.</span>_call env
+  <span style="font-weight:bold">end</span>
 
-  <span class="k">def</span> <span class="nf">call</span> <span class="n">env</span>
-    <span class="nb">dup</span><span class="o">.</span><span class="n">_call</span> <span class="n">env</span>
-  <span class="k">end</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">_call</span> env
+    idempotency_key <span style="font-weight:bold">=</span> env<span style="font-weight:bold">[</span><span style="color:#008080">IDEMPOTENCY_HEADER</span><span style="font-weight:bold">]</span>
 
-  <span class="k">def</span> <span class="nf">_call</span> <span class="n">env</span>
-    <span class="n">idempotency_key</span> <span class="o">=</span> <span class="n">env</span><span class="o">[</span><span class="no">IDEMPOTENCY_HEADER</span><span class="o">]</span>
+    <span style="font-weight:bold">if</span> idempotency_key<span style="font-weight:bold">.</span>present?
+      action <span style="font-weight:bold">=</span> <span style="color:#008080">IdempotentAction</span><span style="font-weight:bold">.</span>find_by(<span style="color:#b84">idempotency_key</span>: idempotency_key)
 
-    <span class="k">if</span> <span class="n">idempotency_key</span><span class="o">.</span><span class="n">present?</span>
-      <span class="n">action</span> <span class="o">=</span> <span class="no">IdempotentAction</span><span class="o">.</span><span class="n">find_by</span><span class="p">(</span><span class="ss">idempotency_key</span><span class="p">:</span> <span class="n">idempotency_key</span><span class="p">)</span>
+      <span style="font-weight:bold">if</span> action<span style="font-weight:bold">.</span>present?
+        status <span style="font-weight:bold">=</span> action<span style="font-weight:bold">.</span>status
+        headers <span style="font-weight:bold">=</span> <span style="color:#008080">Oj</span><span style="font-weight:bold">.</span>load(action<span style="font-weight:bold">.</span>headers)
+        body <span style="font-weight:bold">=</span> <span style="color:#008080">Oj</span><span style="font-weight:bold">.</span>load(action<span style="font-weight:bold">.</span>body)
+      <span style="font-weight:bold">else</span>
+        status, headers, response <span style="font-weight:bold">=</span> @app<span style="font-weight:bold">.</span>call(env)
+        response <span style="font-weight:bold">=</span> response<span style="font-weight:bold">.</span>body <span style="font-weight:bold">if</span> response<span style="font-weight:bold">.</span>respond_to?(<span style="color:#b84">:body</span>)
 
-      <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">present?</span>
-        <span class="n">status</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">status</span>
-        <span class="n">headers</span> <span class="o">=</span> <span class="no">Oj</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">headers</span><span class="p">)</span>
-        <span class="n">body</span> <span class="o">=</span> <span class="no">Oj</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
-      <span class="k">else</span>
-        <span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">response</span> <span class="o">=</span> <span class="vi">@app</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">body</span> <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">respond_to?</span><span class="p">(</span><span class="ss">:body</span><span class="p">)</span>
+        <span style="color:#008080">IdempotentAction</span><span style="font-weight:bold">.</span>create(
+          <span style="color:#b84">idempotency_key</span>: idempotency_key,
+          <span style="color:#b84">body</span>: <span style="color:#008080">Oj</span><span style="font-weight:bold">.</span>dump(response),
+          <span style="color:#b84">status</span>: status,
+          <span style="color:#b84">headers</span>: <span style="color:#008080">Oj</span><span style="font-weight:bold">.</span>dump(headers)
+        )
+      <span style="font-weight:bold">end</span>
 
-        <span class="no">IdempotentAction</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
-          <span class="ss">idempotency_key</span><span class="p">:</span> <span class="n">idempotency_key</span><span class="p">,</span>
-          <span class="ss">body</span><span class="p">:</span> <span class="no">Oj</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">response</span><span class="p">),</span>
-          <span class="ss">status</span><span class="p">:</span> <span class="n">status</span><span class="p">,</span>
-          <span class="ss">headers</span><span class="p">:</span> <span class="no">Oj</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">headers</span><span class="p">)</span>
-        <span class="p">)</span>
-      <span class="k">end</span>
-
-      <span class="o">[</span><span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">body</span><span class="o">]</span>
-    <span class="k">else</span>
-      <span class="vi">@app</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></td></tr></table>
-</div>
-</div>
-
+      <span style="font-weight:bold">[</span>status, headers, body<span style="font-weight:bold">]</span>
+    <span style="font-weight:bold">else</span>
+      @app<span style="font-weight:bold">.</span>call(env)
+    <span style="font-weight:bold">end</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
 <p>If the header is present in the request, we will query the database for and check
-if there&rsquo;s a <code>IdempotentAction</code> entry present. If it is, the middleware will
+if there's a <code>IdempotentAction</code> entry present. If it is, the middleware will
 stop any futher execution in the middleware stack (a.k.a. the rest of the
 application) and will immediatelly respond with the saved <code>body</code>, <code>status</code> and
 <code>headers</code>.</p>
-
 <p>Otherwise, it will make sure it proceeds with the chain of execution, and after
 all of the request is fulfilled it will store the <code>body</code>, <code>status</code> and <code>headers</code>
 in a <code>IdempontentAction</code> entry in the database. By doing that any subsequent
 request using the same <code>Idempotency-Key</code> header will result in the previous
 response, regardless of the body, URI or params of the request.</p>
-
-<p>Mounting this middleware is as easy as adding this line to the application&rsquo;s
+<p>Mounting this middleware is as easy as adding this line to the application's
 <code>config/application.rb</code> file:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">module</span> <span style="color:#555">MyApp</span>
+  <span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">Application</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">Rails</span><span style="font-weight:bold">::</span><span style="color:#008080">Application</span>
+    <span style="color:#998;font-style:italic"># snipped</span>
 
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">module</span> <span class="nn">MyApp</span>
-  <span class="k">class</span> <span class="nc">Application</span> <span class="o">&lt;</span> <span class="no">Rails</span><span class="o">::</span><span class="no">Application</span>
-    <span class="c1"># snipped</span>
-
-    <span class="n">config</span><span class="o">.</span><span class="n">middleware</span><span class="o">.</span><span class="n">use</span> <span class="no">IdempotentRequest</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></td></tr></table>
-</div>
-</div>
-
+    config<span style="font-weight:bold">.</span>middleware<span style="font-weight:bold">.</span>use <span style="color:#008080">IdempotentRequest</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
 <p>Now, if we send a request to our endpoint to create a bid for a lot, with an
 <code>Idempotency-Key</code> header, in our server logs we will see something like:</p>
-
-<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">Started POST &#34;/lots/99/bids&#34; for 127.0.0.1 at 2017-10-28 0135 +0200
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Started POST &#34;/lots/99/bids&#34; for 127.0.0.1 at 2017-10-28 01:19:35 +0200
   IdempotentAction Load (0.2ms)  SELECT  &#34;idempotent_actions&#34;.* FROM &#34;idempotent_actions&#34; WHERE &#34;idempotent_actions&#34;.&#34;idempotency_key&#34; = ? LIMIT ?  [[&#34;idempotency_key&#34;, &#34;5d41d8cd98f00b204e9800998ecf84272&#34;], [&#34;LIMIT&#34;, 1]]
   Lot Load (0.1ms)  SELECT  &#34;lots&#34;.* FROM &#34;lots&#34; WHERE &#34;lots&#34;.&#34;id&#34; = ? LIMIT ?  [[&#34;id&#34;, 99], [&#34;LIMIT&#34;, 1]]
    (0.1ms)  begin transaction
   Bid Exists (0.3ms)  SELECT  1 AS one FROM &#34;bids&#34; WHERE &#34;bids&#34;.&#34;lot_id&#34; = ? LIMIT ?  [[&#34;lot_id&#34;, 99], [&#34;LIMIT&#34;, 1]]
   Bid Load (0.2ms)  SELECT  &#34;bids&#34;.* FROM &#34;bids&#34; WHERE &#34;bids&#34;.&#34;lot_id&#34; = ? ORDER BY &#34;bids&#34;.&#34;id&#34; DESC LIMIT ?  [[&#34;lot_id&#34;, 99], [&#34;LIMIT&#34;, 1]]
-  SQL (0.4ms)  INSERT INTO &#34;bids&#34; (&#34;lot_id&#34;, &#34;amount&#34;, &#34;created_at&#34;, &#34;updated_at&#34;) VALUES (?, ?, ?, ?)  [[&#34;lot_id&#34;, 99], [&#34;amount&#34;, 153], [&#34;created_at&#34;, &#34;2017-10-27 2335.787067&#34;], [&#34;updated_at&#34;, &#34;2017-10-27 2335.787067&#34;]]
+  SQL (0.4ms)  INSERT INTO &#34;bids&#34; (&#34;lot_id&#34;, &#34;amount&#34;, &#34;created_at&#34;, &#34;updated_at&#34;) VALUES (?, ?, ?, ?)  [[&#34;lot_id&#34;, 99], [&#34;amount&#34;, 153], [&#34;created_at&#34;, &#34;2017-10-27 23:19:35.787067&#34;], [&#34;updated_at&#34;, &#34;2017-10-27 23:19:35.787067&#34;]]
    (1.0ms)  commit transaction
    (0.1ms)  begin transaction
-  SQL (0.6ms)  INSERT INTO &#34;idempotent_actions&#34; (&#34;idempotency_key&#34;, &#34;body&#34;, &#34;status&#34;, &#34;headers&#34;, &#34;created_at&#34;, &#34;updated_at&#34;) VALUES (?, ?, ?, ?, ?, ?)  [[&#34;idempotency_key&#34;, &#34;5d41d8cd98f00b204e9800998ecf84272&#34;], [&#34;body&#34;, &#34;[\&#34;\&#34;]&#34;], [&#34;status&#34;, 204], [&#34;headers&#34;, &#34;{}&#34;], [&#34;created_at&#34;, &#34;2017-10-27 2335.792024&#34;], [&#34;updated_at&#34;, &#34;2017-10-27 2335.792024&#34;]]
+  SQL (0.6ms)  INSERT INTO &#34;idempotent_actions&#34; (&#34;idempotency_key&#34;, &#34;body&#34;, &#34;status&#34;, &#34;headers&#34;, &#34;created_at&#34;, &#34;updated_at&#34;) VALUES (?, ?, ?, ?, ?, ?)  [[&#34;idempotency_key&#34;, &#34;5d41d8cd98f00b204e9800998ecf84272&#34;], [&#34;body&#34;, &#34;[\&#34;\&#34;]&#34;], [&#34;status&#34;, 204], [&#34;headers&#34;, &#34;{}&#34;], [&#34;created_at&#34;, &#34;2017-10-27 23:19:35.792024&#34;], [&#34;updated_at&#34;, &#34;2017-10-27 23:19:35.792024&#34;]]
    (1.0ms)  commit transaction</code></pre></div>
-
 <p>As you can tell, the middleware kicks in, picks up the header value and checks
 for a possible entry in the <code>IdempotentAction</code> model. Then, it proceeds with the
 exectuion of the request, and afterwards it persists the response with the
 key in the table. Any subsequent request with the same <code>Idempotency-Key</code> will
 produce a log like:</p>
-
-<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">Started POST &#34;/lots/99/bids&#34; for 127.0.0.1 at 2017-10-28 0109 +0200
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Started POST &#34;/lots/99/bids&#34; for 127.0.0.1 at 2017-10-28 01:22:09 +0200
   IdempotentAction Load (0.2ms)  SELECT  &#34;idempotent_actions&#34;.* FROM &#34;idempotent_actions&#34; WHERE &#34;idempotent_actions&#34;.&#34;idempotency_key&#34; = ? LIMIT ?  [[&#34;idempotency_key&#34;, &#34;5d41d8cd98f00b204e9800998ecf84272&#34;], [&#34;LIMIT&#34;, 1]]</code></pre></div>
-
-<p>That&rsquo;s it! The middleware will pick up the record from the database and it will
+<p>That's it! The middleware will pick up the record from the database and it will
 send the response immediatelly.</p>
-
 <p>Although the idempotent requests mechanism is interesting, keeping all of these
 keys can be expensive, especially if you do it in an nonoptimal way like by using
 the database. Whenever you are in doubt if data like this should be stored in
 a database, always think about how crucial to your business this data is.
 For the scope of our example, this data is not business critical, therefore we
 could offload it to a different type of storage.</p>
-
 <p>What would be a cheap way of storing these idempotency keys?</p>
-
 <h2 id="swapping-the-storage">Swapping the storage</h2>
-
 <p>A very cheap way of persisting these keys is, believe it or not, by putting them
 (programatically) in a file. Ruby as a language provides couple of key-value
 store solutions, like <code>PStore</code> and <code>YAML::Store</code>. I personally prefer
 <a href="https://ruby-doc.org/stdlib-2.4.2/libdoc/yaml/rdoc/YAML/Store.html"><code>YAML::Store</code></a>
 because it would allow us to read the contents of the file it writes to, unlike
 <code>PStore</code> which writes the files in binary format.</p>
-
-<p>If you&rsquo;ve never used <code>YAML::Store</code>, think of it as a streamlined approach to
-writing/reading to a file using YAML. Let&rsquo;s briefly open an <code>irb</code> session and
+<p>If you've never used <code>YAML::Store</code>, think of it as a streamlined approach to
+writing/reading to a file using YAML. Let's briefly open an <code>irb</code> session and
 play a little bit with <code>YAML::Store</code>:</p>
-
-<div class="highlight"><pre class="chroma"><code class="language-irb" data-lang="irb">&gt;&gt; require &#39;yaml/store&#39;
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">&gt;&gt; require &#39;yaml/store&#39;
 =&gt; true
 
 # Open a new store
 &gt;&gt; store = YAML::Store.new(&#39;file_to_write_in.yml&#39;)
-=&gt; #&lt;Psych:0x007fbf83d3e0d8 @opt={}, @filename=&#34;file_to_write_in.yml&#34;, @abort=false, @ultra_safe=false, @thread_safe={}, @lock=#&lt;Thread:0x007fbf83d3de30&gt;&gt;
+=&gt; #&lt;Psych::Store:0x007fbf83d3e0d8 @opt={}, @filename=&#34;file_to_write_in.yml&#34;, @abort=false, @ultra_safe=false, @thread_safe={}, @lock=#&lt;Thread::Mutex:0x007fbf83d3de30&gt;&gt;
 
 # Write something to the store
 &gt;&gt; store.transaction { store[&#39;name&#39;] = &#39;Ilija Eftimov&#39; }
@@ -907,151 +426,81 @@ play a little bit with <code>YAML::Store</code>:</p>
 # Read something from the store
 &gt;&gt; store.transaction(false) { store[&#39;name&#39;] }
 =&gt; &#34;Ilija Eftimov&#34;</code></pre></div>
-
 <p>Now, if we check our file where our store is writing to, we will see something
 like:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-yaml" data-lang="yaml"><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-yaml" data-lang="yaml">---<span class="w">
-</span><span class="w"></span>name<span class="p">:</span><span class="w"> </span>Ilija<span class="w"> </span>Eftimov</code></pre></td></tr></table>
-</div>
-</div>
-
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">---<span style="color:#bbb">
+</span><span style="color:#bbb"></span>name:<span style="color:#bbb"> </span>Ilija<span style="color:#bbb"> </span>Eftimov</code></pre></div>
 <p><code>YAML</code> is super flexible and will know how to marshall different type of objects
 into YAML. Also, when you want to read from the store, it will unmarshall them
 back and create objects with their properties.</p>
-
-<p>After that quick crash course in <code>YAML::Store</code>, let&rsquo;s get back to our middlware.
+<p>After that quick crash course in <code>YAML::Store</code>, let's get back to our middlware.
 This is what it would look like, if we use <code>YAML::Store</code> as a storage engine:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#999">require</span> <span style="color:#b84">&#39;yaml/store&#39;</span>
 
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">&#39;yaml/store&#39;</span>
+<span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">IdempotentRequest</span>
+  <span style="color:#008080">IDEMPOTENCY_HEADER</span> <span style="font-weight:bold">=</span> <span style="color:#b84">&#39;HTTP_IDEMPOTENCY_KEY&#39;</span><span style="font-weight:bold">.</span>freeze
+  <span style="color:#008080">STORE_FILE_PATH</span>    <span style="font-weight:bold">=</span> <span style="color:#b84">&#39;idempotency_keys.store&#39;</span><span style="font-weight:bold">.</span>freeze
 
-<span class="k">class</span> <span class="nc">IdempotentRequest</span>
-  <span class="no">IDEMPOTENCY_HEADER</span> <span class="o">=</span> <span class="s1">&#39;HTTP_IDEMPOTENCY_KEY&#39;</span><span class="o">.</span><span class="n">freeze</span>
-  <span class="no">STORE_FILE_PATH</span>    <span class="o">=</span> <span class="s1">&#39;idempotency_keys.store&#39;</span><span class="o">.</span><span class="n">freeze</span>
+  <span style="font-weight:bold">attr_reader</span> <span style="color:#b84">:store</span>
 
-  <span class="kp">attr_reader</span> <span class="ss">:store</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">initialize</span> app
+    @app <span style="font-weight:bold">=</span> app
+    @store <span style="font-weight:bold">=</span> <span style="color:#008080">YAML</span><span style="font-weight:bold">::</span><span style="color:#008080">Store</span><span style="font-weight:bold">.</span>new(<span style="color:#008080">Rails</span><span style="font-weight:bold">.</span>root<span style="font-weight:bold">.</span>join(<span style="color:#008080">STORE_FILE_PATH</span>))
+  <span style="font-weight:bold">end</span>
 
-  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">app</span>
-    <span class="vi">@app</span> <span class="o">=</span> <span class="n">app</span>
-    <span class="vi">@store</span> <span class="o">=</span> <span class="no">YAML</span><span class="o">::</span><span class="no">Store</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="no">Rails</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="no">STORE_FILE_PATH</span><span class="p">))</span>
-  <span class="k">end</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">call</span> env
+    <span style="color:#999">dup</span><span style="font-weight:bold">.</span>_call env
+  <span style="font-weight:bold">end</span>
 
-  <span class="k">def</span> <span class="nf">call</span> <span class="n">env</span>
-    <span class="nb">dup</span><span class="o">.</span><span class="n">_call</span> <span class="n">env</span>
-  <span class="k">end</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">_call</span> env
+    idempotency_key <span style="font-weight:bold">=</span> env<span style="font-weight:bold">[</span><span style="color:#008080">IDEMPOTENCY_HEADER</span><span style="font-weight:bold">]</span>
 
-  <span class="k">def</span> <span class="nf">_call</span> <span class="n">env</span>
-    <span class="n">idempotency_key</span> <span class="o">=</span> <span class="n">env</span><span class="o">[</span><span class="no">IDEMPOTENCY_HEADER</span><span class="o">]</span>
+    <span style="font-weight:bold">if</span> idempotency_key<span style="font-weight:bold">.</span>present?
+      action <span style="font-weight:bold">=</span> store<span style="font-weight:bold">.</span>transaction(<span style="font-weight:bold">false</span>) { store<span style="font-weight:bold">[</span>idempotency_key<span style="font-weight:bold">]</span> }
 
-    <span class="k">if</span> <span class="n">idempotency_key</span><span class="o">.</span><span class="n">present?</span>
-      <span class="n">action</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">transaction</span><span class="p">(</span><span class="kp">false</span><span class="p">)</span> <span class="p">{</span> <span class="n">store</span><span class="o">[</span><span class="n">idempotency_key</span><span class="o">]</span> <span class="p">}</span>
+      <span style="font-weight:bold">if</span> action<span style="font-weight:bold">.</span>present?
+        status <span style="font-weight:bold">=</span> action<span style="font-weight:bold">[</span><span style="color:#b84">:status</span><span style="font-weight:bold">]</span>
+        headers <span style="font-weight:bold">=</span> action<span style="font-weight:bold">[</span><span style="color:#b84">:headers</span><span style="font-weight:bold">]</span>
+        response <span style="font-weight:bold">=</span> action<span style="font-weight:bold">[</span><span style="color:#b84">:response</span><span style="font-weight:bold">]</span>
+      <span style="font-weight:bold">else</span>
+        status, headers, response <span style="font-weight:bold">=</span> @app<span style="font-weight:bold">.</span>call(env)
+        response <span style="font-weight:bold">=</span> response<span style="font-weight:bold">.</span>body <span style="font-weight:bold">if</span> response<span style="font-weight:bold">.</span>respond_to?(<span style="color:#b84">:body</span>)
 
-      <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">present?</span>
-        <span class="n">status</span> <span class="o">=</span> <span class="n">action</span><span class="o">[</span><span class="ss">:status</span><span class="o">]</span>
-        <span class="n">headers</span> <span class="o">=</span> <span class="n">action</span><span class="o">[</span><span class="ss">:headers</span><span class="o">]</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">action</span><span class="o">[</span><span class="ss">:response</span><span class="o">]</span>
-      <span class="k">else</span>
-        <span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">response</span> <span class="o">=</span> <span class="vi">@app</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">body</span> <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">respond_to?</span><span class="p">(</span><span class="ss">:body</span><span class="p">)</span>
+        store<span style="font-weight:bold">.</span>transaction <span style="font-weight:bold">do</span>
+          store<span style="font-weight:bold">[</span>idempotency_key<span style="font-weight:bold">]</span> <span style="font-weight:bold">=</span> {
+            <span style="color:#b84">status</span>: status,
+            <span style="color:#b84">headers</span>: headers<span style="font-weight:bold">.</span>to_h,
+            <span style="color:#b84">response</span>: response
+          }
+        <span style="font-weight:bold">end</span>
+      <span style="font-weight:bold">end</span>
 
-        <span class="n">store</span><span class="o">.</span><span class="n">transaction</span> <span class="k">do</span>
-          <span class="n">store</span><span class="o">[</span><span class="n">idempotency_key</span><span class="o">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="ss">status</span><span class="p">:</span> <span class="n">status</span><span class="p">,</span>
-            <span class="ss">headers</span><span class="p">:</span> <span class="n">headers</span><span class="o">.</span><span class="n">to_h</span><span class="p">,</span>
-            <span class="ss">response</span><span class="p">:</span> <span class="n">response</span>
-          <span class="p">}</span>
-        <span class="k">end</span>
-      <span class="k">end</span>
-
-      <span class="o">[</span><span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">response</span><span class="o">]</span>
-    <span class="k">else</span>
-      <span class="vi">@app</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></td></tr></table>
-</div>
-</div>
-
+      <span style="font-weight:bold">[</span>status, headers, response<span style="font-weight:bold">]</span>
+    <span style="font-weight:bold">else</span>
+      @app<span style="font-weight:bold">.</span>call(env)
+    <span style="font-weight:bold">end</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
 <p>Compared to our database solution, the <code>YAML::Store</code> solution is a bit simpler,
 and more lightweight. As you can notice, the approach is the same - we check if
 our store already has the idempotency key persisted, and if so we return the
 saved <code>status</code>, <code>headers</code> and <code>response</code>. Otherwise, we let the middleware chain
 finish executing, and then we persist the idempotency key with the response data
 to the store.</p>
-
 <p>As with any other solution, this approach has couple of pros and cons. As you
 can imagine, saving this data to a file is not really reliable. Backing up the
 file, although it seems simple, it can be quite error prone compared to the
 already provided solutions to backing up databases. Also the more traffic our
 service gets, the disk I/O would increase quite a bit, therefore the solution
 would not scale too far into the future.</p>
-
 <p>On the other hand, this solution has no dependency on a database, nor on Active
 Record. It does have a dependency on <code>YAML::Store</code>, but that one is much cheaper
-to load to your application because it doesn&rsquo;t have other dependencies that it
+to load to your application because it doesn't have other dependencies that it
 needs to run (except <code>YAML</code>, which is already loaded by default in your Rails
-apps). From a code perspective, it&rsquo;s very simple - it feels like saving to a
+apps). From a code perspective, it's very simple - it feels like saving to a
 hash that automatically gets dumped onto disk. It requires no additional models,
 schemas or migrations.</p>
-
 <h2 id="expiring-the-keys">Expiring the keys</h2>
-
 <p>Whenever we store this type of data, a good idea is to clean up the used keys
 after a certain period of time, because the responses that they have stored are
 already stale and unusable for the clients. Therefore, cleaning this from a
@@ -1059,238 +508,129 @@ relational database or a YAML file will require custom solution, for example, in
 the form of a scheduled job that would scrape off all the stale keys. Or maybe
 in another way, still by adding more and more code to our codebase that we would
 need to maintain.</p>
-
 <p>Or, we could change our storage, again?</p>
-
 <p>When it comes to storing keys with values the most popular choice (with a good
 reason!) is Redis. It is riddiculously fast in what it does, writing and reading
 to it with Ruby is very simple, and it even provides a TTL (Time To Live) which
 means it will automatically expire our stale keys without us writing a single
 line of code. Of course, Redis provides much more, but for the purpose of this
 article, it seems to fit just like a glove.</p>
-
 <p>Note: If you are unfamiliar with Redis, I would recommend giving a shot at their
 <a href="http://try.redis.io/">interactive course</a> to get yourself faimilar with the
 basics of Redis.</p>
-
 <h3 id="connecting-to-redis">Connecting to Redis</h3>
-
 <p>To communicate with Redis via a Rails app, we need to add the <code>redis</code> gem to our
 bundle. After installing the gem via <code>bundle install</code>, we can immediatelly
 connect to our local Redis instance without any special configurations. If you
-are following this tutorial, but haven&rsquo;t installed Redis yet, you can go over
+are following this tutorial, but haven't installed Redis yet, you can go over
 to their <a href="https://redis.io/download">download page</a> and install it from there.</p>
-
 <p>If you are running OSX, you can install it via Homebrew by installing the
 <a href="http://formulae.brew.sh/formula/redis">redis</a> formula.</p>
-
-<p>Having Redis running locally, and the redis gem in our app&rsquo;s bundle, we can
+<p>Having Redis running locally, and the redis gem in our app's bundle, we can
 proceed to update our middleware to work with Redis.</p>
-
 <h3 id="organizing-and-storing-the-data">Organizing and storing the data</h3>
-
 <p>We can store our keys in
 a <a href="https://redis.io/topics/data-types-intro">hash structure</a>, where the key will
 be the idempotency key, and the value in the hash will be a serialized hash that
 will contain the <code>status</code>, <code>headers</code> and <code>body</code> of the response. For example:</p>
-
-<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text"># Key : Serialied Hash
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text"># Key : Serialied Hash
 &#34;1753ae4677&#34;: &#34;{\&#34;status\&#34;:204,\&#34;headers\&#34;:{},\&#34;response\&#34;:[\&#34;\&#34;]}&#34;
 &#34;d3894c01c0&#34;: &#34;{\&#34;status\&#34;:422,\&#34;headers\&#34;:{\&#34;Content-Type\&#34;:\&#34;text/plain\&#34;,\&#34;Content-Length\&#34;:\&#34;85\&#34;},\&#34;response\&#34;:[\&#34;{\\\&#34;status\\\&#34;:422,\\\&#34;error\\\&#34;:\\\&#34;Validation failed: Amount has to be larger then previous bid\\\&#34;}\&#34;]}&#34;</code></pre></div>
-
 <p>As you can see, both the key and the value are strings, where the value is the
-JSON serialized hash of the data we need. If you are wondering why JSON - it&rsquo;s
+JSON serialized hash of the data we need. If you are wondering why JSON - it's
 because serializing is very fast (with <a href="https://github.com/ohler55/oj">Oj</a>) and
-it&rsquo;s (somewhat) readable when it&rsquo;s serialized therefore easy to access in Redis
+it's (somewhat) readable when it's serialized therefore easy to access in Redis
 and explore/debug.</p>
+<p>Let's modify our middleware to work with Redis:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">module</span> <span style="color:#555">IdempotentRequest</span>
+  <span style="color:#008080">IDEMPOTENCY_HEADER</span> <span style="font-weight:bold">=</span> <span style="color:#b84">&#39;HTTP_IDEMPOTENCY_KEY&#39;</span><span style="font-weight:bold">.</span>freeze
+  <span style="color:#008080">REDIS_NAMESPACE</span> <span style="font-weight:bold">=</span> <span style="color:#b84">&#39;idempotency_keys&#39;</span><span style="font-weight:bold">.</span>freeze
 
-<p>Let&rsquo;s modify our middleware to work with Redis:</p>
+  <span style="font-weight:bold">attr_reader</span> <span style="color:#b84">:redis</span>
 
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
-</span><span class="lnt">51
-</span><span class="lnt">52
-</span><span class="lnt">53
-</span><span class="lnt">54
-</span><span class="lnt">55
-</span><span class="lnt">56
-</span><span class="lnt">57
-</span><span class="lnt">58
-</span><span class="lnt">59
-</span><span class="lnt">60
-</span><span class="lnt">61
-</span><span class="lnt">62
-</span><span class="lnt">63
-</span><span class="lnt">64
-</span><span class="lnt">65
-</span><span class="lnt">66
-</span><span class="lnt">67
-</span><span class="lnt">68
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">module</span> <span class="nn">IdempotentRequest</span>
-  <span class="no">IDEMPOTENCY_HEADER</span> <span class="o">=</span> <span class="s1">&#39;HTTP_IDEMPOTENCY_KEY&#39;</span><span class="o">.</span><span class="n">freeze</span>
-  <span class="no">REDIS_NAMESPACE</span> <span class="o">=</span> <span class="s1">&#39;idempotency_keys&#39;</span><span class="o">.</span><span class="n">freeze</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">initialize</span> app
+    @app <span style="font-weight:bold">=</span> app
+    @redis <span style="font-weight:bold">=</span> <span style="font-weight:bold">::</span><span style="color:#008080">Redis</span><span style="font-weight:bold">.</span>current
+  <span style="font-weight:bold">end</span>
 
-  <span class="kp">attr_reader</span> <span class="ss">:redis</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">call</span> env
+    <span style="color:#999">dup</span><span style="font-weight:bold">.</span>_call env
+  <span style="font-weight:bold">end</span>
 
-  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">app</span>
-    <span class="vi">@app</span> <span class="o">=</span> <span class="n">app</span>
-    <span class="vi">@redis</span> <span class="o">=</span> <span class="o">::</span><span class="no">Redis</span><span class="o">.</span><span class="n">current</span>
-  <span class="k">end</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">_call</span> env
+    idempotency_key <span style="font-weight:bold">=</span> env<span style="font-weight:bold">[</span><span style="color:#008080">IDEMPOTENCY_HEADER</span><span style="font-weight:bold">]</span>
 
-  <span class="k">def</span> <span class="nf">call</span> <span class="n">env</span>
-    <span class="nb">dup</span><span class="o">.</span><span class="n">_call</span> <span class="n">env</span>
-  <span class="k">end</span>
+    <span style="font-weight:bold">if</span> idempotency_key<span style="font-weight:bold">.</span>present?
+      action <span style="font-weight:bold">=</span> get(idempotency_key)
 
-  <span class="k">def</span> <span class="nf">_call</span> <span class="n">env</span>
-    <span class="n">idempotency_key</span> <span class="o">=</span> <span class="n">env</span><span class="o">[</span><span class="no">IDEMPOTENCY_HEADER</span><span class="o">]</span>
+      <span style="font-weight:bold">if</span> action<span style="font-weight:bold">.</span>present?
+	status <span style="font-weight:bold">=</span> action<span style="font-weight:bold">[</span><span style="color:#b84">:status</span><span style="font-weight:bold">]</span>
+	headers <span style="font-weight:bold">=</span> action<span style="font-weight:bold">[</span><span style="color:#b84">:headers</span><span style="font-weight:bold">]</span>
+	response <span style="font-weight:bold">=</span> action<span style="font-weight:bold">[</span><span style="color:#b84">:response</span><span style="font-weight:bold">]</span>
+      <span style="font-weight:bold">else</span>
+	status, headers, response <span style="font-weight:bold">=</span> @app<span style="font-weight:bold">.</span>call(env)
+	response <span style="font-weight:bold">=</span> response<span style="font-weight:bold">.</span>body <span style="font-weight:bold">if</span> response<span style="font-weight:bold">.</span>respond_to?(<span style="color:#b84">:body</span>)
 
-    <span class="k">if</span> <span class="n">idempotency_key</span><span class="o">.</span><span class="n">present?</span>
-      <span class="n">action</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="n">idempotency_key</span><span class="p">)</span>
+	payload <span style="font-weight:bold">=</span> payload(status, headers, response)
+	set(idempotency_key, payload)
+      <span style="font-weight:bold">end</span>
 
-      <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">present?</span>
-	<span class="n">status</span> <span class="o">=</span> <span class="n">action</span><span class="o">[</span><span class="ss">:status</span><span class="o">]</span>
-	<span class="n">headers</span> <span class="o">=</span> <span class="n">action</span><span class="o">[</span><span class="ss">:headers</span><span class="o">]</span>
-	<span class="n">response</span> <span class="o">=</span> <span class="n">action</span><span class="o">[</span><span class="ss">:response</span><span class="o">]</span>
-      <span class="k">else</span>
-	<span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">response</span> <span class="o">=</span> <span class="vi">@app</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
-	<span class="n">response</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">body</span> <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">respond_to?</span><span class="p">(</span><span class="ss">:body</span><span class="p">)</span>
+      <span style="font-weight:bold">[</span>status, headers, response<span style="font-weight:bold">]</span>
+    <span style="font-weight:bold">else</span>
+      @app<span style="font-weight:bold">.</span>call(env)
+    <span style="font-weight:bold">end</span>
+  <span style="font-weight:bold">end</span>
 
-	<span class="n">payload</span> <span class="o">=</span> <span class="n">payload</span><span class="p">(</span><span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
-	<span class="n">set</span><span class="p">(</span><span class="n">idempotency_key</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
-      <span class="k">end</span>
+  <span style="font-weight:bold">private</span>
 
-      <span class="o">[</span><span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">response</span><span class="o">]</span>
-    <span class="k">else</span>
-      <span class="vi">@app</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">get</span>(key)
+    data <span style="font-weight:bold">=</span> redis<span style="font-weight:bold">.</span>hgetall namespaced_key(key)
+    <span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span> <span style="font-weight:bold">if</span> data<span style="font-weight:bold">.</span>blank?
 
-  <span class="kp">private</span>
+    {
+      <span style="color:#b84">status</span>: data<span style="font-weight:bold">[</span><span style="color:#b84">&#39;status&#39;</span><span style="font-weight:bold">]</span>,
+      <span style="color:#b84">headers</span>: <span style="color:#008080">Oj</span><span style="font-weight:bold">.</span>load(data<span style="font-weight:bold">[</span><span style="color:#b84">&#39;headers&#39;</span><span style="font-weight:bold">]</span>),
+      <span style="color:#b84">response</span>: <span style="color:#008080">Oj</span><span style="font-weight:bold">.</span>load(data<span style="font-weight:bold">[</span><span style="color:#b84">&#39;response&#39;</span><span style="font-weight:bold">]</span>)
+    }
+  <span style="font-weight:bold">end</span>
 
-  <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">hgetall</span> <span class="n">namespaced_key</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-    <span class="k">return</span> <span class="kp">nil</span> <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">blank?</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">set</span>(key, payload)
+    redis<span style="font-weight:bold">.</span>hmset namespaced_key(key), <span style="font-weight:bold">*</span>payload
+  <span style="font-weight:bold">end</span>
 
-    <span class="p">{</span>
-      <span class="ss">status</span><span class="p">:</span> <span class="n">data</span><span class="o">[</span><span class="s1">&#39;status&#39;</span><span class="o">]</span><span class="p">,</span>
-      <span class="ss">headers</span><span class="p">:</span> <span class="no">Oj</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">data</span><span class="o">[</span><span class="s1">&#39;headers&#39;</span><span class="o">]</span><span class="p">),</span>
-      <span class="ss">response</span><span class="p">:</span> <span class="no">Oj</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">data</span><span class="o">[</span><span class="s1">&#39;response&#39;</span><span class="o">]</span><span class="p">)</span>
-    <span class="p">}</span>
-  <span class="k">end</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">payload</span>(status, headers, response)
+    <span style="font-weight:bold">[</span>
+      <span style="color:#b84">:status</span>, status,
+      <span style="color:#b84">:headers</span>, <span style="color:#008080">Oj</span><span style="font-weight:bold">.</span>dump(headers<span style="font-weight:bold">.</span>to_h),
+      <span style="color:#b84">:response</span>, <span style="color:#008080">Oj</span><span style="font-weight:bold">.</span>dump(response)
+    <span style="font-weight:bold">]</span>
+  <span style="font-weight:bold">end</span>
 
-  <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
-    <span class="n">redis</span><span class="o">.</span><span class="n">hmset</span> <span class="n">namespaced_key</span><span class="p">(</span><span class="n">key</span><span class="p">),</span> <span class="o">*</span><span class="n">payload</span>
-  <span class="k">end</span>
-
-  <span class="k">def</span> <span class="nf">payload</span><span class="p">(</span><span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
-    <span class="o">[</span>
-      <span class="ss">:status</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span>
-      <span class="ss">:headers</span><span class="p">,</span> <span class="no">Oj</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">headers</span><span class="o">.</span><span class="n">to_h</span><span class="p">),</span>
-      <span class="ss">:response</span><span class="p">,</span> <span class="no">Oj</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-    <span class="o">]</span>
-  <span class="k">end</span>
-
-  <span class="k">def</span> <span class="nf">namespaced_key</span><span class="p">(</span><span class="n">idempotency_key</span><span class="p">)</span>
-    <span class="s2">&#34;</span><span class="si">#{</span><span class="no">REDIS_NAMESPACE</span><span class="si">}</span><span class="s2">:</span><span class="si">#{</span><span class="n">idempotency_key</span><span class="si">}</span><span class="s2">&#34;</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>If you&rsquo;ve been reading the code so far in our previous solutions, the approach
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">namespaced_key</span>(idempotency_key)
+    <span style="color:#b84">&#34;</span><span style="color:#b84">#{</span><span style="color:#008080">REDIS_NAMESPACE</span><span style="color:#b84">}</span><span style="color:#b84">:</span><span style="color:#b84">#{</span>idempotency_key<span style="color:#b84">}</span><span style="color:#b84">&#34;</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
+<p>If you've been reading the code so far in our previous solutions, the approach
 is literally the same, only the way we store and read the data changes, from
 both storage and code perspective. This time, we use <code>Oj.dump</code> to serialize and
 <code>Oj.load</code> to deserialize our object to/from JSON. Also, storing the data is done
 by calling the <code>redis</code> client, namely the
 <a href="https://redis.io/commands/hmset"><code>hmset</code></a> and
 <a href="https://redis.io/commands/hget"><code>hget</code></a> methods.</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="n">redis</span><span class="o">.</span><span class="n">hget</span> <span class="no">REDIS_NAMESPACE</span><span class="p">,</span> <span class="n">key</span></code></pre></td></tr></table>
-</div>
-</div>
-
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">redis<span style="font-weight:bold">.</span>hget <span style="color:#008080">REDIS_NAMESPACE</span>, key</code></pre></div>
 <p><code>hget</code> will execute a <code>HGET</code> command in Redis, which will get the hash that
 is stored under the <code>REDIS_NAMESPACE</code> value (in our case <code>idempotency_keys</code>),
 and will access the key with the value of <code>key</code>. If present, this will retrieve
 the serialized JSON object, or <code>nil</code> if not present.</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="n">redis</span><span class="o">.</span><span class="n">hmset</span> <span class="no">REDIS_NAMESPACE</span><span class="p">,</span> <span class="n">key1</span><span class="p">,</span> <span class="n">payload1</span><span class="p">,</span> <span class="n">key2</span><span class="p">,</span> <span class="n">payload2</span></code></pre></td></tr></table>
-</div>
-</div>
-
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">redis<span style="font-weight:bold">.</span>hmset <span style="color:#008080">REDIS_NAMESPACE</span>, key1, payload1, key2, payload2</code></pre></div>
 <p><code>hmset</code> will execute a <code>HMSET</code> command in Redis, which will set a new key in the
 hash, where the key will be the value of <code>key1</code>, and the value will be the hash
 that <code>payload1</code> is assigned to. The same key - value pair arguments scheme
 continues for the rest of the arguments.</p>
-
 <h3 id="ttl">TTL</h3>
-
 <p>One of the great features of Redis are called &ldquo;Redis expires&rdquo;. What that means
 is that basically you can set a timeout for a key, which is a limited time to
 live (TTL). When the time to live elapses, the key is automatically destroyed.</p>
-
 <p>So, how can we leverage Redis expires to our advantage? Well, the first question
 that would pop up in my mind is for how long do we want to keep these
 keys/responses in our database? Ideally, the answer to this question is: short.
@@ -1299,159 +639,80 @@ not expired after a certiain period of time, you are looking at an unneeded
 complexity from data warehousing, security and scaling pespective. Also, most of
 the data that will not be expired will be stale, because it will be relevant
 until the client understands that the idempotent request has been fulfilled and
-will move on with it&rsquo;s operations.</p>
-
+will move on with it's operations.</p>
 <p>Therefore, adding a TTL on the key is not a silver bullet, but for most of the
-cases it&rsquo;s a very good idea. Let&rsquo;s see how we can update our middleware to
+cases it's a very good idea. Let's see how we can update our middleware to
 set the correct TTL on the Redis keys:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">module</span> <span style="color:#555">IdempotentRequest</span>
+  <span style="color:#008080">IDEMPOTENCY_HEADER</span> <span style="font-weight:bold">=</span> <span style="color:#b84">&#39;HTTP_IDEMPOTENCY_KEY&#39;</span><span style="font-weight:bold">.</span>freeze
+  <span style="color:#008080">REDIS_NAMESPACE</span> <span style="font-weight:bold">=</span> <span style="color:#b84">&#39;idempotency_keys&#39;</span><span style="font-weight:bold">.</span>freeze
+  <span style="color:#008080">EXPIRE_TIME</span> <span style="font-weight:bold">=</span> <span style="color:#099">1</span><span style="font-weight:bold"></span><span style="font-weight:bold">.</span>day<span style="font-weight:bold">.</span>to_i
 
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
-</span><span class="lnt">51
-</span><span class="lnt">52
-</span><span class="lnt">53
-</span><span class="lnt">54
-</span><span class="lnt">55
-</span><span class="lnt">56
-</span><span class="lnt">57
-</span><span class="lnt">58
-</span><span class="lnt">59
-</span><span class="lnt">60
-</span><span class="lnt">61
-</span><span class="lnt">62
-</span><span class="lnt">63
-</span><span class="lnt">64
-</span><span class="lnt">65
-</span><span class="lnt">66
-</span><span class="lnt">67
-</span><span class="lnt">68
-</span><span class="lnt">69
-</span><span class="lnt">70
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">module</span> <span class="nn">IdempotentRequest</span>
-  <span class="no">IDEMPOTENCY_HEADER</span> <span class="o">=</span> <span class="s1">&#39;HTTP_IDEMPOTENCY_KEY&#39;</span><span class="o">.</span><span class="n">freeze</span>
-  <span class="no">REDIS_NAMESPACE</span> <span class="o">=</span> <span class="s1">&#39;idempotency_keys&#39;</span><span class="o">.</span><span class="n">freeze</span>
-  <span class="no">EXPIRE_TIME</span> <span class="o">=</span> <span class="mi">1</span><span class="o">.</span><span class="n">day</span><span class="o">.</span><span class="n">to_i</span>
+  <span style="font-weight:bold">attr_reader</span> <span style="color:#b84">:redis</span>
 
-  <span class="kp">attr_reader</span> <span class="ss">:redis</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">initialize</span> app
+    @app <span style="font-weight:bold">=</span> app
+    @redis <span style="font-weight:bold">=</span> <span style="font-weight:bold">::</span><span style="color:#008080">Redis</span><span style="font-weight:bold">.</span>current
+  <span style="font-weight:bold">end</span>
 
-  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">app</span>
-    <span class="vi">@app</span> <span class="o">=</span> <span class="n">app</span>
-    <span class="vi">@redis</span> <span class="o">=</span> <span class="o">::</span><span class="no">Redis</span><span class="o">.</span><span class="n">current</span>
-  <span class="k">end</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">call</span> env
+    <span style="color:#999">dup</span><span style="font-weight:bold">.</span>_call env
+  <span style="font-weight:bold">end</span>
 
-  <span class="k">def</span> <span class="nf">call</span> <span class="n">env</span>
-    <span class="nb">dup</span><span class="o">.</span><span class="n">_call</span> <span class="n">env</span>
-  <span class="k">end</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">_call</span> env
+    idempotency_key <span style="font-weight:bold">=</span> env<span style="font-weight:bold">[</span><span style="color:#008080">IDEMPOTENCY_HEADER</span><span style="font-weight:bold">]</span>
 
-  <span class="k">def</span> <span class="nf">_call</span> <span class="n">env</span>
-    <span class="n">idempotency_key</span> <span class="o">=</span> <span class="n">env</span><span class="o">[</span><span class="no">IDEMPOTENCY_HEADER</span><span class="o">]</span>
+    <span style="font-weight:bold">if</span> idempotency_key<span style="font-weight:bold">.</span>present?
+      action <span style="font-weight:bold">=</span> get(idempotency_key)
 
-    <span class="k">if</span> <span class="n">idempotency_key</span><span class="o">.</span><span class="n">present?</span>
-      <span class="n">action</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="n">idempotency_key</span><span class="p">)</span>
+      <span style="font-weight:bold">if</span> action<span style="font-weight:bold">.</span>present?
+	status <span style="font-weight:bold">=</span> action<span style="font-weight:bold">[</span><span style="color:#b84">:status</span><span style="font-weight:bold">]</span>
+	headers <span style="font-weight:bold">=</span> action<span style="font-weight:bold">[</span><span style="color:#b84">:headers</span><span style="font-weight:bold">]</span>
+	response <span style="font-weight:bold">=</span> action<span style="font-weight:bold">[</span><span style="color:#b84">:response</span><span style="font-weight:bold">]</span>
+      <span style="font-weight:bold">else</span>
+	status, headers, response <span style="font-weight:bold">=</span> @app<span style="font-weight:bold">.</span>call(env)
+	response <span style="font-weight:bold">=</span> response<span style="font-weight:bold">.</span>body <span style="font-weight:bold">if</span> response<span style="font-weight:bold">.</span>respond_to?(<span style="color:#b84">:body</span>)
 
-      <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">present?</span>
-	<span class="n">status</span> <span class="o">=</span> <span class="n">action</span><span class="o">[</span><span class="ss">:status</span><span class="o">]</span>
-	<span class="n">headers</span> <span class="o">=</span> <span class="n">action</span><span class="o">[</span><span class="ss">:headers</span><span class="o">]</span>
-	<span class="n">response</span> <span class="o">=</span> <span class="n">action</span><span class="o">[</span><span class="ss">:response</span><span class="o">]</span>
-      <span class="k">else</span>
-	<span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">response</span> <span class="o">=</span> <span class="vi">@app</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
-	<span class="n">response</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">body</span> <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">respond_to?</span><span class="p">(</span><span class="ss">:body</span><span class="p">)</span>
+	payload <span style="font-weight:bold">=</span> payload(status, headers, response)
+	set(idempotency_key, payload)
+      <span style="font-weight:bold">end</span>
 
-	<span class="n">payload</span> <span class="o">=</span> <span class="n">payload</span><span class="p">(</span><span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
-	<span class="n">set</span><span class="p">(</span><span class="n">idempotency_key</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
-      <span class="k">end</span>
+      <span style="font-weight:bold">[</span>status, headers, response<span style="font-weight:bold">]</span>
+    <span style="font-weight:bold">else</span>
+      @app<span style="font-weight:bold">.</span>call(env)
+    <span style="font-weight:bold">end</span>
+  <span style="font-weight:bold">end</span>
 
-      <span class="o">[</span><span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">response</span><span class="o">]</span>
-    <span class="k">else</span>
-      <span class="vi">@app</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
+  <span style="font-weight:bold">private</span>
 
-  <span class="kp">private</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">get</span>(key)
+    data <span style="font-weight:bold">=</span> redis<span style="font-weight:bold">.</span>hgetall namespaced_key(key)
+    <span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span> <span style="font-weight:bold">if</span> data<span style="font-weight:bold">.</span>blank?
 
-  <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">hgetall</span> <span class="n">namespaced_key</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-    <span class="k">return</span> <span class="kp">nil</span> <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">blank?</span>
+    {
+      <span style="color:#b84">status</span>: data<span style="font-weight:bold">[</span><span style="color:#b84">&#39;status&#39;</span><span style="font-weight:bold">]</span>,
+      <span style="color:#b84">headers</span>: <span style="color:#008080">Oj</span><span style="font-weight:bold">.</span>load(data<span style="font-weight:bold">[</span><span style="color:#b84">&#39;headers&#39;</span><span style="font-weight:bold">]</span>),
+      <span style="color:#b84">response</span>: <span style="color:#008080">Oj</span><span style="font-weight:bold">.</span>load(data<span style="font-weight:bold">[</span><span style="color:#b84">&#39;response&#39;</span><span style="font-weight:bold">]</span>)
+    }
+  <span style="font-weight:bold">end</span>
 
-    <span class="p">{</span>
-      <span class="ss">status</span><span class="p">:</span> <span class="n">data</span><span class="o">[</span><span class="s1">&#39;status&#39;</span><span class="o">]</span><span class="p">,</span>
-      <span class="ss">headers</span><span class="p">:</span> <span class="no">Oj</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">data</span><span class="o">[</span><span class="s1">&#39;headers&#39;</span><span class="o">]</span><span class="p">),</span>
-      <span class="ss">response</span><span class="p">:</span> <span class="no">Oj</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">data</span><span class="o">[</span><span class="s1">&#39;response&#39;</span><span class="o">]</span><span class="p">)</span>
-    <span class="p">}</span>
-  <span class="k">end</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">set</span>(key, payload)
+    redis<span style="font-weight:bold">.</span>hmset namespaced_key(key), <span style="font-weight:bold">*</span>payload
+    redis<span style="font-weight:bold">.</span>expire namespaced_key(key), <span style="color:#008080">EXPIRE_TIME</span>
+  <span style="font-weight:bold">end</span>
 
-  <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
-    <span class="n">redis</span><span class="o">.</span><span class="n">hmset</span> <span class="n">namespaced_key</span><span class="p">(</span><span class="n">key</span><span class="p">),</span> <span class="o">*</span><span class="n">payload</span>
-    <span class="n">redis</span><span class="o">.</span><span class="n">expire</span> <span class="n">namespaced_key</span><span class="p">(</span><span class="n">key</span><span class="p">),</span> <span class="no">EXPIRE_TIME</span>
-  <span class="k">end</span>
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">payload</span>(status, headers, response)
+    <span style="font-weight:bold">[</span>
+      <span style="color:#b84">:status</span>, status,
+      <span style="color:#b84">:headers</span>, <span style="color:#008080">Oj</span><span style="font-weight:bold">.</span>dump(headers<span style="font-weight:bold">.</span>to_h),
+      <span style="color:#b84">:response</span>, <span style="color:#008080">Oj</span><span style="font-weight:bold">.</span>dump(response)
+    <span style="font-weight:bold">]</span>
+  <span style="font-weight:bold">end</span>
 
-  <span class="k">def</span> <span class="nf">payload</span><span class="p">(</span><span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
-    <span class="o">[</span>
-      <span class="ss">:status</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span>
-      <span class="ss">:headers</span><span class="p">,</span> <span class="no">Oj</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">headers</span><span class="o">.</span><span class="n">to_h</span><span class="p">),</span>
-      <span class="ss">:response</span><span class="p">,</span> <span class="no">Oj</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-    <span class="o">]</span>
-  <span class="k">end</span>
-
-  <span class="k">def</span> <span class="nf">namespaced_key</span><span class="p">(</span><span class="n">idempotency_key</span><span class="p">)</span>
-    <span class="s2">&#34;</span><span class="si">#{</span><span class="no">REDIS_NAMESPACE</span><span class="si">}</span><span class="s2">:</span><span class="si">#{</span><span class="n">idempotency_key</span><span class="si">}</span><span class="s2">&#34;</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></td></tr></table>
-</div>
-</div>
-
+  <span style="font-weight:bold">def</span> <span style="color:#458;font-weight:bold"></span><span style="font-weight:bold"></span><span style="color:#900;font-weight:bold">namespaced_key</span>(idempotency_key)
+    <span style="color:#b84">&#34;</span><span style="color:#b84">#{</span><span style="color:#008080">REDIS_NAMESPACE</span><span style="color:#b84">}</span><span style="color:#b84">:</span><span style="color:#b84">#{</span>idempotency_key<span style="color:#b84">}</span><span style="color:#b84">&#34;</span>
+  <span style="font-weight:bold">end</span>
+<span style="font-weight:bold">end</span></code></pre></div>
 <p>Let me save you from the trouble of reading the code and finding the differences
 - we added only the <code>redis.expire</code> expire call after setting the value of the
 key in the <code>set</code> method. The <code>expire</code> method takes two arguments - the first one
@@ -1459,44 +720,35 @@ is the key and the second one is the expiry time (in seconds). Our code will set
 these keys to expire after 24 hours from the time of setting them, therefore
 allowing enough time for the requests to be registered as completed by the
 clients.</p>
-
 <p>Of course, if you are implementing a mechanism for idempotent requests for your
 APIs, the expiration time should be set to your liking, because the data should
 have a retention period that makes sense for the problem you are solving/facing.</p>
-
 <p>Nevertheless, although our final solution is not very far from our previous
-ones, whether it&rsquo;s using a relational databse or a storage in file, Redis allows
+ones, whether it's using a relational databse or a storage in file, Redis allows
 us to more easily scale the solution while keeping itself clean from stale data.</p>
-
 <h2 id="wrapping-up">Wrapping up</h2>
-
-<p>Having all of this in mind, it&rsquo;s clear to see that idempotent requests can be a
+<p>Having all of this in mind, it's clear to see that idempotent requests can be a
 useful addition to an API, especially where the nature of the API requires such
 behaviour. For example, Stripe have idempotent requests for
 <a href="https://stripe.com/docs/api">their API</a> , because they are working with payments
 and this sort of mechanism can be useful for clients to not accidentally replay
 a charge of a card because of a network issue. Also, in our example, idempotent
-requests can be useful because you don&rsquo;t want the client to try to set the same
+requests can be useful because you don't want the client to try to set the same
 bid twice, due to the nature of an auction (very time sensitive).</p>
-
 <p>In this post we also saw three type of solutions that could work for a mechanism
 like this one, namely:</p>
-
 <ol>
 <li>using a relational database;</li>
 <li>using a <code>YAML::Store</code>; and</li>
 <li>using Redis</li>
 </ol>
-
 <p>We also briefly discussed what kind of challenges each of these approaches bring,
 and we also took a stab at implementing the idempotent requests mechanism using
 a Rails middleware.</p>
-
 <p>If you would like to see the actual code of this Rails app, and the middleware
 we built, you can head over to the
 <a href="https://github.com/fteem/auctionz">sample repo on Github</a>, fetch the code and
 play with it yourself.</p>
-
 
 
 
@@ -1509,7 +761,7 @@ play with it yourself.</p>
     <div id="mc_embed_signup_scroll">
         <div class="heading">Join The Newsletter</div>
         <p>
-            I write about backend technologies, programming and cloud architectures. Join hundreds of other developers that get my content, twice a month. Unsubscribe whenever. Never any spam, ads, or affiliate links.
+            I write about backend technologies, programming and cloud architectures. Join hundreds of other developers that get my content, twice a month. Unsubscribe whenever. Never spam.
         </p>
 	<input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Your email address" required>
         <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
@@ -1517,266 +769,65 @@ play with it yourself.</p>
       
       <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_d9a6471309140dcd520d05346_2aac491644" tabindex="-1" value=""></div>
 
-    <p>You can also subscribe <a href="https://ieftimov.com/index.xml">via RSS</a>.</p>
+    <p>You can also subscribe <a href="/index.xml">via RSS</a>.</p>
     </div>
 </form>
 </div>
 
 
 
-    </div>
+			</div>
 
-    
-    
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/idempotency">idempotency</a></li>
+							
+							<li><a href="/tags/redis">redis</a></li>
+							
+							<li><a href="/tags/stripe">stripe</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
 
-
-    
-    
-
-    <footer class="post-footer">
-      <div class="post-tags">
-          <a href="https://ieftimov.com/tags/idempotency/">idempotency</a>
-          <a href="https://ieftimov.com/tags/redis/">redis</a>
-          <a href="https://ieftimov.com/tags/stripe/">stripe</a>
-          
-        </div>
-
-      
-      <nav class="post-nav">
-        
-          <a class="prev" href="/post/golang-package-multiple-binaries/">
-            
-            <i class="iconfont">
-              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="18" height="18">
-  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
-</svg>
-
-            </i>
-            <span class="prev-text nav-default">Packing multiple binaries in a Golang package</span>
-            <span class="prev-text nav-mobile">Prev</span>
-          </a>
-        
-          <a class="next" href="/post/versioning-ruby-grape-apis/">
-            <span class="next-text nav-default">Versioning REST APIs: The Theory and Using Grape in Ruby</span>
-            <span class="prev-text nav-mobile">Next</span>
-            
-            <i class="iconfont">
-              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="18" height="18">
-  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
-</svg>
-
-            </i>
-          </a>
-      </nav>
-    </footer>
-  </article>
-
-  
-  
-
-  
-  
-
-  
-
-  
-  
-
-  
-
-  
-
-  <div class="disqus-comment">
-  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
-    Show Disqus Comments
-  </div>
-  <div id="disqus_thread"></div>
-  <script type="text/javascript">
-    var disqus_config = function () {
-      this.page.url = "https://ieftimov.com/post/understand-how-why-add-idempotent-requests-api/";
-    };
-    function load_disqus() {
-      
-      
-      if (window.location.hostname === 'localhost') return;
-
-      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-      var disqus_shortname = 'eftimov';
-      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-
-      $('#load_disqus').remove();
-    };
-  </script>
-  <noscript>Please enable JavaScript to view the
-    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-  </noscript>
-  
-  </div>
-
-    
-
-        </div>
-      </div>
-    </main>
-
-    <footer id="footer" class="footer">
-      <div class="icon-links">
-  
-  
-    <a href="https://stackoverflow.com/users/601555/ilija-eftimov" rel="me noopener" class="iconfont"
-      title="stack-overflow"  target="_blank"
-      >
-      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="36" height="36">
-  <path d="M809.714286 932.571429l-638.857143 0 0-274.285714-91.428571 0 0 365.714286 821.714286 0 0-365.714286-91.428571 0 0 274.285714zm-538.285714-299.428571l18.857143-89.714286 447.428571 94.285714-18.857143 89.142857zm58.857143-213.714286l38.285714-83.428571 414.285714 193.714286-38.285714 82.857143zm114.857143-203.428571l58.285714-70.285714 350.857143 293.142857-58.285714 70.285714zm226.857143-216l272.571429 366.285714-73.142857 54.857143-272.571429-366.285714zm-410.285714 840.571429l0-90.857143 457.142857 0 0 90.857143-457.142857 0z"></path>
-</svg>
-
-    </a>
-  
-    <a href="https://twitter.com/fteem" rel="me noopener" class="iconfont"
-      title="twitter"  target="_blank"
-      >
-      <svg class="icon" viewBox="0 0 1264 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="36" height="36">
-  <path d="M1229.8616 18.043658c0 0-117.852626 63.135335-164.151872 67.344358-105.225559-164.151872-505.082682-92.598492-437.738325 223.078185C278.622548 312.675223 89.216542 47.506814 89.216542 47.506814s-117.852626 189.406006 75.762402 345.139833C127.097743 396.85567 55.544363 371.601535 55.544363 371.601535S26.081207 535.753407 253.368414 615.724832c-21.045112 29.463156-113.643603 8.418045-113.643603 8.418045s25.254134 143.10676 231.496229 180.987961c-143.10676 130.479693-387.230056 92.598492-370.393967 105.225559 206.242095 189.406006 1119.599946 231.496229 1128.01799-643.98042C1179.353331 249.539887 1263.533778 123.269217 1263.533778 123.269217s-130.479693 37.881201-138.897738 33.672179C1225.652577 98.015083 1229.8616 18.043658 1229.8616 18.043658"></path>
-</svg>
-
-    </a>
-  
-    <a href="https://www.linkedin.com/in/ieftimov/" rel="me noopener" class="iconfont"
-      title="linkedin"  target="_blank"
-      >
-      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="33" height="33">
-  <path d="M872.405333 872.618667h-151.637333v-237.610667c0-56.661333-1.152-129.578667-79.018667-129.578667-79.061333 0-91.136 61.653333-91.136 125.397334v241.792H398.976V384h145.664v66.602667h1.962667c20.352-38.4 69.845333-78.933333 143.786666-78.933334 153.642667 0 182.058667 101.12 182.058667 232.746667v268.202667zM227.712 317.141333a87.978667 87.978667 0 0 1-88.021333-88.106666 88.064 88.064 0 1 1 88.021333 88.106666z m76.032 555.477334H151.68V384h152.064v488.618667zM948.266667 0H75.562667C33.792 0 0 33.024 0 73.770667v876.458666C0 991.018667 33.792 1024 75.562667 1024h872.576C989.866667 1024 1024 991.018667 1024 950.229333V73.770667C1024 33.024 989.866667 0 948.138667 0h0.128z"></path>
-</svg>
-
-    </a>
-  
-    <a href="https://github.com/fteem" rel="me noopener" class="iconfont"
-      title="github"  target="_blank"
-      >
-      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="36" height="36">
-  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
-</svg>
-
-    </a>
-  
-    <a href="blog@ieftimov.com" rel="me noopener" class="iconfont"
-      title="email"  target="_blank"
-      >
-      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="36" height="36">
-  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
-</svg>
-
-    </a>
-
-
-<a href="https://ieftimov.com/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
-    class="iconfont" title="rss" target="_blank">
-    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="30" height="30">
-  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
-</svg>
-
-  </a>
-   
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
 </div>
 
-<div class="copyright">
-  <span class="power-by">
-    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
-  </span>
-  <span class="division">|</span>
-  <span class="theme-info">
-    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
-  </span>
 
-  <span class="copyright-year">
-    &copy;
-    
-      2014 -
-    2019
-    <span class="heart">
-      
-      <i class="iconfont">
-        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="14" height="14">
-  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
-   fill="#8a8a8a"></path>
-</svg>
-
-      </i>
-    </span><span class="author">
-        Ilija Eftimov
-        
-      </span></span>
-
-  
-  
-
-  
-</div>
-
-    </footer>
-
-    <div class="back-to-top" id="back-to-top">
-      <i class="iconfont">
-        
-        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="35" height="35">
-  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
-</svg>
-
-      </i>
-    </div>
-  </div>
-  
-<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
-  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
-
-
-
-
-<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
-
-
-
-
-
-
-  
-    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
-    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
-    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
 </body>
 </html>

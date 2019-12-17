@@ -1,105 +1,727 @@
 <!DOCTYPE html>
-<html lang="en" itemscope itemtype="http://schema.org/WebPage">
+<html>
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>OTP in Elixir: Learn GenServer by Building Your Own URL Shortener - Ilija Eftimov</title>
-  
-
-<meta name="renderer" content="webkit" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
-
-<meta name="MobileOptimized" content="width"/>
-<meta name="HandheldFriendly" content="true"/>
-
-
-<meta name="applicable-device" content="pc,mobile">
-
-<meta name="theme-color" content="#f8f5ec" />
-<meta name="msapplication-navbutton-color" content="#f8f5ec">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
-
-<meta name="mobile-web-app-capable" content="yes">
-
-<meta name="author" content="Ilija Eftimov" />
-  <meta name="description" content="Looking at any programming language you will (hopefully!) find a rich and useful standard library. I started my professional career as a software developer with Ruby, which has quite an easy-to-use and well-documented standard library with a plethora of modules and classes to use. Personally, I find the Enumerable module in Ruby with all its nice methods simply brilliant.
-You might be coming from a different language, but I am sure that any serious programming language out there has a set of classes, modules, methods and functions to make your life (and work) easy." />
-
-  <meta name="keywords" content="Software, Programming, Computer Science, Products" />
-
-
-
-
-
-
-<meta name="generator" content="Hugo 0.55.6" />
-
-
-<link rel="canonical" href="https://ieftimov.com/post/otp-elixir-genserver-build-own-url-shortener/" />
-
-
-
-<link rel="icon" href="/favicon.ico" />
-
-
-
-
-
-
-
-
-
-
-
-<link rel="stylesheet" href="/sass/jane.min.ec807d8b802a40889537c26e014f733206312ea440d42e1f0dabed80918de1ac.css" integrity="sha256-7IB9i4AqQIiVN8JuAU9zMgYxLqRA1C4fDavtgJGN4aw=" media="screen" crossorigin="anonymous">
-
-
-
-
-<link rel="stylesheet" href="/css/overrides.css">
-
-<link rel="stylesheet" href="/css/subscribe.css">
-
-
-<meta property="og:title" content="OTP in Elixir: Learn GenServer by Building Your Own URL Shortener" />
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>OTP in Elixir: Learn GenServer by Building Your Own URL Shortener - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="OTP in Elixir: Learn GenServer by Building Your Own URL Shortener" />
 <meta property="og:description" content="Looking at any programming language you will (hopefully!) find a rich and useful standard library. I started my professional career as a software developer with Ruby, which has quite an easy-to-use and well-documented standard library with a plethora of modules and classes to use. Personally, I find the Enumerable module in Ruby with all its nice methods simply brilliant.
 You might be coming from a different language, but I am sure that any serious programming language out there has a set of classes, modules, methods and functions to make your life (and work) easy." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://ieftimov.com/post/otp-elixir-genserver-build-own-url-shortener/" />
-
 <meta property="og:image" content="https://ieftimov.com/cards/otp-elixir-genserver-build-own-url-shortener.png" />
-<meta property="article:published_time" content="2019-01-26T00:00:00&#43;00:00"/>
+<meta property="article:published_time" content="2019-01-26T00:00:00+00:00" />
 
-
-<meta itemprop="name" content="OTP in Elixir: Learn GenServer by Building Your Own URL Shortener">
-<meta itemprop="description" content="Looking at any programming language you will (hopefully!) find a rich and useful standard library. I started my professional career as a software developer with Ruby, which has quite an easy-to-use and well-documented standard library with a plethora of modules and classes to use. Personally, I find the Enumerable module in Ruby with all its nice methods simply brilliant.
-You might be coming from a different language, but I am sure that any serious programming language out there has a set of classes, modules, methods and functions to make your life (and work) easy.">
-
-
-
-<meta itemprop="wordCount" content="3767">
-
-  <meta itemprop="image" content="https://ieftimov.com/cards/otp-elixir-genserver-build-own-url-shortener.png">
-
-
-
-<meta itemprop="keywords" content="genserver,url shortener," />
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://ieftimov.com/cards/otp-elixir-genserver-build-own-url-shortener.png"/>
 
 <meta name="twitter:title" content="OTP in Elixir: Learn GenServer by Building Your Own URL Shortener"/>
 <meta name="twitter:description" content="Looking at any programming language you will (hopefully!) find a rich and useful standard library. I started my professional career as a software developer with Ruby, which has quite an easy-to-use and well-documented standard library with a plethora of modules and classes to use. Personally, I find the Enumerable module in Ruby with all its nice methods simply brilliant.
 You might be coming from a different language, but I am sure that any serious programming language out there has a set of classes, modules, methods and functions to make your life (and work) easy."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.com/css/overrides.css" />
+	
 
-<!--[if lte IE 9]>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
-<![endif]-->
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.com/js/main.js"></script><script src="https://ieftimov.com/js/tooltip.js"></script>
+</head>
 
-<!--[if lt IE 9]>
-  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
-<![endif]-->
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com/">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com/">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">26</span>
+							<span class="rest">Jan 2019</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">OTP in Elixir: Learn GenServer by Building Your Own URL Shortener</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>Looking at any programming language you will (hopefully!) find a rich and useful
+standard library. I started my professional career as a software developer with
+Ruby, which has quite an easy-to-use and well-documented standard library with
+a plethora of modules and classes to use. Personally, I find the <code>Enumerable</code>
+module in Ruby with all its nice methods simply brilliant.</p>
+<p>You might be coming from a different language, but I am sure that any serious
+programming language out there has a set of classes, modules, methods and
+functions to make your life (and work) easy.</p>
+<p>So, what about Elixirs stdlib?</p>
+<p>No surprise there too – Elixir has a well-documented and easy-to-use standard
+library. But, because it works on top of the BEAM virtual machine and inherits
+plenty from Erlang's rich history, it also has a bit more – something called
+<em>OTP</em>.</p>
+<p><img src="/mario-caruso-770233-unsplash.jpg" alt="">
+<!-- raw HTML omitted -->Photo by Mario Caruso on Unsplash<!-- raw HTML omitted --></p>
+<h2 id="meet-otp-">Meet OTP 👋</h2>
+<p>From
+<a href="https://en.wikipedia.org/wiki/Open_Telecom_Platform">Wikipedia's article on OTP</a>:</p>
+<blockquote>
+<p>OTP is a collection of useful middleware, libraries, and tools written in the
+Erlang programming language. It is an integral part of the open-source
+distribution of Erlang. The name OTP was originally an acronym for Open Telecom
+Platform, which was a branding attempt before Ericsson released Erlang/OTP as
+open source. However, neither Erlang nor OTP is specific to telecom
+applications.</p>
+</blockquote>
+<p>In continuation, it states:</p>
+<blockquote>
+<p>It (OTP) contains:</p>
+<ul>
+<li>an Erlang interpreter (called BEAM);</li>
+<li>an Erlang compiler;</li>
+<li>a protocol for communication between servers (nodes);</li>
+<li>a CORBA Object Request Broker;</li>
+<li>a static analysis tool called Dialyzer;</li>
+<li>a distributed database server (Mnesia); and</li>
+<li>many other libraries.</li>
+</ul>
+</blockquote>
+<p>While I do not consider myself an expert in Elixir, Erlang, the BEAM or OTP by
+any stretch of the imagination, I would like to take you on a journey to one of
+the most useful and well-known <em>behaviours</em> of OTP – <code>GenServer</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure class="imagecaption">
+  <img class="caption" src="/jon-flobrant-225260-unsplash.jpg" title="I am an OTP expert as much as I can find my way around here 👆 – I know how to open the door. Photo by Jon Flobrant on Unsplash" alt="I am an OTP expert as much as I can find my way around here 👆 – I know how to open the door. Photo by Jon Flobrant on Unsplash">
+  <span class="caption-text">I am an OTP expert as much as I can find my way around here 👆 – I know how to open the door. Photo by Jon Flobrant on Unsplash</span>
+</figure>
+
+<p>In continuation, we will use BEAM processes, so if you're not familiar with
+spawning new processes, sending and receiving messages to/from them, then
+it's best to head over to
+&ldquo;<a href="/understanding-basics-elixir-concurrency-model">Understanding the basics of Elixir's concurrency model</a>&rdquo;
+and give it a quick read. It will help you understand processes and concurrency
+in Elixir so you can apply the knowledge in the project that we work on in this
+article. I promise.</p>
+<h2 id="shortening-a-link-">Shortening a link ✂️</h2>
+<p>Let's write a URL shortener module that will run in a BEAM process and can
+receive multiple commands:</p>
+<ul>
+<li><code>shorten</code> – takes a link, shortens it and returns the short link as a response</li>
+<li><code>get</code> – take a short link and return the original one</li>
+<li><code>flush</code> – erase the URL shortener memory</li>
+<li><code>stop</code> – stop the process</li>
+</ul>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">defmodule <span style="color:#458;font-weight:bold">URLShortener</span> do
+  def start do
+    spawn(__MODULE__, <span style="color:#b84">:loop</span>, [%{}])
+  end
+
+  def loop(state) do
+    receive do
+      {<span style="color:#b84">:stop</span>, caller} <span style="font-weight:bold">-&gt;</span>
+        send caller, <span style="color:#b84">&#34;</span><span style="color:#b84">Shutting down.</span><span style="color:#b84">&#34;</span>
+      {<span style="color:#b84">:shorten</span>, url, caller} <span style="font-weight:bold">-&gt;</span>
+        url_md5 <span style="font-weight:bold">=</span> md5(url)
+        new_state <span style="font-weight:bold">=</span> <span style="color:#458;font-weight:bold">Map</span><span style="font-weight:bold">.</span>put(state, url_md5, url)
+        send caller, url_md5
+        loop(new_state)
+      {<span style="color:#b84">:get</span>, md5, caller} <span style="font-weight:bold">-&gt;</span>
+        send caller, <span style="color:#458;font-weight:bold">Map</span><span style="font-weight:bold">.</span>fetch(state, md5)
+        loop(state)
+      <span style="color:#b84">:flush</span> <span style="font-weight:bold">-&gt;</span>
+        loop(%{})
+      _ <span style="font-weight:bold">-&gt;</span>
+        loop(state)
+    end
+  end
+
+  defp md5(url) do
+    <span style="color:#b84">:crypto</span><span style="font-weight:bold">.</span>hash(<span style="color:#b84">:md5</span>, url)
+    <span style="font-weight:bold">|&gt;</span> <span style="color:#458;font-weight:bold">Base</span><span style="font-weight:bold">.</span>encode16(<span style="color:#b84">case</span>: <span style="color:#b84">:lower</span>)
+  end
+end</code></pre></div>
+<p>What the module does is when the process starts it will recursively call the
+<code>URLShortener.loop/1</code> function, until it receives the <code>{:stop, caller}</code> message.</p>
+<p>If we zoom into the <code>{:shorten, url, caller}</code> case we notice that we generate a
+<code>MD5</code> digest from the URL and then we update the <code>state</code> map which creates a new
+map (called <code>new_state</code>). Once we get the digest we store it in a map with the
+key being the MD5 and the value is the actual URL. The <code>state</code> map will look
+like:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">%{
+  <span style="color:#b84">&#34;</span><span style="color:#b84">99999ebcfdb78df077ad2727fd00969f</span><span style="color:#b84">&#34;</span> <span style="font-weight:bold">=</span><span style="font-weight:bold">&gt;</span> <span style="color:#b84">&#34;</span><span style="color:#b84">https://google.com</span><span style="color:#b84">&#34;</span>,
+  <span style="color:#b84">&#34;</span><span style="color:#b84">76100d6f27db53fddb6c8fce320f5d21</span><span style="color:#b84">&#34;</span> <span style="font-weight:bold">=</span><span style="font-weight:bold">&gt;</span> <span style="color:#b84">&#34;</span><span style="color:#b84">https://elixir-lang.org</span><span style="color:#b84">&#34;</span>,
+  <span style="color:#b84">&#34;</span><span style="color:#b84">3097fca9b1ec8942c4305e550ef1b50a</span><span style="color:#b84">&#34;</span> <span style="font-weight:bold">=</span><span style="font-weight:bold">&gt;</span> <span style="color:#b84">&#34;</span><span style="color:#b84">https://github.com</span><span style="color:#b84">&#34;</span>,
+  ...
+}</code></pre></div>
+<p>Then, we send the MD5 value back to the caller. Obviously, this is not how
+bit.ly or the likes work, as their links are much shorter. (For those interested,
+<a href="https://stackoverflow.com/questions/742013/how-do-i-create-a-url-shortener">here's</a>
+an interesting discussion on the topic). However, for the purpose of this
+article, we'll stick to simple MD5 digest of the URL.</p>
+<p>The other two commands, <code>get</code> and <code>flush</code>, are pretty simple. <code>get</code> returns only
+a single value from the <code>state</code> map, while <code>flush</code> invokes <code>loop/1</code> with an
+empty map, effectively removing all the shortened links from the process&rsquo; state
+(memory).</p>
+<p>Let's run our shortener in an <code>IEx</code> session:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">iex(<span style="color:#099">22</span>)<span style="font-weight:bold">&gt;</span> shortener <span style="font-weight:bold">=</span> <span style="color:#458;font-weight:bold">URLShortener</span><span style="font-weight:bold">.</span>start
+<span style="color:#998;font-style:italic">#PID&lt;0.141.0&gt;</span>
+
+iex(<span style="color:#099">23</span>)<span style="font-weight:bold">&gt;</span> send shortener, {<span style="color:#b84">:shorten</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">https://ieftimov.com</span><span style="color:#b84">&#34;</span>, self()}
+{<span style="color:#b84">:shorten</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">https://ieftimov.com</span><span style="color:#b84">&#34;</span>, <span style="color:#998;font-style:italic">#PID&lt;0.102.0&gt;}</span>
+
+iex(<span style="color:#099">24</span>)<span style="font-weight:bold">&gt;</span> send shortener, {<span style="color:#b84">:shorten</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">https://google.com</span><span style="color:#b84">&#34;</span>, self()}
+{<span style="color:#b84">:shorten</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">https://google.com</span><span style="color:#b84">&#34;</span>, <span style="color:#998;font-style:italic">#PID&lt;0.102.0&gt;}</span>
+
+iex(<span style="color:#099">25</span>)<span style="font-weight:bold">&gt;</span> send shortener, {<span style="color:#b84">:shorten</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">https://github.com</span><span style="color:#b84">&#34;</span>, self()}
+{<span style="color:#b84">:shorten</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">https://github.com</span><span style="color:#b84">&#34;</span>, <span style="color:#998;font-style:italic">#PID&lt;0.102.0&gt;}</span>
+
+iex(<span style="color:#099">26</span>)<span style="font-weight:bold">&gt;</span> flush
+<span style="color:#b84">&#34;</span><span style="color:#b84">8c4c7fbc57b08d379da5b1312690be04</span><span style="color:#b84">&#34;</span>
+<span style="color:#b84">&#34;</span><span style="color:#b84">99999ebcfdb78df077ad2727fd00969f</span><span style="color:#b84">&#34;</span>
+<span style="color:#b84">&#34;</span><span style="color:#b84">3097fca9b1ec8942c4305e550ef1b50a</span><span style="color:#b84">&#34;</span>
+<span style="color:#b84">:ok</span>
+
+iex(<span style="color:#099">27</span>)<span style="font-weight:bold">&gt;</span> send shortener, {<span style="color:#b84">:get</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">99999ebcfdb78df077ad2727fd00969f</span><span style="color:#b84">&#34;</span>, self()}
+{<span style="color:#b84">:get</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">99999ebcfdb78df077ad2727fd00969f</span><span style="color:#b84">&#34;</span>, <span style="color:#998;font-style:italic">#PID&lt;0.102.0&gt;}</span>
+
+iex(<span style="color:#099">28</span>)<span style="font-weight:bold">&gt;</span> flush
+<span style="color:#b84">&#34;</span><span style="color:#b84">https://google.com</span><span style="color:#b84">&#34;</span>
+<span style="color:#b84">:ok</span>
+
+iex(<span style="color:#099">29</span>)<span style="font-weight:bold">&gt;</span> send shortener, {<span style="color:#b84">:get</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">8c4c7fbc57b08d379da5b1312690be04</span><span style="color:#b84">&#34;</span>, self()}
+{<span style="color:#b84">:get</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">8c4c7fbc57b08d379da5b1312690be04</span><span style="color:#b84">&#34;</span>, <span style="color:#998;font-style:italic">#PID&lt;0.102.0&gt;}</span>
+
+iex(<span style="color:#099">30</span>)<span style="font-weight:bold">&gt;</span> flush
+<span style="color:#b84">&#34;</span><span style="color:#b84">https://ieftimov.com</span><span style="color:#b84">&#34;</span>
+<span style="color:#b84">:ok</span>
+
+iex(<span style="color:#099">31</span>)<span style="font-weight:bold">&gt;</span> send shortener, {<span style="color:#b84">:get</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">3097fca9b1ec8942c4305e550ef1b50a</span><span style="color:#b84">&#34;</span>, self()}
+{<span style="color:#b84">:get</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">3097fca9b1ec8942c4305e550ef1b50a</span><span style="color:#b84">&#34;</span>, <span style="color:#998;font-style:italic">#PID&lt;0.102.0&gt;}</span>
+
+iex(<span style="color:#099">32</span>)<span style="font-weight:bold">&gt;</span> flush
+<span style="color:#b84">&#34;</span><span style="color:#b84">https://github.com</span><span style="color:#b84">&#34;</span>
+<span style="color:#b84">:ok</span></code></pre></div>
+<p>Working as expected – we send three different URLs for shortening, we receive
+their MD5 digests back in the process mailbox and when we query for them we
+get each of them back.</p>
+<p>Although our <code>URLShortener</code> module works pretty neatly now, it actually lacks
+quite a bit of functionality. Sure, it does handle the happy path really well,
+but when it comes to error handling, tracing or error reporting it falls
+really short. Additionally, it does not have a standard interface to add more
+functions to the process – we sort of came up with it as we went on.</p>
+<p>After reading all of that you're probably thinking there is a better way to do
+this. And you'd be right to think so – let's learn more about <code>GenServer</code>s.</p>
+<h2 id="enter-genserver-">Enter GenServer 🚪</h2>
+<p><code>GenServer</code> is an <em>OTP behaviour</em>. Behaviour in this context refers to three
+things:</p>
+<ul>
+<li>an interface, which is a set of functions;</li>
+<li>an implementation, which is the application-specific code, and</li>
+<li>the container, which is a BEAM process</li>
+</ul>
+<p>This means that a module can implement a certain group of functions (interface
+or signatures), that under the hood implement some callback functions (which
+are specific to the behaviour you work on), that are run within a BEAM process.</p>
+<p>For example, <code>GenServer</code> is a <strong>gen</strong>eric <strong>server</strong> behaviour – it expects for each
+of the functions defined in it's interface a set of callbacks which will handle
+the requests to the server. This means that the interface functions will be
+used by the clients of the generic server, a.k.a. the client API, while the
+callbacks defined will essentially be the server internals (&ldquo;the backend&rdquo;).</p>
+<p>So, how does a <code>GenServer</code> work? Well, as you can imagine we cannot go too deep
+on the hows of <code>GenServer</code>, but we need to get a good grasp on some basics:</p>
+<ol>
+<li>Server start &amp; state</li>
+<li>Asynchronous messages</li>
+<li>Synchronous messages</li>
+</ol>
+<h3 id="server-start--state">Server start &amp; state</h3>
+<p>Just like with our <code>URLShortener</code> we implemented, every <code>GenServer</code> is capable
+of holding state. In fact, <code>GenServer</code>s must implement a <code>init/1</code> function,
+which will set the initial state of the server (see the <code>init/1</code> documentation
+<a href="https://hexdocs.pm/elixir/GenServer.html#c:init/1">here</a> for more details).</p>
+<p>To start the server we can run:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir"><span style="color:#458;font-weight:bold">GenServer</span><span style="font-weight:bold">.</span>start_link(__MODULE__, <span style="color:#b84">:ok</span>, [])</code></pre></div>
+<p><code>GenServer.start_link/3</code> will invoke the <code>init/1</code> function of the <code>__MODULE__</code>,
+passing in <code>:ok</code> as an argument to <code>init/1</code>. This function call will block until
+<code>init/1</code> returns, so usually in this function, we do any required setup of the
+server process (that might be needed). For example, in our case, to rebuild
+<code>URLShortener</code> using a <code>GenServer</code> behaviour, we will need an <code>init/1</code> function
+to set the initial state (empty map) of the server:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">def init(<span style="color:#b84">:ok</span>) do
+  {<span style="color:#b84">:ok</span>, %{}}
+end</code></pre></div>
+<p>That's all. <code>start_link/3</code> will call <code>init/1</code> with the <code>:ok</code> argument, which
+will return an <code>:ok</code> and set the state of the process to an empty map.</p>
+<h3 id="sync--async-messages-">Sync &amp; async messages 📨</h3>
+<p>As most servers out there, <code>GenServer</code>s can also receive and reply to requests
+(if needed). As the heading suggests, there are two types of requests that
+<code>GenServers</code> handle – the ones expect a response (<code>call</code>) and the others that
+don't (<code>cast</code>). Therefore, <code>GenServer</code>s define two callback functions -
+<code>handle_call/3</code> and <code>handle_cast/2</code>.</p>
+<p>We will look at these functions in more depth a bit later.</p>
+<h2 id="reimplementing-urlshortener-using-genserver-">Reimplementing <code>URLShortener</code>, using <code>GenServer</code> ♻️</h2>
+<p>Let's look at how we can flip the implementation to use <code>GenServer</code>.</p>
+<p>First, let's add the shell of the module, the <code>start_link/1</code> function and the
+<code>init/1</code> function that <code>start_link/1</code> will invoke:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">defmodule <span style="color:#458;font-weight:bold">URLShortener</span> do
+  use <span style="color:#458;font-weight:bold">GenServer</span>
+
+  def start_link(opts \\ []) do
+    <span style="color:#458;font-weight:bold">GenServer</span><span style="font-weight:bold">.</span>start_link(__MODULE__, <span style="color:#b84">:ok</span>, opts)
+  end
+
+  def init(<span style="color:#b84">:ok</span>) do
+    {<span style="color:#b84">:ok</span>, %{}}
+  end
+end</code></pre></div>
+<p>The notable changes here are the <code>use</code> of the <code>GenServer</code> behaviour in the
+module, the <code>start_link/1</code> function which invokes <code>GenServer.start_link/3</code> which
+would, in fact, call the <code>init/1</code> function with the <code>:ok</code> atom as an argument.
+Also, it's worth noting that the empty map that the <code>init/1</code> function returns in
+the tuple is the actual initial state of the <code>URLShortener</code> process.</p>
+<p>Let's give it a spin in <code>IEx</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">iex(<span style="color:#099">1</span>)<span style="font-weight:bold">&gt;</span> {<span style="color:#b84">:ok</span>, pid} <span style="font-weight:bold">=</span> <span style="color:#458;font-weight:bold">URLShortener</span><span style="font-weight:bold">.</span>start_link
+{<span style="color:#b84">:ok</span>, <span style="color:#998;font-style:italic">#PID&lt;0.108.0&gt;}</span></code></pre></div>
+<p>That's all we can do at this moment. The difference here is that the
+<code>GenServer.start_link/3</code> function will return a tuple with an atom (<code>:ok</code>) and
+the PID of the server.</p>
+<h3 id="stopping-the-server-">Stopping the server ✋</h3>
+<p>Let's add the <code>stop</code> command:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">defmodule <span style="color:#458;font-weight:bold">URLShortener</span> do
+  use <span style="color:#458;font-weight:bold">GenServer</span>
+
+  <span style="color:#998;font-style:italic"># Client API</span>
+  def start_link(opts \\ []), <span style="color:#b84">do</span>: <span style="color:#458;font-weight:bold">GenServer</span><span style="font-weight:bold">.</span>start_link(__MODULE__, <span style="color:#b84">:ok</span>, opts)
+
+  def stop(pid) do
+    <span style="color:#458;font-weight:bold">GenServer</span><span style="font-weight:bold">.</span>cast(pid, <span style="color:#b84">:stop</span>)
+  end
+
+  <span style="color:#998;font-style:italic"># GenServer callbacks</span>
+  def init(<span style="color:#b84">:ok</span>), <span style="color:#b84">do</span>: {<span style="color:#b84">:ok</span>, %{}}
+
+  def handle_cast(<span style="color:#b84">:stop</span>, state) do
+    {<span style="color:#b84">:stop</span>, <span style="color:#b84">:normal</span>, state}
+  end
+end</code></pre></div>
+<p>Yes, I know I said we'll add one command but ended up adding two functions:
+<code>stop/1</code> and <code>handle_cast/2</code>. Bear with me now:</p>
+<p>Because we do not want to get a response back on the <code>stop</code> command, we will use
+<code>GenServer.cast/2</code> in the <code>stop/1</code> function. This means that when that command
+is called by the client (user) of the server, the <code>handle_cast/2</code> callback will
+be triggered on the server. In our case, the <code>handle_cast/2</code> function will return
+a tuple of three items – <code>{:stop, :normal, state}</code>.</p>
+<p>Returning this tuple stops the loop and another callback called <code>terminate/2</code> is
+called (which is defined in the behaviour but not implemented by <code>URLShortener</code>)
+with the reason <code>:normal</code> and state <code>state</code>. The process will exit with reason
+<code>:normal</code>.</p>
+<p>This way of working with <code>GenServer</code> allows us to only define callbacks and
+the <code>GenServer</code> behaviour will know how to handle the rest. The only complexity
+resides in the fact that we need to understand and know most types of returns
+that the callback functions can have.</p>
+<p>Another thing worth pointing out is that each function that will be used by
+the client will take a <code>PID</code> as a first argument. This will allow us to send
+messages to the correct <code>GenServer</code> process. Going forward we will not
+acknowledge <code>PID</code>s presence – we accept that it's mandatory for our
+<code>URLShortener</code> to work. Later we will look at ways we can skip passing the
+<code>PID</code>s as arguments.</p>
+<p>Let's jump back in <code>IEx</code> and start and stop a <code>URLShortener</code> server:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">iex(<span style="color:#099">1</span>)<span style="font-weight:bold">&gt;</span> {<span style="color:#b84">:ok</span>, pid} <span style="font-weight:bold">=</span> <span style="color:#458;font-weight:bold">URLShortener</span><span style="font-weight:bold">.</span>start_link
+{<span style="color:#b84">:ok</span>, <span style="color:#998;font-style:italic">#PID&lt;0.109.0&gt;}</span>
+
+iex(<span style="color:#099">2</span>)<span style="font-weight:bold">&gt;</span> <span style="color:#458;font-weight:bold">Process</span><span style="font-weight:bold">.</span>alive?(pid)
+true
+
+iex(<span style="color:#099">3</span>)<span style="font-weight:bold">&gt;</span> <span style="color:#458;font-weight:bold">URLShortener</span><span style="font-weight:bold">.</span>stop(pid)
+<span style="color:#b84">:ok</span>
+
+iex(<span style="color:#099">4</span>)<span style="font-weight:bold">&gt;</span> <span style="color:#458;font-weight:bold">Process</span><span style="font-weight:bold">.</span>alive?(pid)
+false</code></pre></div>
+<p>That's starting and stopping in all of it's glory.</p>
+<h3 id="shortening-a-url">Shortening a URL</h3>
+<p>Another thing we wanted our server to have is the ability to shorten URLs, by
+using their MD5 digest as the short variant of the URL. Let's do that using
+<code>GenServer</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">defmodule <span style="color:#458;font-weight:bold">URLShortener</span> do
+  use <span style="color:#458;font-weight:bold">GenServer</span>
+
+  <span style="color:#998;font-style:italic"># Client API</span>
+  def start_link(opts \\ []), <span style="color:#b84">do</span>: <span style="color:#458;font-weight:bold">GenServer</span><span style="font-weight:bold">.</span>start_link(__MODULE__, <span style="color:#b84">:ok</span>, opts)
+  def stop(pid), <span style="color:#b84">do</span>: <span style="color:#458;font-weight:bold">GenServer</span><span style="font-weight:bold">.</span>cast(pid, <span style="color:#b84">:stop</span>)
+
+  def shorten(pid, url) do
+    <span style="color:#458;font-weight:bold">GenServer</span><span style="font-weight:bold">.</span>call(pid, {<span style="color:#b84">:shorten</span>, url})
+  end
+
+  <span style="color:#998;font-style:italic"># GenServer callbacks</span>
+  def init(<span style="color:#b84">:ok</span>), <span style="color:#b84">do</span>: {<span style="color:#b84">:ok</span>, %{}}
+  def handle_cast(<span style="color:#b84">:stop</span>, state), <span style="color:#b84">do</span>: {<span style="color:#b84">:stop</span>, <span style="color:#b84">:normal</span>, state}
+
+  def handle_call({<span style="color:#b84">:shorten</span>, url}, _from, state) do
+    short <span style="font-weight:bold">=</span> md5(url)
+    {<span style="color:#b84">:reply</span>, short, <span style="color:#458;font-weight:bold">Map</span><span style="font-weight:bold">.</span>put(state, short, url)}
+  end
+
+  defp md5(url) do
+    <span style="color:#b84">:crypto</span><span style="font-weight:bold">.</span>hash(<span style="color:#b84">:md5</span>, url)
+    <span style="font-weight:bold">|&gt;</span> <span style="color:#458;font-weight:bold">Base</span><span style="font-weight:bold">.</span>encode16(<span style="color:#b84">case</span>: <span style="color:#b84">:lower</span>)
+  end
+end</code></pre></div>
+<p>Three functions this time, but at least the <code>md5/1</code> is a replica of the one we
+had previously. So, let's look at the other two.</p>
+<p>You might be seeing a pattern - we have a function that will be used by the
+client (<code>shorten/2</code>) and a callback that will be invoked on the server
+(<code>handle_call/3</code>). This time, there's a slight difference in the functions used
+and naming: in <code>shorten/2</code> we call <code>GenServer.call/2</code> instead of <code>cast/2</code>, and
+the callback name is <code>handle_call/3</code> instead of <code>handle_cast/2</code>.</p>
+<p>Why? Well, the difference lies in the response - <code>handle_call/3</code> will send a
+reply back to the client (hence the <code>:reply</code> atom in the response tuple), while
+<code>handle_cast/2</code> does not do that. Basically <code>cast</code>ing is an async call where the
+client does not expect a response, while <code>call</code>ing is a sync call where the
+response is expected.</p>
+<p>So, let's look at the structure of the <code>handle_call/3</code> callback.</p>
+<p>It takes three arguments: the request from the client (in our case a tuple), a
+tuple describing the client of the request (which we ignore), and the state of
+the server (in our case a map).</p>
+<p>As a response, it returns a tuple with <code>:reply</code>, stating that there will be a
+reply to the request, the reply itself (in our case the <code>short</code>ened link) and
+the <code>state</code> which is the state carried over to the next loop of the server.</p>
+<p>Of course, <code>handle_call/3</code> has a bit more intricacies that we will look into
+later, but you can always check it's
+<a href="https://hexdocs.pm/elixir/GenServer.html#c:handle_call/3">documentation</a> to
+learn more.</p>
+<h3 id="fetching-a-shortened-url-">Fetching a shortened URL 🔗</h3>
+<p>Let's implement the <code>get</code> command, which when provided with a <code>short</code> version of
+the link it will return the full URL:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">defmodule <span style="color:#458;font-weight:bold">URLShortener</span> do
+  use <span style="color:#458;font-weight:bold">GenServer</span>
+
+  <span style="color:#998;font-style:italic"># Client API</span>
+  <span style="color:#998;font-style:italic"># ...</span>
+
+  def get(pid, short_link) do
+    <span style="color:#458;font-weight:bold">GenServer</span><span style="font-weight:bold">.</span>call(pid, {<span style="color:#b84">:get</span>, short_link})
+  end
+
+  <span style="color:#998;font-style:italic"># GenServer callbacks</span>
+  <span style="color:#998;font-style:italic"># ...</span>
+
+  def handle_call({<span style="color:#b84">:get</span>, short_link}, _from, state) do
+    {<span style="color:#b84">:reply</span>, <span style="color:#458;font-weight:bold">Map</span><span style="font-weight:bold">.</span>get(state, short_link), state}
+  end
+end</code></pre></div>
+<p>The double-function entry pattern again - we add <code>URLShortener.get/2</code> and
+another head of the <code>URLShortener.handle_call/3</code> function.</p>
+<p>The <code>URLShortener.get/2</code> will call <code>GenServer.call/2</code> under the hood, which when
+executed will cause the <code>handle_call/3</code> callback to fire.</p>
+<p>The <code>URLShortener.handle_call/3</code> this time will take the command (<code>:get</code>) and
+the <code>short_link</code> as the first argument. Looking inside we see that, again, it's
+a short function - it only returns a tuple with <code>:reply</code> (which states that the
+call will have a reply), a call to <code>Map.get/2</code>, whose return will be the actual
+response of the call, and the <code>state</code>, so the <code>GenServer</code> process maintains the
+state in the next loop.</p>
+<p>At this moment, we can safely say that we have a good idea of the basics on
+writing functionality for a module that implements the <code>GenServer</code> behaviour.
+As you might be thinking, there's much to explore, but these basics will allow
+you to create <code>GenServer</code>s and experiment.</p>
+<p>Before you go on, try to implement two more commands:</p>
+<ul>
+<li><code>flush</code> – an async call which will erase the state of the server</li>
+<li><code>count</code> – a sync call returning the number of links in the server's state</li>
+</ul>
+<h2 id="more-configurations-">More configurations 🎛</h2>
+<p>If we circle back to <code>URLShortener.start_link/1</code> and it's internals (namely the
+invocation of <code>GenServer.start_link/3</code>), we will also notice that we can pass
+options (<code>opts</code>) to the <code>GenServer.start_link/3</code> function, that are defaulted to
+an empty list (<code>[]</code>).</p>
+<p>What are the options that we can add here? By looking at
+<a href="https://hexdocs.pm/elixir/GenServer.html#start_link/3">the documentation</a> of
+<code>GenServer.start_link/3</code> you'll notice multiple interesting options:</p>
+<ul>
+<li><code>:name</code> - used for name registration. This means that instead of identifying
+a <code>GenServer</code> by <code>PID</code>, we can put a name on it.</li>
+<li><code>:timeout</code> - sets the server startup timeout (in milliseconds)</li>
+<li><code>:debug</code> - enables debugging by invoking the corresponding function in the
+<code>:sys</code> module</li>
+<li><code>:hibernate_after</code> - sets the time (in milliseconds) after which the server
+process will go into hibernation automatically until a new request comes in.
+This is done by utilising <code>:proc_lib.hibernate/3</code></li>
+<li><code>:spawn_opt</code> - enables passing more options to the underlying process</li>
+</ul>
+<p>Most of these are advanced and are beyond our use-case here. However, there's
+one configuration we could use right now: <code>:name</code>.</p>
+<h3 id="naming-the-server-">Naming the server 📢</h3>
+<p>Let's modify our <code>URLShortener</code> to take a <code>name</code> in it's <code>start_link/1</code> function
+and test it in <code>IEx</code>. Additionally, since every <code>URLShortener</code> process will have
+a name, we can refer to the process by name instead of <code>PID</code> - let's see how that
+would work in code:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">defmodule URLShortener do
+  use GenServer
+
+  <span style="color:#a61717;background-color:#e3d2d2">#</span> Client API
+  def <span style="color:#900;font-weight:bold">start_link</span>(name, opts <span style="color:#a61717;background-color:#e3d2d2">\</span><span style="color:#a61717;background-color:#e3d2d2">\</span> []) do
+    GenServer.<span style="color:#900;font-weight:bold">start_link</span>(__MODULE__, :ok, opts <span style="font-weight:bold">++</span> [name: name])
+  end
+
+  def <span style="color:#900;font-weight:bold">stop</span>(name), do: GenServer.<span style="color:#900;font-weight:bold">cast</span>(name, :stop)
+  def <span style="color:#900;font-weight:bold">shorten</span>(name, url), do: GenServer.<span style="color:#900;font-weight:bold">call</span>(name, {:shorten, url})
+
+  def <span style="color:#900;font-weight:bold">get</span>(name, short_link) do
+    GenServer.<span style="color:#900;font-weight:bold">call</span>(name, {:get, short_link})
+  end
+
+  <span style="color:#a61717;background-color:#e3d2d2">#</span> GenServer callbacks
+  def <span style="color:#900;font-weight:bold">init</span>(:ok), do: {:ok, <span style="font-weight:bold">%</span>{}}
+  def <span style="color:#900;font-weight:bold">handle_cast</span>(:stop, state), do: {:stop, :normal, state}
+  def <span style="color:#900;font-weight:bold">handle_call</span>({:shorten, url}, _from, state), do: {:reply, <span style="color:#900;font-weight:bold">md5</span>(url), Map.<span style="color:#900;font-weight:bold">put</span>(state, <span style="color:#900;font-weight:bold">md5</span>(url), url)}
+
+  def <span style="color:#900;font-weight:bold">handle_call</span>({:get, short_link}, _from, state) do
+    {:reply, Map.<span style="color:#900;font-weight:bold">get</span>(state, short_link), state}
+  end
+
+  defp <span style="color:#900;font-weight:bold">md5</span>(url), do: :crypto.<span style="color:#900;font-weight:bold">hash</span>(:md5, url) |&gt; Base.<span style="color:#900;font-weight:bold">encode16</span>(<span style="font-weight:bold">case</span>: :lower)
+end</code></pre></div>
+<p>That's all. We added a new argument to <code>URLShortener.start_link/2</code> and we dropped
+all usage of <code>PID</code> and replaced it with <code>name</code>.</p>
+<p>Let's take it for a spin in <code>IEx</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">iex(<span style="color:#099">1</span>)<span style="font-weight:bold">&gt;</span> {<span style="color:#b84">:ok</span>, pid} <span style="font-weight:bold">=</span> <span style="color:#458;font-weight:bold">URLShortener</span><span style="font-weight:bold">.</span>start_link(<span style="color:#b84">:foo</span>)
+{<span style="color:#b84">:ok</span>, <span style="color:#998;font-style:italic">#PID&lt;0.109.0&gt;}</span>
+
+iex(<span style="color:#099">2</span>)<span style="font-weight:bold">&gt;</span> <span style="color:#458;font-weight:bold">URLShortener</span><span style="font-weight:bold">.</span>shorten(<span style="color:#b84">:foo</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">https://google.com</span><span style="color:#b84">&#34;</span>)
+<span style="color:#b84">&#34;</span><span style="color:#b84">99999ebcfdb78df077ad2727fd00969f</span><span style="color:#b84">&#34;</span>
+
+iex(<span style="color:#099">3</span>)<span style="font-weight:bold">&gt;</span> <span style="color:#458;font-weight:bold">URLShortener</span><span style="font-weight:bold">.</span>get(<span style="color:#b84">:foo</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">99999ebcfdb78df077ad2727fd00969f</span><span style="color:#b84">&#34;</span>)
+<span style="color:#b84">&#34;</span><span style="color:#b84">https://google.com</span><span style="color:#b84">&#34;</span>
+
+iex(<span style="color:#099">4</span>)<span style="font-weight:bold">&gt;</span> <span style="color:#458;font-weight:bold">URLShortener</span><span style="font-weight:bold">.</span>stop(<span style="color:#b84">:foo</span>)
+<span style="color:#b84">:ok</span>
+
+iex(<span style="color:#099">5</span>)<span style="font-weight:bold">&gt;</span> <span style="color:#458;font-weight:bold">Process</span><span style="font-weight:bold">.</span>alive?(pid)
+false</code></pre></div>
+<p>You can see that this is pretty cool - instead of using <code>PID</code> we added a name
+<code>:foo</code> to the process which allowed us to refer to it using the name instead of
+the <code>PID</code>. Obviously, you can see that to inspect the BEAM process in any
+fashion we will still need the <code>PID</code>, but for the client the <code>name</code> does the
+trick.</p>
+<p>This combination of name and <code>PID</code> allows us to have reference to the BEAM
+process while improving the ease of use for the client.</p>
+<p>If we would like to simplify things even more, we can turn the <code>URLShortener</code>
+into a &ldquo;singleton&rdquo; server. Before you freak out - it has none of the drawbacks
+that the <a href="/singleton-pattern">singleton pattern</a> that's infamous in OO
+programming has. We're merely stating that we could change the <code>URLShortener</code> to
+have one and only one process running at a certain time, by setting a static
+name to it:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">defmodule <span style="color:#458;font-weight:bold">URLShortener</span> do
+  use <span style="color:#458;font-weight:bold">GenServer</span>
+
+  <span style="color:#008080">@name</span> <span style="color:#b84">:url_shortener_server</span>
+
+  <span style="color:#998;font-style:italic"># Client API</span>
+  def start_link(opts \\ []) do
+    <span style="color:#458;font-weight:bold">GenServer</span><span style="font-weight:bold">.</span>start_link(__MODULE__, <span style="color:#b84">:ok</span>, opts <span style="font-weight:bold">++</span> [<span style="color:#b84">name</span>: <span style="color:#008080">@name</span>])
+  end
+
+  def stop, <span style="color:#b84">do</span>: <span style="color:#458;font-weight:bold">GenServer</span><span style="font-weight:bold">.</span>cast(<span style="color:#008080">@name</span>, <span style="color:#b84">:stop</span>)
+  def shorten(url), <span style="color:#b84">do</span>: <span style="color:#458;font-weight:bold">GenServer</span><span style="font-weight:bold">.</span>call(<span style="color:#008080">@name</span>, {<span style="color:#b84">:shorten</span>, url})
+
+  def get(short_link) do
+    <span style="color:#458;font-weight:bold">GenServer</span><span style="font-weight:bold">.</span>call(<span style="color:#008080">@name</span>, {<span style="color:#b84">:get</span>, short_link})
+  end
+
+  <span style="color:#998;font-style:italic"># GenServer callbacks</span>
+  <span style="color:#998;font-style:italic"># ...</span>
+end</code></pre></div>
+<p>You can notice that we added a module attribute <code>@name</code> that holds the name of
+the process. In all the functions from the client API, we dropped the <code>name</code>
+from the arguments lists and we simply use <code>@name</code> as a reference to the
+process. This means that there's going to be only one process for <code>URLShortener</code>
+with the name <code>:url_shortener_server</code>.</p>
+<p>Let's take it for a spin in <code>IEx</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">iex(<span style="color:#099">1</span>)<span style="font-weight:bold">&gt;</span> {<span style="color:#b84">:ok</span>, pid} <span style="font-weight:bold">=</span> <span style="color:#458;font-weight:bold">URLShortener</span><span style="font-weight:bold">.</span>start_link
+{<span style="color:#b84">:ok</span>, <span style="color:#998;font-style:italic">#PID&lt;0.108.0&gt;}</span>
+
+iex(<span style="color:#099">2</span>)<span style="font-weight:bold">&gt;</span> <span style="color:#458;font-weight:bold">URLShortener</span><span style="font-weight:bold">.</span>shorten(<span style="color:#b84">&#34;</span><span style="color:#b84">https://google.com</span><span style="color:#b84">&#34;</span>)
+<span style="color:#b84">&#34;</span><span style="color:#b84">99999ebcfdb78df077ad2727fd00969f</span><span style="color:#b84">&#34;</span>
+
+iex(<span style="color:#099">3</span>)<span style="font-weight:bold">&gt;</span> <span style="color:#458;font-weight:bold">URLShortener</span><span style="font-weight:bold">.</span>shorten(<span style="color:#b84">&#34;</span><span style="color:#b84">https://yahoo.com</span><span style="color:#b84">&#34;</span>)
+<span style="color:#b84">&#34;</span><span style="color:#b84">c88f320dec138ba5ab0a5f990ff082ba</span><span style="color:#b84">&#34;</span>
+
+iex(<span style="color:#099">4</span>)<span style="font-weight:bold">&gt;</span> <span style="color:#458;font-weight:bold">URLShortener</span><span style="font-weight:bold">.</span>get(<span style="color:#b84">&#34;</span><span style="color:#b84">99999ebcfdb78df077ad2727fd00969f</span><span style="color:#b84">&#34;</span>)
+<span style="color:#b84">&#34;</span><span style="color:#b84">https://google.com</span><span style="color:#b84">&#34;</span>
+
+iex(<span style="color:#099">5</span>)<span style="font-weight:bold">&gt;</span> <span style="color:#458;font-weight:bold">URLShortener</span><span style="font-weight:bold">.</span>stop
+<span style="color:#b84">:ok</span>
+
+iex(<span style="color:#099">6</span>)<span style="font-weight:bold">&gt;</span> <span style="color:#458;font-weight:bold">Process</span><span style="font-weight:bold">.</span>alive?(pid)
+false</code></pre></div>
+<p>You can notice that although we captured the <code>PID</code> on the first line, we do not
+need it at all - all of the work is done for us by <code>URLShortener</code>.</p>
+<p>In this section, you saw how you can utilise names to more easily work with
+processes. Let's review our full implementation of the <code>URLShortener</code> module.</p>
+<h2 id="outro-">Outro 🖖</h2>
+<p>Before we wrap up this long tutorial, let's have a final look at our new
+<code>URLShortener</code> module, including the <code>count/1</code> and <code>flush/1</code> functions:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">defmodule <span style="color:#458;font-weight:bold">URLShortener</span> do
+  use <span style="color:#458;font-weight:bold">GenServer</span>
+
+  <span style="color:#998;font-style:italic"># Client API</span>
+  def start_link(name, opts \\ []) do
+    <span style="color:#458;font-weight:bold">GenServer</span><span style="font-weight:bold">.</span>start_link(__MODULE__, <span style="color:#b84">:ok</span>, opts <span style="font-weight:bold">++</span> [<span style="color:#b84">name</span>: name])
+  end
+
+  def shorten(name, url) do
+    <span style="color:#458;font-weight:bold">GenServer</span><span style="font-weight:bold">.</span>call(name, {<span style="color:#b84">:shorten</span>, url})
+  end
+
+  def get(name, short) do
+    <span style="color:#458;font-weight:bold">GenServer</span><span style="font-weight:bold">.</span>call(name, {<span style="color:#b84">:get</span>, short})
+  end
+
+  def flush(name) do
+    <span style="color:#458;font-weight:bold">GenServer</span><span style="font-weight:bold">.</span>cast(name, <span style="color:#b84">:flush</span>)
+  end
+
+  def stop(name) do
+    <span style="color:#458;font-weight:bold">GenServer</span><span style="font-weight:bold">.</span>cast(name, <span style="color:#b84">:stop</span>)
+  end
+
+  def count(name) do
+    <span style="color:#458;font-weight:bold">GenServer</span><span style="font-weight:bold">.</span>call(name, <span style="color:#b84">:count</span>)
+  end
+
+  <span style="color:#998;font-style:italic"># Callbacks</span>
+  def init(<span style="color:#b84">:ok</span>) do
+    {<span style="color:#b84">:ok</span>, %{}}
+  end
+
+  def handle_cast(<span style="color:#b84">:flush</span>, _state) do
+    {<span style="color:#b84">:noreply</span>, %{}}
+  end
+
+  def handle_cast(<span style="color:#b84">:stop</span>, state) do
+    {<span style="color:#b84">:stop</span>, <span style="color:#b84">:normal</span>, state}
+  end
+
+  def handle_call({<span style="color:#b84">:shorten</span>, url}, _from, state) do
+    shortened <span style="font-weight:bold">=</span> md5(url)
+    new_state <span style="font-weight:bold">=</span> <span style="color:#458;font-weight:bold">Map</span><span style="font-weight:bold">.</span>put(state, shortened, url)
+    {<span style="color:#b84">:reply</span>, shortened, new_state}
+  end
+
+  def handle_call({<span style="color:#b84">:get</span>, short}, _from, state) do
+    {<span style="color:#b84">:reply</span>, <span style="color:#458;font-weight:bold">Map</span><span style="font-weight:bold">.</span>get(state, short), state}
+  end
+
+  def handle_call(<span style="color:#b84">:count</span>, _from, state) do
+    count <span style="font-weight:bold">=</span> <span style="color:#458;font-weight:bold">Map</span><span style="font-weight:bold">.</span>keys(state) <span style="font-weight:bold">|&gt;</span> <span style="color:#458;font-weight:bold">Enum</span><span style="font-weight:bold">.</span>count
+    {<span style="color:#b84">:reply</span>, count, state}
+  end
+
+  defp md5(url) do
+    <span style="color:#b84">:crypto</span><span style="font-weight:bold">.</span>hash(<span style="color:#b84">:md5</span>, url)
+    <span style="font-weight:bold">|&gt;</span> <span style="color:#458;font-weight:bold">Base</span><span style="font-weight:bold">.</span>encode16(<span style="color:#b84">case</span>: <span style="color:#b84">:lower</span>)
+  end
+end</code></pre></div>
+<p>The two callbacks are faily simple - <code>flush</code> will just send a <code>noreply</code> and
+set the state to an empty map. <code>count</code> on the other hand will have a <code>reply</code> with
+the count of the items of the map, which is simply the numbers of keys there are
+in the <code>state</code> map. That's all.</p>
+<p>While you got to the end of the article your journey with <code>GenServer</code> does not
+end here. In fact, it just started. <code>GenServer</code>s and OTP are very powerful tools
+that you can use to build generic servers that can live in small BEAM processes
+and have a very generic approach to building functionality (calls and callbacks).</p>
+<p>While we did cover a lot of ground here we didn't touch on why we named the
+starting function <code>start_link</code> instead of just <code>start</code> (hint: supervisors
+convention), or how we would approach testing such a <code>GenServer</code> like
+<code>URLShortener</code>.</p>
+<p>In what kind of scenarios have you used <code>GenServers</code>? Or, if you do not have
+experience with it, where do you see yourself using it in the future?</p>
+
+			</div>
+
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/genserver">genserver</a></li>
+							
+							<li><a href="/tags/url-shortener">url shortener</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
 
 
 <script type="application/javascript">
@@ -112,1546 +734,6 @@ if (!doNotTrack) {
 }
 </script>
 <script async src='https://www.google-analytics.com/analytics.js'></script>
-
-
-<script type='text/javascript'>
-window.Tooltip||function(t,e){var o={
-url:"https://cdn.tooltip.io/static/player.js",
-key:"189f262e-7c0e-4a30-b1dd-1e425f03fe5e",
-async:true
-};
-window.Tooltip={cs:[],_apiKey:o.key};for(
-var r=["identify","goal","updateUserData","start","stop","refresh","show","hide","on"],
-i={},n=0;n<r.length;n++){var a=r[n];i[a]=function(t){return function(){var e=Array.prototype.slice.call(arguments);
-window.Tooltip.cs.push({method:t,args:e})}}(a)}window.Tooltip.API=i;var n=t.createElement(e),s=t.getElementsByTagName(e)[0];
-n.type="text/javascript",n.async=o.async,s.parentNode.insertBefore(n,s),n.src=o.url}(document,"script");
-</script>
-
-
-
-</head>
-<body>
-  <div id="mobile-navbar" class="mobile-navbar">
-  <div class="mobile-header-logo">
-    <a href="/" class="logo">Ilija Eftimov</a>
-  </div>
-  <div class="mobile-navbar-icon">
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
-</div>
-<nav id="mobile-menu" class="mobile-menu slideout-menu">
-  <ul class="mobile-menu-list">
-    <li class="mobile-menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
-          
-        
-      </li><li class="mobile-menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
-          
-        
-      </li><li class="mobile-menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/about/">About</a>
-          
-        
-      </li>
-    
-  </ul>
-</nav>
-
-
-  
-    
-
-
-
-
-
-
-  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
-  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
-
-
-
-
-<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
-
-<div class="pswp__bg"></div>
-
-<div class="pswp__scroll-wrap">
-    
-    <div class="pswp__container">
-      <div class="pswp__item"></div>
-      <div class="pswp__item"></div>
-      <div class="pswp__item"></div>
-    </div>
-    
-    <div class="pswp__ui pswp__ui--hidden">
-    <div class="pswp__top-bar">
-      
-      <div class="pswp__counter"></div>
-      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
-      <button class="pswp__button pswp__button--share" title="Share"></button>
-      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
-      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
-      
-      
-      <div class="pswp__preloader">
-        <div class="pswp__preloader__icn">
-          <div class="pswp__preloader__cut">
-            <div class="pswp__preloader__donut"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-      <div class="pswp__share-tooltip"></div>
-    </div>
-    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
-    </button>
-    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
-    </button>
-    <div class="pswp__caption">
-      <div class="pswp__caption__center"></div>
-    </div>
-    </div>
-    </div>
-</div>
-
-  
-
-  
-
-  <header id="header" class="header container">
-    <div class="logo-wrapper">
-  <a href="/" class="logo">
-    
-      Ilija Eftimov
-    
-  </a>
-</div>
-
-<nav class="site-navbar">
-  <ul id="menu" class="menu">
-    
-    
-        <li class="menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
-          
-
-        
-
-      </li>
-    
-        <li class="menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
-          
-
-        
-
-      </li>
-    
-        <li class="menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/about/">About</a>
-          
-
-        
-
-      </li>
-    
-    
-  </ul>
-</nav>
-
-  </header>
-
-  <div id="mobile-panel">
-    <main id="main" class="main bg-llight">
-      <div class="content-wrapper">
-        <div id="content" class="content container">
-          <article class="post bg-white">
-    
-    <header class="post-header">
-      <h1 class="post-title">OTP in Elixir: Learn GenServer by Building Your Own URL Shortener</h1>
-      
-      <div class="post-meta">
-        <time datetime="2019-01-26" class="post-time">
-          26-01-2019
-        </time>
-        <div class="post-category">
-            <a href="https://ieftimov.com/categories/elixir/"> elixir </a>
-            <a href="https://ieftimov.com/categories/otp/"> otp </a>
-            
-          </div>
-        
-
-        
-        
-
-        
-        
-      </div>
-    </header>
-
-    
-    
-
-    
-    <div class="post-content">
-      
-
-<p>Looking at any programming language you will (hopefully!) find a rich and useful
-standard library. I started my professional career as a software developer with
-Ruby, which has quite an easy-to-use and well-documented standard library with
-a plethora of modules and classes to use. Personally, I find the <code>Enumerable</code>
-module in Ruby with all its nice methods simply brilliant.</p>
-
-<p>You might be coming from a different language, but I am sure that any serious
-programming language out there has a set of classes, modules, methods and
-functions to make your life (and work) easy.</p>
-
-<p>So, what about Elixirs stdlib?</p>
-
-<p>No surprise there too – Elixir has a well-documented and easy-to-use standard
-library. But, because it works on top of the BEAM virtual machine and inherits
-plenty from Erlang&rsquo;s rich history, it also has a bit more – something called
-<em>OTP</em>.</p>
-
-<p><img src="/mario-caruso-770233-unsplash.jpg" alt="" />
-<small>Photo by Mario Caruso on Unsplash</small></p>
-
-<h2 id="meet-otp">Meet OTP 👋</h2>
-
-<p>From
-<a href="https://en.wikipedia.org/wiki/Open_Telecom_Platform">Wikipedia&rsquo;s article on OTP</a>:</p>
-
-<blockquote>
-<p>OTP is a collection of useful middleware, libraries, and tools written in the
-Erlang programming language. It is an integral part of the open-source
-distribution of Erlang. The name OTP was originally an acronym for Open Telecom
-Platform, which was a branding attempt before Ericsson released Erlang/OTP as
-open source. However, neither Erlang nor OTP is specific to telecom
-applications.</p>
-</blockquote>
-
-<p>In continuation, it states:</p>
-
-<blockquote>
-<p>It (OTP) contains:
-- an Erlang interpreter (called BEAM);
-- an Erlang compiler;
-- a protocol for communication between servers (nodes);
-- a CORBA Object Request Broker;
-- a static analysis tool called Dialyzer;
-- a distributed database server (Mnesia); and
-- many other libraries.</p>
-</blockquote>
-
-<p>While I do not consider myself an expert in Elixir, Erlang, the BEAM or OTP by
-any stretch of the imagination, I would like to take you on a journey to one of
-the most useful and well-known <em>behaviours</em> of OTP – <code>GenServer</code>.</p>
-
-<p><img src="/jon-flobrant-225260-unsplash.jpg" alt="" />
-<small>I am an OTP expert as much as I can find my way around here 👆 – I know
-how to open the door. Photo by Jon Flobrant on Unsplash</small></p>
-
-<p>In continuation, we will use BEAM processes, so if you&rsquo;re not familiar with
-spawning new processes, sending and receiving messages to/from them, then
-it&rsquo;s best to head over to
-&ldquo;<a href="/understanding-basics-elixir-concurrency-model">Understanding the basics of Elixir&rsquo;s concurrency model</a>&ldquo;
-and give it a quick read. It will help you understand processes and concurrency
-in Elixir so you can apply the knowledge in the project that we work on in this
-article. I promise.</p>
-
-<h2 id="shortening-a-link">Shortening a link ✂️</h2>
-
-<p>Let&rsquo;s write a URL shortener module that will run in a BEAM process and can
-receive multiple commands:</p>
-
-<ul>
-<li><code>shorten</code> – takes a link, shortens it and returns the short link as a response</li>
-<li><code>get</code> – take a short link and return the original one</li>
-<li><code>flush</code> – erase the URL shortener memory</li>
-<li><code>stop</code> – stop the process</li>
-</ul>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">defmodule</span> <span class="nc">URLShortener</span> <span class="n">do</span>
-  <span class="n">def</span> <span class="n">start</span> <span class="n">do</span>
-    <span class="n">spawn</span><span class="p">(</span><span class="n">__MODULE__</span><span class="p">,</span> <span class="ss">:loop</span><span class="p">,</span> <span class="p">[%{}])</span>
-  <span class="n">end</span>
-
-  <span class="n">def</span> <span class="n">loop</span><span class="p">(</span><span class="n">state</span><span class="p">)</span> <span class="n">do</span>
-    <span class="n">receive</span> <span class="n">do</span>
-      <span class="p">{</span><span class="ss">:stop</span><span class="p">,</span> <span class="n">caller</span><span class="p">}</span> <span class="o">-&gt;</span>
-        <span class="n">send</span> <span class="n">caller</span><span class="p">,</span> <span class="s2">&#34;Shutting down.&#34;</span>
-      <span class="p">{</span><span class="ss">:shorten</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">caller</span><span class="p">}</span> <span class="o">-&gt;</span>
-        <span class="n">url_md5</span> <span class="o">=</span> <span class="n">md5</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-        <span class="n">new_state</span> <span class="o">=</span> <span class="nc">Map</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">url_md5</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
-        <span class="n">send</span> <span class="n">caller</span><span class="p">,</span> <span class="n">url_md5</span>
-        <span class="n">loop</span><span class="p">(</span><span class="n">new_state</span><span class="p">)</span>
-      <span class="p">{</span><span class="ss">:get</span><span class="p">,</span> <span class="n">md5</span><span class="p">,</span> <span class="n">caller</span><span class="p">}</span> <span class="o">-&gt;</span>
-        <span class="n">send</span> <span class="n">caller</span><span class="p">,</span> <span class="nc">Map</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">md5</span><span class="p">)</span>
-        <span class="n">loop</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
-      <span class="ss">:flush</span> <span class="o">-&gt;</span>
-        <span class="n">loop</span><span class="p">(%{})</span>
-      <span class="n">_</span> <span class="o">-&gt;</span>
-        <span class="n">loop</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
-    <span class="n">end</span>
-  <span class="n">end</span>
-
-  <span class="n">defp</span> <span class="n">md5</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="n">do</span>
-    <span class="ss">:crypto</span><span class="o">.</span><span class="n">hash</span><span class="p">(</span><span class="ss">:md5</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
-    <span class="o">|&gt;</span> <span class="nc">Base</span><span class="o">.</span><span class="n">encode16</span><span class="p">(</span><span class="ss">case</span><span class="p">:</span> <span class="ss">:lower</span><span class="p">)</span>
-  <span class="n">end</span>
-<span class="n">end</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>What the module does is when the process starts it will recursively call the
-<code>URLShortener.loop/1</code> function, until it receives the <code>{:stop, caller}</code> message.</p>
-
-<p>If we zoom into the <code>{:shorten, url, caller}</code> case we notice that we generate a
-<code>MD5</code> digest from the URL and then we update the <code>state</code> map which creates a new
-map (called <code>new_state</code>). Once we get the digest we store it in a map with the
-key being the MD5 and the value is the actual URL. The <code>state</code> map will look
-like:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="p">%{</span>
-  <span class="s2">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span> <span class="o">=&gt;</span> <span class="s2">&#34;https://google.com&#34;</span><span class="p">,</span>
-  <span class="s2">&#34;76100d6f27db53fddb6c8fce320f5d21&#34;</span> <span class="o">=&gt;</span> <span class="s2">&#34;https://elixir-lang.org&#34;</span><span class="p">,</span>
-  <span class="s2">&#34;3097fca9b1ec8942c4305e550ef1b50a&#34;</span> <span class="o">=&gt;</span> <span class="s2">&#34;https://github.com&#34;</span><span class="p">,</span>
-  <span class="n">...</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>Then, we send the MD5 value back to the caller. Obviously, this is not how
-bit.ly or the likes work, as their links are much shorter. (For those interested,
-<a href="https://stackoverflow.com/questions/742013/how-do-i-create-a-url-shortener">here&rsquo;s</a>
-an interesting discussion on the topic). However, for the purpose of this
-article, we&rsquo;ll stick to simple MD5 digest of the URL.</p>
-
-<p>The other two commands, <code>get</code> and <code>flush</code>, are pretty simple. <code>get</code> returns only
-a single value from the <code>state</code> map, while <code>flush</code> invokes <code>loop/1</code> with an
-empty map, effectively removing all the shortened links from the process&rsquo; state
-(memory).</p>
-
-<p>Let&rsquo;s run our shortener in an <code>IEx</code> session:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">iex</span><span class="p">(</span><span class="mi">22</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">shortener</span> <span class="o">=</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">start</span>
-<span class="c1">#PID&lt;0.141.0&gt;</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">23</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">send</span> <span class="n">shortener</span><span class="p">,</span> <span class="p">{</span><span class="ss">:shorten</span><span class="p">,</span> <span class="s2">&#34;https://ieftimov.com&#34;</span><span class="p">,</span> <span class="n">self</span><span class="p">()}</span>
-<span class="p">{</span><span class="ss">:shorten</span><span class="p">,</span> <span class="s2">&#34;https://ieftimov.com&#34;</span><span class="p">,</span> <span class="c1">#PID&lt;0.102.0&gt;}</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">send</span> <span class="n">shortener</span><span class="p">,</span> <span class="p">{</span><span class="ss">:shorten</span><span class="p">,</span> <span class="s2">&#34;https://google.com&#34;</span><span class="p">,</span> <span class="n">self</span><span class="p">()}</span>
-<span class="p">{</span><span class="ss">:shorten</span><span class="p">,</span> <span class="s2">&#34;https://google.com&#34;</span><span class="p">,</span> <span class="c1">#PID&lt;0.102.0&gt;}</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">send</span> <span class="n">shortener</span><span class="p">,</span> <span class="p">{</span><span class="ss">:shorten</span><span class="p">,</span> <span class="s2">&#34;https://github.com&#34;</span><span class="p">,</span> <span class="n">self</span><span class="p">()}</span>
-<span class="p">{</span><span class="ss">:shorten</span><span class="p">,</span> <span class="s2">&#34;https://github.com&#34;</span><span class="p">,</span> <span class="c1">#PID&lt;0.102.0&gt;}</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">26</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">flush</span>
-<span class="s2">&#34;8c4c7fbc57b08d379da5b1312690be04&#34;</span>
-<span class="s2">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span>
-<span class="s2">&#34;3097fca9b1ec8942c4305e550ef1b50a&#34;</span>
-<span class="ss">:ok</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">27</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">send</span> <span class="n">shortener</span><span class="p">,</span> <span class="p">{</span><span class="ss">:get</span><span class="p">,</span> <span class="s2">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span><span class="p">,</span> <span class="n">self</span><span class="p">()}</span>
-<span class="p">{</span><span class="ss">:get</span><span class="p">,</span> <span class="s2">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span><span class="p">,</span> <span class="c1">#PID&lt;0.102.0&gt;}</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">28</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">flush</span>
-<span class="s2">&#34;https://google.com&#34;</span>
-<span class="ss">:ok</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">29</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">send</span> <span class="n">shortener</span><span class="p">,</span> <span class="p">{</span><span class="ss">:get</span><span class="p">,</span> <span class="s2">&#34;8c4c7fbc57b08d379da5b1312690be04&#34;</span><span class="p">,</span> <span class="n">self</span><span class="p">()}</span>
-<span class="p">{</span><span class="ss">:get</span><span class="p">,</span> <span class="s2">&#34;8c4c7fbc57b08d379da5b1312690be04&#34;</span><span class="p">,</span> <span class="c1">#PID&lt;0.102.0&gt;}</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">flush</span>
-<span class="s2">&#34;https://ieftimov.com&#34;</span>
-<span class="ss">:ok</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">31</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">send</span> <span class="n">shortener</span><span class="p">,</span> <span class="p">{</span><span class="ss">:get</span><span class="p">,</span> <span class="s2">&#34;3097fca9b1ec8942c4305e550ef1b50a&#34;</span><span class="p">,</span> <span class="n">self</span><span class="p">()}</span>
-<span class="p">{</span><span class="ss">:get</span><span class="p">,</span> <span class="s2">&#34;3097fca9b1ec8942c4305e550ef1b50a&#34;</span><span class="p">,</span> <span class="c1">#PID&lt;0.102.0&gt;}</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">flush</span>
-<span class="s2">&#34;https://github.com&#34;</span>
-<span class="ss">:ok</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>Working as expected – we send three different URLs for shortening, we receive
-their MD5 digests back in the process mailbox and when we query for them we
-get each of them back.</p>
-
-<p>Although our <code>URLShortener</code> module works pretty neatly now, it actually lacks
-quite a bit of functionality. Sure, it does handle the happy path really well,
-but when it comes to error handling, tracing or error reporting it falls
-really short. Additionally, it does not have a standard interface to add more
-functions to the process – we sort of came up with it as we went on.</p>
-
-<p>After reading all of that you&rsquo;re probably thinking there is a better way to do
-this. And you&rsquo;d be right to think so – let&rsquo;s learn more about <code>GenServer</code>s.</p>
-
-<h2 id="enter-genserver">Enter GenServer 🚪</h2>
-
-<p><code>GenServer</code> is an <em>OTP behaviour</em>. Behaviour in this context refers to three
-things:
-- an interface, which is a set of functions;
-- an implementation, which is the application-specific code, and
-- the container, which is a BEAM process</p>
-
-<p>This means that a module can implement a certain group of functions (interface
-or signatures), that under the hood implement some callback functions (which
-are specific to the behaviour you work on), that are run within a BEAM process.</p>
-
-<p>For example, <code>GenServer</code> is a <strong>gen</strong>eric <strong>server</strong> behaviour – it expects for each
-of the functions defined in it&rsquo;s interface a set of callbacks which will handle
-the requests to the server. This means that the interface functions will be
-used by the clients of the generic server, a.k.a. the client API, while the
-callbacks defined will essentially be the server internals (&ldquo;the backend&rdquo;).</p>
-
-<p>So, how does a <code>GenServer</code> work? Well, as you can imagine we cannot go too deep
-on the hows of <code>GenServer</code>, but we need to get a good grasp on some basics:</p>
-
-<ol>
-<li>Server start &amp; state</li>
-<li>Asynchronous messages</li>
-<li>Synchronous messages</li>
-</ol>
-
-<h3 id="server-start-state">Server start &amp; state</h3>
-
-<p>Just like with our <code>URLShortener</code> we implemented, every <code>GenServer</code> is capable
-of holding state. In fact, <code>GenServer</code>s must implement a <code>init/1</code> function,
-which will set the initial state of the server (see the <code>init/1</code> documentation
-<a href="https://hexdocs.pm/elixir/GenServer.html#c:init/1">here</a> for more details).</p>
-
-<p>To start the server we can run:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="lnt">1
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="nc">GenServer</span><span class="o">.</span><span class="n">start_link</span><span class="p">(</span><span class="n">__MODULE__</span><span class="p">,</span> <span class="ss">:ok</span><span class="p">,</span> <span class="p">[])</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p><code>GenServer.start_link/3</code> will invoke the <code>init/1</code> function of the <code>__MODULE__</code>,
-passing in <code>:ok</code> as an argument to <code>init/1</code>. This function call will block until
-<code>init/1</code> returns, so usually in this function, we do any required setup of the
-server process (that might be needed). For example, in our case, to rebuild
-<code>URLShortener</code> using a <code>GenServer</code> behaviour, we will need an <code>init/1</code> function
-to set the initial state (empty map) of the server:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">def</span> <span class="n">init</span><span class="p">(</span><span class="ss">:ok</span><span class="p">)</span> <span class="n">do</span>
-  <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="p">%{}}</span>
-<span class="n">end</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>That&rsquo;s all. <code>start_link/3</code> will call <code>init/1</code> with the <code>:ok</code> argument, which
-will return an <code>:ok</code> and set the state of the process to an empty map.</p>
-
-<h3 id="sync-async-messages">Sync &amp; async messages 📨</h3>
-
-<p>As most servers out there, <code>GenServer</code>s can also receive and reply to requests
-(if needed). As the heading suggests, there are two types of requests that
-<code>GenServers</code> handle – the ones expect a response (<code>call</code>) and the others that
-don&rsquo;t (<code>cast</code>). Therefore, <code>GenServer</code>s define two callback functions -
-<code>handle_call/3</code> and <code>handle_cast/2</code>.</p>
-
-<p>We will look at these functions in more depth a bit later.</p>
-
-<h2 id="reimplementing-urlshortener-using-genserver">Reimplementing <code>URLShortener</code>, using <code>GenServer</code> ♻️</h2>
-
-<p>Let&rsquo;s look at how we can flip the implementation to use <code>GenServer</code>.</p>
-
-<p>First, let&rsquo;s add the shell of the module, the <code>start_link/1</code> function and the
-<code>init/1</code> function that <code>start_link/1</code> will invoke:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">defmodule</span> <span class="nc">URLShortener</span> <span class="n">do</span>
-  <span class="n">use</span> <span class="nc">GenServer</span>
-
-  <span class="n">def</span> <span class="n">start_link</span><span class="p">(</span><span class="n">opts</span> <span class="p">\\</span> <span class="p">[])</span> <span class="n">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">start_link</span><span class="p">(</span><span class="n">__MODULE__</span><span class="p">,</span> <span class="ss">:ok</span><span class="p">,</span> <span class="n">opts</span><span class="p">)</span>
-  <span class="n">end</span>
-
-  <span class="n">def</span> <span class="n">init</span><span class="p">(</span><span class="ss">:ok</span><span class="p">)</span> <span class="n">do</span>
-    <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="p">%{}}</span>
-  <span class="n">end</span>
-<span class="n">end</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>The notable changes here are the <code>use</code> of the <code>GenServer</code> behaviour in the
-module, the <code>start_link/1</code> function which invokes <code>GenServer.start_link/3</code> which
-would, in fact, call the <code>init/1</code> function with the <code>:ok</code> atom as an argument.
-Also, it&rsquo;s worth noting that the empty map that the <code>init/1</code> function returns in
-the tuple is the actual initial state of the <code>URLShortener</code> process.</p>
-
-<p>Let&rsquo;s give it a spin in <code>IEx</code>:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="lnt">1
-</span><span class="lnt">2
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">iex</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="n">pid</span><span class="p">}</span> <span class="o">=</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">start_link</span>
-<span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="c1">#PID&lt;0.108.0&gt;}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>That&rsquo;s all we can do at this moment. The difference here is that the
-<code>GenServer.start_link/3</code> function will return a tuple with an atom (<code>:ok</code>) and
-the PID of the server.</p>
-
-<h3 id="stopping-the-server">Stopping the server ✋</h3>
-
-<p>Let&rsquo;s add the <code>stop</code> command:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">defmodule</span> <span class="nc">URLShortener</span> <span class="n">do</span>
-  <span class="n">use</span> <span class="nc">GenServer</span>
-
-  <span class="c1"># Client API</span>
-  <span class="n">def</span> <span class="n">start_link</span><span class="p">(</span><span class="n">opts</span> <span class="p">\\</span> <span class="p">[]),</span> <span class="ss">do</span><span class="p">:</span> <span class="nc">GenServer</span><span class="o">.</span><span class="n">start_link</span><span class="p">(</span><span class="n">__MODULE__</span><span class="p">,</span> <span class="ss">:ok</span><span class="p">,</span> <span class="n">opts</span><span class="p">)</span>
-
-  <span class="n">def</span> <span class="n">stop</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span> <span class="n">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="ss">:stop</span><span class="p">)</span>
-  <span class="n">end</span>
-
-  <span class="c1"># GenServer callbacks</span>
-  <span class="n">def</span> <span class="n">init</span><span class="p">(</span><span class="ss">:ok</span><span class="p">),</span> <span class="ss">do</span><span class="p">:</span> <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="p">%{}}</span>
-
-  <span class="n">def</span> <span class="n">handle_cast</span><span class="p">(</span><span class="ss">:stop</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> <span class="n">do</span>
-    <span class="p">{</span><span class="ss">:stop</span><span class="p">,</span> <span class="ss">:normal</span><span class="p">,</span> <span class="n">state</span><span class="p">}</span>
-  <span class="n">end</span>
-<span class="n">end</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>Yes, I know I said we&rsquo;ll add one command but ended up adding two functions:
-<code>stop/1</code> and <code>handle_cast/2</code>. Bear with me now:</p>
-
-<p>Because we do not want to get a response back on the <code>stop</code> command, we will use
-<code>GenServer.cast/2</code> in the <code>stop/1</code> function. This means that when that command
-is called by the client (user) of the server, the <code>handle_cast/2</code> callback will
-be triggered on the server. In our case, the <code>handle_cast/2</code> function will return
-a tuple of three items – <code>{:stop, :normal, state}</code>.</p>
-
-<p>Returning this tuple stops the loop and another callback called <code>terminate/2</code> is
-called (which is defined in the behaviour but not implemented by <code>URLShortener</code>)
-with the reason <code>:normal</code> and state <code>state</code>. The process will exit with reason
-<code>:normal</code>.</p>
-
-<p>This way of working with <code>GenServer</code> allows us to only define callbacks and
-the <code>GenServer</code> behaviour will know how to handle the rest. The only complexity
-resides in the fact that we need to understand and know most types of returns
-that the callback functions can have.</p>
-
-<p>Another thing worth pointing out is that each function that will be used by
-the client will take a <code>PID</code> as a first argument. This will allow us to send
-messages to the correct <code>GenServer</code> process. Going forward we will not
-acknowledge <code>PID</code>s presence – we accept that it&rsquo;s mandatory for our
-<code>URLShortener</code> to work. Later we will look at ways we can skip passing the
-<code>PID</code>s as arguments.</p>
-
-<p>Let&rsquo;s jump back in <code>IEx</code> and start and stop a <code>URLShortener</code> server:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">iex</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="n">pid</span><span class="p">}</span> <span class="o">=</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">start_link</span>
-<span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="c1">#PID&lt;0.109.0&gt;}</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">Process</span><span class="o">.</span><span class="n">alive?</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
-<span class="n">true</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
-<span class="ss">:ok</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">Process</span><span class="o">.</span><span class="n">alive?</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
-<span class="n">false</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>That&rsquo;s starting and stopping in all of it&rsquo;s glory.</p>
-
-<h3 id="shortening-a-url">Shortening a URL</h3>
-
-<p>Another thing we wanted our server to have is the ability to shorten URLs, by
-using their MD5 digest as the short variant of the URL. Let&rsquo;s do that using
-<code>GenServer</code>:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">defmodule</span> <span class="nc">URLShortener</span> <span class="n">do</span>
-  <span class="n">use</span> <span class="nc">GenServer</span>
-
-  <span class="c1"># Client API</span>
-  <span class="n">def</span> <span class="n">start_link</span><span class="p">(</span><span class="n">opts</span> <span class="p">\\</span> <span class="p">[]),</span> <span class="ss">do</span><span class="p">:</span> <span class="nc">GenServer</span><span class="o">.</span><span class="n">start_link</span><span class="p">(</span><span class="n">__MODULE__</span><span class="p">,</span> <span class="ss">:ok</span><span class="p">,</span> <span class="n">opts</span><span class="p">)</span>
-  <span class="n">def</span> <span class="n">stop</span><span class="p">(</span><span class="n">pid</span><span class="p">),</span> <span class="ss">do</span><span class="p">:</span> <span class="nc">GenServer</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="ss">:stop</span><span class="p">)</span>
-
-  <span class="n">def</span> <span class="n">shorten</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span> <span class="n">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="p">{</span><span class="ss">:shorten</span><span class="p">,</span> <span class="n">url</span><span class="p">})</span>
-  <span class="n">end</span>
-
-  <span class="c1"># GenServer callbacks</span>
-  <span class="n">def</span> <span class="n">init</span><span class="p">(</span><span class="ss">:ok</span><span class="p">),</span> <span class="ss">do</span><span class="p">:</span> <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="p">%{}}</span>
-  <span class="n">def</span> <span class="n">handle_cast</span><span class="p">(</span><span class="ss">:stop</span><span class="p">,</span> <span class="n">state</span><span class="p">),</span> <span class="ss">do</span><span class="p">:</span> <span class="p">{</span><span class="ss">:stop</span><span class="p">,</span> <span class="ss">:normal</span><span class="p">,</span> <span class="n">state</span><span class="p">}</span>
-
-  <span class="n">def</span> <span class="n">handle_call</span><span class="p">({</span><span class="ss">:shorten</span><span class="p">,</span> <span class="n">url</span><span class="p">},</span> <span class="n">_from</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> <span class="n">do</span>
-    <span class="n">short</span> <span class="o">=</span> <span class="n">md5</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-    <span class="p">{</span><span class="ss">:reply</span><span class="p">,</span> <span class="n">short</span><span class="p">,</span> <span class="nc">Map</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">short</span><span class="p">,</span> <span class="n">url</span><span class="p">)}</span>
-  <span class="n">end</span>
-
-  <span class="n">defp</span> <span class="n">md5</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="n">do</span>
-    <span class="ss">:crypto</span><span class="o">.</span><span class="n">hash</span><span class="p">(</span><span class="ss">:md5</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
-    <span class="o">|&gt;</span> <span class="nc">Base</span><span class="o">.</span><span class="n">encode16</span><span class="p">(</span><span class="ss">case</span><span class="p">:</span> <span class="ss">:lower</span><span class="p">)</span>
-  <span class="n">end</span>
-<span class="n">end</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>Three functions this time, but at least the <code>md5/1</code> is a replica of the one we
-had previously. So, let&rsquo;s look at the other two.</p>
-
-<p>You might be seeing a pattern - we have a function that will be used by the
-client (<code>shorten/2</code>) and a callback that will be invoked on the server
-(<code>handle_call/3</code>). This time, there&rsquo;s a slight difference in the functions used
-and naming: in <code>shorten/2</code> we call <code>GenServer.call/2</code> instead of <code>cast/2</code>, and
-the callback name is <code>handle_call/3</code> instead of <code>handle_cast/2</code>.</p>
-
-<p>Why? Well, the difference lies in the response - <code>handle_call/3</code> will send a
-reply back to the client (hence the <code>:reply</code> atom in the response tuple), while
-<code>handle_cast/2</code> does not do that. Basically <code>cast</code>ing is an async call where the
-client does not expect a response, while <code>call</code>ing is a sync call where the
-response is expected.</p>
-
-<p>So, let&rsquo;s look at the structure of the <code>handle_call/3</code> callback.</p>
-
-<p>It takes three arguments: the request from the client (in our case a tuple), a
-tuple describing the client of the request (which we ignore), and the state of
-the server (in our case a map).</p>
-
-<p>As a response, it returns a tuple with <code>:reply</code>, stating that there will be a
-reply to the request, the reply itself (in our case the <code>short</code>ened link) and
-the <code>state</code> which is the state carried over to the next loop of the server.</p>
-
-<p>Of course, <code>handle_call/3</code> has a bit more intricacies that we will look into
-later, but you can always check it&rsquo;s
-<a href="https://hexdocs.pm/elixir/GenServer.html#c:handle_call/3">documentation</a> to
-learn more.</p>
-
-<h3 id="fetching-a-shortened-url">Fetching a shortened URL 🔗</h3>
-
-<p>Let&rsquo;s implement the <code>get</code> command, which when provided with a <code>short</code> version of
-the link it will return the full URL:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">defmodule</span> <span class="nc">URLShortener</span> <span class="n">do</span>
-  <span class="n">use</span> <span class="nc">GenServer</span>
-
-  <span class="c1"># Client API</span>
-  <span class="c1"># ...</span>
-
-  <span class="n">def</span> <span class="n">get</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">short_link</span><span class="p">)</span> <span class="n">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="p">{</span><span class="ss">:get</span><span class="p">,</span> <span class="n">short_link</span><span class="p">})</span>
-  <span class="n">end</span>
-
-  <span class="c1"># GenServer callbacks</span>
-  <span class="c1"># ...</span>
-
-  <span class="n">def</span> <span class="n">handle_call</span><span class="p">({</span><span class="ss">:get</span><span class="p">,</span> <span class="n">short_link</span><span class="p">},</span> <span class="n">_from</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> <span class="n">do</span>
-    <span class="p">{</span><span class="ss">:reply</span><span class="p">,</span> <span class="nc">Map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">short_link</span><span class="p">),</span> <span class="n">state</span><span class="p">}</span>
-  <span class="n">end</span>
-<span class="n">end</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>The double-function entry pattern again - we add <code>URLShortener.get/2</code> and
-another head of the <code>URLShortener.handle_call/3</code> function.</p>
-
-<p>The <code>URLShortener.get/2</code> will call <code>GenServer.call/2</code> under the hood, which when
-executed will cause the <code>handle_call/3</code> callback to fire.</p>
-
-<p>The <code>URLShortener.handle_call/3</code> this time will take the command (<code>:get</code>) and
-the <code>short_link</code> as the first argument. Looking inside we see that, again, it&rsquo;s
-a short function - it only returns a tuple with <code>:reply</code> (which states that the
-call will have a reply), a call to <code>Map.get/2</code>, whose return will be the actual
-response of the call, and the <code>state</code>, so the <code>GenServer</code> process maintains the
-state in the next loop.</p>
-
-<p>At this moment, we can safely say that we have a good idea of the basics on
-writing functionality for a module that implements the <code>GenServer</code> behaviour.
-As you might be thinking, there&rsquo;s much to explore, but these basics will allow
-you to create <code>GenServer</code>s and experiment.</p>
-
-<p>Before you go on, try to implement two more commands:
-- <code>flush</code> – an async call which will erase the state of the server
-- <code>count</code> – a sync call returning the number of links in the server&rsquo;s state</p>
-
-<h2 id="more-configurations">More configurations 🎛</h2>
-
-<p>If we circle back to <code>URLShortener.start_link/1</code> and it&rsquo;s internals (namely the
-invocation of <code>GenServer.start_link/3</code>), we will also notice that we can pass
-options (<code>opts</code>) to the <code>GenServer.start_link/3</code> function, that are defaulted to
-an empty list (<code>[]</code>).</p>
-
-<p>What are the options that we can add here? By looking at
-<a href="https://hexdocs.pm/elixir/GenServer.html#start_link/3">the documentation</a> of
-<code>GenServer.start_link/3</code> you&rsquo;ll notice multiple interesting options:</p>
-
-<ul>
-<li><code>:name</code> - used for name registration. This means that instead of identifying
-a <code>GenServer</code> by <code>PID</code>, we can put a name on it.</li>
-<li><code>:timeout</code> - sets the server startup timeout (in milliseconds)</li>
-<li><code>:debug</code> - enables debugging by invoking the corresponding function in the
-<code>:sys</code> module</li>
-<li><code>:hibernate_after</code> - sets the time (in milliseconds) after which the server
-process will go into hibernation automatically until a new request comes in.
-This is done by utilising <code>:proc_lib.hibernate/3</code></li>
-<li><code>:spawn_opt</code> - enables passing more options to the underlying process</li>
-</ul>
-
-<p>Most of these are advanced and are beyond our use-case here. However, there&rsquo;s
-one configuration we could use right now: <code>:name</code>.</p>
-
-<h3 id="naming-the-server">Naming the server 📢</h3>
-
-<p>Let&rsquo;s modify our <code>URLShortener</code> to take a <code>name</code> in it&rsquo;s <code>start_link/1</code> function
-and test it in <code>IEx</code>. Additionally, since every <code>URLShortener</code> process will have
-a name, we can refer to the process by name instead of <code>PID</code> - let&rsquo;s see how that
-would work in code:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="nx">defmodule</span> <span class="nx">URLShortener</span> <span class="nx">do</span>
-  <span class="nx">use</span> <span class="nx">GenServer</span>
-
-  <span class="err">#</span> <span class="nx">Client</span> <span class="nx">API</span>
-  <span class="nx">def</span> <span class="nf">start_link</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">opts</span> <span class="err">\\</span> <span class="p">[])</span> <span class="nx">do</span>
-    <span class="nx">GenServer</span><span class="p">.</span><span class="nf">start_link</span><span class="p">(</span><span class="nx">__MODULE__</span><span class="p">,</span> <span class="p">:</span><span class="nx">ok</span><span class="p">,</span> <span class="nx">opts</span> <span class="o">++</span> <span class="p">[</span><span class="nx">name</span><span class="p">:</span> <span class="nx">name</span><span class="p">])</span>
-  <span class="nx">end</span>
-
-  <span class="nx">def</span> <span class="nf">stop</span><span class="p">(</span><span class="nx">name</span><span class="p">),</span> <span class="nx">do</span><span class="p">:</span> <span class="nx">GenServer</span><span class="p">.</span><span class="nf">cast</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="p">:</span><span class="nx">stop</span><span class="p">)</span>
-  <span class="nx">def</span> <span class="nf">shorten</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">url</span><span class="p">),</span> <span class="nx">do</span><span class="p">:</span> <span class="nx">GenServer</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="p">{:</span><span class="nx">shorten</span><span class="p">,</span> <span class="nx">url</span><span class="p">})</span>
-
-  <span class="nx">def</span> <span class="nf">get</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">short_link</span><span class="p">)</span> <span class="nx">do</span>
-    <span class="nx">GenServer</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="p">{:</span><span class="nx">get</span><span class="p">,</span> <span class="nx">short_link</span><span class="p">})</span>
-  <span class="nx">end</span>
-
-  <span class="err">#</span> <span class="nx">GenServer</span> <span class="nx">callbacks</span>
-  <span class="nx">def</span> <span class="nf">init</span><span class="p">(:</span><span class="nx">ok</span><span class="p">),</span> <span class="nx">do</span><span class="p">:</span> <span class="p">{:</span><span class="nx">ok</span><span class="p">,</span> <span class="o">%</span><span class="p">{}}</span>
-  <span class="nx">def</span> <span class="nf">handle_cast</span><span class="p">(:</span><span class="nx">stop</span><span class="p">,</span> <span class="nx">state</span><span class="p">),</span> <span class="nx">do</span><span class="p">:</span> <span class="p">{:</span><span class="nx">stop</span><span class="p">,</span> <span class="p">:</span><span class="nx">normal</span><span class="p">,</span> <span class="nx">state</span><span class="p">}</span>
-  <span class="nx">def</span> <span class="nf">handle_call</span><span class="p">({:</span><span class="nx">shorten</span><span class="p">,</span> <span class="nx">url</span><span class="p">},</span> <span class="nx">_from</span><span class="p">,</span> <span class="nx">state</span><span class="p">),</span> <span class="nx">do</span><span class="p">:</span> <span class="p">{:</span><span class="nx">reply</span><span class="p">,</span> <span class="nf">md5</span><span class="p">(</span><span class="nx">url</span><span class="p">),</span> <span class="nx">Map</span><span class="p">.</span><span class="nf">put</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nf">md5</span><span class="p">(</span><span class="nx">url</span><span class="p">),</span> <span class="nx">url</span><span class="p">)}</span>
-
-  <span class="nx">def</span> <span class="nf">handle_call</span><span class="p">({:</span><span class="nx">get</span><span class="p">,</span> <span class="nx">short_link</span><span class="p">},</span> <span class="nx">_from</span><span class="p">,</span> <span class="nx">state</span><span class="p">)</span> <span class="nx">do</span>
-    <span class="p">{:</span><span class="nx">reply</span><span class="p">,</span> <span class="nx">Map</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">short_link</span><span class="p">),</span> <span class="nx">state</span><span class="p">}</span>
-  <span class="nx">end</span>
-
-  <span class="nx">defp</span> <span class="nf">md5</span><span class="p">(</span><span class="nx">url</span><span class="p">),</span> <span class="nx">do</span><span class="p">:</span> <span class="p">:</span><span class="nx">crypto</span><span class="p">.</span><span class="nf">hash</span><span class="p">(:</span><span class="nx">md5</span><span class="p">,</span> <span class="nx">url</span><span class="p">)</span> <span class="p">|&gt;</span> <span class="nx">Base</span><span class="p">.</span><span class="nf">encode16</span><span class="p">(</span><span class="k">case</span><span class="p">:</span> <span class="p">:</span><span class="nx">lower</span><span class="p">)</span>
-<span class="nx">end</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>That&rsquo;s all. We added a new argument to <code>URLShortener.start_link/2</code> and we dropped
-all usage of <code>PID</code> and replaced it with <code>name</code>.</p>
-
-<p>Let&rsquo;s take it for a spin in <code>IEx</code>:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">iex</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="n">pid</span><span class="p">}</span> <span class="o">=</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">start_link</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span>
-<span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="c1">#PID&lt;0.109.0&gt;}</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">shorten</span><span class="p">(</span><span class="ss">:foo</span><span class="p">,</span> <span class="s2">&#34;https://google.com&#34;</span><span class="p">)</span>
-<span class="s2">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="ss">:foo</span><span class="p">,</span> <span class="s2">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span><span class="p">)</span>
-<span class="s2">&#34;https://google.com&#34;</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span>
-<span class="ss">:ok</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">Process</span><span class="o">.</span><span class="n">alive?</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
-<span class="n">false</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>You can see that this is pretty cool - instead of using <code>PID</code> we added a name
-<code>:foo</code> to the process which allowed us to refer to it using the name instead of
-the <code>PID</code>. Obviously, you can see that to inspect the BEAM process in any
-fashion we will still need the <code>PID</code>, but for the client the <code>name</code> does the
-trick.</p>
-
-<p>This combination of name and <code>PID</code> allows us to have reference to the BEAM
-process while improving the ease of use for the client.</p>
-
-<p>If we would like to simplify things even more, we can turn the <code>URLShortener</code>
-into a &ldquo;singleton&rdquo; server. Before you freak out - it has none of the drawbacks
-that the <a href="/singleton-pattern">singleton pattern</a> that&rsquo;s infamous in OO
-programming has. We&rsquo;re merely stating that we could change the <code>URLShortener</code> to
-have one and only one process running at a certain time, by setting a static
-name to it:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">defmodule</span> <span class="nc">URLShortener</span> <span class="n">do</span>
-  <span class="n">use</span> <span class="nc">GenServer</span>
-
-  <span class="na">@name</span> <span class="ss">:url_shortener_server</span>
-
-  <span class="c1"># Client API</span>
-  <span class="n">def</span> <span class="n">start_link</span><span class="p">(</span><span class="n">opts</span> <span class="p">\\</span> <span class="p">[])</span> <span class="n">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">start_link</span><span class="p">(</span><span class="n">__MODULE__</span><span class="p">,</span> <span class="ss">:ok</span><span class="p">,</span> <span class="n">opts</span> <span class="o">++</span> <span class="p">[</span><span class="ss">name</span><span class="p">:</span> <span class="na">@name</span><span class="p">])</span>
-  <span class="n">end</span>
-
-  <span class="n">def</span> <span class="n">stop</span><span class="p">,</span> <span class="ss">do</span><span class="p">:</span> <span class="nc">GenServer</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="na">@name</span><span class="p">,</span> <span class="ss">:stop</span><span class="p">)</span>
-  <span class="n">def</span> <span class="n">shorten</span><span class="p">(</span><span class="n">url</span><span class="p">),</span> <span class="ss">do</span><span class="p">:</span> <span class="nc">GenServer</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="na">@name</span><span class="p">,</span> <span class="p">{</span><span class="ss">:shorten</span><span class="p">,</span> <span class="n">url</span><span class="p">})</span>
-
-  <span class="n">def</span> <span class="n">get</span><span class="p">(</span><span class="n">short_link</span><span class="p">)</span> <span class="n">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="na">@name</span><span class="p">,</span> <span class="p">{</span><span class="ss">:get</span><span class="p">,</span> <span class="n">short_link</span><span class="p">})</span>
-  <span class="n">end</span>
-
-  <span class="c1"># GenServer callbacks</span>
-  <span class="c1"># ...</span>
-<span class="n">end</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>You can notice that we added a module attribute <code>@name</code> that holds the name of
-the process. In all the functions from the client API, we dropped the <code>name</code>
-from the arguments lists and we simply use <code>@name</code> as a reference to the
-process. This means that there&rsquo;s going to be only one process for <code>URLShortener</code>
-with the name <code>:url_shortener_server</code>.</p>
-
-<p>Let&rsquo;s take it for a spin in <code>IEx</code>:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">iex</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="n">pid</span><span class="p">}</span> <span class="o">=</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">start_link</span>
-<span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="c1">#PID&lt;0.108.0&gt;}</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">shorten</span><span class="p">(</span><span class="s2">&#34;https://google.com&#34;</span><span class="p">)</span>
-<span class="s2">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">shorten</span><span class="p">(</span><span class="s2">&#34;https://yahoo.com&#34;</span><span class="p">)</span>
-<span class="s2">&#34;c88f320dec138ba5ab0a5f990ff082ba&#34;</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span><span class="p">)</span>
-<span class="s2">&#34;https://google.com&#34;</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">stop</span>
-<span class="ss">:ok</span>
-
-<span class="n">iex</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">Process</span><span class="o">.</span><span class="n">alive?</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
-<span class="n">false</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>You can notice that although we captured the <code>PID</code> on the first line, we do not
-need it at all - all of the work is done for us by <code>URLShortener</code>.</p>
-
-<p>In this section, you saw how you can utilise names to more easily work with
-processes. Let&rsquo;s review our full implementation of the <code>URLShortener</code> module.</p>
-
-<h2 id="outro">Outro 🖖</h2>
-
-<p>Before we wrap up this long tutorial, let&rsquo;s have a final look at our new
-<code>URLShortener</code> module, including the <code>count/1</code> and <code>flush/1</code> functions:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span><span class="lnt">31
-</span><span class="lnt">32
-</span><span class="lnt">33
-</span><span class="lnt">34
-</span><span class="lnt">35
-</span><span class="lnt">36
-</span><span class="lnt">37
-</span><span class="lnt">38
-</span><span class="lnt">39
-</span><span class="lnt">40
-</span><span class="lnt">41
-</span><span class="lnt">42
-</span><span class="lnt">43
-</span><span class="lnt">44
-</span><span class="lnt">45
-</span><span class="lnt">46
-</span><span class="lnt">47
-</span><span class="lnt">48
-</span><span class="lnt">49
-</span><span class="lnt">50
-</span><span class="lnt">51
-</span><span class="lnt">52
-</span><span class="lnt">53
-</span><span class="lnt">54
-</span><span class="lnt">55
-</span><span class="lnt">56
-</span><span class="lnt">57
-</span><span class="lnt">58
-</span><span class="lnt">59
-</span><span class="lnt">60
-</span><span class="lnt">61
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">defmodule</span> <span class="nc">URLShortener</span> <span class="n">do</span>
-  <span class="n">use</span> <span class="nc">GenServer</span>
-
-  <span class="c1"># Client API</span>
-  <span class="n">def</span> <span class="n">start_link</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">opts</span> <span class="p">\\</span> <span class="p">[])</span> <span class="n">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">start_link</span><span class="p">(</span><span class="n">__MODULE__</span><span class="p">,</span> <span class="ss">:ok</span><span class="p">,</span> <span class="n">opts</span> <span class="o">++</span> <span class="p">[</span><span class="ss">name</span><span class="p">:</span> <span class="n">name</span><span class="p">])</span>
-  <span class="n">end</span>
-
-  <span class="n">def</span> <span class="n">shorten</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span> <span class="n">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">{</span><span class="ss">:shorten</span><span class="p">,</span> <span class="n">url</span><span class="p">})</span>
-  <span class="n">end</span>
-
-  <span class="n">def</span> <span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">short</span><span class="p">)</span> <span class="n">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">{</span><span class="ss">:get</span><span class="p">,</span> <span class="n">short</span><span class="p">})</span>
-  <span class="n">end</span>
-
-  <span class="n">def</span> <span class="n">flush</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="n">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="ss">:flush</span><span class="p">)</span>
-  <span class="n">end</span>
-
-  <span class="n">def</span> <span class="n">stop</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="n">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="ss">:stop</span><span class="p">)</span>
-  <span class="n">end</span>
-
-  <span class="n">def</span> <span class="n">count</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="n">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="ss">:count</span><span class="p">)</span>
-  <span class="n">end</span>
-
-  <span class="c1"># Callbacks</span>
-  <span class="n">def</span> <span class="n">init</span><span class="p">(</span><span class="ss">:ok</span><span class="p">)</span> <span class="n">do</span>
-    <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="p">%{}}</span>
-  <span class="n">end</span>
-
-  <span class="n">def</span> <span class="n">handle_cast</span><span class="p">(</span><span class="ss">:flush</span><span class="p">,</span> <span class="n">_state</span><span class="p">)</span> <span class="n">do</span>
-    <span class="p">{</span><span class="ss">:noreply</span><span class="p">,</span> <span class="p">%{}}</span>
-  <span class="n">end</span>
-
-  <span class="n">def</span> <span class="n">handle_cast</span><span class="p">(</span><span class="ss">:stop</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> <span class="n">do</span>
-    <span class="p">{</span><span class="ss">:stop</span><span class="p">,</span> <span class="ss">:normal</span><span class="p">,</span> <span class="n">state</span><span class="p">}</span>
-  <span class="n">end</span>
-
-  <span class="n">def</span> <span class="n">handle_call</span><span class="p">({</span><span class="ss">:shorten</span><span class="p">,</span> <span class="n">url</span><span class="p">},</span> <span class="n">_from</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> <span class="n">do</span>
-    <span class="n">shortened</span> <span class="o">=</span> <span class="n">md5</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-    <span class="n">new_state</span> <span class="o">=</span> <span class="nc">Map</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">shortened</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
-    <span class="p">{</span><span class="ss">:reply</span><span class="p">,</span> <span class="n">shortened</span><span class="p">,</span> <span class="n">new_state</span><span class="p">}</span>
-  <span class="n">end</span>
-
-  <span class="n">def</span> <span class="n">handle_call</span><span class="p">({</span><span class="ss">:get</span><span class="p">,</span> <span class="n">short</span><span class="p">},</span> <span class="n">_from</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> <span class="n">do</span>
-    <span class="p">{</span><span class="ss">:reply</span><span class="p">,</span> <span class="nc">Map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">short</span><span class="p">),</span> <span class="n">state</span><span class="p">}</span>
-  <span class="n">end</span>
-
-  <span class="n">def</span> <span class="n">handle_call</span><span class="p">(</span><span class="ss">:count</span><span class="p">,</span> <span class="n">_from</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> <span class="n">do</span>
-    <span class="n">count</span> <span class="o">=</span> <span class="nc">Map</span><span class="o">.</span><span class="n">keys</span><span class="p">(</span><span class="n">state</span><span class="p">)</span> <span class="o">|&gt;</span> <span class="nc">Enum</span><span class="o">.</span><span class="n">count</span>
-    <span class="p">{</span><span class="ss">:reply</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">state</span><span class="p">}</span>
-  <span class="n">end</span>
-
-  <span class="n">defp</span> <span class="n">md5</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="n">do</span>
-    <span class="ss">:crypto</span><span class="o">.</span><span class="n">hash</span><span class="p">(</span><span class="ss">:md5</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
-    <span class="o">|&gt;</span> <span class="nc">Base</span><span class="o">.</span><span class="n">encode16</span><span class="p">(</span><span class="ss">case</span><span class="p">:</span> <span class="ss">:lower</span><span class="p">)</span>
-  <span class="n">end</span>
-<span class="n">end</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>The two callbacks are faily simple - <code>flush</code> will just send a <code>noreply</code> and
-set the state to an empty map. <code>count</code> on the other hand will have a <code>reply</code> with
-the count of the items of the map, which is simply the numbers of keys there are
-in the <code>state</code> map. That&rsquo;s all.</p>
-
-<p>While you got to the end of the article your journey with <code>GenServer</code> does not
-end here. In fact, it just started. <code>GenServer</code>s and OTP are very powerful tools
-that you can use to build generic servers that can live in small BEAM processes
-and have a very generic approach to building functionality (calls and callbacks).</p>
-
-<p>While we did cover a lot of ground here we didn&rsquo;t touch on why we named the
-starting function <code>start_link</code> instead of just <code>start</code> (hint: supervisors
-convention), or how we would approach testing such a <code>GenServer</code> like
-<code>URLShortener</code>.</p>
-
-<p>In what kind of scenarios have you used <code>GenServers</code>? Or, if you do not have
-experience with it, where do you see yourself using it in the future?</p>
-
-    </div>
-
-    
-    
-
-
-    
-    
-
-    <footer class="post-footer">
-      <div class="post-tags">
-          <a href="https://ieftimov.com/tags/genserver/">genserver</a>
-          <a href="https://ieftimov.com/tags/url-shortener/">url shortener</a>
-          
-        </div>
-
-      
-      <nav class="post-nav">
-        
-          <a class="prev" href="/post/golang-datastructures-trees/">
-            
-            <i class="iconfont">
-              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="18" height="18">
-  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
-</svg>
-
-            </i>
-            <span class="prev-text nav-default">Golang Datastructures: Trees</span>
-            <span class="prev-text nav-mobile">Prev</span>
-          </a>
-        
-          <a class="next" href="/post/understanding-basics-elixir-concurrency-model/">
-            <span class="next-text nav-default">Understanding the basics of Elixir&#39;s concurrency model</span>
-            <span class="prev-text nav-mobile">Next</span>
-            
-            <i class="iconfont">
-              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="18" height="18">
-  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
-</svg>
-
-            </i>
-          </a>
-      </nav>
-    </footer>
-  </article>
-
-  
-  
-
-  
-  
-
-  
-
-  
-  
-
-  
-
-  
-
-  <div class="disqus-comment">
-  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
-    Show Disqus Comments
-  </div>
-  <div id="disqus_thread"></div>
-  <script type="text/javascript">
-    var disqus_config = function () {
-      this.page.url = "https://ieftimov.com/post/otp-elixir-genserver-build-own-url-shortener/";
-    };
-    function load_disqus() {
-      
-      
-      if (window.location.hostname === 'localhost') return;
-
-      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-      var disqus_shortname = 'eftimov';
-      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-
-      $('#load_disqus').remove();
-    };
-  </script>
-  <noscript>Please enable JavaScript to view the
-    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-  </noscript>
-  
-  </div>
-
-    
-
-        </div>
-      </div>
-    </main>
-
-    <footer id="footer" class="footer">
-      <div class="icon-links">
-  
-  
-    <a href="https://stackoverflow.com/users/601555/ilija-eftimov" rel="me noopener" class="iconfont"
-      title="stack-overflow"  target="_blank"
-      >
-      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="36" height="36">
-  <path d="M809.714286 932.571429l-638.857143 0 0-274.285714-91.428571 0 0 365.714286 821.714286 0 0-365.714286-91.428571 0 0 274.285714zm-538.285714-299.428571l18.857143-89.714286 447.428571 94.285714-18.857143 89.142857zm58.857143-213.714286l38.285714-83.428571 414.285714 193.714286-38.285714 82.857143zm114.857143-203.428571l58.285714-70.285714 350.857143 293.142857-58.285714 70.285714zm226.857143-216l272.571429 366.285714-73.142857 54.857143-272.571429-366.285714zm-410.285714 840.571429l0-90.857143 457.142857 0 0 90.857143-457.142857 0z"></path>
-</svg>
-
-    </a>
-  
-    <a href="https://twitter.com/fteem" rel="me noopener" class="iconfont"
-      title="twitter"  target="_blank"
-      >
-      <svg class="icon" viewBox="0 0 1264 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="36" height="36">
-  <path d="M1229.8616 18.043658c0 0-117.852626 63.135335-164.151872 67.344358-105.225559-164.151872-505.082682-92.598492-437.738325 223.078185C278.622548 312.675223 89.216542 47.506814 89.216542 47.506814s-117.852626 189.406006 75.762402 345.139833C127.097743 396.85567 55.544363 371.601535 55.544363 371.601535S26.081207 535.753407 253.368414 615.724832c-21.045112 29.463156-113.643603 8.418045-113.643603 8.418045s25.254134 143.10676 231.496229 180.987961c-143.10676 130.479693-387.230056 92.598492-370.393967 105.225559 206.242095 189.406006 1119.599946 231.496229 1128.01799-643.98042C1179.353331 249.539887 1263.533778 123.269217 1263.533778 123.269217s-130.479693 37.881201-138.897738 33.672179C1225.652577 98.015083 1229.8616 18.043658 1229.8616 18.043658"></path>
-</svg>
-
-    </a>
-  
-    <a href="https://www.linkedin.com/in/ieftimov/" rel="me noopener" class="iconfont"
-      title="linkedin"  target="_blank"
-      >
-      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="33" height="33">
-  <path d="M872.405333 872.618667h-151.637333v-237.610667c0-56.661333-1.152-129.578667-79.018667-129.578667-79.061333 0-91.136 61.653333-91.136 125.397334v241.792H398.976V384h145.664v66.602667h1.962667c20.352-38.4 69.845333-78.933333 143.786666-78.933334 153.642667 0 182.058667 101.12 182.058667 232.746667v268.202667zM227.712 317.141333a87.978667 87.978667 0 0 1-88.021333-88.106666 88.064 88.064 0 1 1 88.021333 88.106666z m76.032 555.477334H151.68V384h152.064v488.618667zM948.266667 0H75.562667C33.792 0 0 33.024 0 73.770667v876.458666C0 991.018667 33.792 1024 75.562667 1024h872.576C989.866667 1024 1024 991.018667 1024 950.229333V73.770667C1024 33.024 989.866667 0 948.138667 0h0.128z"></path>
-</svg>
-
-    </a>
-  
-    <a href="https://github.com/fteem" rel="me noopener" class="iconfont"
-      title="github"  target="_blank"
-      >
-      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="36" height="36">
-  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
-</svg>
-
-    </a>
-  
-    <a href="blog@ieftimov.com" rel="me noopener" class="iconfont"
-      title="email"  target="_blank"
-      >
-      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="36" height="36">
-  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
-</svg>
-
-    </a>
-
-
-<a href="https://ieftimov.com/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
-    class="iconfont" title="rss" target="_blank">
-    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="30" height="30">
-  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
-</svg>
-
-  </a>
-   
-</div>
-
-<div class="copyright">
-  <span class="power-by">
-    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
-  </span>
-  <span class="division">|</span>
-  <span class="theme-info">
-    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
-  </span>
-
-  <span class="copyright-year">
-    &copy;
-    
-      2014 -
-    2019
-    <span class="heart">
-      
-      <i class="iconfont">
-        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="14" height="14">
-  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
-   fill="#8a8a8a"></path>
-</svg>
-
-      </i>
-    </span><span class="author">
-        Ilija Eftimov
-        
-      </span></span>
-
-  
-  
-
-  
-</div>
-
-    </footer>
-
-    <div class="back-to-top" id="back-to-top">
-      <i class="iconfont">
-        
-        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="35" height="35">
-  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
-</svg>
-
-      </i>
-    </div>
-  </div>
-  
-<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
-  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
-
-
-
-
-<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
-
-
-
-
-
-
-  
-    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
-    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
-    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
+<script>feather.replace()</script>
 </body>
 </html>

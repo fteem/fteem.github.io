@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Understanding Reactive Programming with RxRuby - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Understanding Reactive Programming with RxRuby" />
+<meta property="og:description" content="Reactive Programming is a relatively new and interesting programming paradigm that has picked up quite a bit of popularity lately. Out of curiosity, I did a bit of research over the weekend. In this blog post I will summarize what I learned and try to explain what RP to any novice out there. Also, I show you how to use the Reactive Extensions for Ruby. Let&#39;s dive in!
+The Motivation I rarely have strong opinions, but I really think that to understand anything in life, you need to understand the motivation behind it." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/reactive-programing-rxruby/" />
+<meta property="article:published_time" content="2016-01-19T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Understanding Reactive Programming with RxRuby"/>
+<meta name="twitter:description" content="Reactive Programming is a relatively new and interesting programming paradigm that has picked up quite a bit of popularity lately. Out of curiosity, I did a bit of research over the weekend. In this blog post I will summarize what I learned and try to explain what RP to any novice out there. Also, I show you how to use the Reactive Extensions for Ruby. Let&#39;s dive in!
+The Motivation I rarely have strong opinions, but I really think that to understand anything in life, you need to understand the motivation behind it."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.com/css/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.com/js/main.js"></script><script src="https://ieftimov.com/js/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com/">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com/">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">19</span>
+							<span class="rest">Jan 2016</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Understanding Reactive Programming with RxRuby</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>Reactive Programming is a relatively new and interesting programming paradigm
+that has picked up quite a bit of popularity lately. Out of curiosity, I did a
+bit of research over the weekend. In this blog post I will summarize what I
+learned and try to explain what RP to any novice out there. Also, I show you
+how to use the Reactive Extensions for Ruby. Let's dive in!</p>
+<h2 id="the-motivation">The Motivation</h2>
+<p>I rarely have strong opinions, but I really think that to understand anything
+in life, you need to understand the motivation behind it. In this case, to
+understand what Reactive Programming is, we need to see what problems it is
+solving.</p>
+<p>All of the programming paradigms that we know of at this point of time are
+invented more than 20 years ago. Yes, even functional programming. In fact, it
+was invented like 60 years ago. The problem is, just like with anything that
+evolves, priorities change.</p>
+<p>In our case, the internet happened. Sure, +20 years ago the internet did exist,
+but it had less users then the count of views that a popular video on YouTube
+has today. Going forward 15-10 years ago, the internet grew enough, so we felt
+the need for a ton of data processing and asynchronous behaviour.</p>
+<p>Applications needs have changed, from poll-based to full reactive applications,
+where the data is pushed to us. Each time, we're adding more complexity, more
+data, and asynchronous behavior to our applications. So, reactive programming
+is a way to manage all of that complexity, mindset switch included.</p>
+<h2 id="composition">Composition</h2>
+<p>The word invented might hurt someone's ears. At the low level, the paradigm is
+basically a construct of two design patterns that have been around for more
+then 20 years. Actually, one of the most popular design patterns book, the Gang
+of Four book, covers these two design patterns: the Iterable and the <code>Observer</code>
+patterns. These two patterns are behavioral design patterns, which characterize
+the interaction and responsibility of objects and classes.</p>
+<h3 id="iterator">Iterator</h3>
+<p>Taken from the GoF book:</p>
+<blockquote>
+<p>The key idea in this pattern (the Iterator) is to take the responsibility for
+access and traversal out of the list object and put it into an iterator object.
+The Iterator class defines an interface for accessing the list's elements. An
+iterator object is responsible for keeping track of the current element; that
+is, it knows which elements have been traversed already.</p>
+</blockquote>
+<p>Sounds familiar? I am sure it does. Ruby's <code>Enumerable</code> module does just that,
+it returns an enumerator, which encapsulates the data and the traversal
+methods.  Okay, let's keep this short then - an iterator in Ruby is an instance
+of a class that includes the <code>Enumerable</code> module. Which, it's pretty much any
+collection.</p>
+<h3 id="observer">Observer</h3>
+<p>The observer pattern is a design pattern in which an object, called the
+subject, maintains a list of its dependents, called observers, and notifies
+them automatically of any state changes, usually by calling one of their
+methods. Usually, it's used to implement distributed event handling systems.</p>
+<p>Basically, the subjects are the objects that send the messages to the objects
+that observe the subjects (damn!). The subjects push the messages to the
+observers, which is why this is called the Observer Pattern.</p>
+<p>Ruby ships with the <a href="http://ruby-doc.org/stdlib-2.3.0/libdoc/observer/rdoc/Observable.html">Observable
+module</a>
+in it's standard library, which provides a simple mechanism for one object
+(subject) to inform a set of subscribers (observers) of any state change.</p>
+<h2 id="reactive-programming">Reactive Programming</h2>
+<p>Now that we have an understanding of both, the Iterator and the Observer
+patterns, it's time for the Reactive Programming paradigm.</p>
+<p>According to the <a href="http://www.reactivemanifesto.org/">Reactive Manifesto</a>,
+Reactive Systems are: Responsive, Resilient, Elastic and Message Driven. I
+don't know about you, but these type of definitions confuse me a lot. In the
+way that I understand the Reactive Manifesto, Reactive Systems are
+asynchronous, fault tolerant, scalable and they communicate with non-blocking
+message-passing.</p>
+<p>But, what interests us is the implementation, especially in Ruby. Would you be
+surprised if I tell you that on the surface, the reactive programming paradigm
+is basically an abstraction on top of the the <code>Observer</code> pattern in combination
+with the <code>Iterator</code> pattern?</p>
+<p>Don't believe me? Let's see a few examples.</p>
+<h2 id="reactive-extensions">Reactive Extensions</h2>
+<p>From the <a href="https://github.com/ReactiveX/RxRuby/blob/master/readme.md">README</a>:</p>
+<blockquote>
+<p>The Reactive Extensions for Ruby (or, RxRuby) is a set of libraries to compose
+asynchronous and event-based programs using observable collections and
+Enumerable module style composition in Ruby.</p>
+</blockquote>
+<p>There, told ya? <code>RxRuby</code> is a library, which does all of the abstractions for
+us, so we can easily start with Reactive Programming in Ruby. Neat, eh?</p>
+<h3 id="observables">Observables</h3>
+<p>Let's see how <code>RxRuby</code> works, in it's simplest form.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#008080">RxRuby</span><span style="font-weight:bold">::</span><span style="color:#008080">Observable</span><span style="font-weight:bold">.</span>just(<span style="color:#099">42</span><span style="font-weight:bold"></span>)</code></pre></div>
+<p>A <code>RxRuby::Observable</code> is just a stream. A stream is a subject (or, an object)
+that you can subscribe to (or, observe). Now, the <code>RxRuby:Observable</code> module
+itself doesn't do anything, unless we invoke a method on it. Let's carry on
+with the example:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">stream <span style="font-weight:bold">=</span> <span style="color:#008080">RxRuby</span><span style="font-weight:bold">::</span><span style="color:#008080">Observable</span><span style="font-weight:bold">.</span>just(<span style="color:#099">42</span><span style="font-weight:bold"></span>)
+stream<span style="font-weight:bold">.</span>subscribe {<span style="font-weight:bold">|</span>num<span style="font-weight:bold">|</span> <span style="color:#999">puts</span> <span style="color:#b84">&#34;</span><span style="color:#b84">We received: </span><span style="color:#b84">#{</span>num<span style="color:#b84">}</span><span style="color:#b84">&#34;</span> }</code></pre></div>
+<p>What do you think will happen here? Let's break it down. The object that we
+receive is a just the number 42, wrapped as an observable. Since the observable
+implements (most of) the <code>Enumerable</code> methods, we can do anything with it. But,
+to avoid any complication in this example, we will just <code>subscribe</code> to the
+observable and pass in a lambda. The lambda will be invoked on everytime the
+stream pushes any data (or, in this case, just once).</p>
+<p>The output of the example will be:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">We received 42.</code></pre></div>
+<h3 id="observing-on-an-array">Observing on an array</h3>
+<p>Now, since we have a lot of the methods from the <code>Enumerable</code> mixin available,
+let's do something with an array. There's two ways of working with arrays in
+<code>RxRuby</code>: via ranges and via plain arrays.</p>
+<p>Via ranges:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#008080">RxRuby</span><span style="font-weight:bold">::</span><span style="color:#008080">Observable</span><span style="font-weight:bold">.</span>range(<span style="color:#099">1</span><span style="font-weight:bold"></span>,<span style="color:#099">10</span><span style="font-weight:bold"></span>)
+  <span style="font-weight:bold">.</span>select {<span style="font-weight:bold">|</span>num<span style="font-weight:bold">|</span> num<span style="font-weight:bold">.</span>even? }
+  <span style="font-weight:bold">.</span>sum
+  <span style="font-weight:bold">.</span>subscribe {<span style="font-weight:bold">|</span>s<span style="font-weight:bold">|</span> <span style="color:#999">puts</span> <span style="color:#b84">&#34;</span><span style="color:#b84">The sum of the even numbers from 1 to 10 is: </span><span style="color:#b84">#{</span>s<span style="color:#b84">}</span><span style="color:#b84">&#34;</span> }</code></pre></div>
+<p>This will return:
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">The sum of the even numbers from <span style="color:#099">1</span> to <span style="color:#099">10</span> is: <span style="color:#099">30</span></code></pre></div></p>
+<p>Let's break it down. First, we create an observable range, with the numbers
+from 1 to 10. Then, we invoke <code>select</code> on the observable, with a lambda as a
+parameter.  The lambda takes each number of the range as a parameter, and
+filters all even numbers from the observable, returning a new observable. Then,
+we invoke <code>sum</code> on it, which sums all of the even numbers.</p>
+<p>At the end, we <code>subscribe</code> on the observable that <code>sum</code> returns. By subscribing
+we basically &ldquo;watch over&rdquo; the observable (or, the stream of data) and invoke
+the lambda that we pass as an argument to the <code>subscribe</code>. Any time the
+observable pushes any data, it will go through this &ldquo;funnel&rdquo; and invoke the
+last lambda at the end, which will print out the message.  the observables push
+any data we</p>
+<p>Doing this via arrays is very similar:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">arr <span style="font-weight:bold">=</span> <span style="color:#999">Array</span>(<span style="color:#099">1</span><span style="font-weight:bold"></span><span style="font-weight:bold">..</span><span style="color:#099">10</span><span style="font-weight:bold"></span>)
+<span style="color:#008080">RxRuby</span><span style="font-weight:bold">::</span><span style="color:#008080">Observable</span><span style="font-weight:bold">.</span>from_array(arr)
+  <span style="font-weight:bold">.</span>select {<span style="font-weight:bold">|</span>num<span style="font-weight:bold">|</span> num<span style="font-weight:bold">.</span>even? }
+  <span style="font-weight:bold">.</span>sum
+  <span style="font-weight:bold">.</span>subscribe {<span style="font-weight:bold">|</span>s<span style="font-weight:bold">|</span> <span style="color:#999">puts</span> <span style="color:#b84">&#34;</span><span style="color:#b84">The sum of the even numbers from 1 to 10 is: </span><span style="color:#b84">#{</span>s<span style="color:#b84">}</span><span style="color:#b84">&#34;</span> }</code></pre></div>
+<p>This snippet will also return the same message at the end. The only difference
+here is that we create an observable from an array.</p>
+<h2 id="more-rxruby">More RxRuby</h2>
+<p>The documentation on RxRuby is still scarce, but fortunately for us there are a
+lot of <a href="https://github.com/ReactiveX/RxRuby/tree/master/examples">examples</a> in
+the Github repo.</p>
+<p>Also, I have ported the <a href="https://github.com/Reactive-Extensions/RxJSKoans">RxJS
+Koans</a> to Ruby, for easier
+learning of the library.  <a href="https://github.com/fteem/rxrubykoans">RxRuby Koans</a>
+is still a bit unstable, but it should give you a nice overview RxRuby's
+methods/objects.</p>
+<h2 id="the-future">The future</h2>
+<p>I am not sure what the future holds for RxRuby, but it seems that reactive
+programming is here to stay. Netflix has built quite a big architecture built
+on the Reactive Systems paradigm. Also, the Reactive JavaScript community is
+<strong>super vibrant</strong>, unlike the Ruby community. But, let's hope for the best!</p>
+<p>As for me - I am looking for anyone that's proficient with RxRuby, to review my
+RxRuby Koans, so we can get it moving somewhere.</p>
+<h2 id="notes">Notes</h2>
+<p>Some links I used while writing this article, that you might find interesting:</p>
+<ul>
+<li><a href="https://gist.github.com/staltz/868e7e9bc2a7b8c1f754">The introduction to Reactive Programming you've been missing</a></li>
+<li><a href="https://hackhands.com/overview-of-reactive-programming/">Overview of Reactive Programming</a></li>
+<li><a href="https://medium.com/reactive-programming/what-is-reactive-programming-bc9fa7f4a7fc">What is Reactive Programming?</a></li>
+<li><a href="https://www.typesafe.com/blog/7-ways-washing-dishes-and-message-driven-reactive-systems">The 7 Ways to Wash Dishes and the Case for Message-driven Reactive Systems</a></li>
+<li><a href="https://github.com/ReactiveX/RxRuby">RxRuby</a></li>
+<li><a href="https://github.com/Reactive-Extensions/RxJSKoans">RxJSKoans</a></li>
+</ul>
+
+			</div>
+
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/weather">weather</a></li>
+							
+							<li><a href="/tags/widget">widget</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>

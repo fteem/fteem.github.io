@@ -1,106 +1,531 @@
 <!DOCTYPE html>
-<html lang="en" itemscope itemtype="http://schema.org/WebPage">
+<html>
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>When and Why to use a Least Frequently Used (LFU) cache with an implementation in Golang - Ilija Eftimov</title>
-  
-
-<meta name="renderer" content="webkit" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
-
-<meta name="MobileOptimized" content="width"/>
-<meta name="HandheldFriendly" content="true"/>
-
-
-<meta name="applicable-device" content="pc,mobile">
-
-<meta name="theme-color" content="#f8f5ec" />
-<meta name="msapplication-navbutton-color" content="#f8f5ec">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
-
-<meta name="mobile-web-app-capable" content="yes">
-
-<meta name="author" content="Ilija Eftimov" />
-  <meta name="description" content="Over the years, people involved in computer science and engineering have worked really hard on optimisations of various natures. Given that we live in a world with limited resources, humanity has always worked on ways to optimise the costs and speed literally everything.
-In software engineering, I would argue, the most popular approach to performance improvement is caching. While there are various applications of caching, depending on the area of software engineering, the idea behind caching is quite simple: store data that is often needed/used in fast structure/storage so it can be retrieved very fast." />
-
-  <meta name="keywords" content="Software, Programming, Computer Science, Products" />
-
-
-
-
-
-
-<meta name="generator" content="Hugo 0.55.6" />
-
-
-<link rel="canonical" href="https://ieftimov.com/post/when-why-least-frequently-used-cache-implementation-golang/" />
-
-
-
-<link rel="icon" href="/favicon.ico" />
-
-
-
-
-
-
-
-
-
-
-
-<link rel="stylesheet" href="/sass/jane.min.ec807d8b802a40889537c26e014f733206312ea440d42e1f0dabed80918de1ac.css" integrity="sha256-7IB9i4AqQIiVN8JuAU9zMgYxLqRA1C4fDavtgJGN4aw=" media="screen" crossorigin="anonymous">
-
-
-
-
-<link rel="stylesheet" href="/css/overrides.css">
-
-<link rel="stylesheet" href="/css/subscribe.css">
-
-
-<meta property="og:title" content="When and Why to use a Least Frequently Used (LFU) cache with an implementation in Golang" />
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>When and Why to use a Least Frequently Used (LFU) cache with an implementation in Golang - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="When and Why to use a Least Frequently Used (LFU) cache with an implementation in Golang" />
 <meta property="og:description" content="Over the years, people involved in computer science and engineering have worked really hard on optimisations of various natures. Given that we live in a world with limited resources, humanity has always worked on ways to optimise the costs and speed literally everything.
 In software engineering, I would argue, the most popular approach to performance improvement is caching. While there are various applications of caching, depending on the area of software engineering, the idea behind caching is quite simple: store data that is often needed/used in fast structure/storage so it can be retrieved very fast." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://ieftimov.com/post/when-why-least-frequently-used-cache-implementation-golang/" />
-
 <meta property="og:image" content="https://ieftimov.com/cards/when-why-least-frequently-used-cache-implementation-golang.png" />
-<meta property="article:published_time" content="2019-02-27T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2019-02-27T00:00:00&#43;00:00"/>
-
-<meta itemprop="name" content="When and Why to use a Least Frequently Used (LFU) cache with an implementation in Golang">
-<meta itemprop="description" content="Over the years, people involved in computer science and engineering have worked really hard on optimisations of various natures. Given that we live in a world with limited resources, humanity has always worked on ways to optimise the costs and speed literally everything.
-In software engineering, I would argue, the most popular approach to performance improvement is caching. While there are various applications of caching, depending on the area of software engineering, the idea behind caching is quite simple: store data that is often needed/used in fast structure/storage so it can be retrieved very fast.">
-
-
-<meta itemprop="datePublished" content="2019-02-27T00:00:00&#43;00:00" />
-<meta itemprop="dateModified" content="2019-02-27T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="3468">
-
-  <meta itemprop="image" content="https://ieftimov.com/cards/when-why-least-frequently-used-cache-implementation-golang.png">
-
-
-
-<meta itemprop="keywords" content="lfu," />
+<meta property="article:published_time" content="2019-02-27T00:00:00+00:00" />
+<meta property="article:modified_time" content="2019-02-27T00:00:00+00:00" />
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://ieftimov.com/cards/when-why-least-frequently-used-cache-implementation-golang.png"/>
 
 <meta name="twitter:title" content="When and Why to use a Least Frequently Used (LFU) cache with an implementation in Golang"/>
 <meta name="twitter:description" content="Over the years, people involved in computer science and engineering have worked really hard on optimisations of various natures. Given that we live in a world with limited resources, humanity has always worked on ways to optimise the costs and speed literally everything.
 In software engineering, I would argue, the most popular approach to performance improvement is caching. While there are various applications of caching, depending on the area of software engineering, the idea behind caching is quite simple: store data that is often needed/used in fast structure/storage so it can be retrieved very fast."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.com/css/overrides.css" />
+	
 
-<!--[if lte IE 9]>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
-<![endif]-->
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.com/js/main.js"></script><script src="https://ieftimov.com/js/tooltip.js"></script>
+</head>
 
-<!--[if lt IE 9]>
-  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
-<![endif]-->
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com/">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com/">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">27</span>
+							<span class="rest">Feb 2019</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">When and Why to use a Least Frequently Used (LFU) cache with an implementation in Golang</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>Over the years, people involved in computer science and engineering have worked
+really hard on optimisations of various natures. Given that we live in a world
+with limited resources, humanity has always worked on ways to optimise the costs
+and speed literally everything.</p>
+<p>In software engineering, I would argue, the most popular approach to
+performance improvement is caching. While there are various applications of
+caching, depending on the area of software engineering, the idea behind caching
+is quite simple: store data that is often needed/used in fast structure/storage
+so it can be retrieved very fast.</p>
+<p>In fact, caches have to be fast along two dimensions:</p>
+<ol>
+<li>Ensuring that as many of the requests for files go to it (cache hit), not
+over the network or to main memory (cache miss);</li>
+<li>The overhead of using it should be small: testing membership and deciding
+when to replace a file should be as fast as possible.</li>
+</ol>
+<p>In this article we will focus on the second part: taking a specific
+implementation approach to Least Frequently Used cache and making its membership
+test and eviction algorithms performant. Also, we'll also cover the basics and
+explore where such a caching scheme can be useful.</p>
+<h2 id="the-basics">The basics</h2>
+<p>LFU is a caching algorithm in which the Least Frequently Used item in the cache
+is removed whenever the cache's capacity limit is reached. This means that for
+every item in our cache we have to keep track of how frequently it is used. Once
+the capacity is exceeded of the cache, an eviction algorithm will be run which
+has to pick and expire (remove) items from the cache.</p>
+<p>If you have ever implemented an LFU cache you've probably looked into using a
+min-heap data structure because it handles insertion, deletion, and update in
+logarithmic time complexity. In this article, we will look at another approach
+to implementing it.</p>
+<p>But before we go into the implementation, let's see in what cases LFU is better
+than the alternatives.</p>
+<h3 id="where-lfu-shines">Where LFU shines</h3>
+<p>Imagine an asset cache on a CDN, where the assets are cached based on the usage
+patterns. So, when users request some images for the web page they are
+requesting, this CDN will add it to its cache for other users to get it even
+faster.</p>
+<p>For example, one such image (asset) is the logo of the website. Can you imagine
+how many times a day Google's logo is requested across all of their products?
+I'd really like to find that number out, but for now, we can probably agree that
+the number is <strong>HUGE</strong>.</p>
+<p>Such asset caches are the perfect use-case for LFU caches. An LFU cache eviction
+algorithm will never evict frequently accessed assets. In fact, in such a cache
+Google's logo will be cached virtually forever. In contrast, if there are any
+images that are going to be accessed due to a new landing page of a new product
+that's on front page of Reddit, Slashdot &amp; Hackernews, once the hype-storm
+passes the assets will be evicted faster because the access frequency will drop
+dramatically, although in the past few days they have been accessed many times.</p>
+<p>As you might already be noticing, this approach to cache eviction is very
+efficient in cases where the access patterns of the cached objects do not change
+often. While LRU caches will evict the assets that would not be accessed
+recently, the LFU eviction approach would evict the assets that are not needed
+any more after the hype has settled.</p>
+<h2 id="implementing-an-lfu-cache">Implementing an LFU cache</h2>
+<p>Now, let's get to the meat of it. As we said before, instead of looking at a
+min-heap as a possible data structure that would back our LFU cache, we're going
+to look at a better approach.</p>
+<p>In fact, in 2010, a group of researchers Prof. Ketan Shah, Anirban Mitra &amp; Dhruv
+Matani published a paper titled &ldquo;An O(1) algorithm for implementing the LFU
+cache eviction scheme&rdquo; (you can check it <a href="http://dhruvbird.com/lfu.pdf">here</a>) in
+which they explain an implementation of an LFU cache that has a runtime
+complexity of <code>O(1)</code> for all of its operations, which include insertion, access
+and deletion (eviction).</p>
+<p>Here, I'll show you how we can implement this cache and walk you through the
+implementation.</p>
+<h3 id="the-data-structures">The data structure(s)</h3>
+<p>Nope, it's not going to be some sort of a Frankenstein red-black tree. It's, in
+fact, two doubly-linked lists and a hash table. Yes, that's all.</p>
+<p>To be able to understand the fundamentals of this implementation of LFU, let's
+look at the linked list and hash table as graphics. Before we look at the actual
+graphics, we need to understand how the hash table and linked lists will be
+used.</p>
+<p>The hash table will store all of the items with a key that is processed through
+a hashing algorithm (for our purpose we can keep it simple) and the value will
+be the actual item:</p>
+<p><img src="/golang-lfu-cache/lfu-backbone-hashtable.png" alt=""></p>
+<p>The linked lists are a bit more complicated. The first one will be the &ldquo;frequency
+list&rdquo;, which will have all of the frequencies of access. Each of the nodes in
+this list will have an item list, which will contain all of the items that have
+been accessed with the corresponding frequency. Additionally, each of the items
+in the item list will have a pointer to their ancestor in the frequency list:</p>
+<p><img src="/golang-lfu-cache/lfu-backbone-linked-lists.png" alt=""></p>
+<p>If we look at our graphical example above, we can notice that the items <code>A</code>,
+<code>B</code>, <code>C</code> and <code>D</code> have been accessed 1 time. The items <code>E</code> and <code>F</code> have been
+accessed 4 times and so on. The blue lines are the pointers that each of the
+items in the item lists has to their ancestor in the frequency list.</p>
+<p>So, what would happen if item <code>E</code> gets accessed one more time? Let's go through
+the steps:</p>
+<ol>
+<li>Retrieving the item from the hash table is easy (and scales well, <code>O(1)</code>)</li>
+<li>We would access the item's <code>frequencyParent</code> pointer, from which we can check
+what is the next frequency in the list</li>
+<li>If the new frequency is present (e.g. <code>8</code>), we will push it as the first item
+of the item list under frequency node <code>8</code>.</li>
+<li>If the new frequency is not present, we will create the frequency node <code>8</code>
+and will add <code>E</code> to its item list</li>
+</ol>
+<p>That's it. Retrieving the item and refreshing the frequency of the item is <code>O(1)</code>.
+Before we go into implementing the access algorithm, let's first establish the
+basic types that we would need to make this work.</p>
+<h3 id="types">Types</h3>
+<p>As we said earlier, we need to model the types required that will be the
+backbone of our cache.</p>
+<p>The first <code>struct</code> will be the <code>CacheItem</code>. This will be the actual item that
+will be stored in the cache:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> CacheItem <span style="font-weight:bold">struct</span> {
+	key      	<span style="color:#458;font-weight:bold">string</span>        <span style="color:#998;font-style:italic">// Key of entry
+</span><span style="color:#998;font-style:italic"></span>	value    	<span style="font-weight:bold">interface</span>{}   <span style="color:#998;font-style:italic">// Value of item
+</span><span style="color:#998;font-style:italic"></span>	frequencyParent <span style="font-weight:bold">*</span>list.Element <span style="color:#998;font-style:italic">// Pointer to parent in cacheList
+</span><span style="color:#998;font-style:italic"></span>}</code></pre></div>
+<p>It contains the <code>key</code> by which we can look it up in the hash table, the <code>value</code>
+which is the actual cached item and a <code>frequencyParent</code> pointer to the pointer
+in the frequency list.</p>
+<p>The next <code>struct</code> is the <code>FrequencyItem</code>, which represents each of the items in
+the frequency list. It contains a set of entries which will be a set of
+<code>CacheItem</code> pointers. We will use a <code>map</code> to store it so we can treat it as a
+set, which contains only unique items:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> FrequencyItem <span style="font-weight:bold">struct</span> {
+	entries <span style="font-weight:bold">map</span>[<span style="font-weight:bold">*</span>CacheItem]<span style="color:#458;font-weight:bold">byte</span> <span style="color:#998;font-style:italic">// Set of entries
+</span><span style="color:#998;font-style:italic"></span>	freq    <span style="color:#458;font-weight:bold">int</span>                  <span style="color:#998;font-style:italic">// Access frequency
+</span><span style="color:#998;font-style:italic"></span>}</code></pre></div>
+<p>The last <code>struct</code> that we will need to have a smooth running cache is, well, the
+<code>Cache</code> itself:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> Cache <span style="font-weight:bold">struct</span> {
+	bykey       <span style="font-weight:bold">map</span>[<span style="color:#458;font-weight:bold">string</span>]<span style="font-weight:bold">*</span>CacheItem <span style="color:#998;font-style:italic">// Hashmap containing *CacheItems for O(1) access
+</span><span style="color:#998;font-style:italic"></span>	freqs       <span style="font-weight:bold">*</span>list.List            <span style="color:#998;font-style:italic">// Linked list of frequencies
+</span><span style="color:#998;font-style:italic"></span>	capacity    <span style="color:#458;font-weight:bold">int</span>                   <span style="color:#998;font-style:italic">// Max number of items
+</span><span style="color:#998;font-style:italic"></span>	size        <span style="color:#458;font-weight:bold">int</span>                   <span style="color:#998;font-style:italic">// Current size of cache
+</span><span style="color:#998;font-style:italic"></span>}</code></pre></div>
+<p>The <code>Cache</code> will contain the hashmap, called <code>bykey</code> (the naming comes from the
+paper linked above), the frequency list called <code>freqs</code>, the maximum capacity of
+the cache called <code>capacity</code> and the <code>size</code> of the cache which represents the
+count of items cached at any given moment.</p>
+<h3 id="new-set--get">New, set &amp; get</h3>
+<p>Let's look at the first three functions needed to make our cache work. The first
+one is a little constructor function:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">New</span>() <span style="font-weight:bold">*</span>Cache {
+	cache <span style="font-weight:bold">:=</span> <span style="color:#999">new</span>(Cache)
+	cache.bykey = <span style="color:#999">make</span>(<span style="font-weight:bold">map</span>[<span style="color:#458;font-weight:bold">string</span>]<span style="font-weight:bold">*</span>CacheItem)
+	cache.freqs = list.<span style="color:#900;font-weight:bold">New</span>()
+	cache.size = <span style="color:#099">0</span>
+	cache.capacity = <span style="color:#099">100</span>
+
+	<span style="font-weight:bold">return</span> <span style="font-weight:bold">&amp;</span>c
+}</code></pre></div>
+<p>The constructor <code>New</code> will create a new <code>Cache</code> struct and will set all the
+defaults to it. In case you're wondering how <code>list.New()</code> works: for the
+frequency list, we will use Go's <code>container/list</code> package, which contains a neat
+linked-list implementation. You can check
+<a href="https://golang.org/pkg/container/list/">its documentation</a> for more details.</p>
+<p>The second function, which will be implemented on the <code>Cache</code>, is the <code>Set</code>
+function:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (cache <span style="font-weight:bold">*</span>Cache) <span style="color:#900;font-weight:bold">Set</span>(key <span style="color:#458;font-weight:bold">string</span>, value <span style="font-weight:bold">interface</span>{}) {
+	<span style="font-weight:bold">if</span> item, ok <span style="font-weight:bold">:=</span> cache.bykey[key]; ok {
+		item.value = value
+		<span style="color:#998;font-style:italic">// Increment item access frequency here
+</span><span style="color:#998;font-style:italic"></span>	} <span style="font-weight:bold">else</span> {
+		item <span style="font-weight:bold">:=</span> <span style="color:#999">new</span>(CacheItem)
+		item.key = key
+		item.value = value
+		cache.bykey[key] = item
+		cache.size<span style="font-weight:bold">++</span>
+		<span style="color:#998;font-style:italic">// Eviction, if needed
+</span><span style="color:#998;font-style:italic"></span>		<span style="color:#998;font-style:italic">// Increment item access frequency
+</span><span style="color:#998;font-style:italic"></span>	}
+}</code></pre></div>
+<p>The function will take the cache key and the actual value/item to be cached as
+arguments. Then, it checks if the item is already cached or not. If it is cached,
+it will just update the value on the item. Otherwise, it will create a new
+<code>CacheItem</code> which will encapsulate the actual value, it will set the <code>key</code>,
+it will add the item to the <code>bykey</code> hashtable and it will increment the <code>size</code>
+of the cache.</p>
+<p>Now, in both logical branches I have added some comments for the missing pieces:</p>
+<ol>
+<li><code>Cache</code> will have to know how to increment the access frequency for
+a<code>CacheItem</code>, but we are yet to implement that;</li>
+<li><code>Cache</code> will have to know how to evict an item based on the access frequency
+if the <code>size</code> reaches the <code>capacity</code>.</li>
+</ol>
+<p>We will keep these comments in until we implement the <code>increment</code> and <code>evict</code>
+functions.</p>
+<p>The third function that <code>Cache</code> will receive is <code>Get</code> - accessing the item by
+the key from the hashtable and returning it:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (cache <span style="font-weight:bold">*</span>Cache) <span style="color:#900;font-weight:bold">Get</span>(key <span style="color:#458;font-weight:bold">string</span>) <span style="font-weight:bold">interface</span>{} {
+	<span style="font-weight:bold">if</span> e, ok <span style="font-weight:bold">:=</span> cache.bykey[key]; ok {
+		<span style="color:#998;font-style:italic">// Increment acess frequency here
+</span><span style="color:#998;font-style:italic"></span>		<span style="font-weight:bold">return</span> e.value
+	}
+
+	<span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>
+}</code></pre></div>
+<p>There's no magic here as well - we check if the <code>bykey</code> hashtable contains a
+value with the <code>key</code> argument and we return it if present. Otherwise, we return
+<code>nil</code>. Here, just like in <code>Set</code>, we will leave the placeholder comment where we
+have to add the frequency increment function call once we implement it.</p>
+<h3 id="updating-the-access-frequency">Updating the access frequency</h3>
+<p>As we already saw, with every <strong>access</strong> action to the cache we have to update
+the access frequency of the accessed item.</p>
+<p>Let's look at the steps that our <code>Increment</code> function would have to take.
+First, for the item to be expired we will have to decide if this item is already
+a part of the hash table and the frequency list or not. If it is, we will have
+to find out its new frequency value and its next frequency position (node) in
+the frequency list.</p>
+<p>Second, we will have to figure out if for the new frequency there's already a
+node in the frequency list or not. If there is one, we will have to add the item
+to its list of <code>entries</code> and assign its new access frequency
+(which is the current access frequency + 1). If there's none, we will have to
+create a new frequency node in the frequency list (and set all of its sane
+defaults) and then add the item to its list of <code>entries</code></p>
+<p>Third, once we have a <code>FrequencyParent</code> detected, our function will have to set
+the new parent to the <code>item</code> that's being incremented and add it to the parent's
+list of <code>entries</code>.</p>
+<p>As the final step, the <code>increment</code> function will remove the item from the
+<code>entries</code> of the old frequency node (<code>frequencyParent</code>).</p>
+<p>Here's the code in Golang:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (cache <span style="font-weight:bold">*</span>Cache) <span style="color:#900;font-weight:bold">increment</span>(item <span style="font-weight:bold">*</span>CacheItem) {
+	currentFrequency <span style="font-weight:bold">:=</span> item.frequencyParent
+	<span style="font-weight:bold">var</span> nextFrequencyAmount <span style="color:#458;font-weight:bold">int</span>
+	<span style="font-weight:bold">var</span> nextFrequency <span style="font-weight:bold">*</span>list.Element
+
+	<span style="font-weight:bold">if</span> currentFrequency <span style="font-weight:bold">==</span> <span style="font-weight:bold">nil</span> {
+		nextFrequencyAmount = <span style="color:#099">1</span>
+		nextFrequency = cache.freqs.<span style="color:#900;font-weight:bold">Front</span>()
+	} <span style="font-weight:bold">else</span> {
+		nextFrequencyAmount = currentFrequency.Value.(<span style="font-weight:bold">*</span>FrequencyItem).freq <span style="font-weight:bold">+</span> <span style="color:#099">1</span>
+		nextFrequency = currentFrequency.<span style="color:#900;font-weight:bold">Next</span>()
+	}
+
+	<span style="font-weight:bold">if</span> nextFrequency <span style="font-weight:bold">==</span> <span style="font-weight:bold">nil</span> <span style="font-weight:bold">||</span> nextFrequency.Value.(<span style="font-weight:bold">*</span>FrequencyItem).freq <span style="font-weight:bold">!=</span> nextFrequencyAmount {
+		newFrequencyItem <span style="font-weight:bold">:=</span> <span style="color:#999">new</span>(FrequencyItem)
+		newFrequencyItem.freq = nextFrequencyAmount
+		newFrequencyItem.entries = <span style="color:#999">make</span>(<span style="font-weight:bold">map</span>[<span style="font-weight:bold">*</span>CacheItem]<span style="color:#458;font-weight:bold">byte</span>)
+		<span style="font-weight:bold">if</span> currentFrequency <span style="font-weight:bold">==</span> <span style="font-weight:bold">nil</span> {
+			nextFrequency = cache.freqs.<span style="color:#900;font-weight:bold">PushFront</span>(newFrequencyItem)
+		} <span style="font-weight:bold">else</span> {
+			nextFrequency = cache.freqs.<span style="color:#900;font-weight:bold">InsertAfter</span>(newFrequencyItem, currentFrequency)
+		}
+	}
+
+	item.frequencyParent = nextFrequency
+	nextFrequency.Value.(<span style="font-weight:bold">*</span>FrequencyItem).entries[item] = <span style="color:#099">1</span>
+	<span style="font-weight:bold">if</span> currentFrequency <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		cache.<span style="color:#900;font-weight:bold">remove</span>(currentFrequency, item)
+	}
+}</code></pre></div>
+<p>Let's refer back to our original diagram of the frequency and entries lists and
+walk through incrementing the <code>E</code> item.</p>
+<p><img src="/golang-lfu-cache/e-cached-item.png" alt=""></p>
+<p>The first steps that our <code>increment</code> function will take are to allocate a
+pointer to node <code>4</code> (the <code>frequencyParent</code>) and its <code>value</code> (which is <code>4</code>).
+Since node <code>4</code> is present in the list, it will find the next node in the
+frequency list, which in our case is node <code>7</code>.</p>
+<p>Once it figures out that the new frequency for the <code>E</code> node should be <code>5</code> and not
+<code>7</code>, it will append a new frequency node in the list, between nodes <code>4</code> and <code>7</code>:</p>
+<p><img src="/golang-lfu-cache/new-frequency-insertion.png" alt=""></p>
+<p>Once the <code>5</code> node is added to the list, the function will set the defaults needed
+for the node to function properly. Then it will set <code>E</code>'s pointer to the new
+<code>frequencyParent</code> (the <code>5</code> node):</p>
+<p><img src="/golang-lfu-cache/e-parent-frequency-pointer.png" alt=""></p>
+<p>As the last step it will take the <code>item</code>, which has a <code>*CacheItem</code> type, and
+will add it to the <code>entries</code> list while deleting it from the <code>entries</code> list from
+the previous <code>frequencyParent</code>:</p>
+<p><img src="/golang-lfu-cache/new-frequency-entry-insertion.png" alt=""></p>
+<p>Let's look at what are the steps to remove a <code>CacheItem</code> from a <code>FrequencyItem</code>'s
+<code>entries</code> list.</p>
+<h3 id="removing-entries">Removing entries</h3>
+<p>Once we know the node in the list from which we want to remove it, we can just
+remove the item from the <code>entries</code> list and also completely remove the
+<code>FrequencyItem</code> from the frequency list if the <code>entries</code> become empty:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (cache <span style="font-weight:bold">*</span>Cache) <span style="color:#900;font-weight:bold">Remove</span>(listItem <span style="font-weight:bold">*</span>list.Element, item <span style="font-weight:bold">*</span>CacheItem) {
+	frequencyItem <span style="font-weight:bold">:=</span> listItem.Value.(<span style="font-weight:bold">*</span>FrequencyItem)
+	<span style="color:#999">delete</span>(frequencyItem.entries, item)
+	<span style="font-weight:bold">if</span> <span style="color:#999">len</span>(frequencyItem.entries) <span style="font-weight:bold">==</span> <span style="color:#099">0</span> {
+		cache.freqs.<span style="color:#900;font-weight:bold">Remove</span>(listItem)
+	}
+}</code></pre></div>
+<h3 id="eviction">Eviction</h3>
+<p>The last piece of the puzzle is eviction, or in other words, removing the least
+frequently used items once the cache reaches its maximum capacity.</p>
+<p>We have to know how many items we want to evict. Usually, our cache would have
+a low and high bound, so when the high bound is reached we will remove items
+until the low bound. In our case, we will evict an arbitrary number of items,
+that the <code>Evict</code> function will take as an argument.</p>
+<p>The function will start to &ldquo;walk through&rdquo; the frequency list from the beginning
+towards the end. Since the frequency list is in ascending order, it will start
+to remove the <code>entries</code> from the first frequency node onwards, until it removes
+as many items as the arbitrary number passed in.</p>
+<p>If a frequency node contains no <code>entries</code> due to eviction, the <code>Evict</code> function
+will have to remove the frequency node from the frequency list as well. It will
+do that by invoking the <code>Remove</code> function. That way, the eviction will not leave
+any garbage behind.</p>
+<p>Here's the code of what we described above:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (cache <span style="font-weight:bold">*</span>Cache) <span style="color:#900;font-weight:bold">Evict</span>(count <span style="color:#458;font-weight:bold">int</span>) {
+	<span style="font-weight:bold">for</span> i <span style="font-weight:bold">:=</span> <span style="color:#099">0</span>; i &lt; count; {
+		<span style="font-weight:bold">if</span> item <span style="font-weight:bold">:=</span> cache.freqs.<span style="color:#900;font-weight:bold">Front</span>(); item <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+			<span style="font-weight:bold">for</span> entry, _ <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> item.Value.(<span style="font-weight:bold">*</span>FrequencyItem).entries {
+				<span style="font-weight:bold">if</span> i &lt; count {
+					<span style="color:#999">delete</span>(cache.bykey, entry.key)
+					cache.<span style="color:#900;font-weight:bold">Remove</span>(item, entry)
+					cache.size<span style="font-weight:bold">--</span>
+					i<span style="font-weight:bold">++</span>
+				}
+			}
+		}
+	}
+}</code></pre></div>
+<h3 id="back-to-set-and-get">Back to Set and Get</h3>
+<p>At the beginning of this article we implemented the <code>Set</code> and <code>Get</code> functions.
+One thing that we didn't have available back then is the <code>Evict</code> and <code>increment</code>
+functions, so we can use them accordingly. Let's add their invocation.</p>
+<h4 id="incrementing-access-frequency">Incrementing access frequency</h4>
+<p>In the <code>Get</code> function, if we find an item in the <code>bykey</code> hash table, we need
+to increment it's access frequency before we proceed to return its <code>value</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (cache <span style="font-weight:bold">*</span>Cache) <span style="color:#900;font-weight:bold">Get</span>(key <span style="color:#458;font-weight:bold">string</span>) <span style="font-weight:bold">interface</span>{} {
+	<span style="font-weight:bold">if</span> e, ok <span style="font-weight:bold">:=</span> cache.bykey[key]; ok {
+		cache.<span style="color:#900;font-weight:bold">increment</span>(e)
+		<span style="font-weight:bold">return</span> e.value
+	}
+
+	<span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>
+}</code></pre></div>
+<p>With this change, the <code>Cache</code> will increment the frequency of that particular
+item before we return it. But, are we forgetting something? Also, the <code>Set</code>
+function makes access to the cached items when it actually caches them. This
+means that when an item is cached it will immediately be added to the frequency
+list, under the node with value <code>1</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (cache <span style="font-weight:bold">*</span>Cache) <span style="color:#900;font-weight:bold">Set</span>(key <span style="color:#458;font-weight:bold">string</span>, value <span style="font-weight:bold">interface</span>{}) {
+	<span style="font-weight:bold">if</span> item, ok <span style="font-weight:bold">:=</span> cache.bykey[key]; ok {
+		item.value = value
+                cache.<span style="color:#900;font-weight:bold">increment</span>(item)
+	} <span style="font-weight:bold">else</span> {
+		item <span style="font-weight:bold">:=</span> <span style="color:#999">new</span>(CacheItem)
+		item.key = key
+		item.value = value
+		cache.bykey[key] = item
+		cache.size<span style="font-weight:bold">++</span>
+		<span style="color:#998;font-style:italic">// Eviction, if needed
+</span><span style="color:#998;font-style:italic"></span>                cache.<span style="color:#900;font-weight:bold">increment</span>(item)
+	}
+}</code></pre></div>
+<h4 id="eviction-after-addition">Eviction after addition</h4>
+<p>The <code>Set</code> function allows users of our LFU <code>Cache</code> to cache more items in it.
+A key component of any cache is that it should know how to evict items (free up
+space) when new items are added to the cache. For an LFU cache, the least
+frequently used items need to be removed when the cache is at capacity.</p>
+<p>Let's first add a function that will return a <code>bool</code> if the cache has reached
+its maximum capacity:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (cache <span style="font-weight:bold">*</span>Cache) <span style="color:#900;font-weight:bold">atCapacity</span>() <span style="color:#458;font-weight:bold">bool</span> {
+	<span style="font-weight:bold">return</span> cache.size <span style="font-weight:bold">&gt;=</span> cache.capacity
+}</code></pre></div>
+<p>The function is simple: checks if the current <code>size</code> of the <code>Cache</code> is bigger or
+equals than the <code>capacity</code>.</p>
+<p>Now, let's put this into use in the <code>Set</code> function. Once we have a new item set
+in the cache, we have to check if the cache has reached its capacity and then
+evict a number of items from it.</p>
+<p>For simplicity, we will remove only 10 items every time we reach max capacity:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (cache <span style="font-weight:bold">*</span>Cache) <span style="color:#900;font-weight:bold">Set</span>(key <span style="color:#458;font-weight:bold">string</span>, value <span style="font-weight:bold">interface</span>{}) {
+	<span style="font-weight:bold">if</span> item, ok <span style="font-weight:bold">:=</span> cache.bykey[key]; ok {
+		item.value = value
+		cache.<span style="color:#900;font-weight:bold">increment</span>(item)
+	} <span style="font-weight:bold">else</span> {
+		item <span style="font-weight:bold">:=</span> <span style="color:#999">new</span>(CacheItem)
+		item.key = key
+		item.value = value
+		cache.bykey[key] = item
+		cache.size<span style="font-weight:bold">++</span>
+		<span style="font-weight:bold">if</span> cache.<span style="color:#900;font-weight:bold">atCapacity</span>() {
+			cache.<span style="color:#900;font-weight:bold">Evict</span>(<span style="color:#099">10</span>)
+		}
+		cache.<span style="color:#900;font-weight:bold">increment</span>(item)
+	}
+}</code></pre></div>
+<p>With this change, if at any point adding an item reaches the capacity of the
+cache, the cache will evict the least frequently used items.</p>
+<p>If you would like to see the whole code for this article, you can check out
+<a href="https://gist.github.com/fteem/ff1ef56f4ee83700f052b308e2fc6ba6">this gist</a>.</p>
+<h2 id="comments-on-scaling-and-time-complexity">Comments on scaling and time complexity</h2>
+<p>LFU is an interesting eviction scheme, especially when compared to LRU, in my
+opinion, due to its unconventional nature. While its application is limited,
+the algorithm and the backing data structures explained in the paper used in
+this article are fascinating due to the scaling ability of the approach.</p>
+<p>If we revisit <a href="http://dhruvbird.com/lfu.pdf">the paper</a> that we mentioned at the
+beginning of the article, we will see that while LFU is not news, but it was
+traditionally implemented using a min-heap, which has a logarithmic time for
+insert, lookup and deletion. Interestingly in this paper, the authors explain
+that the approach they propose has an <code>O(1)</code> time complexity for each of the
+operations (insertion, lookup and deletion) because the operations are based on
+a hash table. Additionally, the linked lists do not add any time complexity
+because we do not traverse the lists at any point - we merely add or remove a
+node in them if needed (which is an O(1) operation).</p>
+<h2 id="in-closing">In closing</h2>
+<p>In this article, we went through the basics of LFU caches. We established what
+are the most important performance metrics (hit to miss ratio, membership &amp;
+eviction speed). We saw that while it's not the most widely used caching scheme,
+it sure can be very performant in some use cases.</p>
+<p>Then we went on to implement it, using an approach that scales quite well in
+terms of time complexity. We saw the complexities of implementing the eviction
+and frequency incrementation algorithms. In the end, we explored some more how
+the approach we used to implement it scales.</p>
+<p>If you would like to read more on the topic, here are a couple of links that
+will enrich your knowledge of LFU caches and caching in general:</p>
+<ul>
+<li><a href="http://dhruvbird.com/lfu.pdf">&ldquo;An O(1) algorithm for implementing the LFU cache eviction scheme&rdquo;</a> - Prof. Ketan Shah, Anirban Mitra, Dhruv Matani</li>
+<li><a href="https://blogs.dropbox.com/tech/2012/10/caching-in-theory-and-practice/">&ldquo;Caching in theory and practice&rdquo;</a> - Pavel Panchekha</li>
+<li><a href="https://www.geeksforgeeks.org/lfu-least-frequently-used-cache-implementation/">&ldquo;LFU (Least Frequently Used) Cache Implementation&rdquo;</a> - Geeks for Geeks</li>
+</ul>
+
+			</div>
+
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/lfu">lfu</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
 
 
 <script type="application/javascript">
@@ -113,1183 +538,6 @@ if (!doNotTrack) {
 }
 </script>
 <script async src='https://www.google-analytics.com/analytics.js'></script>
-
-
-<script type='text/javascript'>
-window.Tooltip||function(t,e){var o={
-url:"https://cdn.tooltip.io/static/player.js",
-key:"189f262e-7c0e-4a30-b1dd-1e425f03fe5e",
-async:true
-};
-window.Tooltip={cs:[],_apiKey:o.key};for(
-var r=["identify","goal","updateUserData","start","stop","refresh","show","hide","on"],
-i={},n=0;n<r.length;n++){var a=r[n];i[a]=function(t){return function(){var e=Array.prototype.slice.call(arguments);
-window.Tooltip.cs.push({method:t,args:e})}}(a)}window.Tooltip.API=i;var n=t.createElement(e),s=t.getElementsByTagName(e)[0];
-n.type="text/javascript",n.async=o.async,s.parentNode.insertBefore(n,s),n.src=o.url}(document,"script");
-</script>
-
-
-
-</head>
-<body>
-  <div id="mobile-navbar" class="mobile-navbar">
-  <div class="mobile-header-logo">
-    <a href="/" class="logo">Ilija Eftimov</a>
-  </div>
-  <div class="mobile-navbar-icon">
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
-</div>
-<nav id="mobile-menu" class="mobile-menu slideout-menu">
-  <ul class="mobile-menu-list">
-    <li class="mobile-menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
-          
-        
-      </li><li class="mobile-menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
-          
-        
-      </li><li class="mobile-menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/about/">About</a>
-          
-        
-      </li>
-    
-  </ul>
-</nav>
-
-
-  
-    
-
-
-
-
-
-
-  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
-  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
-
-
-
-
-<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
-
-<div class="pswp__bg"></div>
-
-<div class="pswp__scroll-wrap">
-    
-    <div class="pswp__container">
-      <div class="pswp__item"></div>
-      <div class="pswp__item"></div>
-      <div class="pswp__item"></div>
-    </div>
-    
-    <div class="pswp__ui pswp__ui--hidden">
-    <div class="pswp__top-bar">
-      
-      <div class="pswp__counter"></div>
-      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
-      <button class="pswp__button pswp__button--share" title="Share"></button>
-      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
-      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
-      
-      
-      <div class="pswp__preloader">
-        <div class="pswp__preloader__icn">
-          <div class="pswp__preloader__cut">
-            <div class="pswp__preloader__donut"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
-      <div class="pswp__share-tooltip"></div>
-    </div>
-    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
-    </button>
-    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
-    </button>
-    <div class="pswp__caption">
-      <div class="pswp__caption__center"></div>
-    </div>
-    </div>
-    </div>
-</div>
-
-  
-
-  
-
-  <header id="header" class="header container">
-    <div class="logo-wrapper">
-  <a href="/" class="logo">
-    
-      Ilija Eftimov
-    
-  </a>
-</div>
-
-<nav class="site-navbar">
-  <ul id="menu" class="menu">
-    
-    
-        <li class="menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/">Home</a>
-          
-
-        
-
-      </li>
-    
-        <li class="menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/post/">Archives</a>
-          
-
-        
-
-      </li>
-    
-        <li class="menu-item">
-        
-          
-          
-            <a class="menu-item-link" href="https://ieftimov.com/about/">About</a>
-          
-
-        
-
-      </li>
-    
-    
-  </ul>
-</nav>
-
-  </header>
-
-  <div id="mobile-panel">
-    <main id="main" class="main bg-llight">
-      <div class="content-wrapper">
-        <div id="content" class="content container">
-          <article class="post bg-white">
-    
-    <header class="post-header">
-      <h1 class="post-title">When and Why to use a Least Frequently Used (LFU) cache with an implementation in Golang</h1>
-      
-      <div class="post-meta">
-        <time datetime="2019-02-27" class="post-time">
-          27-02-2019
-        </time>
-        <div class="post-category">
-            <a href="https://ieftimov.com/categories/go/"> go </a>
-            <a href="https://ieftimov.com/categories/data-structures/"> data-structures </a>
-            <a href="https://ieftimov.com/categories/caching/"> caching </a>
-            
-          </div>
-        
-
-        
-        
-
-        
-        
-      </div>
-    </header>
-
-    
-    
-
-    
-    <div class="post-content">
-      
-
-<p>Over the years, people involved in computer science and engineering have worked
-really hard on optimisations of various natures. Given that we live in a world
-with limited resources, humanity has always worked on ways to optimise the costs
-and speed literally everything.</p>
-
-<p>In software engineering, I would argue, the most popular approach to
-performance improvement is caching. While there are various applications of
-caching, depending on the area of software engineering, the idea behind caching
-is quite simple: store data that is often needed/used in fast structure/storage
-so it can be retrieved very fast.</p>
-
-<p>In fact, caches have to be fast along two dimensions:
-1. Ensuring that as many of the requests for files go to it (cache hit), not
-over the network or to main memory (cache miss);
-2. The overhead of using it should be small: testing membership and deciding
-when to replace a file should be as fast as possible.</p>
-
-<p>In this article we will focus on the second part: taking a specific
-implementation approach to Least Frequently Used cache and making its membership
-test and eviction algorithms performant. Also, we&rsquo;ll also cover the basics and
-explore where such a caching scheme can be useful.</p>
-
-<h2 id="the-basics">The basics</h2>
-
-<p>LFU is a caching algorithm in which the Least Frequently Used item in the cache
-is removed whenever the cache&rsquo;s capacity limit is reached. This means that for
-every item in our cache we have to keep track of how frequently it is used. Once
-the capacity is exceeded of the cache, an eviction algorithm will be run which
-has to pick and expire (remove) items from the cache.</p>
-
-<p>If you have ever implemented an LFU cache you&rsquo;ve probably looked into using a
-min-heap data structure because it handles insertion, deletion, and update in
-logarithmic time complexity. In this article, we will look at another approach
-to implementing it.</p>
-
-<p>But before we go into the implementation, let&rsquo;s see in what cases LFU is better
-than the alternatives.</p>
-
-<h3 id="where-lfu-shines">Where LFU shines</h3>
-
-<p>Imagine an asset cache on a CDN, where the assets are cached based on the usage
-patterns. So, when users request some images for the web page they are
-requesting, this CDN will add it to its cache for other users to get it even
-faster.</p>
-
-<p>For example, one such image (asset) is the logo of the website. Can you imagine
-how many times a day Google&rsquo;s logo is requested across all of their products?
-I&rsquo;d really like to find that number out, but for now, we can probably agree that
-the number is <strong>HUGE</strong>.</p>
-
-<p>Such asset caches are the perfect use-case for LFU caches. An LFU cache eviction
-algorithm will never evict frequently accessed assets. In fact, in such a cache
-Google&rsquo;s logo will be cached virtually forever. In contrast, if there are any
-images that are going to be accessed due to a new landing page of a new product
-that&rsquo;s on front page of Reddit, Slashdot &amp; Hackernews, once the hype-storm
-passes the assets will be evicted faster because the access frequency will drop
-dramatically, although in the past few days they have been accessed many times.</p>
-
-<p>As you might already be noticing, this approach to cache eviction is very
-efficient in cases where the access patterns of the cached objects do not change
-often. While LRU caches will evict the assets that would not be accessed
-recently, the LFU eviction approach would evict the assets that are not needed
-any more after the hype has settled.</p>
-
-<h2 id="implementing-an-lfu-cache">Implementing an LFU cache</h2>
-
-<p>Now, let&rsquo;s get to the meat of it. As we said before, instead of looking at a
-min-heap as a possible data structure that would back our LFU cache, we&rsquo;re going
-to look at a better approach.</p>
-
-<p>In fact, in 2010, a group of researchers Prof. Ketan Shah, Anirban Mitra &amp; Dhruv
-Matani published a paper titled &ldquo;An O(1) algorithm for implementing the LFU
-cache eviction scheme&rdquo; (you can check it <a href="http://dhruvbird.com/lfu.pdf">here</a>) in
-which they explain an implementation of an LFU cache that has a runtime
-complexity of <code>O(1)</code> for all of its operations, which include insertion, access
-and deletion (eviction).</p>
-
-<p>Here, I&rsquo;ll show you how we can implement this cache and walk you through the
-implementation.</p>
-
-<h3 id="the-data-structure-s">The data structure(s)</h3>
-
-<p>Nope, it&rsquo;s not going to be some sort of a Frankenstein red-black tree. It&rsquo;s, in
-fact, two doubly-linked lists and a hash table. Yes, that&rsquo;s all.</p>
-
-<p>To be able to understand the fundamentals of this implementation of LFU, let&rsquo;s
-look at the linked list and hash table as graphics. Before we look at the actual
-graphics, we need to understand how the hash table and linked lists will be
-used.</p>
-
-<p>The hash table will store all of the items with a key that is processed through
-a hashing algorithm (for our purpose we can keep it simple) and the value will
-be the actual item:</p>
-
-<p><img src="/golang-lfu-cache/lfu-backbone-hashtable.png" alt="" /></p>
-
-<p>The linked lists are a bit more complicated. The first one will be the &ldquo;frequency
-list&rdquo;, which will have all of the frequencies of access. Each of the nodes in
-this list will have an item list, which will contain all of the items that have
-been accessed with the corresponding frequency. Additionally, each of the items
-in the item list will have a pointer to their ancestor in the frequency list:</p>
-
-<p><img src="/golang-lfu-cache/lfu-backbone-linked-lists.png" alt="" /></p>
-
-<p>If we look at our graphical example above, we can notice that the items <code>A</code>,
-<code>B</code>, <code>C</code> and <code>D</code> have been accessed 1 time. The items <code>E</code> and <code>F</code> have been
-accessed 4 times and so on. The blue lines are the pointers that each of the
-items in the item lists has to their ancestor in the frequency list.</p>
-
-<p>So, what would happen if item <code>E</code> gets accessed one more time? Let&rsquo;s go through
-the steps:
-1. Retrieving the item from the hash table is easy (and scales well, <code>O(1)</code>)
-2. We would access the item&rsquo;s <code>frequencyParent</code> pointer, from which we can check
-what is the next frequency in the list
-3. If the new frequency is present (e.g. <code>8</code>), we will push it as the first item
-of the item list under frequency node <code>8</code>.
-4. If the new frequency is not present, we will create the frequency node <code>8</code>
-and will add <code>E</code> to its item list</p>
-
-<p>That&rsquo;s it. Retrieving the item and refreshing the frequency of the item is <code>O(1)</code>.
-Before we go into implementing the access algorithm, let&rsquo;s first establish the
-basic types that we would need to make this work.</p>
-
-<h3 id="types">Types</h3>
-
-<p>As we said earlier, we need to model the types required that will be the
-backbone of our cache.</p>
-
-<p>The first <code>struct</code> will be the <code>CacheItem</code>. This will be the actual item that
-will be stored in the cache:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">CacheItem</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">key</span>      	<span class="kt">string</span>        <span class="c1">// Key of entry
-</span><span class="c1"></span>	<span class="nx">value</span>    	<span class="kd">interface</span><span class="p">{}</span>   <span class="c1">// Value of item
-</span><span class="c1"></span>	<span class="nx">frequencyParent</span> <span class="o">*</span><span class="nx">list</span><span class="p">.</span><span class="nx">Element</span> <span class="c1">// Pointer to parent in cacheList
-</span><span class="c1"></span><span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>It contains the <code>key</code> by which we can look it up in the hash table, the <code>value</code>
-which is the actual cached item and a <code>frequencyParent</code> pointer to the pointer
-in the frequency list.</p>
-
-<p>The next <code>struct</code> is the <code>FrequencyItem</code>, which represents each of the items in
-the frequency list. It contains a set of entries which will be a set of
-<code>CacheItem</code> pointers. We will use a <code>map</code> to store it so we can treat it as a
-set, which contains only unique items:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">FrequencyItem</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">entries</span> <span class="kd">map</span><span class="p">[</span><span class="o">*</span><span class="nx">CacheItem</span><span class="p">]</span><span class="kt">byte</span> <span class="c1">// Set of entries
-</span><span class="c1"></span>	<span class="nx">freq</span>    <span class="kt">int</span>                  <span class="c1">// Access frequency
-</span><span class="c1"></span><span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>The last <code>struct</code> that we will need to have a smooth running cache is, well, the
-<code>Cache</code> itself:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">Cache</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">bykey</span>       <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">CacheItem</span> <span class="c1">// Hashmap containing *CacheItems for O(1) access
-</span><span class="c1"></span>	<span class="nx">freqs</span>       <span class="o">*</span><span class="nx">list</span><span class="p">.</span><span class="nx">List</span>            <span class="c1">// Linked list of frequencies
-</span><span class="c1"></span>	<span class="nx">capacity</span>    <span class="kt">int</span>                   <span class="c1">// Max number of items
-</span><span class="c1"></span>	<span class="nx">size</span>        <span class="kt">int</span>                   <span class="c1">// Current size of cache
-</span><span class="c1"></span><span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>The <code>Cache</code> will contain the hashmap, called <code>bykey</code> (the naming comes from the
-paper linked above), the frequency list called <code>freqs</code>, the maximum capacity of
-the cache called <code>capacity</code> and the <code>size</code> of the cache which represents the
-count of items cached at any given moment.</p>
-
-<h3 id="new-set-get">New, set &amp; get</h3>
-
-<p>Let&rsquo;s look at the first three functions needed to make our cache work. The first
-one is a little constructor function:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span><span class="lnt">9
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">New</span><span class="p">()</span> <span class="o">*</span><span class="nx">Cache</span> <span class="p">{</span>
-	<span class="nx">cache</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">Cache</span><span class="p">)</span>
-	<span class="nx">cache</span><span class="p">.</span><span class="nx">bykey</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">CacheItem</span><span class="p">)</span>
-	<span class="nx">cache</span><span class="p">.</span><span class="nx">freqs</span> <span class="p">=</span> <span class="nx">list</span><span class="p">.</span><span class="nf">New</span><span class="p">()</span>
-	<span class="nx">cache</span><span class="p">.</span><span class="nx">size</span> <span class="p">=</span> <span class="mi">0</span>
-	<span class="nx">cache</span><span class="p">.</span><span class="nx">capacity</span> <span class="p">=</span> <span class="mi">100</span>
-
-	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">c</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>The constructor <code>New</code> will create a new <code>Cache</code> struct and will set all the
-defaults to it. In case you&rsquo;re wondering how <code>list.New()</code> works: for the
-frequency list, we will use Go&rsquo;s <code>container/list</code> package, which contains a neat
-linked-list implementation. You can check
-<a href="https://golang.org/pkg/container/list/">its documentation</a> for more details.</p>
-
-<p>The second function, which will be implemented on the <code>Cache</code>, is the <code>Set</code>
-function:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">cache</span> <span class="o">*</span><span class="nx">Cache</span><span class="p">)</span> <span class="nf">Set</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">value</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
-	<span class="k">if</span> <span class="nx">item</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">bykey</span><span class="p">[</span><span class="nx">key</span><span class="p">];</span> <span class="nx">ok</span> <span class="p">{</span>
-		<span class="nx">item</span><span class="p">.</span><span class="nx">value</span> <span class="p">=</span> <span class="nx">value</span>
-		<span class="c1">// Increment item access frequency here
-</span><span class="c1"></span>	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-		<span class="nx">item</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">CacheItem</span><span class="p">)</span>
-		<span class="nx">item</span><span class="p">.</span><span class="nx">key</span> <span class="p">=</span> <span class="nx">key</span>
-		<span class="nx">item</span><span class="p">.</span><span class="nx">value</span> <span class="p">=</span> <span class="nx">value</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nx">bykey</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="p">=</span> <span class="nx">item</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nx">size</span><span class="o">++</span>
-		<span class="c1">// Eviction, if needed
-</span><span class="c1"></span>		<span class="c1">// Increment item access frequency
-</span><span class="c1"></span>	<span class="p">}</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>The function will take the cache key and the actual value/item to be cached as
-arguments. Then, it checks if the item is already cached or not. If it is cached,
-it will just update the value on the item. Otherwise, it will create a new
-<code>CacheItem</code> which will encapsulate the actual value, it will set the <code>key</code>,
-it will add the item to the <code>bykey</code> hashtable and it will increment the <code>size</code>
-of the cache.</p>
-
-<p>Now, in both logical branches I have added some comments for the missing pieces:
-1. <code>Cache</code> will have to know how to increment the access frequency for
-a<code>CacheItem</code>, but we are yet to implement that;
-2. <code>Cache</code> will have to know how to evict an item based on the access frequency
-if the <code>size</code> reaches the <code>capacity</code>.</p>
-
-<p>We will keep these comments in until we implement the <code>increment</code> and <code>evict</code>
-functions.</p>
-
-<p>The third function that <code>Cache</code> will receive is <code>Get</code> - accessing the item by
-the key from the hashtable and returning it:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">cache</span> <span class="o">*</span><span class="nx">Cache</span><span class="p">)</span> <span class="nf">Get</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">)</span> <span class="kd">interface</span><span class="p">{}</span> <span class="p">{</span>
-	<span class="k">if</span> <span class="nx">e</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">bykey</span><span class="p">[</span><span class="nx">key</span><span class="p">];</span> <span class="nx">ok</span> <span class="p">{</span>
-		<span class="c1">// Increment acess frequency here
-</span><span class="c1"></span>		<span class="k">return</span> <span class="nx">e</span><span class="p">.</span><span class="nx">value</span>
-	<span class="p">}</span>
-
-	<span class="k">return</span> <span class="kc">nil</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>There&rsquo;s no magic here as well - we check if the <code>bykey</code> hashtable contains a
-value with the <code>key</code> argument and we return it if present. Otherwise, we return
-<code>nil</code>. Here, just like in <code>Set</code>, we will leave the placeholder comment where we
-have to add the frequency increment function call once we implement it.</p>
-
-<h3 id="updating-the-access-frequency">Updating the access frequency</h3>
-
-<p>As we already saw, with every <strong>access</strong> action to the cache we have to update
-the access frequency of the accessed item.</p>
-
-<p>Let&rsquo;s look at the steps that our <code>Increment</code> function would have to take.
-First, for the item to be expired we will have to decide if this item is already
-a part of the hash table and the frequency list or not. If it is, we will have
-to find out its new frequency value and its next frequency position (node) in
-the frequency list.</p>
-
-<p>Second, we will have to figure out if for the new frequency there&rsquo;s already a
-node in the frequency list or not. If there is one, we will have to add the item
-to its list of <code>entries</code> and assign its new access frequency
-(which is the current access frequency + 1). If there&rsquo;s none, we will have to
-create a new frequency node in the frequency list (and set all of its sane
-defaults) and then add the item to its list of <code>entries</code></p>
-
-<p>Third, once we have a <code>FrequencyParent</code> detected, our function will have to set
-the new parent to the <code>item</code> that&rsquo;s being incremented and add it to the parent&rsquo;s
-list of <code>entries</code>.</p>
-
-<p>As the final step, the <code>increment</code> function will remove the item from the
-<code>entries</code> of the old frequency node (<code>frequencyParent</code>).</p>
-
-<p>Here&rsquo;s the code in Golang:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span><span class="lnt">30
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">cache</span> <span class="o">*</span><span class="nx">Cache</span><span class="p">)</span> <span class="nf">increment</span><span class="p">(</span><span class="nx">item</span> <span class="o">*</span><span class="nx">CacheItem</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">currentFrequency</span> <span class="o">:=</span> <span class="nx">item</span><span class="p">.</span><span class="nx">frequencyParent</span>
-	<span class="kd">var</span> <span class="nx">nextFrequencyAmount</span> <span class="kt">int</span>
-	<span class="kd">var</span> <span class="nx">nextFrequency</span> <span class="o">*</span><span class="nx">list</span><span class="p">.</span><span class="nx">Element</span>
-
-	<span class="k">if</span> <span class="nx">currentFrequency</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nx">nextFrequencyAmount</span> <span class="p">=</span> <span class="mi">1</span>
-		<span class="nx">nextFrequency</span> <span class="p">=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">freqs</span><span class="p">.</span><span class="nf">Front</span><span class="p">()</span>
-	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-		<span class="nx">nextFrequencyAmount</span> <span class="p">=</span> <span class="nx">currentFrequency</span><span class="p">.</span><span class="nx">Value</span><span class="p">.(</span><span class="o">*</span><span class="nx">FrequencyItem</span><span class="p">).</span><span class="nx">freq</span> <span class="o">+</span> <span class="mi">1</span>
-		<span class="nx">nextFrequency</span> <span class="p">=</span> <span class="nx">currentFrequency</span><span class="p">.</span><span class="nf">Next</span><span class="p">()</span>
-	<span class="p">}</span>
-
-	<span class="k">if</span> <span class="nx">nextFrequency</span> <span class="o">==</span> <span class="kc">nil</span> <span class="o">||</span> <span class="nx">nextFrequency</span><span class="p">.</span><span class="nx">Value</span><span class="p">.(</span><span class="o">*</span><span class="nx">FrequencyItem</span><span class="p">).</span><span class="nx">freq</span> <span class="o">!=</span> <span class="nx">nextFrequencyAmount</span> <span class="p">{</span>
-		<span class="nx">newFrequencyItem</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">FrequencyItem</span><span class="p">)</span>
-		<span class="nx">newFrequencyItem</span><span class="p">.</span><span class="nx">freq</span> <span class="p">=</span> <span class="nx">nextFrequencyAmount</span>
-		<span class="nx">newFrequencyItem</span><span class="p">.</span><span class="nx">entries</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="o">*</span><span class="nx">CacheItem</span><span class="p">]</span><span class="kt">byte</span><span class="p">)</span>
-		<span class="k">if</span> <span class="nx">currentFrequency</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
-			<span class="nx">nextFrequency</span> <span class="p">=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">freqs</span><span class="p">.</span><span class="nf">PushFront</span><span class="p">(</span><span class="nx">newFrequencyItem</span><span class="p">)</span>
-		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-			<span class="nx">nextFrequency</span> <span class="p">=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">freqs</span><span class="p">.</span><span class="nf">InsertAfter</span><span class="p">(</span><span class="nx">newFrequencyItem</span><span class="p">,</span> <span class="nx">currentFrequency</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-
-	<span class="nx">item</span><span class="p">.</span><span class="nx">frequencyParent</span> <span class="p">=</span> <span class="nx">nextFrequency</span>
-	<span class="nx">nextFrequency</span><span class="p">.</span><span class="nx">Value</span><span class="p">.(</span><span class="o">*</span><span class="nx">FrequencyItem</span><span class="p">).</span><span class="nx">entries</span><span class="p">[</span><span class="nx">item</span><span class="p">]</span> <span class="p">=</span> <span class="mi">1</span>
-	<span class="k">if</span> <span class="nx">currentFrequency</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nf">remove</span><span class="p">(</span><span class="nx">currentFrequency</span><span class="p">,</span> <span class="nx">item</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>Let&rsquo;s refer back to our original diagram of the frequency and entries lists and
-walk through incrementing the <code>E</code> item.</p>
-
-<p><img src="/golang-lfu-cache/e-cached-item.png" alt="" /></p>
-
-<p>The first steps that our <code>increment</code> function will take are to allocate a
-pointer to node <code>4</code> (the <code>frequencyParent</code>) and its <code>value</code> (which is <code>4</code>).
-Since node <code>4</code> is present in the list, it will find the next node in the
-frequency list, which in our case is node <code>7</code>.</p>
-
-<p>Once it figures out that the new frequency for the <code>E</code> node should be <code>5</code> and not
-<code>7</code>, it will append a new frequency node in the list, between nodes <code>4</code> and <code>7</code>:</p>
-
-<p><img src="/golang-lfu-cache/new-frequency-insertion.png" alt="" /></p>
-
-<p>Once the <code>5</code> node is added to the list, the function will set the defaults needed
-for the node to function properly. Then it will set <code>E</code>&rsquo;s pointer to the new
-<code>frequencyParent</code> (the <code>5</code> node):</p>
-
-<p><img src="/golang-lfu-cache/e-parent-frequency-pointer.png" alt="" /></p>
-
-<p>As the last step it will take the <code>item</code>, which has a <code>*CacheItem</code> type, and
-will add it to the <code>entries</code> list while deleting it from the <code>entries</code> list from
-the previous <code>frequencyParent</code>:</p>
-
-<p><img src="/golang-lfu-cache/new-frequency-entry-insertion.png" alt="" /></p>
-
-<p>Let&rsquo;s look at what are the steps to remove a <code>CacheItem</code> from a <code>FrequencyItem</code>&rsquo;s
-<code>entries</code> list.</p>
-
-<h3 id="removing-entries">Removing entries</h3>
-
-<p>Once we know the node in the list from which we want to remove it, we can just
-remove the item from the <code>entries</code> list and also completely remove the
-<code>FrequencyItem</code> from the frequency list if the <code>entries</code> become empty:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">cache</span> <span class="o">*</span><span class="nx">Cache</span><span class="p">)</span> <span class="nf">Remove</span><span class="p">(</span><span class="nx">listItem</span> <span class="o">*</span><span class="nx">list</span><span class="p">.</span><span class="nx">Element</span><span class="p">,</span> <span class="nx">item</span> <span class="o">*</span><span class="nx">CacheItem</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">frequencyItem</span> <span class="o">:=</span> <span class="nx">listItem</span><span class="p">.</span><span class="nx">Value</span><span class="p">.(</span><span class="o">*</span><span class="nx">FrequencyItem</span><span class="p">)</span>
-	<span class="nb">delete</span><span class="p">(</span><span class="nx">frequencyItem</span><span class="p">.</span><span class="nx">entries</span><span class="p">,</span> <span class="nx">item</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">frequencyItem</span><span class="p">.</span><span class="nx">entries</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nx">freqs</span><span class="p">.</span><span class="nf">Remove</span><span class="p">(</span><span class="nx">listItem</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<h3 id="eviction">Eviction</h3>
-
-<p>The last piece of the puzzle is eviction, or in other words, removing the least
-frequently used items once the cache reaches its maximum capacity.</p>
-
-<p>We have to know how many items we want to evict. Usually, our cache would have
-a low and high bound, so when the high bound is reached we will remove items
-until the low bound. In our case, we will evict an arbitrary number of items,
-that the <code>Evict</code> function will take as an argument.</p>
-
-<p>The function will start to &ldquo;walk through&rdquo; the frequency list from the beginning
-towards the end. Since the frequency list is in ascending order, it will start
-to remove the <code>entries</code> from the first frequency node onwards, until it removes
-as many items as the arbitrary number passed in.</p>
-
-<p>If a frequency node contains no <code>entries</code> due to eviction, the <code>Evict</code> function
-will have to remove the frequency node from the frequency list as well. It will
-do that by invoking the <code>Remove</code> function. That way, the eviction will not leave
-any garbage behind.</p>
-
-<p>Here&rsquo;s the code of what we described above:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">cache</span> <span class="o">*</span><span class="nx">Cache</span><span class="p">)</span> <span class="nf">Evict</span><span class="p">(</span><span class="nx">count</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
-	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">count</span><span class="p">;</span> <span class="p">{</span>
-		<span class="k">if</span> <span class="nx">item</span> <span class="o">:=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">freqs</span><span class="p">.</span><span class="nf">Front</span><span class="p">();</span> <span class="nx">item</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-			<span class="k">for</span> <span class="nx">entry</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">item</span><span class="p">.</span><span class="nx">Value</span><span class="p">.(</span><span class="o">*</span><span class="nx">FrequencyItem</span><span class="p">).</span><span class="nx">entries</span> <span class="p">{</span>
-				<span class="k">if</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">count</span> <span class="p">{</span>
-					<span class="nb">delete</span><span class="p">(</span><span class="nx">cache</span><span class="p">.</span><span class="nx">bykey</span><span class="p">,</span> <span class="nx">entry</span><span class="p">.</span><span class="nx">key</span><span class="p">)</span>
-					<span class="nx">cache</span><span class="p">.</span><span class="nf">Remove</span><span class="p">(</span><span class="nx">item</span><span class="p">,</span> <span class="nx">entry</span><span class="p">)</span>
-					<span class="nx">cache</span><span class="p">.</span><span class="nx">size</span><span class="o">--</span>
-					<span class="nx">i</span><span class="o">++</span>
-				<span class="p">}</span>
-			<span class="p">}</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<h3 id="back-to-set-and-get">Back to Set and Get</h3>
-
-<p>At the beginning of this article we implemented the <code>Set</code> and <code>Get</code> functions.
-One thing that we didn&rsquo;t have available back then is the <code>Evict</code> and <code>increment</code>
-functions, so we can use them accordingly. Let&rsquo;s add their invocation.</p>
-
-<h4 id="incrementing-access-frequency">Incrementing access frequency</h4>
-
-<p>In the <code>Get</code> function, if we find an item in the <code>bykey</code> hash table, we need
-to increment it&rsquo;s access frequency before we proceed to return its <code>value</code>:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">cache</span> <span class="o">*</span><span class="nx">Cache</span><span class="p">)</span> <span class="nf">Get</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">)</span> <span class="kd">interface</span><span class="p">{}</span> <span class="p">{</span>
-	<span class="k">if</span> <span class="nx">e</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">bykey</span><span class="p">[</span><span class="nx">key</span><span class="p">];</span> <span class="nx">ok</span> <span class="p">{</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nf">increment</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span>
-		<span class="k">return</span> <span class="nx">e</span><span class="p">.</span><span class="nx">value</span>
-	<span class="p">}</span>
-
-	<span class="k">return</span> <span class="kc">nil</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>With this change, the <code>Cache</code> will increment the frequency of that particular
-item before we return it. But, are we forgetting something? Also, the <code>Set</code>
-function makes access to the cached items when it actually caches them. This
-means that when an item is cached it will immediately be added to the frequency
-list, under the node with value <code>1</code>:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">cache</span> <span class="o">*</span><span class="nx">Cache</span><span class="p">)</span> <span class="nf">Set</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">value</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
-	<span class="k">if</span> <span class="nx">item</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">bykey</span><span class="p">[</span><span class="nx">key</span><span class="p">];</span> <span class="nx">ok</span> <span class="p">{</span>
-		<span class="nx">item</span><span class="p">.</span><span class="nx">value</span> <span class="p">=</span> <span class="nx">value</span>
-                <span class="nx">cache</span><span class="p">.</span><span class="nf">increment</span><span class="p">(</span><span class="nx">item</span><span class="p">)</span>
-	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-		<span class="nx">item</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">CacheItem</span><span class="p">)</span>
-		<span class="nx">item</span><span class="p">.</span><span class="nx">key</span> <span class="p">=</span> <span class="nx">key</span>
-		<span class="nx">item</span><span class="p">.</span><span class="nx">value</span> <span class="p">=</span> <span class="nx">value</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nx">bykey</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="p">=</span> <span class="nx">item</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nx">size</span><span class="o">++</span>
-		<span class="c1">// Eviction, if needed
-</span><span class="c1"></span>                <span class="nx">cache</span><span class="p">.</span><span class="nf">increment</span><span class="p">(</span><span class="nx">item</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<h4 id="eviction-after-addition">Eviction after addition</h4>
-
-<p>The <code>Set</code> function allows users of our LFU <code>Cache</code> to cache more items in it.
-A key component of any cache is that it should know how to evict items (free up
-space) when new items are added to the cache. For an LFU cache, the least
-frequently used items need to be removed when the cache is at capacity.</p>
-
-<p>Let&rsquo;s first add a function that will return a <code>bool</code> if the cache has reached
-its maximum capacity:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">cache</span> <span class="o">*</span><span class="nx">Cache</span><span class="p">)</span> <span class="nf">atCapacity</span><span class="p">()</span> <span class="kt">bool</span> <span class="p">{</span>
-	<span class="k">return</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">size</span> <span class="o">&gt;=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">capacity</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>The function is simple: checks if the current <code>size</code> of the <code>Cache</code> is bigger or
-equals than the <code>capacity</code>.</p>
-
-<p>Now, let&rsquo;s put this into use in the <code>Set</code> function. Once we have a new item set
-in the cache, we have to check if the cache has reached its capacity and then
-evict a number of items from it.</p>
-
-<p>For simplicity, we will remove only 10 items every time we reach max capacity:</p>
-
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span></code></pre></td>
-<td class="lntd">
-<pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">cache</span> <span class="o">*</span><span class="nx">Cache</span><span class="p">)</span> <span class="nf">Set</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">value</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
-	<span class="k">if</span> <span class="nx">item</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">bykey</span><span class="p">[</span><span class="nx">key</span><span class="p">];</span> <span class="nx">ok</span> <span class="p">{</span>
-		<span class="nx">item</span><span class="p">.</span><span class="nx">value</span> <span class="p">=</span> <span class="nx">value</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nf">increment</span><span class="p">(</span><span class="nx">item</span><span class="p">)</span>
-	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-		<span class="nx">item</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">CacheItem</span><span class="p">)</span>
-		<span class="nx">item</span><span class="p">.</span><span class="nx">key</span> <span class="p">=</span> <span class="nx">key</span>
-		<span class="nx">item</span><span class="p">.</span><span class="nx">value</span> <span class="p">=</span> <span class="nx">value</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nx">bykey</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="p">=</span> <span class="nx">item</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nx">size</span><span class="o">++</span>
-		<span class="k">if</span> <span class="nx">cache</span><span class="p">.</span><span class="nf">atCapacity</span><span class="p">()</span> <span class="p">{</span>
-			<span class="nx">cache</span><span class="p">.</span><span class="nf">Evict</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-		<span class="p">}</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nf">increment</span><span class="p">(</span><span class="nx">item</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></td></tr></table>
-</div>
-</div>
-
-<p>With this change, if at any point adding an item reaches the capacity of the
-cache, the cache will evict the least frequently used items.</p>
-
-<p>If you would like to see the whole code for this article, you can check out
-<a href="https://gist.github.com/fteem/ff1ef56f4ee83700f052b308e2fc6ba6">this gist</a>.</p>
-
-<h2 id="comments-on-scaling-and-time-complexity">Comments on scaling and time complexity</h2>
-
-<p>LFU is an interesting eviction scheme, especially when compared to LRU, in my
-opinion, due to its unconventional nature. While its application is limited,
-the algorithm and the backing data structures explained in the paper used in
-this article are fascinating due to the scaling ability of the approach.</p>
-
-<p>If we revisit <a href="http://dhruvbird.com/lfu.pdf">the paper</a> that we mentioned at the
-beginning of the article, we will see that while LFU is not news, but it was
-traditionally implemented using a min-heap, which has a logarithmic time for
-insert, lookup and deletion. Interestingly in this paper, the authors explain
-that the approach they propose has an <code>O(1)</code> time complexity for each of the
-operations (insertion, lookup and deletion) because the operations are based on
-a hash table. Additionally, the linked lists do not add any time complexity
-because we do not traverse the lists at any point - we merely add or remove a
-node in them if needed (which is an O(1) operation).</p>
-
-<h2 id="in-closing">In closing</h2>
-
-<p>In this article, we went through the basics of LFU caches. We established what
-are the most important performance metrics (hit to miss ratio, membership &amp;
-eviction speed). We saw that while it&rsquo;s not the most widely used caching scheme,
-it sure can be very performant in some use cases.</p>
-
-<p>Then we went on to implement it, using an approach that scales quite well in
-terms of time complexity. We saw the complexities of implementing the eviction
-and frequency incrementation algorithms. In the end, we explored some more how
-the approach we used to implement it scales.</p>
-
-<p>If you would like to read more on the topic, here are a couple of links that
-will enrich your knowledge of LFU caches and caching in general:</p>
-
-<ul>
-<li><a href="http://dhruvbird.com/lfu.pdf">&ldquo;An O(1) algorithm for implementing the LFU cache eviction scheme&rdquo;</a> - Prof. Ketan Shah, Anirban Mitra, Dhruv Matani</li>
-<li><a href="https://blogs.dropbox.com/tech/2012/10/caching-in-theory-and-practice/">&ldquo;Caching in theory and practice&rdquo;</a> - Pavel Panchekha</li>
-<li><a href="https://www.geeksforgeeks.org/lfu-least-frequently-used-cache-implementation/">&ldquo;LFU (Least Frequently Used) Cache Implementation&rdquo;</a> - Geeks for Geeks</li>
-</ul>
-
-    </div>
-
-    
-    
-
-
-    
-    
-
-    <footer class="post-footer">
-      <div class="post-tags">
-          <a href="https://ieftimov.com/tags/lfu/">lfu</a>
-          
-        </div>
-
-      
-      <nav class="post-nav">
-        
-          <a class="prev" href="/post/spotify-recently-played-least-recently-used-cache-golang/">
-            
-            <i class="iconfont">
-              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="18" height="18">
-  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
-</svg>
-
-            </i>
-            <span class="prev-text nav-default">Barebones model of Spotify&#39;s &#39;Recently Played&#39; screen using a Least Recently Used (LRU) cache in Golang</span>
-            <span class="prev-text nav-mobile">Prev</span>
-          </a>
-        
-          <a class="next" href="/post/golang-datastructures-trees/">
-            <span class="next-text nav-default">Golang Datastructures: Trees</span>
-            <span class="prev-text nav-mobile">Next</span>
-            
-            <i class="iconfont">
-              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="18" height="18">
-  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
-</svg>
-
-            </i>
-          </a>
-      </nav>
-    </footer>
-  </article>
-
-  
-  
-
-  
-  
-
-  
-
-  
-  
-
-  
-
-  
-
-  <div class="disqus-comment">
-  <div class="disqus-button" id="load_disqus" onclick="load_disqus()">
-    Show Disqus Comments
-  </div>
-  <div id="disqus_thread"></div>
-  <script type="text/javascript">
-    var disqus_config = function () {
-      this.page.url = "https://ieftimov.com/post/when-why-least-frequently-used-cache-implementation-golang/";
-    };
-    function load_disqus() {
-      
-      
-      if (window.location.hostname === 'localhost') return;
-
-      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-      var disqus_shortname = 'eftimov';
-      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-
-      $('#load_disqus').remove();
-    };
-  </script>
-  <noscript>Please enable JavaScript to view the
-    <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-  </noscript>
-  
-  </div>
-
-    
-
-        </div>
-      </div>
-    </main>
-
-    <footer id="footer" class="footer">
-      <div class="icon-links">
-  
-  
-    <a href="https://stackoverflow.com/users/601555/ilija-eftimov" rel="me noopener" class="iconfont"
-      title="stack-overflow"  target="_blank"
-      >
-      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="36" height="36">
-  <path d="M809.714286 932.571429l-638.857143 0 0-274.285714-91.428571 0 0 365.714286 821.714286 0 0-365.714286-91.428571 0 0 274.285714zm-538.285714-299.428571l18.857143-89.714286 447.428571 94.285714-18.857143 89.142857zm58.857143-213.714286l38.285714-83.428571 414.285714 193.714286-38.285714 82.857143zm114.857143-203.428571l58.285714-70.285714 350.857143 293.142857-58.285714 70.285714zm226.857143-216l272.571429 366.285714-73.142857 54.857143-272.571429-366.285714zm-410.285714 840.571429l0-90.857143 457.142857 0 0 90.857143-457.142857 0z"></path>
-</svg>
-
-    </a>
-  
-    <a href="https://twitter.com/fteem" rel="me noopener" class="iconfont"
-      title="twitter"  target="_blank"
-      >
-      <svg class="icon" viewBox="0 0 1264 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="36" height="36">
-  <path d="M1229.8616 18.043658c0 0-117.852626 63.135335-164.151872 67.344358-105.225559-164.151872-505.082682-92.598492-437.738325 223.078185C278.622548 312.675223 89.216542 47.506814 89.216542 47.506814s-117.852626 189.406006 75.762402 345.139833C127.097743 396.85567 55.544363 371.601535 55.544363 371.601535S26.081207 535.753407 253.368414 615.724832c-21.045112 29.463156-113.643603 8.418045-113.643603 8.418045s25.254134 143.10676 231.496229 180.987961c-143.10676 130.479693-387.230056 92.598492-370.393967 105.225559 206.242095 189.406006 1119.599946 231.496229 1128.01799-643.98042C1179.353331 249.539887 1263.533778 123.269217 1263.533778 123.269217s-130.479693 37.881201-138.897738 33.672179C1225.652577 98.015083 1229.8616 18.043658 1229.8616 18.043658"></path>
-</svg>
-
-    </a>
-  
-    <a href="https://www.linkedin.com/in/ieftimov/" rel="me noopener" class="iconfont"
-      title="linkedin"  target="_blank"
-      >
-      <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="33" height="33">
-  <path d="M872.405333 872.618667h-151.637333v-237.610667c0-56.661333-1.152-129.578667-79.018667-129.578667-79.061333 0-91.136 61.653333-91.136 125.397334v241.792H398.976V384h145.664v66.602667h1.962667c20.352-38.4 69.845333-78.933333 143.786666-78.933334 153.642667 0 182.058667 101.12 182.058667 232.746667v268.202667zM227.712 317.141333a87.978667 87.978667 0 0 1-88.021333-88.106666 88.064 88.064 0 1 1 88.021333 88.106666z m76.032 555.477334H151.68V384h152.064v488.618667zM948.266667 0H75.562667C33.792 0 0 33.024 0 73.770667v876.458666C0 991.018667 33.792 1024 75.562667 1024h872.576C989.866667 1024 1024 991.018667 1024 950.229333V73.770667C1024 33.024 989.866667 0 948.138667 0h0.128z"></path>
-</svg>
-
-    </a>
-  
-    <a href="https://github.com/fteem" rel="me noopener" class="iconfont"
-      title="github"  target="_blank"
-      >
-      <svg class="icon" style="" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="36" height="36">
-  <path d="M512 12.672c-282.88 0-512 229.248-512 512 0 226.261333 146.688 418.133333 350.08 485.76 25.6 4.821333 34.986667-11.008 34.986667-24.618667 0-12.16-0.426667-44.373333-0.64-87.04-142.421333 30.890667-172.458667-68.693333-172.458667-68.693333C188.672 770.986667 155.008 755.2 155.008 755.2c-46.378667-31.744 3.584-31.104 3.584-31.104 51.413333 3.584 78.421333 52.736 78.421333 52.736 45.653333 78.293333 119.850667 55.68 149.12 42.581333 4.608-33.109333 17.792-55.68 32.426667-68.48-113.706667-12.8-233.216-56.832-233.216-253.013333 0-55.893333 19.84-101.546667 52.693333-137.386667-5.76-12.928-23.04-64.981333 4.48-135.509333 0 0 42.88-13.738667 140.8 52.48 40.96-11.392 84.48-17.024 128-17.28 43.52 0.256 87.04 5.888 128 17.28 97.28-66.218667 140.16-52.48 140.16-52.48 27.52 70.528 10.24 122.581333 5.12 135.509333 32.64 35.84 52.48 81.493333 52.48 137.386667 0 196.693333-119.68 240-233.6 252.586667 17.92 15.36 34.56 46.762667 34.56 94.72 0 68.522667-0.64 123.562667-0.64 140.202666 0 13.44 8.96 29.44 35.2 24.32C877.44 942.592 1024 750.592 1024 524.672c0-282.752-229.248-512-512-512"></path>
-</svg>
-
-    </a>
-  
-    <a href="blog@ieftimov.com" rel="me noopener" class="iconfont"
-      title="email"  target="_blank"
-      >
-      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="36" height="36">
-  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
-</svg>
-
-    </a>
-
-
-<a href="https://ieftimov.com/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
-    class="iconfont" title="rss" target="_blank">
-    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="30" height="30">
-  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
-</svg>
-
-  </a>
-   
-</div>
-
-<div class="copyright">
-  <span class="power-by">
-    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
-  </span>
-  <span class="division">|</span>
-  <span class="theme-info">
-    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
-  </span>
-
-  <span class="copyright-year">
-    &copy;
-    
-      2014 -
-    2019
-    <span class="heart">
-      
-      <i class="iconfont">
-        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="14" height="14">
-  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
-   fill="#8a8a8a"></path>
-</svg>
-
-      </i>
-    </span><span class="author">
-        Ilija Eftimov
-        
-      </span></span>
-
-  
-  
-
-  
-</div>
-
-    </footer>
-
-    <div class="back-to-top" id="back-to-top">
-      <i class="iconfont">
-        
-        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
-  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  width="35" height="35">
-  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
-</svg>
-
-      </i>
-    </div>
-  </div>
-  
-<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
-  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
-
-
-
-
-<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
-
-
-
-
-
-
-  
-    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
-    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
-    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
+<script>feather.replace()</script>
 </body>
 </html>

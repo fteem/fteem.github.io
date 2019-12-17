@@ -84,15 +84,15 @@
 				<p>We have all heard about indexes. Yeah, that thing that it's automatically added
 to the Primary Key column that enables fast data retrieval and stuff. Sure, but
 have you ever asked yourself if there are multiple types or implementations of
-indexes? Or maybe, what type of indexes your favourite RDBMS implements? In this
-blog post, we will take a step back to the beginning, exploring what indexes are,
-what is their role, types of indexes, metrics and so on. And all of this in
-PostgreSQL.</p>
+indexes? Or maybe, what type of indexes your favourite RDBMS implements? In
+this blog post, we will take a step back to the beginning, exploring what
+indexes are, what is their role, types of indexes, metrics and so on. And all
+of this in PostgreSQL.</p>
 <h2 id="whats-the-problem">What's the Problem?</h2>
-<p>When explaining indexes, everyone uses the phonebook analogy. The problem is that
-the phonebook analogy is so good, thinking of any other one is a waste of time.
-But, before we jump into indexes, we need to understand the problem that they
-solve.</p>
+<p>When explaining indexes, everyone uses the phonebook analogy. The problem is
+that the phonebook analogy is so good, thinking of any other one is a waste of
+time.  But, before we jump into indexes, we need to understand the problem that
+they solve.</p>
 <p>So, think of a phonebook. The phonebook is a book with all of the names and
 phone numbers of the people in a city or a country. Now, let's say we want to
 find John Doe's phone number. Knowing that the phone book is alphabetically
@@ -100,9 +100,9 @@ ordered we look for the page where the surname Doe is. There, we look for John
 and his phone number. Good, that is efficient enough for a phonebook.</p>
 <p>Now, imagine if our phonebook was not alphabetically sorted? Hell, right? We
 would need to go through all of the pages, reading every name in the phonebook,
-until we find our John Doe. This is called <strong>sequential searching</strong>. You go over
-all of the records, until you find the person whose phone number you are looking
-for.</p>
+until we find our John Doe. This is called <strong>sequential searching</strong>. You go
+over all of the records, until you find the person whose phone number you are
+looking for.</p>
 <p>One does not need to be a genius to understand that this is super inefficient.
 The problem with database tables is that the data in them is unordered. If we
 had a <code>people</code> table, containing all information about people, to lookup the
@@ -111,8 +111,9 @@ person with the full name John Doe, we would need to execute:</p>
 <p>Easy enough. But although this query is fast, under the hood, the database will
 hit every row of the table, until it finds the record it is looking for. I am
 sure your side-project won't have this problem soon, but imagine a table with
-millions of records, without indexes. Data retrieval would take seconds, sometimes
-maybe minutes. Imagine waiting 30 seconds for a list of videos on YouTube?</p>
+millions of records, without indexes. Data retrieval would take seconds,
+sometimes maybe minutes. Imagine waiting 30 seconds for a list of videos on
+YouTube?</p>
 <h2 id="introducing-indexes">Introducing Indexes</h2>
 <p>I guess the phonebook example painted the picture well for you. Now, what's
 interesting is that the phonebooks, actually have indexes. But, they are
@@ -123,28 +124,28 @@ which page. Or maybe they do, I haven't seen a phonebook in a while.</p>
 phonebook has a <strong>clustered index</strong>. Clustering means that the data is in a
 distinct order, resulting the row data to be stored in order. If this confuses
 you, think again about the phonebook - the records in the book are ordered
-alphabetically. Regardless of how simple this might seem to you, it's a clustered
-index. The way the data is ordered (clusters) makes it really easy to search and
-find the needed phone number. So, a clustered index is an index which
-<strong>physically</strong> orders the data (the actual bits on disk) in a certain way, and
-when new data arrives it is saved in the same order.</p>
+alphabetically. Regardless of how simple this might seem to you, it's a
+clustered index. The way the data is ordered (clusters) makes it really easy to
+search and find the needed phone number. So, a clustered index is an index
+which <strong>physically</strong> orders the data (the actual bits on disk) in a certain
+way, and when new data arrives it is saved in the same order.</p>
 <p>A caveat with the clustered indexes is that <strong>only one</strong> can be created on a
 given database table. That occurs due to their nature - they enforce a data
 order. Also, clustered indexes increase the write time, because when new data
-arrives, all of the data has to be rearranged. But on the bright side - they can
-greatly increase the reading speed of the table.</p>
+arrives, all of the data has to be rearranged. But on the bright side - they
+can greatly increase the reading speed of the table.</p>
 <p>To summarize - clustered indexes <strong>order</strong> the data physically (on disk) in
 clusters.</p>
 <h3 id="non-clustered-indexes">Non-clustered Indexes</h3>
-<p>I know you guessed it - if there are clustered indexes, the opposite type has to
-exist. And you are right, non-clustered indexes are a thing. They are the type
-that we know to use most, but I guess not everyone knows how their implementation
-works.</p>
+<p>I know you guessed it - if there are clustered indexes, the opposite type has
+to exist. And you are right, non-clustered indexes are a thing. They are the
+type that we know to use most, but I guess not everyone knows how their
+implementation works.</p>
 <p>Non-clustered indexes are indexes that keep a separate ordering list that has
 pointers to the physical rows. It's basically like a book index, it knows on
 what page a certain chapter starts and ends. Now, unlike the clustered index, a
-table can have many non-clustered indexes. But, the caveat with these indexes is
-that each new index will increase the time it takes to write new records.</p>
+table can have many non-clustered indexes. But, the caveat with these indexes
+is that each new index will increase the time it takes to write new records.</p>
 <p>So, to summarize - non-clustered indexes <strong>do not order</strong> the data physically,
 they just keep a list of the data order.</p>
 <h2 id="indexing-effects">Indexing effects</h2>
@@ -168,8 +169,8 @@ will look like this:</p>
 |Indexes:                                         |
 |   &#34;users_pkey&#34; PRIMARY KEY, btree (id)          |
 +-------------------------------------------------+</code></pre></div>
-<p>If you want to follow along with this tutorial, you can easily create this table
-with the following query:</p>
+<p>If you want to follow along with this tutorial, you can easily create this
+table with the following query:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="font-weight:bold">CREATE</span> <span style="font-weight:bold">TABLE</span> users (
   id <span style="color:#999">INT</span> <span style="font-weight:bold">PRIMARY</span> <span style="font-weight:bold">KEY</span>,
   first_name <span style="color:#999">VARCHAR</span>(<span style="color:#099">60</span>),
@@ -179,8 +180,9 @@ with the following query:</p>
   created_at <span style="color:#999">DATE</span>
 );</code></pre></div>
 <p>Having the table now, we can dump any amount of data we want. I will use the
-following <a href="https://dl.dropboxusercontent.com/u/1167828/dummy-users.csv">CSV file</a>,
-which contains 1000 user records. Dumping the data in the table is easy using
+following <a href="https://dl.dropboxusercontent.com/u/1167828/dummy-users.csv">CSV
+file</a>, which
+contains 1000 user records. Dumping the data in the table is easy using
 PostgreSQL's <code>COPY</code> command. If you are unfamiliar with the command, check out
 <a href="/postgresql-copy">my post</a> which explains it in depth.</p>
 <p>In our case, the actual command is:</p>
@@ -199,25 +201,26 @@ PostgreSQL's <code>COPY</code> command. If you are unfamiliar with the command, 
 <p>Having the data in the database now, let's see the real impact of the indexes.</p>
 <h3 id="analyzing-queries">Analyzing Queries</h3>
 <p>PostgreSQL creates a query plan for each query it receives. When writing your
-queries, it is very important to choose the best query plan, which adheres to the
-query structure and the properties of the data. The query plans are really easy
-to produce in PostgreSQL. It comes with a really neat command called <code>EXPLAIN</code>, which
-shows the query plan, which contains all of the relevant info.</p>
-<p>For example, let's see the query plan for the query that returns all of the users:</p>
+queries, it is very important to choose the best query plan, which adheres to
+the query structure and the properties of the data. The query plans are really
+easy to produce in PostgreSQL. It comes with a really neat command called
+<code>EXPLAIN</code>, which shows the query plan, which contains all of the relevant info.</p>
+<p>For example, let's see the query plan for the query that returns all of the
+users:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="font-weight:bold">EXPLAIN</span> <span style="font-weight:bold">SELECT</span> <span style="font-weight:bold">*</span> <span style="font-weight:bold">FROM</span> users;</code></pre></div>
 <p>This will return the following output:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">                          QUERY PLAN
 ----------------------------------------------------------
  Seq Scan on users  (cost=0.00..20.00 rows=1000 width=48)
 (1 row)</code></pre></div>
-<p>As you can notice, this simple query requires a <strong>Seq</strong>uential <strong>Scan</strong>, because
-there is no <code>WHERE</code> clause in it. This means that it will have to scan each row
-of the table and return it.</p>
+<p>As you can notice, this simple query requires a <strong>Seq</strong>uential <strong>Scan</strong>,
+because there is no <code>WHERE</code> clause in it. This means that it will have to scan
+each row of the table and return it.</p>
 <p>In the parentheses we notice couple of values. The cost is a range of arbitrary
 units (that closely resemble disk page fetches) - starting from the expected
 before the output phase can begin, to the estimated total cost of this query.
-Then, the numbers of rows output that were estimated by the query planner. Last,
-the width represents the average width of the rows, in bytes.</p>
+Then, the numbers of rows output that were estimated by the query planner.
+Last, the width represents the average width of the rows, in bytes.</p>
 <p>Let's add a <code>WHERE</code> clause to the query:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="font-weight:bold">SELECT</span> <span style="font-weight:bold">*</span> <span style="font-weight:bold">FROM</span> users <span style="font-weight:bold">WHERE</span> email <span style="font-weight:bold">=</span> <span style="color:#b84">&#39;</span><span style="color:#b84">phughes5m@nbcnews.com</span><span style="color:#b84">&#39;</span>;</code></pre></div>
 <p>The query will return the user whose email is <a href="mailto:%60phughes5m@nbcnews.com">`phughes5m@nbcnews.com</a><code>. Perfect. Let's </code>EXPLAIN` the query, and see its query plan:</p>
@@ -229,8 +232,8 @@ the width represents the average width of the rows, in bytes.</p>
 <p>As you can see, although the <code>WHERE</code> clause was added, and the result set was
 reduced to only one row, the time didn't go down. Actually, it increased. This
 happens because the query will issue a <strong>Seq</strong>uential <strong>Scan</strong> on the table.
-Let's see if adding an index to the <code>email</code> column will decrease the cost of the
-query.</p>
+Let's see if adding an index to the <code>email</code> column will decrease the cost of
+the query.</p>
 <h3 id="adding-an-index">Adding an Index</h3>
 <p>Adding an index in PostgreSQL is done via the <code>CREATE INDEX</code> command:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="font-weight:bold">CREATE</span> <span style="font-weight:bold">INDEX</span> <span style="font-weight:bold">&lt;</span><span style="font-weight:bold">index</span> name<span style="font-weight:bold">&gt;</span> <span style="font-weight:bold">ON</span> <span style="font-weight:bold">&lt;</span><span style="font-weight:bold">table</span> name<span style="font-weight:bold">&gt;</span> <span style="font-weight:bold">USING</span> <span style="font-weight:bold">&lt;</span><span style="font-weight:bold">method</span><span style="font-weight:bold">&gt;</span>(<span style="font-weight:bold">&lt;</span><span style="font-weight:bold">column</span> name<span style="font-weight:bold">&gt;</span>);</code></pre></div>
@@ -264,8 +267,8 @@ will issue a scan based on the indexes, therefore finding the exact location of
 the user that we are looking for and returning it. This is a much cheaper
 operation then using a sequential scan.</p>
 <h2 id="sequential-isnt-always-the-worst">Sequential isn't Always the Worst</h2>
-<p>Let's see a different example. Let's say, we want to return all of the users that
-have the <code>id</code> between 100 and 200:</p>
+<p>Let's see a different example. Let's say, we want to return all of the users
+that have the <code>id</code> between 100 and 200:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="font-weight:bold">EXPLAIN</span> <span style="font-weight:bold">SELECT</span> <span style="font-weight:bold">*</span> <span style="font-weight:bold">FROM</span> users <span style="font-weight:bold">WHERE</span> id <span style="font-weight:bold">&gt;</span> <span style="color:#099">100</span> <span style="font-weight:bold">AND</span> id <span style="font-weight:bold">&lt;</span> <span style="color:#099">200</span>;</code></pre></div>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">                          QUERY PLAN
 ----------------------------------------------------------------------
@@ -284,9 +287,9 @@ Seq Scan on users  (cost=0.00..25.00 rows=600 width=48)
 <p>Hold on, what happened here? Although there is an index on the primary key
 column, PostgreSQL decides that doing a sequential scan on the <code>user</code> table is
 more performant than an index scan. An index scan would require finding 600
-indexes and returning each and every one of those records whose index were found.
-On the other hand, a sequential scan would just go over each of the records and
-filter out the unwanted rows.</p>
+indexes and returning each and every one of those records whose index were
+found. On the other hand, a sequential scan would just go over each of the
+records and filter out the unwanted rows.</p>
 <p>So, although this is a contrived example, you can see in some situations an
 index scan will not be as performant as a sequential scan.</p>
 <h2 id="careful-usage">Careful Usage</h2>
