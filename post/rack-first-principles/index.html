@@ -94,35 +94,51 @@ leverage it's awesomeness, lets take a look at Rack from first principles.</p>
 something else.</p>
 <p>Taken from
 <a href="http://www.rubydoc.info/github/rack/rack/master/file/README.rdoc">Rack's documentation</a>:</p>
-<!-- raw HTML omitted -->
-<p>What does this tell us? It wraps HTTP requests and responses. Okay, so you
-can actually use the request (as an object) and write/create the response which the
-Rack app will return. Cool? Next, has an API for servers, frameworks and middleware
-into a single method call.</p>
+<blockquote>
+<p>Rack provides a minimal, modular, and adaptable interface for developing web
+applications in Ruby.  By wrapping HTTP requests and responses in the
+simplest way possible, it unifies and distills the API for web servers, web
+frameworks, and software in between (the so-called middleware) into a single
+method call.</p>
+</blockquote>
+<p>What does this tell us? It wraps HTTP requests and responses. Okay, so you can
+actually use the request (as an object) and write/create the response which the
+Rack app will return. Cool? Next, has an API for servers, frameworks and
+middleware into a single method call.</p>
 <h2 id="a-single-method-call">A single method call?</h2>
-<p>Yes, a Rack application is <strong>an object</strong> that responds to a method called <code>call</code>.</p>
-<p>Taken from <a href="http://www.rubydoc.info/github/rack/rack/master/file/SPEC">Rack's specification</a>:</p>
-<!-- raw HTML omitted -->
-<p>What's the environment? Well basically, it's the environment of the server, because Rack is
-an interface (or an API) for web servers. More specifically, it's a Hash that has a lot
-of headers (key-value pairs). Also, it contains some Rack specific variables. You
-can explore the environment <a href="http://www.rubydoc.info/github/rack/rack/master/file/SPEC#The_Environment">here</a>.</p>
-<p>Why does it return exactly three values? That's what always the web clients are interested
-in when receiving the response from the server:</p>
+<p>Yes, a Rack application is <strong>an object</strong> that responds to a method called
+<code>call</code>.</p>
+<p>Taken from <a href="http://www.rubydoc.info/github/rack/rack/master/file/SPEC">Rack's
+specification</a>:</p>
+<blockquote>
+<p>A Rack application is a Ruby object (not a class) that responds to <code>call</code>.
+It takes exactly one argument, the environment and returns an Array of
+exactly three values: The <strong>status</strong>, the <strong>headers</strong>, and the <strong>body</strong>.</p>
+</blockquote>
+<p>What's the environment? Well basically, it's the environment of the server,
+because Rack is an interface (or an API) for web servers. More specifically,
+it's a Hash that has a lot of headers (key-value pairs). Also, it contains some
+Rack specific variables. You can explore the environment
+<a href="http://www.rubydoc.info/github/rack/rack/master/file/SPEC#The_Environment">here</a>.</p>
+<p>Why does it return exactly three values? That's what always the web clients are
+interested in when receiving the response from the server:</p>
 <ul>
 <li>the status - did the request fail, or was it ok</li>
-<li>the headers - <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers">HTTP headers</a>. Rarely mentioned, but they are great!</li>
-<li>the body - the useful stuff that the server returns (usually a HTTP page or JSON payload)</li>
+<li>the headers - <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers">HTTP
+headers</a>. Rarely
+mentioned, but they are great!</li>
+<li>the body - the useful stuff that the server returns (usually a HTTP page or
+JSON payload)</li>
 </ul>
 <p>Makes sense, right?</p>
 <h2 id="rack-application">Rack application</h2>
 <p>Let's see how we can create a simple Rack application.</p>
-<p>First, we need to install Rack. Believe it or not (sarcasm sign!) Rack is a gem and we can
-install it by running this command in our command line:</p>
+<p>First, we need to install Rack. Believe it or not (sarcasm sign!) Rack is a gem
+and we can install it by running this command in our command line:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">gem install rack</code></pre></div>
-<p>After you have Rack installed, you can use Rack in two ways. What's interesting is that a Proc
-can be a Rack application. But why Proc? Well, if you remember, a Rack application
-is an object that responds to the <code>call</code> method. ;-)</p>
+<p>After you have Rack installed, you can use Rack in two ways. What's interesting
+is that a Proc can be a Rack application. But why Proc? Well, if you remember,
+a Rack application is an object that responds to the <code>call</code> method. ;-)</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#998;font-style:italic"># rack_app.rb</span>
 <span style="color:#999">require</span> <span style="color:#b84">&#39;rack&#39;</span>
 
@@ -133,52 +149,56 @@ rack_app <span style="font-weight:bold">=</span> <span style="color:#008080">Pro
 <span style="color:#008080">Rack</span><span style="font-weight:bold">::</span><span style="color:#008080">Handler</span><span style="font-weight:bold">::</span><span style="color:#008080">WEBrick</span><span style="font-weight:bold">.</span>run rack_app</code></pre></div>
 <p>If we run this app in our command line:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">ruby rack_app.rb</code></pre></div>
-<p>we can see that a webserver booted and it ran the Rack application. This is the output
-of my webserver (the output of yours will vary):</p>
+<p>we can see that a webserver booted and it ran the Rack application. This is the
+output of my webserver (the output of yours will vary):</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="font-weight:bold">[</span>2015-06-16 21:26:38<span style="font-weight:bold">]</span> INFO  WEBrick 1.3.1
 <span style="font-weight:bold">[</span>2015-06-16 21:26:38<span style="font-weight:bold">]</span> INFO  ruby 2.0.0 <span style="font-weight:bold">(</span>2014-09-19<span style="font-weight:bold">)</span> <span style="font-weight:bold">[</span>x86_64-darwin13.4.0<span style="font-weight:bold">]</span>
 <span style="font-weight:bold">[</span>2015-06-16 21:26:38<span style="font-weight:bold">]</span> INFO  WEBrick::HTTPServer#start: <span style="color:#008080">pid</span><span style="font-weight:bold">=</span><span style="color:#099">12649</span> <span style="color:#008080">port</span><span style="font-weight:bold">=</span><span style="color:#099">8080</span></code></pre></div>
-<p>As you can see, Rack started a WEBrick webserver that is running the Rack application we wrote.
-This happens because WEBrick is built in into Rack, as a Handler, therefore the last line in
-the Ruby file is:</p>
+<p>As you can see, Rack started a WEBrick webserver that is running the Rack
+application we wrote.  This happens because WEBrick is built in into Rack, as a
+Handler, therefore the last line in the Ruby file is:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">**</span><span style="font-weight:bold">*</span> snip <span style="font-weight:bold">**</span><span style="font-weight:bold">*</span>
 <span style="color:#008080">Rack</span><span style="font-weight:bold">::</span><span style="color:#008080">Handler</span><span style="font-weight:bold">::</span><span style="color:#008080">WEBrick</span><span style="font-weight:bold">.</span>run rack_app</code></pre></div>
-<p>Another way to run this applciation is using the <code>rackup</code> command. To use this command
-we'll need to modify the application a bit:</p>
+<p>Another way to run this applciation is using the <code>rackup</code> command. To use this
+command we'll need to modify the application a bit:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#998;font-style:italic"># rack_app.ru</span>
 app <span style="font-weight:bold">=</span> <span style="color:#008080">Proc</span><span style="font-weight:bold">.</span>new <span style="font-weight:bold">do</span> <span style="font-weight:bold">|</span>env<span style="font-weight:bold">|</span>
   <span style="font-weight:bold">[</span><span style="color:#099">200</span><span style="font-weight:bold"></span>, {<span style="color:#b84">&#39;Content-Type&#39;</span> <span style="font-weight:bold">=</span><span style="font-weight:bold">&gt;</span> <span style="color:#b84">&#39;application/json&#39;</span>}, <span style="font-weight:bold">[</span><span style="color:#b84">&#34;</span><span style="color:#b84">{&#39;response&#39;:&#39;OK&#39;}</span><span style="color:#b84">&#34;</span><span style="font-weight:bold">]</span><span style="font-weight:bold">]</span>
 <span style="font-weight:bold">end</span>
 
 run app</code></pre></div>
-<p>Much simpler, but what happened? Well, the Proc object still stands in, but the rest
-of the stuff is gone. As you can see also the filename changed. Why?</p>
-<p>First and foremost, when using the <code>rackup</code> command we need a &ldquo;rackup&rdquo; file, whose
-extension is <em><strong>.ru</strong></em>. Yes, just like Russia's TLD! Also, we use the <code>run</code> method
-which basically tells <code>rackup</code> to call <code>call</code> on the object that <code>run</code> takes as
-a parameter (or, the app).</p>
+<p>Much simpler, but what happened? Well, the Proc object still stands in, but the
+rest of the stuff is gone. As you can see also the filename changed. Why?</p>
+<p>First and foremost, when using the <code>rackup</code> command we need a &ldquo;rackup&rdquo; file,
+whose extension is <em><strong>.ru</strong></em>. Yes, just like Russia's TLD! Also, we use the
+<code>run</code> method which basically tells <code>rackup</code> to call <code>call</code> on the object that
+<code>run</code> takes as a parameter (or, the app).</p>
 <p>Booting the server and running the app is trivial, just like before:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">rackup rack_app.ru</code></pre></div>
 <p>The output, again, is very similar:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="font-weight:bold">[</span>2015-06-16 21:37:09<span style="font-weight:bold">]</span> INFO  WEBrick 1.3.1
 <span style="font-weight:bold">[</span>2015-06-16 21:37:09<span style="font-weight:bold">]</span> INFO  ruby 2.0.0 <span style="font-weight:bold">(</span>2014-09-19<span style="font-weight:bold">)</span> <span style="font-weight:bold">[</span>x86_64-darwin13.4.0<span style="font-weight:bold">]</span>
 <span style="font-weight:bold">[</span>2015-06-16 21:37:09<span style="font-weight:bold">]</span> INFO  WEBrick::HTTPServer#start: <span style="color:#008080">pid</span><span style="font-weight:bold">=</span><span style="color:#099">14930</span> <span style="color:#008080">port</span><span style="font-weight:bold">=</span><span style="color:#099">9292</span></code></pre></div>
-<p>Oh, and did I mention you can cURL the app or view the app running in the browser?
-WEBrick is a server, which means your Rack application is running on a webserver.
-In fact, notice the last line of the log above - it says that the server is running on port 9292.
-To see your Rack application in action, you can visit <a href="http://localhost:9292">http://localhost:9292</a> in the browser.
-Or, you can <code>curl 127.0.0.1:9292</code>!</p>
+<p>Oh, and did I mention you can cURL the app or view the app running in the
+browser?  WEBrick is a server, which means your Rack application is running on
+a webserver.  In fact, notice the last line of the log above - it says that the
+server is running on port 9292.  To see your Rack application in action, you
+can visit <a href="http://localhost:9292">http://localhost:9292</a> in the browser.  Or,
+you can <code>curl 127.0.0.1:9292</code>!</p>
 <p>This is what I got when i <em>cURL</em>ed to localhost:9292:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{<span style="color:#a61717;background-color:#e3d2d2">&#39;</span><span style="color:#a61717;background-color:#e3d2d2">r</span><span style="color:#a61717;background-color:#e3d2d2">e</span><span style="color:#a61717;background-color:#e3d2d2">s</span><span style="color:#a61717;background-color:#e3d2d2">p</span><span style="color:#a61717;background-color:#e3d2d2">o</span><span style="color:#a61717;background-color:#e3d2d2">n</span><span style="color:#a61717;background-color:#e3d2d2">s</span><span style="color:#a61717;background-color:#e3d2d2">e</span><span style="color:#a61717;background-color:#e3d2d2">&#39;</span><span style="color:#a61717;background-color:#e3d2d2">:</span><span style="color:#a61717;background-color:#e3d2d2">&#39;</span><span style="color:#a61717;background-color:#e3d2d2">O</span><span style="color:#a61717;background-color:#e3d2d2">K</span><span style="color:#a61717;background-color:#e3d2d2">&#39;</span>}</code></pre></div>
 <p>That's it. The server returned the response that the Rack application created.
 There you go - this is a very tiny functioning Rack application.</p>
 <h2 id="outro">Outro</h2>
-<p>I hope this post helped you understand what Rack is and what it's used for. Next time
-we will take a look at writing Rack middleware and integrating it into a Rails application.
-Until than, feel free to share your thoughts on Rack with me and the ways you use it.
-Also, I am looking for suggestions for the middleware example for the next post -
-what kind of middleware would you like to me to cover?</p>
-<!-- raw HTML omitted -->
+<p>I hope this post helped you understand what Rack is and what it's used for.
+Next time we will take a look at writing Rack middleware and integrating it
+into a Rails application.  Until than, feel free to share your thoughts on Rack
+with me and the ways you use it.  Also, I am looking for suggestions for the
+middleware example for the next post - what kind of middleware would you like
+to me to cover?</p>
+<p>EDIT #1 (2015-06-19): Thanks to <a href="https://disqus.com/by/BlazeBoy/">BlazeBoy</a> for
+the Rack vs Rake suggestion. Thanks to
+<a href="https://disqus.com/by/andresilveirah/">André</a> for noticing a typo.</p>
 
 			</div>
 
