@@ -85,9 +85,9 @@
 			</div>
 					
 			<div class="markdown">
-				<p>Idempotency is an often used term in computer science. It's meaning to some might
-not be known, to others it's very well known. The explanation for idempotency on
-<a href="https://en.wikipedia.org/wiki/Idempotence">Wikipedia</a> is:</p>
+				<p>Idempotency is an often used term in computer science. It's meaning to some
+might not be known, to others it's very well known. The explanation for
+idempotency on <a href="https://en.wikipedia.org/wiki/Idempotence">Wikipedia</a> is:</p>
 <blockquote>
 <p>&hellip; the property of certain operations in mathematics and computer science that
 they can be applied multiple times without changing the result beyond the
@@ -103,42 +103,44 @@ school system. Updating a name of a student, would look like this:</p>
 <p>Applying this query is idempotent, because the first time you run it it will
 update the name of student with id <code>123</code>, but if you run it a milion times more
 after, the result will not change - the name will still stay <code>John</code>.</p>
-<p>Let's think a bit about APIs now. Imagine you have an API to do bank transactions,
-what would happen if in the middle of a API call for performing a transaction
-the server throws an exception and the call fails? What if the client crashes
-and it never receives the message? Or, what if the connection drops mid-way and
-the client never gets the response of the server, but the server executes the
-transaction?</p>
+<p>Let's think a bit about APIs now. Imagine you have an API to do bank
+transactions, what would happen if in the middle of a API call for performing a
+transaction the server throws an exception and the call fails? What if the
+client crashes and it never receives the message? Or, what if the connection
+drops mid-way and the client never gets the response of the server, but the
+server executes the transaction?</p>
 <p>As you can imagine, there can be many causes of an API call failing, but how
-would we know if the operation failed or it succeeded? How would we known if
-a transaction went through, or not?</p>
+would we know if the operation failed or it succeeded? How would we known if a
+transaction went through, or not?</p>
 <p>Imagine if our APIs were smart enough so we could selectively make calls to the
 API idempotent?</p>
 <h2 id="the-problem-at-hand">The problem at hand</h2>
-<p>I work in Catawiki, where we do auctions. For those not familiar with auctions -
-auctions are group of items (called lots) that people can bid on during a period
-of time. Bidding is the process of offering up a price for an item, within the
-aforementioned time period.</p>
+<p>I work in Catawiki, where we do auctions. For those not familiar with auctions</p>
+<ul>
+<li>auctions are group of items (called lots) that people can bid on during a
+period of time. Bidding is the process of offering up a price for an item,
+within the aforementioned time period.</li>
+</ul>
 <p>If you are reminded of early eBay days, that's perfect. Knowing about how eBay
 used to work back in the day is enough knowledge about auctions you need for
 this blog post.</p>
-<p>So people come to the website, they browse through the various auctions running,
-they view the items they would like to own and they bid on them. As you can
-imagine, placing a bid on an item is the most important action in an auction
-site and the user must know when their bid has been accepted (or not). So, what
-would happen if the request dies in mid-flight? Or maybe our user's browser gets
-stuck, and the user tries to click multiple times on the bid button while the
-browser sits unresponsive.</p>
+<p>So people come to the website, they browse through the various auctions
+running, they view the items they would like to own and they bid on them. As
+you can imagine, placing a bid on an item is the most important action in an
+auction site and the user must know when their bid has been accepted (or not).
+So, what would happen if the request dies in mid-flight? Or maybe our user's
+browser gets stuck, and the user tries to click multiple times on the bid
+button while the browser sits unresponsive.</p>
 <p>How can we know if the actual bid was placed or not?</p>
 <h2 id="idempotent-apis">Idempotent APIs</h2>
 <p>When we are dealing with similar systems, one of the way one could tackle this
-problem is designing APIs that have the ability to be idempotent. Since we already
-established what idempotency means, idempotent APIs are APIs where any write
-operations can have effect only once for a given set of parameters.</p>
-<p>In fact, some companies have already implemented solutions for this, and one
-of the better examples out there is <a href="https://stripe.com/blog/idempotency">Stripe</a>.</p>
-<p>Stripe's API does that via a HTTP header, called <code>Idempotency-Key</code>, which is
-a random set of characters. An example cURL request looks like this:</p>
+problem is designing APIs that have the ability to be idempotent. Since we
+already established what idempotency means, idempotent APIs are APIs where any
+write operations can have effect only once for a given set of parameters.</p>
+<p>In fact, some companies have already implemented solutions for this, and one of
+the better examples out there is <a href="https://stripe.com/blog/idempotency">Stripe</a>.</p>
+<p>Stripe's API does that via a HTTP header, called <code>Idempotency-Key</code>, which is a
+random set of characters. An example cURL request looks like this:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">curl https://api.stripe.com/v1/charges <span style="color:#b84">\
 </span><span style="color:#b84"></span>       -u sk_test_BQokikJOvBiI2HlWgH4olfQ2: <span style="color:#b84">\
 </span><span style="color:#b84"></span>       -H <span style="color:#b84">&#34;Idempotency-Key: AGJ6FJMkGQIpHUTX&#34;</span> <span style="color:#b84">\
@@ -150,22 +152,22 @@ a random set of characters. An example cURL request looks like this:</p>
 do actual money transactions are quite important to be very safe from various
 failures, especially where the sending or the receiving party cannot process
 the request/response fully.</p>
-<p>So, how could we design and implement an idempotent API solution for our auctions
-website? Let's start off by some wishful thinking.</p>
+<p>So, how could we design and implement an idempotent API solution for our
+auctions website? Let's start off by some wishful thinking.</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">curl https://api.example.com/v1/item/:item_id/bid <span style="color:#b84">\
 </span><span style="color:#b84"></span>       -X POST <span style="color:#b84">\
 </span><span style="color:#b84"></span>       -H <span style="color:#b84">&#34;X-Auth-Token: BGT9FJMkd1Ow&#34;</span> <span style="color:#b84">\
 </span><span style="color:#b84"></span>       -H <span style="color:#b84">&#34;Idempotency-Key: AGJ6FJMkGQIpHUTX&#34;</span> <span style="color:#b84">\
 </span><span style="color:#b84"></span>       -d <span style="color:#008080">amount</span><span style="font-weight:bold">=</span><span style="color:#099">2000</span></code></pre></div>
-<p>Our API would have an endpoint, called <code>POST /v1/item/:item_id/bid</code>, which would
-create a bid for our item on auction. The request, in it's payload, would
+<p>Our API would have an endpoint, called <code>POST /v1/item/:item_id/bid</code>, which
+would create a bid for our item on auction. The request, in it's payload, would
 contain the amount for the bid, and in the headers it would contain the API
 token and the idempotency key.</p>
 <p>Simple enough for a first iteration of our solution, but complicated just
 enough to do the trick for us.</p>
 <h2 id="adding-the-endpoint">Adding the endpoint</h2>
-<p>In our simple example auction application, we'll have the following models
-(and respective associations):</p>
+<p>In our simple example auction application, we'll have the following models (and
+respective associations):</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">Auction</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">ApplicationRecord</span>
   has_many <span style="color:#b84">:lots</span>
 <span style="font-weight:bold">end</span>
@@ -185,8 +187,8 @@ enough to do the trick for us.</p>
 <span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">User</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">ApplicationRecord</span>
   has_many <span style="color:#b84">:bids</span>
 <span style="font-weight:bold">end</span></code></pre></div>
-<p>Personally, I am used to using <a href="https://github.com/ruby-grape/grape">Grape</a>
-on a daily basis to build REST APIs with, so the syntax you will be seeing here
+<p>Personally, I am used to using <a href="https://github.com/ruby-grape/grape">Grape</a> on
+a daily basis to build REST APIs with, so the syntax you will be seeing here
 will be from Grape. But the general approach and solution can be transfered to
 other frameworks and languages.</p>
 <p>Our endpoint would look something like this:</p>
@@ -217,23 +219,22 @@ other frameworks and languages.</p>
     <span style="font-weight:bold">end</span>
   <span style="font-weight:bold">end</span>
 <span style="font-weight:bold">end</span></code></pre></div>
-<p>As you can notice, this is a very simple endpoint. It's URI is
-<code>POST /lots/:lot_id/bids</code>, and in the request body it accepts the amount of the
-bid as an integer. If you would like to see how the endpoint performs, you can
-fetch the <a href="https://github/fteem/auctionz">repo</a>, set it up locally and play with
-it.</p>
-<p>The first step to adding idempotency token support is to be able to easily
-send it. If you are using a API browser like Postman or Paw, you have that
-ability out of the box. These API browsers allow us to send any type of params
-or headers. For example, this is what a successful request to this endpoint looks
+<p>As you can notice, this is a very simple endpoint. It's URI is <code>POST /lots/:lot_id/bids</code>, and in the request body it accepts the amount of the bid
+as an integer. If you would like to see how the endpoint performs, you can
+fetch the <a href="https://github/fteem/auctionz">repo</a>, set it up locally and play
+with it.</p>
+<p>The first step to adding idempotency token support is to be able to easily send
+it. If you are using a API browser like Postman or Paw, you have that ability
+out of the box. These API browsers allow us to send any type of params or
+headers. For example, this is what a successful request to this endpoint looks
 like, via Postman:</p>
 <p><img src="/idempotency-key-bids-successful-request.png" alt=""></p>
 <p>As you can notice, we explicitly set the endpoint to return no body which will
 set the HTTP status to 204, therefore providing enough context if and when the
 bid is accepted by the system.</p>
-<p>The internals of the endpoint are quite simple - we find the lot by the <code>lot_id</code>
-from the URI, and we create a <code>Bid</code> for it with the <code>amount</code> sent in the
-<code>params</code>. No magic, very simple endpoint.</p>
+<p>The internals of the endpoint are quite simple - we find the lot by the
+<code>lot_id</code> from the URI, and we create a <code>Bid</code> for it with the <code>amount</code> sent in
+the <code>params</code>. No magic, very simple endpoint.</p>
 <p>As you can imagine, when bidding for an item on auction, every bid has to be
 bigger than the previous one. Therefore, adding a validation on the <code>Bid</code> model
 to do these kind of checks is required. This is what our <code>Bid</code> model will look
@@ -254,30 +255,30 @@ like:</p>
   <span style="font-weight:bold">end</span>
 en</code></pre></div>
 <p>In the model, the <code>Bid#amount_larger_than_previous_bid</code> method will do this
-check for us, and add the appropriate errors to the amount attribute, if needed.
-If we try to send another bid to the same lot from before, this is what we will
-get back:</p>
+check for us, and add the appropriate errors to the amount attribute, if
+needed.  If we try to send another bid to the same lot from before, this is
+what we will get back:</p>
 <p><img src="/idempotency-key-bids-unsuccessful-request.png" alt=""></p>
 <h2 id="introducing-the-key">Introducing the key</h2>
 <p>Adding the key to the header, from the perspective of the client, is a very
 simple feat. Postman, just like any standard HTTP library, allows us to set the
 headers to our requests. For example, in Postman that would look like:</p>
 <p><img src="/idempotency-key-header-example.png" alt=""></p>
-<p>This will apply the <code>Idempotency-Key</code> header to the request, for our API to pick
-up and validate. So, how would our API accomplish this?</p>
+<p>This will apply the <code>Idempotency-Key</code> header to the request, for our API to
+pick up and validate. So, how would our API accomplish this?</p>
 <p>In cases like this one, I personally prefer opaque approaches, meaning, an
-approach that the stack can work with without any additional hassle to the daily
-work of the developers of the APIs. One of those approaches is by adding a
-middleware that will take care of logging the idempotency keys and returning
+approach that the stack can work with without any additional hassle to the
+daily work of the developers of the APIs. One of those approaches is by adding
+a middleware that will take care of logging the idempotency keys and returning
 the saved responses.</p>
 <p>But, before we jump in to the middleware, we have to think of how we can store
 the headers that will be used, and the responses that will be coupled to each
 of these idempotency headers.</p>
 <p>Of course, the simplest solution that we could work with is using our database.
 I already feel some of you frowning at this and saying &ldquo;WTF is wrong with this
-guy?!&quot;. I agree, this is not even near optimal, but bear with me for the sake of
-the example. Let's introduce a tiny <code>IdempotentAction</code> model, which will have
-<code>idempotency_key</code>, <code>body</code>, <code>headers</code> and <code>status</code> attributes.</p>
+guy?!&quot;. I agree, this is not even near optimal, but bear with me for the sake
+of the example. Let's introduce a tiny <code>IdempotentAction</code> model, which will
+have <code>idempotency_key</code>, <code>body</code>, <code>headers</code> and <code>status</code> attributes.</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">class</span> <span style="color:#458;font-weight:bold">IdempotentAction</span> <span style="font-weight:bold">&lt;</span> <span style="color:#008080">ApplicationRecord</span>
   validate_presence_of <span style="color:#b84">:idempotency_key</span>, <span style="color:#b84">:body</span>, <span style="color:#b84">:status</span>, <span style="color:#b84">:headers</span>
 <span style="font-weight:bold">end</span></code></pre></div>
@@ -354,16 +355,16 @@ certain action. Let's see what those actions will be:</p>
     <span style="font-weight:bold">end</span>
   <span style="font-weight:bold">end</span>
 <span style="font-weight:bold">end</span></code></pre></div>
-<p>If the header is present in the request, we will query the database for and check
-if there's a <code>IdempotentAction</code> entry present. If it is, the middleware will
-stop any futher execution in the middleware stack (a.k.a. the rest of the
+<p>If the header is present in the request, we will query the database for and
+check if there's a <code>IdempotentAction</code> entry present. If it is, the middleware
+will stop any futher execution in the middleware stack (a.k.a. the rest of the
 application) and will immediatelly respond with the saved <code>body</code>, <code>status</code> and
 <code>headers</code>.</p>
 <p>Otherwise, it will make sure it proceeds with the chain of execution, and after
-all of the request is fulfilled it will store the <code>body</code>, <code>status</code> and <code>headers</code>
-in a <code>IdempontentAction</code> entry in the database. By doing that any subsequent
-request using the same <code>Idempotency-Key</code> header will result in the previous
-response, regardless of the body, URI or params of the request.</p>
+all of the request is fulfilled it will store the <code>body</code>, <code>status</code> and
+<code>headers</code> in a <code>IdempontentAction</code> entry in the database. By doing that any
+subsequent request using the same <code>Idempotency-Key</code> header will result in the
+previous response, regardless of the body, URI or params of the request.</p>
 <p>Mounting this middleware is as easy as adding this line to the application's
 <code>config/application.rb</code> file:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="font-weight:bold">module</span> <span style="color:#555">MyApp</span>
@@ -396,16 +397,16 @@ produce a log like:</p>
 <p>That's it! The middleware will pick up the record from the database and it will
 send the response immediatelly.</p>
 <p>Although the idempotent requests mechanism is interesting, keeping all of these
-keys can be expensive, especially if you do it in an nonoptimal way like by using
-the database. Whenever you are in doubt if data like this should be stored in
-a database, always think about how crucial to your business this data is.
-For the scope of our example, this data is not business critical, therefore we
-could offload it to a different type of storage.</p>
+keys can be expensive, especially if you do it in an nonoptimal way like by
+using the database. Whenever you are in doubt if data like this should be
+stored in a database, always think about how crucial to your business this data
+is.  For the scope of our example, this data is not business critical,
+therefore we could offload it to a different type of storage.</p>
 <p>What would be a cheap way of storing these idempotency keys?</p>
 <h2 id="swapping-the-storage">Swapping the storage</h2>
-<p>A very cheap way of persisting these keys is, believe it or not, by putting them
-(programatically) in a file. Ruby as a language provides couple of key-value
-store solutions, like <code>PStore</code> and <code>YAML::Store</code>. I personally prefer
+<p>A very cheap way of persisting these keys is, believe it or not, by putting
+them (programatically) in a file. Ruby as a language provides couple of
+key-value store solutions, like <code>PStore</code> and <code>YAML::Store</code>. I personally prefer
 <a href="https://ruby-doc.org/stdlib-2.4.2/libdoc/yaml/rdoc/YAML/Store.html"><code>YAML::Store</code></a>
 because it would allow us to read the contents of the file it writes to, unlike
 <code>PStore</code> which writes the files in binary format.</p>
@@ -713,42 +714,44 @@ set the correct TTL on the Redis keys:</p>
     <span style="color:#b84">&#34;</span><span style="color:#b84">#{</span><span style="color:#008080">REDIS_NAMESPACE</span><span style="color:#b84">}</span><span style="color:#b84">:</span><span style="color:#b84">#{</span>idempotency_key<span style="color:#b84">}</span><span style="color:#b84">&#34;</span>
   <span style="font-weight:bold">end</span>
 <span style="font-weight:bold">end</span></code></pre></div>
-<p>Let me save you from the trouble of reading the code and finding the differences
-- we added only the <code>redis.expire</code> expire call after setting the value of the
-key in the <code>set</code> method. The <code>expire</code> method takes two arguments - the first one
-is the key and the second one is the expiry time (in seconds). Our code will set
-these keys to expire after 24 hours from the time of setting them, therefore
-allowing enough time for the requests to be registered as completed by the
-clients.</p>
+<p>Let me save you from the trouble of reading the code and finding the
+differences - we added only the <code>redis.expire</code> expire call after setting the
+value of the key in the <code>set</code> method. The <code>expire</code> method takes two arguments -
+the first one is the key and the second one is the expiry time (in seconds).
+Our code will set these keys to expire after 24 hours from the time of setting
+them, therefore allowing enough time for the requests to be registered as
+completed by the clients.</p>
 <p>Of course, if you are implementing a mechanism for idempotent requests for your
 APIs, the expiration time should be set to your liking, because the data should
-have a retention period that makes sense for the problem you are solving/facing.</p>
+have a retention period that makes sense for the problem you are
+solving/facing.</p>
 <p>Nevertheless, although our final solution is not very far from our previous
-ones, whether it's using a relational databse or a storage in file, Redis allows
-us to more easily scale the solution while keeping itself clean from stale data.</p>
+ones, whether it's using a relational databse or a storage in file, Redis
+allows us to more easily scale the solution while keeping itself clean from
+stale data.</p>
 <h2 id="wrapping-up">Wrapping up</h2>
 <p>Having all of this in mind, it's clear to see that idempotent requests can be a
 useful addition to an API, especially where the nature of the API requires such
-behaviour. For example, Stripe have idempotent requests for
-<a href="https://stripe.com/docs/api">their API</a> , because they are working with payments
-and this sort of mechanism can be useful for clients to not accidentally replay
-a charge of a card because of a network issue. Also, in our example, idempotent
+behaviour. For example, Stripe have idempotent requests for <a href="https://stripe.com/docs/api">their
+API</a> , because they are working with payments and
+this sort of mechanism can be useful for clients to not accidentally replay a
+charge of a card because of a network issue. Also, in our example, idempotent
 requests can be useful because you don't want the client to try to set the same
 bid twice, due to the nature of an auction (very time sensitive).</p>
-<p>In this post we also saw three type of solutions that could work for a mechanism
-like this one, namely:</p>
+<p>In this post we also saw three type of solutions that could work for a
+mechanism like this one, namely:</p>
 <ol>
 <li>using a relational database;</li>
 <li>using a <code>YAML::Store</code>; and</li>
 <li>using Redis</li>
 </ol>
-<p>We also briefly discussed what kind of challenges each of these approaches bring,
-and we also took a stab at implementing the idempotent requests mechanism using
-a Rails middleware.</p>
+<p>We also briefly discussed what kind of challenges each of these approaches
+bring, and we also took a stab at implementing the idempotent requests
+mechanism using a Rails middleware.</p>
 <p>If you would like to see the actual code of this Rails app, and the middleware
-we built, you can head over to the
-<a href="https://github.com/fteem/auctionz">sample repo on Github</a>, fetch the code and
-play with it yourself.</p>
+we built, you can head over to the <a href="https://github.com/fteem/auctionz">sample repo on
+Github</a>, fetch the code and play with it
+yourself.</p>
 
 
 

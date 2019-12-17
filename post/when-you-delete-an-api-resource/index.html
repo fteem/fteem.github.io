@@ -94,8 +94,8 @@ this one takes time - first you have to put in a draft, then let it settle like
 a fine French wine, then review it and apply any needed changes. And repeat
 over, until you have a team wide consensus on the design.</p>
 <p>In situations like this, I have found interesting how your API should behave
-when a resource is <code>DELETE</code>d? Of course, aside from the obvious, that the record
-will be deleted.</p>
+when a resource is <code>DELETE</code>d? Of course, aside from the obvious, that the
+record will be deleted.</p>
 <p>Let's look at couple of points that might be a good food for thought in these
 occasions.</p>
 <h2 id="idempotency">Idempotency</h2>
@@ -136,12 +136,12 @@ implement non-idempotent effects under the hood.</p>
 response of that request be? Let's start from the basics, the status code.</p>
 <h2 id="http-status-codes">HTTP status codes</h2>
 <p>We usually take HTTP status codes as an ever-present thing slapped onto a HTTP
-request. Especially if you are a beginner, understanding how useful status codes
-are and how much context they can provide for free, can be hard.</p>
+request. Especially if you are a beginner, understanding how useful status
+codes are and how much context they can provide for free, can be hard.</p>
 <p>After executing any HTTP request, the HTTP code that will be returned is always
-contextual, which means, it should be based on the effect (and hence the result)
-of the request. Keeping in mind that a <code>DELETE</code> request is idempotent, what
-would be an appropriate status code?</p>
+contextual, which means, it should be based on the effect (and hence the
+result) of the request. Keeping in mind that a <code>DELETE</code> request is idempotent,
+what would be an appropriate status code?</p>
 <p>Let's look at some status codes that make sense as a response for a <code>DELETE</code>
 request:</p>
 <p><a href="https://httpstatuses.com/204">HTTP 204</a> - No content:</p>
@@ -150,8 +150,7 @@ request:</p>
 additional content to send in the response payload body.</p>
 </blockquote>
 <p>HTTP 204 would work - the server has accepted your <code>DELETE</code> request and it has
-fulfilled it. The server will not return a payload in the response, hence
-<code>204 No content</code>.</p>
+fulfilled it. The server will not return a payload in the response, hence <code>204 No content</code>.</p>
 <p><a href="https://httpstatuses.com/202">HTTP 202</a> - Accepted:</p>
 <blockquote>
 <p>The request has been accepted for processing, but the processing has not been
@@ -179,11 +178,10 @@ how does it respond back?</p>
 <p>First scenario would be - no response body with HTTP 204. Makes sense. But what
 would this actually mean? Well let's say you have a Rails API that returns
 hypermedia controls in the JSON API spec format. When it returns a resource it
-will also return the URIs of the associated resources. When you delete a record,
-it will perish from the database - but if you have a <code>dependent: :destroy</code> in
-your model, it would remove associated records as well. In this occasion, your
-client would not know if anything else got removed in the same request-response
-lifecycle.</p>
+will also return the URIs of the associated resources. When you delete a
+record, it will perish from the database - but if you have a <code>dependent: :destroy</code> in your model, it would remove associated records as well. In this
+occasion, your client would not know if anything else got removed in the same
+request-response lifecycle.</p>
 <p>Another option would be a HTTP 200 OK - but as we saw earlier, 200 OK states
 that you must return a body in the response. In the HTTP spec, we can see the
 following:</p>
@@ -197,20 +195,20 @@ by this specification, the intended meaning of the payload can be summarized as:
 </blockquote>
 <p>This means that, according to the HTTP spec the response body has to be a
 representation of the status of the action. In other words, it needs to send
-back the representation of the resource that has been deleted as a result of the
-request. But, if we do that, we will add an additional load on the endpoint,
-because it will need to serialize the deleted resource, and as we all know
-serialization is expensive.</p>
+back the representation of the resource that has been deleted as a result of
+the request. But, if we do that, we will add an additional load on the
+endpoint, because it will need to serialize the deleted resource, and as we all
+know serialization is expensive.</p>
 <p>A third option would be HTTP 204 - Accepted. But as we saw earlier, <code>Accepted</code>
-as a status code is very contextual on the action under the hood. It can only be
-returned if the request has been accepted, but the action has not been put into
-effect yet.</p>
+as a status code is very contextual on the action under the hood. It can only
+be returned if the request has been accepted, but the action has not been put
+into effect yet.</p>
 <p>Whoa, okay, so where now?</p>
 <h2 id="are-we-overthinking-it">Are we overthinking it?</h2>
 <p>Just like in most of the cases where computer science and engineering is
 involved - <strong>it depends</strong>. You could say that it's easy to keep all of this
-simple, but often we have to be careful. After all, we don't want to be lazy and
-oversimplify our APIs.</p>
+simple, but often we have to be careful. After all, we don't want to be lazy
+and oversimplify our APIs.</p>
 <p>Let's take a tiny example - an API for a blog CMS. We will look at a resource,
 namely the <code>/authors</code> resource. This means that, we will have the following
 endpoints available:</p>
@@ -219,42 +217,40 @@ GET /authors/:id    # returns an author with the ID of :id
 POST /authors       # create an author
 PUT /authors/:id    # create/update an author
 DELETE /authors/:id # destroy an author</code></pre></div>
-<p>So, we are interested in the behaviour of the last endpoint, <code>DELETE /authors/:id</code>.
-When a request is succesfully fulfilled on this endpoint, the record which was
-identified by the <code>:id</code> param is destroyed. Since the request is idempotent, it
-means that you can freely request to delete a resource multiple times, but the
-effect on the system will be the same - the resource will not be present.</p>
-<p>In most of the cases, the REST APIs that we use are
-<a href="http://ieftimov.com/sprinkle-some-hateoas-on-rails-apis#level-3">level 3</a>.
-This means that usually we have couple of options on how to respond to this
-request, HTTP 204, or HTTP 200, which we already discussed at the begining of
-this article. But, what happens if you are building a
-<a href="http://ieftimov.com/sprinkle-some-hateoas-on-rails-apis#level-4">level 4</a> REST
-API?</p>
+<p>So, we are interested in the behaviour of the last endpoint, <code>DELETE /authors/:id</code>.  When a request is succesfully fulfilled on this endpoint, the
+record which was identified by the <code>:id</code> param is destroyed. Since the request
+is idempotent, it means that you can freely request to delete a resource
+multiple times, but the effect on the system will be the same - the resource
+will not be present.</p>
+<p>In most of the cases, the REST APIs that we use are <a href="http://ieftimov.com/sprinkle-some-hateoas-on-rails-apis#level-3">level
+3</a>.  This
+means that usually we have couple of options on how to respond to this request,
+HTTP 204, or HTTP 200, which we already discussed at the begining of this
+article. But, what happens if you are building a <a href="http://ieftimov.com/sprinkle-some-hateoas-on-rails-apis#level-4">level
+4</a> REST API?</p>
 <h2 id="handling-the-state-in-the-client">Handling the state in the client</h2>
-<p>If you have a hypermedia API, things can get a little bit more complex. For those
-of you that don't know what hypermedia APIs, I recommend reading my previous
-article about REST APIs -
-&ldquo;<a href="http://ieftimov.com/sprinkle-some-hateoas-on-rails-apis">Sprinkle some HATEOAS on your Rails APIs</a>&quot;.
-It covers all of Fielding's REST levels and explains them thoroughly. After you
-get a grasp of hypermedia APIs, you can come back to this to more easily
-understand the issue at hand.</p>
-<p>Hypermedia clients usually have to be a little bit smarter, due to the fact that
-the APIs they use are smarter. This means that when we update the state of the
-hypermedia API's system, the client should be aware of the state change. In
-more concrete wording - when we delete a resource, the client must know that the
-resource does not exist anymore on the server side.</p>
+<p>If you have a hypermedia API, things can get a little bit more complex. For
+those of you that don't know what hypermedia APIs, I recommend reading my
+previous article about REST APIs - &ldquo;<a href="http://ieftimov.com/sprinkle-some-hateoas-on-rails-apis">Sprinkle some HATEOAS on your Rails
+APIs</a>&quot;.  It covers all
+of Fielding's REST levels and explains them thoroughly. After you get a grasp
+of hypermedia APIs, you can come back to this to more easily understand the
+issue at hand.</p>
+<p>Hypermedia clients usually have to be a little bit smarter, due to the fact
+that the APIs they use are smarter. This means that when we update the state of
+the hypermedia API's system, the client should be aware of the state change. In
+more concrete wording - when we delete a resource, the client must know that
+the resource does not exist anymore on the server side.</p>
 <p>What does that mean for our API? Well, remember the <code>DELETE /authors/:id</code>
 endpoint? If a request to that endpoint returns an <code>HTTP 204</code> (which explicitly
 states that the reponse body is empty), then our clients need to know that the
 nested resources <em>might</em> be deleted because there might bea cascading delete.</p>
 <p>For example, if the <code>DELETE /authors/:id</code> request also removes all of the posts
-that were written by an author, the client might still think that the posts
-are available. This means that the client will allow a request to
-<code>GET /authors/:id/posts/</code>, and the API needs to know to respond with an
-appropriate response and HTTP status. But, will any of the aforementioned
-statuses cut it in this case? You might think that even <code>HTTP 404</code> would do it,
-but is it semantically correct?</p>
+that were written by an author, the client might still think that the posts are
+available. This means that the client will allow a request to <code>GET /authors/:id/posts/</code>, and the API needs to know to respond with an appropriate
+response and HTTP status. But, will any of the aforementioned statuses cut it
+in this case? You might think that even <code>HTTP 404</code> would do it, but is it
+semantically correct?</p>
 <p>Sure, <code>HTTP 404</code> states that the resource is not found, but in cases like this
 we actually want to inform the consumer that there was something there before,
 but not anymore. This means that the best HTTP status code in these cases is
@@ -265,19 +261,19 @@ The target resource is no longer available at the origin server and that this
 condition is likely to be permanent.</p>
 </blockquote>
 <p>HTTP 410 will inform the consumer and the client that there was something there
-before, but not it's gone (hence the status code). This will be semantically much
-more correct, but it will add implementation implications to the API itself. It
-means that the API will have to know that a resource has existed in a certain
-place. This means that records might have to be flagged as deleted, but not
-actually deleted and so on.</p>
-<p>As you can see, the complexity that hypermedia APIs add to the client can be big,
-and both the client and the API have to be very smartly built to allow proper
-usage and leverage of hypermedia.</p>
+before, but not it's gone (hence the status code). This will be semantically
+much more correct, but it will add implementation implications to the API
+itself. It means that the API will have to know that a resource has existed in
+a certain place. This means that records might have to be flagged as deleted,
+but not actually deleted and so on.</p>
+<p>As you can see, the complexity that hypermedia APIs add to the client can be
+big, and both the client and the API have to be very smartly built to allow
+proper usage and leverage of hypermedia.</p>
 <h2 id="in-closing">In closing</h2>
-<p>As we some in our tiny examples, although things can most often look trivial, if
-we want to have semantically correct APIs, we need to be very careful of every
-aspect of our API. HTTP statuses, although oftern perceived as trivial, if
-applied correctly add a lot of power to our APIs and the clients.</p>
+<p>As we some in our tiny examples, although things can most often look trivial,
+if we want to have semantically correct APIs, we need to be very careful of
+every aspect of our API. HTTP statuses, although oftern perceived as trivial,
+if applied correctly add a lot of power to our APIs and the clients.</p>
 
 			</div>
 
