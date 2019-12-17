@@ -83,11 +83,12 @@ You might be coming from a different language, but I am sure that any serious pr
 			</div>
 					
 			<div class="markdown">
-				<p>Looking at any programming language you will (hopefully!) find a rich and useful
-standard library. I started my professional career as a software developer with
-Ruby, which has quite an easy-to-use and well-documented standard library with
-a plethora of modules and classes to use. Personally, I find the <code>Enumerable</code>
-module in Ruby with all its nice methods simply brilliant.</p>
+				<p>Looking at any programming language you will (hopefully!) find a rich and
+useful standard library. I started my professional career as a software
+developer with Ruby, which has quite an easy-to-use and well-documented
+standard library with a plethora of modules and classes to use. Personally, I
+find the <code>Enumerable</code> module in Ruby with all its nice methods simply
+brilliant.</p>
 <p>You might be coming from a different language, but I am sure that any serious
 programming language out there has a set of classes, modules, methods and
 functions to make your life (and work) easy.</p>
@@ -104,10 +105,10 @@ plenty from Erlang's rich history, it also has a bit more – something called
 <blockquote>
 <p>OTP is a collection of useful middleware, libraries, and tools written in the
 Erlang programming language. It is an integral part of the open-source
-distribution of Erlang. The name OTP was originally an acronym for Open Telecom
-Platform, which was a branding attempt before Ericsson released Erlang/OTP as
-open source. However, neither Erlang nor OTP is specific to telecom
-applications.</p>
+distribution of Erlang. The name OTP was originally an acronym for Open
+Telecom Platform, which was a branding attempt before Ericsson released
+Erlang/OTP as open source. However, neither Erlang nor OTP is specific to
+telecom applications.</p>
 </blockquote>
 <p>In continuation, it states:</p>
 <blockquote>
@@ -143,12 +144,12 @@ the most useful and well-known <em>behaviours</em> of OTP – <code>GenServer</c
 </figure>
 
 <p>In continuation, we will use BEAM processes, so if you're not familiar with
-spawning new processes, sending and receiving messages to/from them, then
-it's best to head over to
-&ldquo;<a href="/understanding-basics-elixir-concurrency-model">Understanding the basics of Elixir's concurrency model</a>&rdquo;
-and give it a quick read. It will help you understand processes and concurrency
-in Elixir so you can apply the knowledge in the project that we work on in this
-article. I promise.</p>
+spawning new processes, sending and receiving messages to/from them, then it's
+best to head over to &ldquo;<a href="/understanding-basics-elixir-concurrency-model">Understanding the basics of Elixir's concurrency
+model</a>&rdquo; and give it a quick
+read. It will help you understand processes and concurrency in Elixir so you
+can apply the knowledge in the project that we work on in this article. I
+promise.</p>
 <h2 id="shortening-a-link-">Shortening a link ✂️</h2>
 <p>Let's write a URL shortener module that will run in a BEAM process and can
 receive multiple commands:</p>
@@ -188,12 +189,13 @@ receive multiple commands:</p>
   end
 end</code></pre></div>
 <p>What the module does is when the process starts it will recursively call the
-<code>URLShortener.loop/1</code> function, until it receives the <code>{:stop, caller}</code> message.</p>
+<code>URLShortener.loop/1</code> function, until it receives the <code>{:stop, caller}</code>
+message.</p>
 <p>If we zoom into the <code>{:shorten, url, caller}</code> case we notice that we generate a
-<code>MD5</code> digest from the URL and then we update the <code>state</code> map which creates a new
-map (called <code>new_state</code>). Once we get the digest we store it in a map with the
-key being the MD5 and the value is the actual URL. The <code>state</code> map will look
-like:</p>
+<code>MD5</code> digest from the URL and then we update the <code>state</code> map which creates a
+new map (called <code>new_state</code>). Once we get the digest we store it in a map with
+the key being the MD5 and the value is the actual URL. The <code>state</code> map will
+look like:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">%{
   <span style="color:#b84">&#34;</span><span style="color:#b84">99999ebcfdb78df077ad2727fd00969f</span><span style="color:#b84">&#34;</span> <span style="font-weight:bold">=</span><span style="font-weight:bold">&gt;</span> <span style="color:#b84">&#34;</span><span style="color:#b84">https://google.com</span><span style="color:#b84">&#34;</span>,
   <span style="color:#b84">&#34;</span><span style="color:#b84">76100d6f27db53fddb6c8fce320f5d21</span><span style="color:#b84">&#34;</span> <span style="font-weight:bold">=</span><span style="font-weight:bold">&gt;</span> <span style="color:#b84">&#34;</span><span style="color:#b84">https://elixir-lang.org</span><span style="color:#b84">&#34;</span>,
@@ -201,14 +203,15 @@ like:</p>
   ...
 }</code></pre></div>
 <p>Then, we send the MD5 value back to the caller. Obviously, this is not how
-bit.ly or the likes work, as their links are much shorter. (For those interested,
+bit.ly or the likes work, as their links are much shorter. (For those
+interested,
 <a href="https://stackoverflow.com/questions/742013/how-do-i-create-a-url-shortener">here's</a>
 an interesting discussion on the topic). However, for the purpose of this
 article, we'll stick to simple MD5 digest of the URL.</p>
-<p>The other two commands, <code>get</code> and <code>flush</code>, are pretty simple. <code>get</code> returns only
-a single value from the <code>state</code> map, while <code>flush</code> invokes <code>loop/1</code> with an
-empty map, effectively removing all the shortened links from the process&rsquo; state
-(memory).</p>
+<p>The other two commands, <code>get</code> and <code>flush</code>, are pretty simple. <code>get</code> returns
+only a single value from the <code>state</code> map, while <code>flush</code> invokes <code>loop/1</code> with
+an empty map, effectively removing all the shortened links from the process&rsquo;
+state (memory).</p>
 <p>Let's run our shortener in an <code>IEx</code> session:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">iex(<span style="color:#099">22</span>)<span style="font-weight:bold">&gt;</span> shortener <span style="font-weight:bold">=</span> <span style="color:#458;font-weight:bold">URLShortener</span><span style="font-weight:bold">.</span>start
 <span style="color:#998;font-style:italic">#PID&lt;0.141.0&gt;</span>
@@ -249,12 +252,12 @@ iex(<span style="color:#099">32</span>)<span style="font-weight:bold">&gt;</span
 <span style="color:#b84">&#34;</span><span style="color:#b84">https://github.com</span><span style="color:#b84">&#34;</span>
 <span style="color:#b84">:ok</span></code></pre></div>
 <p>Working as expected – we send three different URLs for shortening, we receive
-their MD5 digests back in the process mailbox and when we query for them we
-get each of them back.</p>
+their MD5 digests back in the process mailbox and when we query for them we get
+each of them back.</p>
 <p>Although our <code>URLShortener</code> module works pretty neatly now, it actually lacks
 quite a bit of functionality. Sure, it does handle the happy path really well,
-but when it comes to error handling, tracing or error reporting it falls
-really short. Additionally, it does not have a standard interface to add more
+but when it comes to error handling, tracing or error reporting it falls really
+short. Additionally, it does not have a standard interface to add more
 functions to the process – we sort of came up with it as we went on.</p>
 <p>After reading all of that you're probably thinking there is a better way to do
 this. And you'd be right to think so – let's learn more about <code>GenServer</code>s.</p>
@@ -269,10 +272,10 @@ things:</p>
 <p>This means that a module can implement a certain group of functions (interface
 or signatures), that under the hood implement some callback functions (which
 are specific to the behaviour you work on), that are run within a BEAM process.</p>
-<p>For example, <code>GenServer</code> is a <strong>gen</strong>eric <strong>server</strong> behaviour – it expects for each
-of the functions defined in it's interface a set of callbacks which will handle
-the requests to the server. This means that the interface functions will be
-used by the clients of the generic server, a.k.a. the client API, while the
+<p>For example, <code>GenServer</code> is a <strong>gen</strong>eric <strong>server</strong> behaviour – it expects for
+each of the functions defined in it's interface a set of callbacks which will
+handle the requests to the server. This means that the interface functions will
+be used by the clients of the generic server, a.k.a. the client API, while the
 callbacks defined will essentially be the server internals (&ldquo;the backend&rdquo;).</p>
 <p>So, how does a <code>GenServer</code> work? Well, as you can imagine we cannot go too deep
 on the hows of <code>GenServer</code>, but we need to get a good grasp on some basics:</p>
@@ -289,11 +292,11 @@ which will set the initial state of the server (see the <code>init/1</code> docu
 <p>To start the server we can run:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir"><span style="color:#458;font-weight:bold">GenServer</span><span style="font-weight:bold">.</span>start_link(__MODULE__, <span style="color:#b84">:ok</span>, [])</code></pre></div>
 <p><code>GenServer.start_link/3</code> will invoke the <code>init/1</code> function of the <code>__MODULE__</code>,
-passing in <code>:ok</code> as an argument to <code>init/1</code>. This function call will block until
-<code>init/1</code> returns, so usually in this function, we do any required setup of the
-server process (that might be needed). For example, in our case, to rebuild
-<code>URLShortener</code> using a <code>GenServer</code> behaviour, we will need an <code>init/1</code> function
-to set the initial state (empty map) of the server:</p>
+passing in <code>:ok</code> as an argument to <code>init/1</code>. This function call will block
+until <code>init/1</code> returns, so usually in this function, we do any required setup
+of the server process (that might be needed). For example, in our case, to
+rebuild <code>URLShortener</code> using a <code>GenServer</code> behaviour, we will need an <code>init/1</code>
+function to set the initial state (empty map) of the server:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">def init(<span style="color:#b84">:ok</span>) do
   {<span style="color:#b84">:ok</span>, %{}}
 end</code></pre></div>
@@ -555,8 +558,8 @@ process while improving the ease of use for the client.</p>
 <p>If we would like to simplify things even more, we can turn the <code>URLShortener</code>
 into a &ldquo;singleton&rdquo; server. Before you freak out - it has none of the drawbacks
 that the <a href="/singleton-pattern">singleton pattern</a> that's infamous in OO
-programming has. We're merely stating that we could change the <code>URLShortener</code> to
-have one and only one process running at a certain time, by setting a static
+programming has. We're merely stating that we could change the <code>URLShortener</code>
+to have one and only one process running at a certain time, by setting a static
 name to it:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">defmodule <span style="color:#458;font-weight:bold">URLShortener</span> do
   use <span style="color:#458;font-weight:bold">GenServer</span>
@@ -581,8 +584,8 @@ end</code></pre></div>
 <p>You can notice that we added a module attribute <code>@name</code> that holds the name of
 the process. In all the functions from the client API, we dropped the <code>name</code>
 from the arguments lists and we simply use <code>@name</code> as a reference to the
-process. This means that there's going to be only one process for <code>URLShortener</code>
-with the name <code>:url_shortener_server</code>.</p>
+process. This means that there's going to be only one process for
+<code>URLShortener</code> with the name <code>:url_shortener_server</code>.</p>
 <p>Let's take it for a spin in <code>IEx</code>:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">iex(<span style="color:#099">1</span>)<span style="font-weight:bold">&gt;</span> {<span style="color:#b84">:ok</span>, pid} <span style="font-weight:bold">=</span> <span style="color:#458;font-weight:bold">URLShortener</span><span style="font-weight:bold">.</span>start_link
 {<span style="color:#b84">:ok</span>, <span style="color:#998;font-style:italic">#PID&lt;0.108.0&gt;}</span>
@@ -669,14 +672,15 @@ processes. Let's review our full implementation of the <code>URLShortener</code>
     <span style="font-weight:bold">|&gt;</span> <span style="color:#458;font-weight:bold">Base</span><span style="font-weight:bold">.</span>encode16(<span style="color:#b84">case</span>: <span style="color:#b84">:lower</span>)
   end
 end</code></pre></div>
-<p>The two callbacks are faily simple - <code>flush</code> will just send a <code>noreply</code> and
-set the state to an empty map. <code>count</code> on the other hand will have a <code>reply</code> with
-the count of the items of the map, which is simply the numbers of keys there are
-in the <code>state</code> map. That's all.</p>
+<p>The two callbacks are faily simple - <code>flush</code> will just send a <code>noreply</code> and set
+the state to an empty map. <code>count</code> on the other hand will have a <code>reply</code> with
+the count of the items of the map, which is simply the numbers of keys there
+are in the <code>state</code> map. That's all.</p>
 <p>While you got to the end of the article your journey with <code>GenServer</code> does not
-end here. In fact, it just started. <code>GenServer</code>s and OTP are very powerful tools
-that you can use to build generic servers that can live in small BEAM processes
-and have a very generic approach to building functionality (calls and callbacks).</p>
+end here. In fact, it just started. <code>GenServer</code>s and OTP are very powerful
+tools that you can use to build generic servers that can live in small BEAM
+processes and have a very generic approach to building functionality (calls and
+callbacks).</p>
 <p>While we did cover a lot of ground here we didn't touch on why we named the
 starting function <code>start_link</code> instead of just <code>start</code> (hint: supervisors
 convention), or how we would approach testing such a <code>GenServer</code> like

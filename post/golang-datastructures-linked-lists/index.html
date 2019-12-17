@@ -105,29 +105,30 @@ interesting and fun to learn and apply.</p>
 </figure>
 
 <p>This post is aimed at people that are not comfortable with linked lists, or
-folks that want to see and learn how to build one with Golang. We will see
-how we can implement them with Go via a (somewhat) practical example, instead of
+folks that want to see and learn how to build one with Golang. We will see how
+we can implement them with Go via a (somewhat) practical example, instead of
 the plain theory and code examples.</p>
 <p>But first, let's touch on a bit of theory.</p>
 <h2 id="linked-lists">Linked lists</h2>
 <p>Linked lists are one of the simpler data structures out there. Wikipedia's
 article on linked lists states that:</p>
 <blockquote>
-<p>In computer science, a linked list is a linear collection of data elements, in
-which linear order is not given by their physical placement in memory.
-Instead, each element points to the next. It is a data structure consisting of
-a group of nodes which together represent a sequence. Under the simplest form,
-each node is composed of data and a reference (in other words, a link) to the
-next node in the sequence.</p>
+<p>In computer science, a linked list is a linear collection of data elements,
+in which linear order is not given by their physical placement in memory.
+Instead, each element points to the next. It is a data structure consisting
+of a group of nodes which together represent a sequence. Under the simplest
+form, each node is composed of data and a reference (in other words, a link)
+to the next node in the sequence.</p>
 </blockquote>
 <p>While all this might look like too much or confusing, let's break it down. A
 linear data structure is the one where it's elements form a sequence of some
 sort. Simple as that. Now, why the physical placement in memory doesn't matter?
-Well, when you have arrays the amount of memory the array takes is fixed, in the
-sense that if you have an array of 5 items, the language will grab only 5 memory
-addresses in the memory, one after another. Because these addresses create a
-sequence, the array knows in what memory range its values will be stored and
-thus the physical placement in-memory of these values create a sequence.</p>
+Well, when you have arrays the amount of memory the array takes is fixed, in
+the sense that if you have an array of 5 items, the language will grab only 5
+memory addresses in the memory, one after another. Because these addresses
+create a sequence, the array knows in what memory range its values will be
+stored and thus the physical placement in-memory of these values create a
+sequence.</p>
 <p>With linked lists, it's a bit different. In the definition you will notice that
 &ldquo;each element points to the next&rdquo;, using &ldquo;data and a reference (in other words,
 a link) to the next node&rdquo;. This means that each node of the linked list stores
@@ -212,12 +213,12 @@ create an <code>Append</code> function on the <code>Feed</code> type:</p>
 	fmt.<span style="color:#900;font-weight:bold">Printf</span>(<span style="color:#b84">&#34;First: %v\n&#34;</span>, f.start)
 	fmt.<span style="color:#900;font-weight:bold">Printf</span>(<span style="color:#b84">&#34;Second: %v\n&#34;</span>, f.start.next)
 }</code></pre></div>
-<p>So, what does this code do? First, the <code>main</code> function - it creates a pointer to
-a <code>Feed</code> struct, two <code>Post</code> structs with some dummy content and it invokes twice
-the <code>Append</code> function on the <code>Feed</code>, which results in it having a length of 2.
-We inspect the two values that the <code>Feed</code> has by accessing the <code>start</code> of the
-<code>Feed</code> (which is, in fact, a <code>Post</code>) and the <code>next</code> item after the <code>start</code>,
-which is the second <code>Post</code>.</p>
+<p>So, what does this code do? First, the <code>main</code> function - it creates a pointer
+to a <code>Feed</code> struct, two <code>Post</code> structs with some dummy content and it invokes
+twice the <code>Append</code> function on the <code>Feed</code>, which results in it having a length
+of 2.  We inspect the two values that the <code>Feed</code> has by accessing the <code>start</code>
+of the <code>Feed</code> (which is, in fact, a <code>Post</code>) and the <code>next</code> item after the
+<code>start</code>, which is the second <code>Post</code>.</p>
 <p>When we run the program, the output will look something like:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Length: 1
 First: &amp;{Lorem ipsum 1257894000 &lt;nil&gt;}
@@ -227,14 +228,14 @@ Second: &amp;{Dolor sit amet 1257894000 &lt;nil&gt;}</code></pre></div>
 <p>You can see, after we add the first <code>Post</code> to the <code>Feed</code>, the length is <code>1</code> and
 the first <code>Post</code> has a <code>body</code> and a <code>publishte</code> (as a Unix timestamp), while
 it's <code>next</code> value is <code>nil</code> (because there's no more <code>Post</code>s in the <code>Feed</code>).
-Then, we add the second <code>Post</code> to the <code>Feed</code> and when we inspect the two <code>Post</code>s
-we see that the first one has the same content as before, but with a pointer to
-the <code>next</code> <code>Post</code> in the list. The second also has a <code>body</code> and a <code>publishDate</code>
-but with no pointer to the next <code>Post</code> in the list. Also, the length of the
-<code>Feed</code> increases as we add more <code>Post</code>s to it.</p>
+Then, we add the second <code>Post</code> to the <code>Feed</code> and when we inspect the two
+<code>Post</code>s we see that the first one has the same content as before, but with a
+pointer to the <code>next</code> <code>Post</code> in the list. The second also has a <code>body</code> and a
+<code>publishDate</code> but with no pointer to the next <code>Post</code> in the list. Also, the
+length of the <code>Feed</code> increases as we add more <code>Post</code>s to it.</p>
 <p>Let's go back to the <code>Append</code> function now and deconstruct it so we understand
-better how to work with linked lists. First, the function creates a pointer to a
-<code>Post</code> value, with the <code>body</code> argument as <code>body</code> of the <code>Post</code> and the
+better how to work with linked lists. First, the function creates a pointer to
+a <code>Post</code> value, with the <code>body</code> argument as <code>body</code> of the <code>Post</code> and the
 <code>publishDate</code> is set to the Unix timestamp representation of the current time.</p>
 <p>Then, we check if the <code>length</code> of the <code>Feed</code> is <code>0</code> - this means that it has no
 <code>Post</code>s and the first one that is added should be set as the starting <code>Post</code>,
@@ -264,13 +265,13 @@ through all the <code>Post</code>s until it finds one that doesn't have a pointe
 <h3 id="optimising-append">Optimising <code>Append</code></h3>
 <p>Imagine we have a user that scrolls through their <code>Feed</code>, like on any other
 social network. Since posts are chronologically ordered, based on the
-<code>publishDate</code>, the <code>Feed</code> will grow more and more as the user scrolls through it
-and more <code>Post</code>s are attached to the <code>Feed</code>. Given the approach, we took in the
-<code>Append</code> function, as the <code>Feed</code> gets longer and longer the <code>Append</code> function
-will become more and more expensive. Why? Because we have to traverse the whole
-<code>Feed</code> to add a <code>Post</code> at the end of it. If you have heard about <em>Big-O
-notation</em>, this algorithm has an <code>O(n)</code> time complexity, which means that it
-will always traverse the whole <code>Feed</code> before it adds a <code>Post</code> to it.</p>
+<code>publishDate</code>, the <code>Feed</code> will grow more and more as the user scrolls through
+it and more <code>Post</code>s are attached to the <code>Feed</code>. Given the approach, we took in
+the <code>Append</code> function, as the <code>Feed</code> gets longer and longer the <code>Append</code>
+function will become more and more expensive. Why? Because we have to traverse
+the whole <code>Feed</code> to add a <code>Post</code> at the end of it. If you have heard about
+<em>Big-O notation</em>, this algorithm has an <code>O(n)</code> time complexity, which means
+that it will always traverse the whole <code>Feed</code> before it adds a <code>Post</code> to it.</p>
 <p>As you can imagine, this can be quite inefficient, especially if the <code>Feed</code>
 grows to be quite long. How can we improve the <code>Append</code> function and decrease
 the <a href="https://en.wikipedia.org/wiki/Asymptotic_computational_complexity">asymptotic
@@ -282,8 +283,8 @@ type <code>Post</code>. Because in our example <code>Append</code> always adds a
 the <code>Feed</code>, we could drastically improve the performance of the algorithm if
 <code>Feed</code> knows not just of its <code>start</code>ing element, but also about it's <code>end</code>ing
 element. Of course, there's always a tradeoff with optimisations, and the
-tradeoff here is that the data structure will consume a bit more memory (for the
-new attribute on the <code>Feed</code> structure).</p>
+tradeoff here is that the data structure will consume a bit more memory (for
+the new attribute on the <code>Feed</code> structure).</p>
 <p>Extending our <code>Feed</code> data structure is quite easy:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> Feed <span style="font-weight:bold">struct</span> {
 	length <span style="color:#458;font-weight:bold">int</span>
@@ -291,8 +292,8 @@ new attribute on the <code>Feed</code> structure).</p>
 	end    <span style="font-weight:bold">*</span>Post
 }</code></pre></div>
 <p>But our <code>Append</code> algorithm will have to be tweaked to work with the new
-structure of a <code>Feed</code>. This is the version of <code>Append</code> using the <code>end</code> attribute
-of <code>Post</code>:</p>
+structure of a <code>Feed</code>. This is the version of <code>Append</code> using the <code>end</code>
+attribute of <code>Post</code>:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (f <span style="font-weight:bold">*</span>Feed) <span style="color:#900;font-weight:bold">Append</span>(newPost <span style="font-weight:bold">*</span>Post) {
 	<span style="font-weight:bold">if</span> f.length <span style="font-weight:bold">==</span> <span style="color:#099">0</span> {
 		f.start = newPost
@@ -310,14 +311,15 @@ of <code>Post</code>:</p>
 <li>We drastically improved the time complexity of the function</li>
 </ol>
 <p>If you look now at the algorithm, it does two things: if the <code>Feed</code> is empty it
-will set the new <code>Post</code> as the beginning and the end of the <code>Feed</code>, otherwise it
-will set the new <code>Post</code> as the <code>end</code> item and it will attach it to the previous
-<code>Post</code> in the list. On top of how simple it is, this will algorithm now has a
-big-O complexity of <code>O(1)</code>, also known as &ldquo;constant time&rdquo;. That means that
-<code>Append</code> will perform the same regardless of the length of the <code>Feed</code> structure.</p>
+will set the new <code>Post</code> as the beginning and the end of the <code>Feed</code>, otherwise
+it will set the new <code>Post</code> as the <code>end</code> item and it will attach it to the
+previous <code>Post</code> in the list. On top of how simple it is, this will algorithm
+now has a big-O complexity of <code>O(1)</code>, also known as &ldquo;constant time&rdquo;. That means
+that <code>Append</code> will perform the same regardless of the length of the <code>Feed</code>
+structure.</p>
 <p>Pretty simple, right? But let's imagine that the <code>Feed</code> is actually a list of
-<code>Post</code>s on our profile. Hence they are ours, we should be able to delete them. I
-mean, what kind of a social network doesn't allow it's users to (at least)
+<code>Post</code>s on our profile. Hence they are ours, we should be able to delete them.
+I mean, what kind of a social network doesn't allow it's users to (at least)
 delete their posts?</p>
 
 
@@ -338,17 +340,17 @@ delete their posts?</p>
 
 <h2 id="removing-a-post">Removing a <code>Post</code></h2>
 <p>As we established in the previous section, we want the users of our <code>Feed</code>s to
-be able to delete their posts. So, how can we model that? If our <code>Feed</code>s were an
-array, we would just remove the item and be done with it, right?</p>
+be able to delete their posts. So, how can we model that? If our <code>Feed</code>s were
+an array, we would just remove the item and be done with it, right?</p>
 <p>Well, this is actually where linked lists shine. When arrays sizes change, the
 runtime has to capture a new memory block to store the items of the array in.
-Linked lists due to their design, each item having a pointer to the next node in
-the list, can be scattered throughout the memory space meaning adding/removing
-nodes from the list is cheap from a space perspective. When one wants to remove
-a node from a linked list only the neighbours of the removed node need to be
-linked, and that is. Garbage collected languages (like Go) make this even easier
-since we don't have to worry about releasing the allocated memory - the GC will
-kick in and remove all unused objects.</p>
+Linked lists due to their design, each item having a pointer to the next node
+in the list, can be scattered throughout the memory space meaning
+adding/removing nodes from the list is cheap from a space perspective. When one
+wants to remove a node from a linked list only the neighbours of the removed
+node need to be linked, and that is. Garbage collected languages (like Go) make
+this even easier since we don't have to worry about releasing the allocated
+memory - the GC will kick in and remove all unused objects.</p>
 <p>To make our lives a bit easier for this example, let's put a constraint that
 each of the <code>Posts</code> on a <code>Feed</code>will have a unique <code>publishDate</code>.This means a
 publisher can create one <code>Post</code> per second on their <code>Feed</code>. Taking that into
@@ -374,14 +376,14 @@ effect, this is how we can easily remove a <code>Post</code> from a <code>Feed</
 	f.length<span style="font-weight:bold">--</span>
 }</code></pre></div>
 <p>The <code>Remove</code> function will take a <code>publishDate</code> of a <code>Post</code> as an argument by
-which it will detect what <code>Post</code> needs to be deleted (or unlinked). The function
-is rather small. If it detects that the <code>start</code> item of the <code>Feed</code> is to be
-removed it will just reassign the <code>start</code> of the <code>Feed</code> with the second <code>Post</code>
-in the <code>Feed</code>. Otherwise, it jumps through each of the <code>Post</code>s in the <code>Feed</code>
-until it runs into a <code>Post</code> that has a matching <code>publishDate</code> to the one passed
-as the function argument. When it finds one, it will just connect the previous
-and the next <code>Post</code> in the <code>Feed</code> with each other, effectively dropping the
-middle (matching) one from the <code>Feed</code>.</p>
+which it will detect what <code>Post</code> needs to be deleted (or unlinked). The
+function is rather small. If it detects that the <code>start</code> item of the <code>Feed</code> is
+to be removed it will just reassign the <code>start</code> of the <code>Feed</code> with the second
+<code>Post</code> in the <code>Feed</code>. Otherwise, it jumps through each of the <code>Post</code>s in the
+<code>Feed</code> until it runs into a <code>Post</code> that has a matching <code>publishDate</code> to the one
+passed as the function argument. When it finds one, it will just connect the
+previous and the next <code>Post</code> in the <code>Feed</code> with each other, effectively
+dropping the middle (matching) one from the <code>Feed</code>.</p>
 <p>There's one edge case that we need to make sure that we cover in our <code>Remove</code>
 function - what if the <code>Feed</code> doesn't have a <code>Post</code> with the specified
 <code>publishDate</code>? To keep it simple, the function checks for the absence of the
@@ -432,10 +434,10 @@ sends them to our application in a non-chronological order. This means that the
 function, because although both of them do a very different thing (adding v.s.
 removing a <code>Post</code> in the <code>Feed</code>), they are both based on a <em>search</em> algorithm.
 That means that both of the functions actually traverse the whole <code>Feed</code>,
-<em>searching</em> for a <code>Post</code> that matches the <code>publishDate</code> with the one received in
-the argument of the function. The only difference is that <code>Insert</code> will actually
-put the new <code>Post</code> in the place where the dates match, while <code>Remove</code> will
-remove the <code>Post</code> from the <code>Feed</code>.</p>
+<em>searching</em> for a <code>Post</code> that matches the <code>publishDate</code> with the one received
+in the argument of the function. The only difference is that <code>Insert</code> will
+actually put the new <code>Post</code> in the place where the dates match, while <code>Remove</code>
+will remove the <code>Post</code> from the <code>Feed</code>.</p>
 <p>Additionally, this means that both of these functions carry the same time
 complexity, which is <code>O(n)</code>. This means that in a worst-case scenario, the
 functions will have to traverse the whole <code>Feed</code> to get to the item where the
@@ -446,8 +448,8 @@ True, we could store all of the <code>Post</code>s in an array (or a slice in Go
 push items onto it and also even have random access with an <code>O(1)</code> complexity.</p>
 <p>Due to the nature of arrays, whose values have to be stored in memory one right
 after another, reading is really fast and cheap. Once you have something stored
-in an array, retrieving it as easy as accessing it by its 0-based index. When it
-comes to inserting an item, whether in the middle or at the end, then arrays
+in an array, retrieving it as easy as accessing it by its 0-based index. When
+it comes to inserting an item, whether in the middle or at the end, then arrays
 become less efficient compared to lists. That is because if the array doesn't
 have more memory reserved for the new item(s), it will have to reserve it and
 use it. But, if the next memory addresses are not free, it will have to &ldquo;move&rdquo;
@@ -467,15 +469,15 @@ them with the same algorithms for arrays:</p>
 ╚═══════════╩═════════╩═════════════╝</code></pre></div>
 <p>As you can see, when you are faced with a certain problem, picking the correct
 data structure can really make or break the products you create. For
-ever-growing <code>Feed</code>s, where insertion of <code>Post</code>s is paramount, linked lists do a
-much better job because insertions are really cheap. But, if we had a different
-problem on our hands that requires frequent deletions or lots of
+ever-growing <code>Feed</code>s, where insertion of <code>Post</code>s is paramount, linked lists do
+a much better job because insertions are really cheap. But, if we had a
+different problem on our hands that requires frequent deletions or lots of
 retrieval/searching, then we would have to pick the correct data structure for
 the problem we are dealing with.</p>
 <p>You can see the whole implementation of the <code>Feed</code> and play with it
-<a href="https://play.golang.org/p/fqLPjf_ekD6">here</a>. Also, Go has it's own linked list
-implementation, with some nice functions already built in. You can see it's
-documentation <a href="https://golang.org/pkg/container/list/">here</a>.</p>
+<a href="https://play.golang.org/p/fqLPjf_ekD6">here</a>. Also, Go has it's own linked
+list implementation, with some nice functions already built in. You can see
+it's documentation <a href="https://golang.org/pkg/container/list/">here</a>.</p>
 <p><em>EDIT</em> 20.02.2018 10:00 CET: Previous verion of the article wrongly stated that
 the big-O complexity of the delete function is <code>O(1)</code>. Changed to <code>O(n)</code> after
 pointed out by <a href="https://twitter.com/bartdegoede">Bart de Goede</a>.</p>
@@ -485,8 +487,8 @@ was a mixup of <em>Access</em> and <em>Search</em> on my side. This is fixed by 
 separate rows in the table for <em>Search</em> and <em>Access</em> and their respective time
 complexities.</p>
 <p><em>EDIT</em> 25.02.2018 17:00 CET: Previous version of the article had a buggy
-implementation of the <code>Insert</code> function, which was pointed out by Albert Shirima
-in the comments.</p>
+implementation of the <code>Insert</code> function, which was pointed out by Albert
+Shirima in the comments.</p>
 
 
 

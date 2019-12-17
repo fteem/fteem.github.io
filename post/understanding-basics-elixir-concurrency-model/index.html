@@ -83,18 +83,19 @@ How does Elixir stand up to other languages when it comes to concurrency?"/>
 			</div>
 					
 			<div class="markdown">
-				<p>If you come from an object-oriented background, you might have tried concurrency
-in your favourite OO language before. Your mileage will vary, but in general
-OO languages are harder to work with when it comes to concurrency. This is due
-to their nature - they are designed to keep state in memory and require more
-expertise and experience to be successful with.</p>
+				<p>If you come from an object-oriented background, you might have tried
+concurrency in your favourite OO language before. Your mileage will vary, but
+in general OO languages are harder to work with when it comes to concurrency.
+This is due to their nature - they are designed to keep state in memory and
+require more expertise and experience to be successful with.</p>
 <p>How does Elixir stand up to other languages when it comes to concurrency? Well,
 for starters just being functional and immutable is a big win - no state to
 manage. But also, Elixir has more goodies packing under the hood and in its
 standard library.</p>
-<p>Being based on Erlang's virtual machine (a.k.a. the BEAM), Elixir uses processes
-to run <strong>any and all code</strong>. Note that from here on any time we mention processes,
-unless specified otherwise, we are referring to BEAM processes, not OS processes.</p>
+<p>Being based on Erlang's virtual machine (a.k.a. the BEAM), Elixir uses
+processes to run <strong>any and all code</strong>. Note that from here on any time we
+mention processes, unless specified otherwise, we are referring to BEAM
+processes, not OS processes.</p>
 <p>Elixir's processes are isolated from one another, they do not share any memory
 and run concurrently. They are very lightweight and the BEAM is capable of
 running many thousands of them at the same time. That's why Elixir exposes
@@ -102,9 +103,8 @@ primitives for creating processes, communicating between them and various
 modules on process management.</p>
 <p>Let's see how we can create processes and send messages between them.</p>
 <h2 id="creating-processes">Creating processes</h2>
-<p>One of the simplest (yet powerful) tools in Elixir's toolbelt is <code>IEx</code> - Elixir's
-REPL, short for Interactive Elixir. If we jump into <code>IEx</code> and run <code>h self</code>, we
-will get the following output:</p>
+<p>One of the simplest (yet powerful) tools in Elixir's toolbelt is <code>IEx</code> -
+Elixir's REPL, short for Interactive Elixir. If we jump into <code>IEx</code> and run <code>h self</code>, we will get the following output:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">iex<span style="font-weight:bold">(</span>1<span style="font-weight:bold">)</span>&gt; h self
 
                       def self<span style="font-weight:bold">(</span><span style="font-weight:bold">)</span>
@@ -124,13 +124,13 @@ new processes. In fact, <em>any BEAM process</em> can <code>spawn</code> BEAM pr
 done using the <code>Kernel.spawn/1</code> function:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">iex<span style="font-weight:bold">(</span>3<span style="font-weight:bold">)</span>&gt; spawn<span style="font-weight:bold">(</span>fn -&gt; <span style="color:#099">1</span> + <span style="color:#099">1</span> end<span style="font-weight:bold">)</span>
 <span style="color:#998;font-style:italic">#PID&lt;0.108.0&gt;</span></code></pre></div>
-<p><code>spawn/1</code> creates a new process which invokes the function provided as argument,
-<code>fn -&gt; 1 + 1 end</code>. What you might notice is that we do not see the return value
-of the anonymous function because the function ran in a different process. What
-we get instead is the PID of the spawned process.</p>
-<p>Another thing worth noticing is that once we <code>spawn</code> a process it will run right
-away, which means that the function will be immediately executed. We can check
-that using the <code>Process.alive?/1</code> function:</p>
+<p><code>spawn/1</code> creates a new process which invokes the function provided as
+argument, <code>fn -&gt; 1 + 1 end</code>. What you might notice is that we do not see the
+return value of the anonymous function because the function ran in a different
+process. What we get instead is the PID of the spawned process.</p>
+<p>Another thing worth noticing is that once we <code>spawn</code> a process it will run
+right away, which means that the function will be immediately executed. We can
+check that using the <code>Process.alive?/1</code> function:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">iex<span style="font-weight:bold">(</span>4<span style="font-weight:bold">)</span>&gt; <span style="color:#008080">pid</span> <span style="font-weight:bold">=</span> spawn<span style="font-weight:bold">(</span>fn -&gt; <span style="color:#099">1</span> + <span style="color:#099">1</span> end<span style="font-weight:bold">)</span>
 <span style="color:#998;font-style:italic">#PID&lt;0.110.0&gt;</span>
 
@@ -141,11 +141,11 @@ quite a bit more functions available for working with processes. You can explore
 its documentation <a href="https://hexdocs.pm/elixir/Process.html">here</a>.</p>
 <p>Now, let's look at receiving messages.</p>
 <h2 id="receiving-messages-in-processes">Receiving messages in processes</h2>
-<p>For the purpose of our example, let's imagine we open a new <code>IEx</code> session
-and we tell the <code>IEx</code> process (a.k.a. <code>self</code>) that it might receive a message
-that it should react to. If this makes you scratch your head a bit, remember
-that since <code>IEx</code> is a BEAM process it can receive messages just like any other
-BEAM process.</p>
+<p>For the purpose of our example, let's imagine we open a new <code>IEx</code> session and
+we tell the <code>IEx</code> process (a.k.a. <code>self</code>) that it might receive a message that
+it should react to. If this makes you scratch your head a bit, remember that
+since <code>IEx</code> is a BEAM process it can receive messages just like any other BEAM
+process.</p>
 <p>The messages that we would like our <code>IEx</code> process to receive will be:</p>
 <ul>
 <li>tuple containing <code>:hello</code> atom and a string with a name (e.g. <code>{:hello, &quot;Jane&quot;}</code>)</li>
@@ -159,22 +159,22 @@ could use the <code>cond</code> macro in Elixir, it would look something like:</
   {<span style="color:#b84">:bye</span>, name} <span style="font-weight:bold">-&gt;</span> <span style="color:#b84">&#34;</span><span style="color:#b84">Bye </span><span style="color:#b84">#{</span>name<span style="color:#b84">}</span><span style="color:#b84">&#34;</span>
 end</code></pre></div>
 <p>To receive messages in a process we cannot use <code>cond</code>, but Elixir provides us
-with a function <code>receive/1</code> which takes a block as an argument. Although
-it's not <code>cond</code>, it looks very similar to the example above because it lets us
-use pattern-matching:</p>
+with a function <code>receive/1</code> which takes a block as an argument. Although it's
+not <code>cond</code>, it looks very similar to the example above because it lets us use
+pattern-matching:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">receive <span style="font-weight:bold">do</span>
   <span style="font-weight:bold">{</span>:hello, name<span style="font-weight:bold">}</span> -&gt; <span style="color:#b84">&#34;Hello #{name}&#34;</span>
   <span style="font-weight:bold">{</span>:bye, name<span style="font-weight:bold">}</span> -&gt; <span style="color:#b84">&#34;Bye #{name}&#34;</span>
 end</code></pre></div>
 <p>What you're seeing here usage of BEAM's actor model for concurrency in Elixir.
 If you're not familiar with the model worry not - you can read an interesting
-ELI5 about it
-<a href="https://dev.to/amalrik/explain-actor-concurrency-model">here on Dev.to</a>, or you
-can just keep on reading and by the end of this article you should have a good
-idea about it.</p>
+ELI5 about it <a href="https://dev.to/amalrik/explain-actor-concurrency-model">here on
+Dev.to</a>, or you can
+just keep on reading and by the end of this article you should have a good idea
+about it.</p>
 <p>The <code>receive</code> function takes the received message and tries to pattern-match it
-to one of the statements in the block. Obviously, it accepts not just a value to
-return but also a function call. As you can imagine, <code>receive/1</code> is what is
+to one of the statements in the block. Obviously, it accepts not just a value
+to return but also a function call. As you can imagine, <code>receive/1</code> is what is
 called when <strong>the mailbox of the process</strong> gets a new message in.</p>
 <p>Now that we fixed up the actions on the mailbox of our process, how can we send
 a message to our <code>IEx</code> process?</p>
@@ -195,14 +195,14 @@ can process the messages in the mailbox:</p>
 processed and we will see <code>&quot;Hello John&quot;</code> returned.</p>
 <h3 id="what-if-we-never-receive-a-message">What if we never receive a message?</h3>
 <p>One thing to notice here is that if we would just write the <code>receive</code> block in
-our <code>IEx</code> session it would block until the process receives a message.
-That's expected - if there is no message in the mailbox matching any of the
-patterns, the current process will wait until a matching message arrives. This
-is the default behaviour of <code>receive/1</code>.</p>
+our <code>IEx</code> session it would block until the process receives a message.  That's
+expected - if there is no message in the mailbox matching any of the patterns,
+the current process will wait until a matching message arrives. This is the
+default behaviour of <code>receive/1</code>.</p>
 <p>Obviously, if we get ourselves stuck in such way we can always stop the <code>IEx</code>
-session by using <code>Ctrl+C</code>. But, what if a process in our application gets stuck?
-How can we tell it that it should stop waiting after a certain amount of time if
-it does not receive a message?</p>
+session by using <code>Ctrl+C</code>. But, what if a process in our application gets
+stuck?  How can we tell it that it should stop waiting after a certain amount
+of time if it does not receive a message?</p>
 <p>One nicety that Elixir provides us with is setting a timeout using <code>after</code>:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">iex(<span style="color:#099">6</span>)<span style="font-weight:bold">&gt;</span> receive do
 ...(<span style="color:#099">6</span>)<span style="font-weight:bold">&gt;</span> {<span style="color:#b84">:hello</span>, name} <span style="font-weight:bold">-&gt;</span> <span style="color:#b84">&#34;</span><span style="color:#b84">Hello </span><span style="color:#b84">#{</span>name<span style="color:#b84">}</span><span style="color:#b84">&#34;</span>
@@ -213,26 +213,26 @@ it does not receive a message?</p>
 <span style="color:#b84">&#34;</span><span style="color:#b84">Nothing after 1s</span><span style="color:#b84">&#34;</span></code></pre></div>
 <p>What happens here is that the timeout function is executed after 1000
 milliseconds pass and the <code>receive/1</code> function exits (hence stops blocking).
-This prevents processes hanging around waiting forever for a matching message to
-arrive in their mailboxes.</p>
+This prevents processes hanging around waiting forever for a matching message
+to arrive in their mailboxes.</p>
 <h2 id="long-running-processes">Long-running processes</h2>
 <p>So far we were looking at sending and receiving messages to the same process -
 the <code>IEx</code> process itself. This is quite a simple example and won't help when we
 would like to put processes into action in a production application.</p>
-<p>At this point, you might be wondering how to actually spawn a process that would
-react to multiple incoming messages, instead of just (ab)using the <code>IEx</code> process
-with the <code>receive/1</code> function.</p>
+<p>At this point, you might be wondering how to actually spawn a process that
+would react to multiple incoming messages, instead of just (ab)using the <code>IEx</code>
+process with the <code>receive/1</code> function.</p>
 <p>Well, to do this we have to make a process run infinitely (or until we ask it
 to die). How? By creating an infinite loop in the process itself.</p>
 <h3 id="wtf-you-mean-by-an-infinite-loop">WTF you mean by &ldquo;an infinite loop&rdquo;?!</h3>
-<p>Yeah, I know, it feels weird, doesn't it? Here's the thing - the BEAM has
-an optimisation in it, so-called a last-call optimisation (read Joe Armstrong's
+<p>Yeah, I know, it feels weird, doesn't it? Here's the thing - the BEAM has an
+optimisation in it, so-called a last-call optimisation (read Joe Armstrong's
 explanation of this optimisation
 <a href="http://erlang.org/pipermail/erlang-questions/2016-October/090663.html">here</a>),
-where if the last call in a function is a call to the same function, Elixir will
-not allocate a new stack frame on the call stack. In fact, it will just jump
-to the beginning of the same function (instead of running another instance of
-it), which will prevent a stack overflow happening to our program.</p>
+where if the last call in a function is a call to the same function, Elixir
+will not allocate a new stack frame on the call stack. In fact, it will just
+jump to the beginning of the same function (instead of running another instance
+of it), which will prevent a stack overflow happening to our program.</p>
 <p>This means that it's <em>virtually</em> impossible to smash the stack in the BEAM
 languages (Erlang &amp; Elixir), if we are just a bit careful when composing these
 self-invoking functions.</p>
@@ -249,11 +249,11 @@ self-invoking functions.</p>
     end
   end
 end</code></pre></div>
-<p>The <code>MyProcess.start</code> function when run will wait for a message to arrive in the
-process&rsquo; mailbox. Then, it will try to pattern match on the arrived message and
-execute the associated code. One trick is that at the end of the first case we
-execute the <code>start</code> function again, which will create an infinite loop in the
-process, therefore having the process waiting for messages forever.</p>
+<p>The <code>MyProcess.start</code> function when run will wait for a message to arrive in
+the process&rsquo; mailbox. Then, it will try to pattern match on the arrived message
+and execute the associated code. One trick is that at the end of the first case
+we execute the <code>start</code> function again, which will create an infinite loop in
+the process, therefore having the process waiting for messages forever.</p>
 <p>Let's look how this will work in <code>IEx</code>:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">iex<span style="font-weight:bold">(</span>1<span style="font-weight:bold">)</span>&gt; <span style="color:#008080">pid</span> <span style="font-weight:bold">=</span> spawn<span style="font-weight:bold">(</span>MyProcess, :start, <span style="font-weight:bold">[</span><span style="font-weight:bold">]</span><span style="font-weight:bold">)</span>
 <span style="color:#998;font-style:italic">#PID&lt;0.120.0&gt;</span>
@@ -275,11 +275,12 @@ function. <code>spawn/3</code> is a flavour of <code>spawn/1</code> - the only d
 only anonymous functions as arguments.</p>
 <p>Then, you can see that every time we send a <code>{:hello, &quot;Name&quot;}</code> message to the
 process (using <code>send/2</code>), we see the process printing back the greeting. Once
-we send the <code>{:bye, &quot;Jane&quot;}</code> message the process prints that it's shutting down.</p>
-<p>How so? Well, if you look at the <code>MyProcess.start</code> function you will notice that
-it does not invoke itself after it prints out the shutdown message. This means
-that once it handles that message the <code>MyProcess.start</code> function will finish
-and the process will die.</p>
+we send the <code>{:bye, &quot;Jane&quot;}</code> message the process prints that it's shutting
+down.</p>
+<p>How so? Well, if you look at the <code>MyProcess.start</code> function you will notice
+that it does not invoke itself after it prints out the shutdown message. This
+means that once it handles that message the <code>MyProcess.start</code> function will
+finish and the process will die.</p>
 <p>Let's test that in <code>IEx</code>, using the <code>Process.alive?/1</code> function:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">iex(<span style="color:#099">1</span>)<span style="font-weight:bold">&gt;</span> pid <span style="font-weight:bold">=</span> spawn <span style="color:#458;font-weight:bold">MyProcess</span>, <span style="color:#b84">:start</span>, []
 <span style="color:#998;font-style:italic">#PID&lt;0.109.0&gt;</span>
@@ -528,33 +529,36 @@ iex<span style="font-weight:bold">(</span>5<span style="font-weight:bold">)</spa
 <p>As expected, once we add two key-value pairs to the <code>Store</code>, when we invoke the
 <code>get_all</code> command the <code>Store</code> process sends back the whole <code>state</code> map.</p>
 <p>While this is a very small and contrived example, the skeleton we followed here
-by keeping state by using recursion, sending commands and replies back and forth
-to the calling process is actually used quite a bit in Erlang and Elixir.</p>
+by keeping state by using recursion, sending commands and replies back and
+forth to the calling process is actually used quite a bit in Erlang and Elixir.</p>
 <h2 id="a-small-disappointment">A small disappointment</h2>
-<p>First, I am quite happy you managed to get to the end of this article.
-I believe that once I understood the basics of the concurrency model of Elixir,
+<p>First, I am quite happy you managed to get to the end of this article.  I
+believe that once I understood the basics of the concurrency model of Elixir,
 by going through these exercises were eye-opening for me, and I hope they were
 for you as well.</p>
-<p>Understanding how to use processes by sending and receiving messages is paramount
-knowledge that you can use going forward on your Elixir journey.</p>
+<p>Understanding how to use processes by sending and receiving messages is
+paramount knowledge that you can use going forward on your Elixir journey.</p>
 <p>Now, as promised - a small disappointment.</p>
-<p>For more than 90% of the cases when you want to write concurrent code in Elixir,
-you will <strong>not</strong> use processes like here. In fact, you won't (almost) ever use
-the <code>send/2</code> and <code>receive/1</code> functions. Seriously.</p>
+<p>For more than 90% of the cases when you want to write concurrent code in
+Elixir, you will <strong>not</strong> use processes like here. In fact, you won't (almost)
+ever use the <code>send/2</code> and <code>receive/1</code> functions. Seriously.</p>
 <p>Why? Well, that's because Elixir comes with this thingy called OTP, that will
 help you do much cooler things with concurrency, without writing any of this
 low-level process management code. Of course, this should not stop you from
 employing processes when you feel that you strongly need them, or when you want
 to experiment and learn.</p>
-<p>If you want to read more about the basics of OTP, check out
-&ldquo;<a href="/link-shortener-using-elixir-processes-and-genserver">Roll your own URL shortener using Elixir &amp; GenServer</a>&quot;.</p>
+<p>If you want to read more about the basics of OTP, check out &ldquo;<a href="/link-shortener-using-elixir-processes-and-genserver">Roll your own URL
+shortener using Elixir &amp;
+GenServer</a>&quot;.</p>
 <h3 id="some-more-reading">Some more reading</h3>
 <p>If you would like to read a bit more, here are a couple of links that are worth
 checking out:</p>
 <ul>
-<li><a href="https://elixir-lang.org/getting-started/processes.html">Processes</a> on Elixir's
-&ldquo;Getting started&rdquo; guide</li>
-<li><a href="https://robots.thoughtbot.com/long-lived-processes-in-elixir">Long-lived processes in Elixir</a> by German Velasco on Thoughtbot's blog</li>
+<li><a href="https://elixir-lang.org/getting-started/processes.html">Processes</a> on
+Elixir's &ldquo;Getting started&rdquo; guide</li>
+<li><a href="https://robots.thoughtbot.com/long-lived-processes-in-elixir">Long-lived processes in
+Elixir</a> by
+German Velasco on Thoughtbot's blog</li>
 <li><a href="https://hexdocs.pm/elixir/Process.html#content">Process</a> on Hexdocs.pm</li>
 <li><a href="https://elixirforum.com/t/endless-recursion/10683">Endless recursion</a> on the
 Elixir Forum</li>

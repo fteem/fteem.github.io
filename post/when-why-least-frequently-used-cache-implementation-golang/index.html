@@ -85,8 +85,8 @@ In software engineering, I would argue, the most popular approach to performance
 			<div class="markdown">
 				<p>Over the years, people involved in computer science and engineering have worked
 really hard on optimisations of various natures. Given that we live in a world
-with limited resources, humanity has always worked on ways to optimise the costs
-and speed literally everything.</p>
+with limited resources, humanity has always worked on ways to optimise the
+costs and speed literally everything.</p>
 <p>In software engineering, I would argue, the most popular approach to
 performance improvement is caching. While there are various applications of
 caching, depending on the area of software engineering, the idea behind caching
@@ -100,15 +100,15 @@ over the network or to main memory (cache miss);</li>
 when to replace a file should be as fast as possible.</li>
 </ol>
 <p>In this article we will focus on the second part: taking a specific
-implementation approach to Least Frequently Used cache and making its membership
-test and eviction algorithms performant. Also, we'll also cover the basics and
-explore where such a caching scheme can be useful.</p>
+implementation approach to Least Frequently Used cache and making its
+membership test and eviction algorithms performant. Also, we'll also cover the
+basics and explore where such a caching scheme can be useful.</p>
 <h2 id="the-basics">The basics</h2>
 <p>LFU is a caching algorithm in which the Least Frequently Used item in the cache
 is removed whenever the cache's capacity limit is reached. This means that for
-every item in our cache we have to keep track of how frequently it is used. Once
-the capacity is exceeded of the cache, an eviction algorithm will be run which
-has to pick and expire (remove) items from the cache.</p>
+every item in our cache we have to keep track of how frequently it is used.
+Once the capacity is exceeded of the cache, an eviction algorithm will be run
+which has to pick and expire (remove) items from the cache.</p>
 <p>If you have ever implemented an LFU cache you've probably looked into using a
 min-heap data structure because it handles insertion, deletion, and update in
 logarithmic time complexity. In this article, we will look at another approach
@@ -122,48 +122,50 @@ requesting, this CDN will add it to its cache for other users to get it even
 faster.</p>
 <p>For example, one such image (asset) is the logo of the website. Can you imagine
 how many times a day Google's logo is requested across all of their products?
-I'd really like to find that number out, but for now, we can probably agree that
-the number is <strong>HUGE</strong>.</p>
-<p>Such asset caches are the perfect use-case for LFU caches. An LFU cache eviction
-algorithm will never evict frequently accessed assets. In fact, in such a cache
-Google's logo will be cached virtually forever. In contrast, if there are any
-images that are going to be accessed due to a new landing page of a new product
-that's on front page of Reddit, Slashdot &amp; Hackernews, once the hype-storm
-passes the assets will be evicted faster because the access frequency will drop
-dramatically, although in the past few days they have been accessed many times.</p>
+I'd really like to find that number out, but for now, we can probably agree
+that the number is <strong>HUGE</strong>.</p>
+<p>Such asset caches are the perfect use-case for LFU caches. An LFU cache
+eviction algorithm will never evict frequently accessed assets. In fact, in
+such a cache Google's logo will be cached virtually forever. In contrast, if
+there are any images that are going to be accessed due to a new landing page of
+a new product that's on front page of Reddit, Slashdot &amp; Hackernews, once the
+hype-storm passes the assets will be evicted faster because the access
+frequency will drop dramatically, although in the past few days they have been
+accessed many times.</p>
 <p>As you might already be noticing, this approach to cache eviction is very
-efficient in cases where the access patterns of the cached objects do not change
-often. While LRU caches will evict the assets that would not be accessed
+efficient in cases where the access patterns of the cached objects do not
+change often. While LRU caches will evict the assets that would not be accessed
 recently, the LFU eviction approach would evict the assets that are not needed
 any more after the hype has settled.</p>
 <h2 id="implementing-an-lfu-cache">Implementing an LFU cache</h2>
 <p>Now, let's get to the meat of it. As we said before, instead of looking at a
-min-heap as a possible data structure that would back our LFU cache, we're going
-to look at a better approach.</p>
-<p>In fact, in 2010, a group of researchers Prof. Ketan Shah, Anirban Mitra &amp; Dhruv
-Matani published a paper titled &ldquo;An O(1) algorithm for implementing the LFU
-cache eviction scheme&rdquo; (you can check it <a href="http://dhruvbird.com/lfu.pdf">here</a>) in
-which they explain an implementation of an LFU cache that has a runtime
-complexity of <code>O(1)</code> for all of its operations, which include insertion, access
-and deletion (eviction).</p>
+min-heap as a possible data structure that would back our LFU cache, we're
+going to look at a better approach.</p>
+<p>In fact, in 2010, a group of researchers Prof. Ketan Shah, Anirban Mitra &amp;
+Dhruv Matani published a paper titled &ldquo;An O(1) algorithm for implementing the
+LFU cache eviction scheme&rdquo; (you can check it
+<a href="http://dhruvbird.com/lfu.pdf">here</a>) in which they explain an implementation
+of an LFU cache that has a runtime complexity of <code>O(1)</code> for all of its
+operations, which include insertion, access and deletion (eviction).</p>
 <p>Here, I'll show you how we can implement this cache and walk you through the
 implementation.</p>
 <h3 id="the-data-structures">The data structure(s)</h3>
 <p>Nope, it's not going to be some sort of a Frankenstein red-black tree. It's, in
 fact, two doubly-linked lists and a hash table. Yes, that's all.</p>
 <p>To be able to understand the fundamentals of this implementation of LFU, let's
-look at the linked list and hash table as graphics. Before we look at the actual
-graphics, we need to understand how the hash table and linked lists will be
-used.</p>
+look at the linked list and hash table as graphics. Before we look at the
+actual graphics, we need to understand how the hash table and linked lists will
+be used.</p>
 <p>The hash table will store all of the items with a key that is processed through
 a hashing algorithm (for our purpose we can keep it simple) and the value will
 be the actual item:</p>
 <p><img src="/golang-lfu-cache/lfu-backbone-hashtable.png" alt=""></p>
-<p>The linked lists are a bit more complicated. The first one will be the &ldquo;frequency
-list&rdquo;, which will have all of the frequencies of access. Each of the nodes in
-this list will have an item list, which will contain all of the items that have
-been accessed with the corresponding frequency. Additionally, each of the items
-in the item list will have a pointer to their ancestor in the frequency list:</p>
+<p>The linked lists are a bit more complicated. The first one will be the
+&ldquo;frequency list&rdquo;, which will have all of the frequencies of access. Each of the
+nodes in this list will have an item list, which will contain all of the items
+that have been accessed with the corresponding frequency. Additionally, each of
+the items in the item list will have a pointer to their ancestor in the
+frequency list:</p>
 <p><img src="/golang-lfu-cache/lfu-backbone-linked-lists.png" alt=""></p>
 <p>If we look at our graphical example above, we can notice that the items <code>A</code>,
 <code>B</code>, <code>C</code> and <code>D</code> have been accessed 1 time. The items <code>E</code> and <code>F</code> have been
@@ -173,16 +175,16 @@ items in the item lists has to their ancestor in the frequency list.</p>
 the steps:</p>
 <ol>
 <li>Retrieving the item from the hash table is easy (and scales well, <code>O(1)</code>)</li>
-<li>We would access the item's <code>frequencyParent</code> pointer, from which we can check
-what is the next frequency in the list</li>
-<li>If the new frequency is present (e.g. <code>8</code>), we will push it as the first item
-of the item list under frequency node <code>8</code>.</li>
+<li>We would access the item's <code>frequencyParent</code> pointer, from which we can
+check what is the next frequency in the list</li>
+<li>If the new frequency is present (e.g. <code>8</code>), we will push it as the first
+item of the item list under frequency node <code>8</code>.</li>
 <li>If the new frequency is not present, we will create the frequency node <code>8</code>
 and will add <code>E</code> to its item list</li>
 </ol>
-<p>That's it. Retrieving the item and refreshing the frequency of the item is <code>O(1)</code>.
-Before we go into implementing the access algorithm, let's first establish the
-basic types that we would need to make this work.</p>
+<p>That's it. Retrieving the item and refreshing the frequency of the item is
+<code>O(1)</code>.  Before we go into implementing the access algorithm, let's first
+establish the basic types that we would need to make this work.</p>
 <h3 id="types">Types</h3>
 <p>As we said earlier, we need to model the types required that will be the
 backbone of our cache.</p>
@@ -372,8 +374,8 @@ to remove the <code>entries</code> from the first frequency node onwards, until 
 as many items as the arbitrary number passed in.</p>
 <p>If a frequency node contains no <code>entries</code> due to eviction, the <code>Evict</code> function
 will have to remove the frequency node from the frequency list as well. It will
-do that by invoking the <code>Remove</code> function. That way, the eviction will not leave
-any garbage behind.</p>
+do that by invoking the <code>Remove</code> function. That way, the eviction will not
+leave any garbage behind.</p>
 <p>Here's the code of what we described above:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (cache <span style="font-weight:bold">*</span>Cache) <span style="color:#900;font-weight:bold">Evict</span>(count <span style="color:#458;font-weight:bold">int</span>) {
 	<span style="font-weight:bold">for</span> i <span style="font-weight:bold">:=</span> <span style="color:#099">0</span>; i &lt; count; {
@@ -433,8 +435,8 @@ its maximum capacity:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (cache <span style="font-weight:bold">*</span>Cache) <span style="color:#900;font-weight:bold">atCapacity</span>() <span style="color:#458;font-weight:bold">bool</span> {
 	<span style="font-weight:bold">return</span> cache.size <span style="font-weight:bold">&gt;=</span> cache.capacity
 }</code></pre></div>
-<p>The function is simple: checks if the current <code>size</code> of the <code>Cache</code> is bigger or
-equals than the <code>capacity</code>.</p>
+<p>The function is simple: checks if the current <code>size</code> of the <code>Cache</code> is bigger
+or equals than the <code>capacity</code>.</p>
 <p>Now, let's put this into use in the <code>Set</code> function. Once we have a new item set
 in the cache, we have to check if the cache has reached its capacity and then
 evict a number of items from it.</p>
@@ -464,20 +466,20 @@ cache, the cache will evict the least frequently used items.</p>
 opinion, due to its unconventional nature. While its application is limited,
 the algorithm and the backing data structures explained in the paper used in
 this article are fascinating due to the scaling ability of the approach.</p>
-<p>If we revisit <a href="http://dhruvbird.com/lfu.pdf">the paper</a> that we mentioned at the
-beginning of the article, we will see that while LFU is not news, but it was
-traditionally implemented using a min-heap, which has a logarithmic time for
-insert, lookup and deletion. Interestingly in this paper, the authors explain
-that the approach they propose has an <code>O(1)</code> time complexity for each of the
-operations (insertion, lookup and deletion) because the operations are based on
-a hash table. Additionally, the linked lists do not add any time complexity
-because we do not traverse the lists at any point - we merely add or remove a
-node in them if needed (which is an O(1) operation).</p>
+<p>If we revisit <a href="http://dhruvbird.com/lfu.pdf">the paper</a> that we mentioned at
+the beginning of the article, we will see that while LFU is not news, but it
+was traditionally implemented using a min-heap, which has a logarithmic time
+for insert, lookup and deletion. Interestingly in this paper, the authors
+explain that the approach they propose has an <code>O(1)</code> time complexity for each
+of the operations (insertion, lookup and deletion) because the operations are
+based on a hash table. Additionally, the linked lists do not add any time
+complexity because we do not traverse the lists at any point - we merely add or
+remove a node in them if needed (which is an O(1) operation).</p>
 <h2 id="in-closing">In closing</h2>
 <p>In this article, we went through the basics of LFU caches. We established what
 are the most important performance metrics (hit to miss ratio, membership &amp;
-eviction speed). We saw that while it's not the most widely used caching scheme,
-it sure can be very performant in some use cases.</p>
+eviction speed). We saw that while it's not the most widely used caching
+scheme, it sure can be very performant in some use cases.</p>
 <p>Then we went on to implement it, using an approach that scales quite well in
 terms of time complexity. We saw the complexities of implementing the eviction
 and frequency incrementation algorithms. In the end, we explored some more how
@@ -485,9 +487,17 @@ the approach we used to implement it scales.</p>
 <p>If you would like to read more on the topic, here are a couple of links that
 will enrich your knowledge of LFU caches and caching in general:</p>
 <ul>
-<li><a href="http://dhruvbird.com/lfu.pdf">&ldquo;An O(1) algorithm for implementing the LFU cache eviction scheme&rdquo;</a> - Prof. Ketan Shah, Anirban Mitra, Dhruv Matani</li>
-<li><a href="https://blogs.dropbox.com/tech/2012/10/caching-in-theory-and-practice/">&ldquo;Caching in theory and practice&rdquo;</a> - Pavel Panchekha</li>
-<li><a href="https://www.geeksforgeeks.org/lfu-least-frequently-used-cache-implementation/">&ldquo;LFU (Least Frequently Used) Cache Implementation&rdquo;</a> - Geeks for Geeks</li>
+<li><a href="http://dhruvbird.com/lfu.pdf">&ldquo;An O(1) algorithm for implementing the LFU cache eviction
+scheme&rdquo;</a> - Prof. Ketan Shah, Anirban Mitra,
+Dhruv Matani</li>
+<li><a href="https://blogs.dropbox.com/tech/2012/10/caching-in-theory-and-practice/">&ldquo;Caching in theory and practice&rdquo;</a> -
+Pavel Panchekha</li>
+<li><a href="https://www.geeksforgeeks.org/lfu-least-frequently-used-cache-implementation/">&ldquo;LFU (Least Frequently Used) Cache
+Implementation&rdquo;</a>
+<ul>
+<li>Geeks for Geeks</li>
+</ul>
+</li>
 </ul>
 
 			</div>

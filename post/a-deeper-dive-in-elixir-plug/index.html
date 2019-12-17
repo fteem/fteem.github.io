@@ -86,29 +86,31 @@
 					
 			<div class="markdown">
 				<p>Being new to Elixir and Phoenix, I spend quite some time in the projects&rsquo;
-documentation. One thing that stood out for me recently is the first sentence of
-<a href="https://hexdocs.pm/phoenix/plug.html#content">Phoenix's Plug documentation</a>:</p>
+documentation. One thing that stood out for me recently is the first sentence
+of <a href="https://hexdocs.pm/phoenix/plug.html#content">Phoenix's Plug
+documentation</a>:</p>
 <blockquote>
 <p>Plug lives at the heart of Phoenix’s HTTP layer and Phoenix puts Plug front and center.</p>
 </blockquote>
-<p>So naturally, I felt compelled to take a deeper dive into Plug and understand it
-better. I hope the following article will help you out in understanding Plug.</p>
+<p>So naturally, I felt compelled to take a deeper dive into Plug and understand
+it better. I hope the following article will help you out in understanding
+Plug.</p>
 <h2 id="whats-plug">What's Plug?</h2>
 <p>As <a href="https://github.com/elixir-plug/plug#plug">the readme</a> puts it, Plug is:</p>
 <ol>
 <li>A specification for composable modules between web applications</li>
 <li>Connection adapters for different web servers in the Erlang VM</li>
 </ol>
-<p>But, what does this mean? Well, it basically states that Plug 1) <em>defines
-the way</em> you build web apps in Elixir and 2) it provides you with tools to write
+<p>But, what does this mean? Well, it basically states that Plug 1) <em>defines the
+way</em> you build web apps in Elixir and 2) it provides you with tools to write
 apps that are understood by web servers.</p>
 <p>Let's take a dive and see what that means.</p>
 <h2 id="web-servers-yeehaw">Web servers, yeehaw!</h2>
 <p>One of the most popular HTTP servers for Erlang is
 <a href="https://github.com/ninenines/cowboy">Cowboy</a>. It is a small, fast and modern
 HTTP server for Erlang/OTP. If you were to write any web application in Elixir
-it will run on Cowboy, because the Elixir core team has built a Plug adapter for
-Cowboy, conveniently named
+it will run on Cowboy, because the Elixir core team has built a Plug adapter
+for Cowboy, conveniently named
 <a href="https://github.com/elixir-plug/plug_cowboy">plug_cowboy</a>.</p>
 <p>This means that if you include this package in your package, you will get the
 Elixir interface to talk to the Cowboy web server (and vice-versa). It means
@@ -120,17 +122,17 @@ in Cowboy and turn it into a meaningful struct, also known as <code>Plug.Conn</c
 <p>This means that Plug uses <code>plug_cowboy</code> to understand Cowboy's nitty-gritty
 details. By doing this Plug allows us to easily build handler functions and
 modules that can receive, handle and respond to requests.</p>
-<p>Of course, the idea behind Plug is not to work only with Cowboy. If you look
-at <a href="https://stackoverflow.com/a/26323883/6015550">this SO answer</a> from José
-Valim (Elixir's BDFL) he clearly states &ldquo;Plug is meant to be a generic adapter
-for different web servers. Currently we support just Cowboy but there is work to
+<p>Of course, the idea behind Plug is not to work only with Cowboy. If you look at
+<a href="https://stackoverflow.com/a/26323883/6015550">this SO answer</a> from José Valim
+(Elixir's BDFL) he clearly states &ldquo;Plug is meant to be a generic adapter for
+different web servers. Currently we support just Cowboy but there is work to
 support others.&rdquo;</p>
 <h2 id="enter-plug">Enter Plug</h2>
-<p>Okay, now that we've scratched the surface of Cowboy and it's Plug adapter, let's
-look at Plug itself.</p>
-<p>If you look at
-<a href="https://github.com/elixir-plug/plug/blob/master/README.md">Plug's README</a>, you
-will notice that there are two flavours of plugs, a function or a module.</p>
+<p>Okay, now that we've scratched the surface of Cowboy and it's Plug adapter,
+let's look at Plug itself.</p>
+<p>If you look at <a href="https://github.com/elixir-plug/plug/blob/master/README.md">Plug's
+README</a>, you will
+notice that there are two flavours of plugs, a function or a module.</p>
 <p>The most minimal plug can be a function, it just takes a <code>Plug.Conn</code> struct
 (that we will explore more later) and some options. The function will
 manipulate the struct and return it at the end. Here's the example from the
@@ -144,11 +146,11 @@ end</code></pre></div>
 <a href="https://github.com/elixir-plug/plug/blob/master/README.md">Plug's docs</a>.
 <!-- raw HTML omitted --></p>
 <p>If you look at the function, it's quite simple. It receives the connection
-struct, puts its content type to <code>text/plain</code> and returns a response with an HTTP
-200 status and <code>&quot;Hello world&quot;</code> as the body.</p>
+struct, puts its content type to <code>text/plain</code> and returns a response with an
+HTTP 200 status and <code>&quot;Hello world&quot;</code> as the body.</p>
 <p>The second flavour is the module Plug. This means that instead of just having a
-function that will be invoked as part of the request lifecycle, you can define a
-module that takes a connection and initialized options and returns the
+function that will be invoked as part of the request lifecycle, you can define
+a module that takes a connection and initialized options and returns the
 connection:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">defmodule <span style="color:#458;font-weight:bold">MyPlug</span> do
   def init([]), <span style="color:#b84">do</span>: false
@@ -186,10 +188,10 @@ tiny application.</p>
 
 
 <h2 id="plugging-a-plug-as-an-endpoint">Plugging a plug as an endpoint</h2>
-<p>So far, the most important things we covered was what's Plug and what is it used
-for on a high level. We also took a look at two different types of plugs.</p>
-<p>Now, let's see how we can mount a Plug on a Cowboy server and essentially use it
-as an endpoint:</p>
+<p>So far, the most important things we covered was what's Plug and what is it
+used for on a high level. We also took a look at two different types of plugs.</p>
+<p>Now, let's see how we can mount a Plug on a Cowboy server and essentially use
+it as an endpoint:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">defmodule <span style="color:#458;font-weight:bold">PlugTest</span> do
   import <span style="color:#458;font-weight:bold">Plug.Conn</span>
 
@@ -234,9 +236,9 @@ iex(1)&gt; {:ok, _ } = Plug.Cowboy.http PlugTest, [], port: 3000
 Hello world</code></pre></div>
 <p>You see, the <code>Content-Type</code> of the response is set to <code>text/plain</code> and the body
 is <code>Hello world</code>. In this example, the plug is essentially an endpoint by
-itself, serving plain text to our <code>cURL</code> command (or to a browser). As you might
-be able to imagine at this point, you can plug in much more elaborate Plugs to a
-Cowboy server and it will serve them just fine.</p>
+itself, serving plain text to our <code>cURL</code> command (or to a browser). As you
+might be able to imagine at this point, you can plug in much more elaborate
+Plugs to a Cowboy server and it will serve them just fine.</p>
 <p>To shut down the endpoint all you need to do is:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">iex(2)&gt; Plug.Cowboy.shutdown PlugTest.HTTP
 :ok</code></pre></div>
@@ -629,13 +631,13 @@ path (e.g. <code>/foo/bar</code>). This results in the first line of the log:</p
     conn
   end)
 end</code></pre></div>
-<p>In short: this section records the time between the <code>start</code> and the <code>stop</code> (end)
-of the request and prints out the <code>diff</code>erence between the two (or in other
-words - the amount of time the response took). Also, it prints out the HTTP
-status of the response.</p>
+<p>In short: this section records the time between the <code>start</code> and the <code>stop</code>
+(end) of the request and prints out the <code>diff</code>erence between the two (or in
+other words - the amount of time the response took). Also, it prints out the
+HTTP status of the response.</p>
 <p>To do this it uses <code>Plug.Conn.register_before_send/2</code>
-(<a href="https://hexdocs.pm/plug/Plug.Conn.html#register_before_send/2">docs</a>)
-which is a utility function that registers callbacks to be invoked before the
+(<a href="https://hexdocs.pm/plug/Plug.Conn.html#register_before_send/2">docs</a>) which
+is a utility function that registers callbacks to be invoked before the
 response is sent. This means that the function which will calculate the <code>diff</code>
 and log it to the <code>Logger</code> with the response status will be invoked by
 <code>Plug.Conn</code> right before the response is sent to the client.</p>
@@ -647,8 +649,8 @@ something new.</p>
 modules that we spoke about we barely scratched the surface. For example,
 <code>Plug.Conn</code> has quite a bit of more useful functions. Or <code>Plug.Router</code> has more
 functions in its DSL where you can write more elaborate and thoughtful APIs or
-web apps. In line with this, <code>Plug</code> also offers more built-in plugs. It even has
-a plug which can serve static files with ease, and plugging it in your
+web apps. In line with this, <code>Plug</code> also offers more built-in plugs. It even
+has a plug which can serve static files with ease, and plugging it in your
 Plug-based apps is a breeze.</p>
 <p>But, aside from all the things that we skipped in this article, I hope that you
 understood how powerful the Plug model is and how much power it provides us

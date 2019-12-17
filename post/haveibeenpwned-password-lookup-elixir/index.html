@@ -85,8 +85,8 @@
 probably know what two-factor authentication (2FA) is. It's quite a neat trick
 actually - you have a password that you have to (obviously) enter correctly
 (first factor), but you also have to receive a second (random) code through a
-different medium, sometimes on a different device, that you have to enter to log
-in (second factor).</p>
+different medium, sometimes on a different device, that you have to enter to
+log in (second factor).</p>
 <p>Now, obviously this adds quite a bit of overhead to logging in, but it adds a
 disproportionate value when it comes to security. If you work in any sort of
 organisation it was probably no surprise when you were asked to turn on 2FA for
@@ -96,9 +96,9 @@ to act ;)</p>
 <p>Not really. But, for sure we had to become more vigilant and smarter when
 setting our passwords. Why? Allow me to explain.</p>
 <h2 id="reader-meet-haveibeenpwnedcom">Reader, meet haveibeenpwned.com</h2>
-<p>Let me introduce you to <a href="https://haveibeenpwned.com">haveibeenpwned.com</a>.
-It's a free resource for anyone to quickly assess if they may have been put at
-risk due to an online account of their's having been compromised or &ldquo;pwned&rdquo; in a
+<p>Let me introduce you to <a href="https://haveibeenpwned.com">haveibeenpwned.com</a>.  It's
+a free resource for anyone to quickly assess if they may have been put at risk
+due to an online account of their's having been compromised or &ldquo;pwned&rdquo; in a
 data breach. As you can imagine, to fulfil its purpose, this service also
 contains quite a long list of pwned passwords (about 500 million of them to be
 more precise), which are open for querying through a REST API.</p>
@@ -107,8 +107,9 @@ more precise), which are open for querying through a REST API.</p>
 out the <a href="https://haveibeenpwned.com/About">About</a> page of the project.</p>
 <h2 id="using-the-pwned-passwords-api">Using the pwned passwords API</h2>
 <p>This API allows us to check if any password is present in haveibeenpwned
-database. This means that if you send an already pwned password it will tell you
-that this password has been pwned and that it's suggested to choose another one.</p>
+database. This means that if you send an already pwned password it will tell
+you that this password has been pwned and that it's suggested to choose another
+one.</p>
 <p>Imagine you have a website where people can set their passwords, and once the
 user finished typing their new password you can ping this service and check if
 the password they chose has been pwned before.</p>
@@ -116,30 +117,30 @@ the password they chose has been pwned before.</p>
 plain-text password across the wire to some random API?&rdquo; then you're a step
 ahead, well done!</p>
 <p>Sorry to disappoint, but no, actually I am not saying that. Instead of sending
-the whole password in plain-text, this API only requires the 5 characters of the
-SHA-1 hash of the actual password.</p>
+the whole password in plain-text, this API only requires the 5 characters of
+the SHA-1 hash of the actual password.</p>
 <p>In Elixir terms, that would look like:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir"><span style="color:#b84">:crypto</span><span style="font-weight:bold">.</span>hash(<span style="color:#b84">:sha</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">password</span><span style="color:#b84">&#34;</span>)
 <span style="font-weight:bold">|&gt;</span> <span style="color:#458;font-weight:bold">Base</span><span style="font-weight:bold">.</span>encode16
 <span style="font-weight:bold">|&gt;</span> <span style="color:#458;font-weight:bold">String</span><span style="font-weight:bold">.</span>slice(<span style="color:#099">0</span><span style="font-weight:bold">.</span><span style="font-weight:bold">.</span><span style="color:#099">4</span>)</code></pre></div>
-<p>Interestingly what it sends back is <em>the remainder of the hashed passwords</em> that
-match the 5 characters that you sent. Basically, this means if we take a SHA-1
-of &ldquo;password&rdquo;:</p>
+<p>Interestingly what it sends back is <em>the remainder of the hashed passwords</em>
+that match the 5 characters that you sent. Basically, this means if we take a
+SHA-1 of &ldquo;password&rdquo;:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">iex(<span style="color:#099">1</span>)<span style="font-weight:bold">&gt;</span> <span style="color:#b84">:crypto</span><span style="font-weight:bold">.</span>hash(<span style="color:#b84">:sha</span>, <span style="color:#b84">&#34;</span><span style="color:#b84">password</span><span style="color:#b84">&#34;</span>) <span style="font-weight:bold">|&gt;</span> <span style="color:#458;font-weight:bold">Base</span><span style="font-weight:bold">.</span>encode16
 <span style="color:#b84">&#34;</span><span style="color:#b84">5BAA61E4C9B93F3F0682250B6CF8331B7EE68FD8</span><span style="color:#b84">&#34;</span></code></pre></div>
-<p>We will send only <code>5BAA6</code> to the API, while in the response body we will receive
-a big list of strings that will represent the rest of the SHA-1, or in our
-example that would be <code>1E4C9B93F3F0682250B6CF8331B7EE68FD8</code>.</p>
+<p>We will send only <code>5BAA6</code> to the API, while in the response body we will
+receive a big list of strings that will represent the rest of the SHA-1, or in
+our example that would be <code>1E4C9B93F3F0682250B6CF8331B7EE68FD8</code>.</p>
 <p>Troy Hunt, who's the author of haveibeenpwned has written quite an extensive
 explanation on how this works - you can read it
 <a href="https://www.troyhunt.com/ive-just-launched-pwned-passwords-version-2/">here</a>.</p>
 <h2 id="pinging-the-api">Pinging the API</h2>
 <p>For the purpose of this exercise, we will create a small Mix package that will
-encapsulate all of the behaviours. If you're not familiar with how to create new
-packages using Mix, I suggest reading my article
-<a href="/writing-elixir-library">Write and publish your first Elixir library</a>.</p>
-<p>We will call our package <code>Pwnex</code> because somehow my brain always thinks that
-I have to mix up the main word (pwned) with Elixir to come up with a name.
+encapsulate all of the behaviours. If you're not familiar with how to create
+new packages using Mix, I suggest reading my article <a href="/writing-elixir-library">Write and publish your
+first Elixir library</a>.</p>
+<p>We will call our package <code>Pwnex</code> because somehow my brain always thinks that I
+have to mix up the main word (pwned) with Elixir to come up with a name.
 Anyway, let's create it:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">› mix new pwnex
 * creating README.md
@@ -208,22 +209,23 @@ procedure-like that explaining feels a tad redundant. Still, here it is:</p>
 password</li>
 <li><code>hash</code> - we want to convert the password to a SHA1 hash and return it's first
 5 characters</li>
-<li><code>split_password</code> - we want to split the head - first 5 characters that we will
-send to the API and the tail - the rest of the SHA-1 hash</li>
+<li><code>split_password</code> - we want to split the head - first 5 characters that we
+will send to the API and the tail - the rest of the SHA-1 hash</li>
 <li><code>fetch_pwns</code> - we will send an API request to haveibeenpwned to get all (if
 any) pwns of the password</li>
 <li><code>handle_response</code> - depending on the response we will either get the body, or
 the reason for failure returned</li>
 <li><code>find_pwns</code> - we will take the response body, and because haveibeenpwned uses
-a k-Anonymity model we will need to find the actual match ourselves (if present)</li>
-<li><code>return_result</code> - will return the tuple which will contain a result atom and a
-pwns count</li>
+a k-Anonymity model we will need to find the actual match ourselves (if
+present)</li>
+<li><code>return_result</code> - will return the tuple which will contain a result atom and
+a pwns count</li>
 </ul>
 <p>Let's take a step by step approach and implement these functions.</p>
 <h2 id="manipulating-the-password">Manipulating the password</h2>
-<p>Let's start easy. In sanitize, we want to trim leading and trailing whitespaces,
-while in <code>hash</code> we want to turn the password to SHA1 and return it's first five
-characters.</p>
+<p>Let's start easy. In sanitize, we want to trim leading and trailing
+whitespaces, while in <code>hash</code> we want to turn the password to SHA1 and return
+it's first five characters.</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">def sanitize(password), <span style="color:#b84">do</span>: <span style="color:#458;font-weight:bold">String</span><span style="font-weight:bold">.</span>trim(password)</code></pre></div>
 <p>There isn't much to explain here really. Instead of using <code>sanitize</code> we can use
 <code>String.trim/1</code>, but I prefer to have a separate function that we could extend
@@ -241,8 +243,9 @@ the second argument. It returns the binary hash, that we can convert to hex by
 using <code>Base.encode16</code>.</p>
 <h2 id="sending-request-to-an-api">Sending request to an API</h2>
 <p>I bet you're thinking <a href="https://hex.pm/packages/httpoison">HTTPoison</a>. Aren't
-you? While I was writing this article I was also wondering do we have to include
-to a whole package just to do a simple GET request. You guessed it - we do not.</p>
+you? While I was writing this article I was also wondering do we have to
+include to a whole package just to do a simple GET request. You guessed it - we
+do not.</p>
 <p>Although Elixir does not ship an HTTP client, Erlang does. And just like with
 <code>:crypto</code>, you can use Erlang's HTTP client from Elixir using <code>:httpc</code>. This
 module provides the API to an HTTP/1.1 compatible client. I suggest giving
@@ -278,9 +281,9 @@ we move on.</p>
   <span style="color:#b84">&#39;</span><span style="color:#b84">THEBODYISHERE</span><span style="color:#b84">\r</span><span style="color:#b84">\n</span><span style="color:#b84">OMGSOMUCHSTUFFHEREWHATISTHISEVEN</span><span style="color:#b84">&#39;</span> <span style="font-weight:bold">++</span> ...}}</code></pre></div>
 <p>You see, although the output is pretty verbose if you have ever sent an HTTP
 request via cURL or you've opened your browser's debugging tools, there
-shouldn't be any surprises here. The <code>request/1</code> function will send a request to
-the pwnedpasswords API and it will return a ton of nested tuples, most of them
-being the response headers and the raw body of the response.</p>
+shouldn't be any surprises here. The <code>request/1</code> function will send a request
+to the pwnedpasswords API and it will return a ton of nested tuples, most of
+them being the response headers and the raw body of the response.</p>
 <p>For our purpose, we can keep it simple. We are only interested if the function
 will return <code>:ok</code> atom as the first item in the tuple, or <code>:error</code>. We can use
 pattern matching to do this:</p>
@@ -310,8 +313,8 @@ easy to read, understand and test.</p>
 hashes separated by <code>\r\n</code>. With a closer inspection of the first one:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">003D68EB55068C33ACE09247EE4C639306B:3</code></pre></div>
 <p>you notice that it's actually a part of the hash, a colon <code>:</code> and a number (<code>3</code>
-in the example above). This is actually the hash without it's first 5 characters
-and the number of times that particular password has been pwned.</p>
+in the example above). This is actually the hash without it's first 5
+characters and the number of times that particular password has been pwned.</p>
 <p>This means that the password who's SHA-1 hash is
 <code>5BAA6003D68EB55068C33ACE09247EE4C639306B</code> has been pwned 3 times, according to
 haveibeenpwned.com.</p>
@@ -328,23 +331,23 @@ Let's see what each of the lines do here:</p>
 <ol>
 <li><code>to_string</code> will convert the character list we receive from <code>fetch_pwns</code> and
 will convert it to a string so we can parse it in the next steps</li>
-<li><code>String.split</code> will split the string on the <code>\r\n</code> characters and will create
-a list of strings, looking like:
+<li><code>String.split</code> will split the string on the <code>\r\n</code> characters and will
+create a list of strings, looking like:
 <code>[&quot;003D68EB55068C33ACE09247EE4C639306B:3&quot;, ...]</code></li>
 <li>We will invoke <code>Enum.find</code> which takes the list and a function as arguments.
 The list is the parsed list of hash tails and their pwns count, while the
-function is <code>String.starts_with?/2</code>, which will return <code>true</code> when a line starts
-with the value of <code>hash_tail</code>.</li>
+function is <code>String.starts_with?/2</code>, which will return <code>true</code> when a line
+starts with the value of <code>hash_tail</code>.</li>
 </ol>
 <p>That's all. At the end, the <code>find_pwns/2</code> function will return either the line
 that contains the matched hash tail or it will return <code>nil</code>.</p>
 <h2 id="returning-a-meaningful-result">Returning a meaningful result</h2>
-<p>Now that we have found the count of pwns for the hash (or just a <code>nil</code>), we need
-to handle that and return a meaningful tuple to the user of the module.</p>
-<p>When the <code>find_pwns</code> function does find a count, we want to return a tuple
-like <code>{:pwned, count}</code>. Otherwise, when <code>find_pwns</code> does not find a count it
-will return <code>nil</code>, which we handle in the second definition of the
-<code>return_result</code> function:</p>
+<p>Now that we have found the count of pwns for the hash (or just a <code>nil</code>), we
+need to handle that and return a meaningful tuple to the user of the module.</p>
+<p>When the <code>find_pwns</code> function does find a count, we want to return a tuple like
+<code>{:pwned, count}</code>. Otherwise, when <code>find_pwns</code> does not find a count it will
+return <code>nil</code>, which we handle in the second definition of the <code>return_result</code>
+function:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">def return_result(line) when is_binary(line) do
   [_, count] <span style="font-weight:bold">=</span> <span style="color:#458;font-weight:bold">String</span><span style="font-weight:bold">.</span>split(line, <span style="color:#b84">&#34;</span><span style="color:#b84">:</span><span style="color:#b84">&#34;</span>)
   {<span style="color:#b84">:pwned</span>, count}
@@ -352,15 +355,14 @@ end
 
 def return_result(_), <span style="color:#b84">do</span>: {<span style="color:#b84">:ok</span>, <span style="color:#099">0</span>}</code></pre></div>
 <p>In the first function body we will take the <code>line</code>, which should be a binary
-(string), split it at the <code>:</code> character and then return the tuple with the count.
-In the second function body we take any argument (which in our case is <code>nil</code>) and
-return a tuple with <code>0</code> as the count.</p>
+(string), split it at the <code>:</code> character and then return the tuple with the
+count.  In the second function body we take any argument (which in our case is
+<code>nil</code>) and return a tuple with <code>0</code> as the count.</p>
 <h2 id="using-pwnex">Using Pwnex</h2>
-<p>Now, let's load Pwnex in IEx and give it a spin. To load
-it in IEx, you need to open the root of the module and run
-<code>iex -S mix</code>. This will open a IEx session and execute <code>mix</code> in it, which will
-in fact, load and compile the module and make it available for invocation
-directly from IEx:</p>
+<p>Now, let's load Pwnex in IEx and give it a spin. To load it in IEx, you need to
+open the root of the module and run <code>iex -S mix</code>. This will open a IEx session
+and execute <code>mix</code> in it, which will in fact, load and compile the module and
+make it available for invocation directly from IEx:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir"><span style="color:#a61717;background-color:#e3d2d2">›</span> iex <span style="font-weight:bold">-</span><span style="color:#458;font-weight:bold">S</span> mix
 <span style="color:#458;font-weight:bold">Erlang</span><span style="font-weight:bold">/</span><span style="color:#458;font-weight:bold">OTP</span> <span style="color:#099">21</span> [erts<span style="font-weight:bold">-</span><span style="color:#099">10.2</span>] [source] [<span style="color:#099">64</span><span style="font-weight:bold">-</span>bit] [smp:<span style="color:#099">4</span>:<span style="color:#099">4</span>] [ds:<span style="color:#099">4</span>:<span style="color:#099">4</span>:<span style="color:#099">10</span>] [async<span style="font-weight:bold">-</span>threads:<span style="color:#099">1</span>] [hipe] [dtrace]
 
