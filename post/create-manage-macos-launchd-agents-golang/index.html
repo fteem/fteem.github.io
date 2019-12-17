@@ -83,25 +83,26 @@ For those unfamiliar, a daemon is a program running in the background without re
 			</div>
 					
 			<div class="markdown">
-				<p>If you have ever tried writing a daemon for MacOS you have met with <code>launchd</code>. For
-those that don't have the experience, think of it as a framework for starting,
-stopping and managing daemons, applications, processes, and scripts. If you have
-any *nix experience the word daemon should not be too alien to you.</p>
+				<p>If you have ever tried writing a daemon for MacOS you have met with <code>launchd</code>.
+For those that don't have the experience, think of it as a framework for
+starting, stopping and managing daemons, applications, processes, and scripts.
+If you have any *nix experience the word daemon should not be too alien to
+you.</p>
 <p>For those unfamiliar, a daemon is a program running in the background without
 requiring user input. A typical daemon might, for instance, perform daily
 maintenance tasks or scan a device for malware when connected.</p>
 <p>This post is aimed at folks that know a little bit about what daemons are, what
-is the common way of using them and know a bit about Go. Also, if you have
-ever written a daemon for any other *nix system, you will have a good idea of
-what we are going to talk here. If you are an absolute beginner in Go or systems
+is the common way of using them and know a bit about Go. Also, if you have ever
+written a daemon for any other *nix system, you will have a good idea of what
+we are going to talk here. If you are an absolute beginner in Go or systems
 this might prove to be an overwhelming article. Still, feel free to give it a
 shot and let me know how it goes.</p>
-<p>If you ever find yourself wanting to write a MacOS daemon with Go you would like
-to know most of the stuff we are going to talk about in this article. Without
-further ado, let's dive in.</p>
+<p>If you ever find yourself wanting to write a MacOS daemon with Go you would
+like to know most of the stuff we are going to talk about in this article.
+Without further ado, let's dive in.</p>
 <h2 id="what-is-launchd-and-how-it-works">What is <code>launchd</code> and how it works?</h2>
-<p><code>launchd</code> is a unified service-management framework, that starts, stops and manages
-daemons, applications, processes, and scripts in MacOS.</p>
+<p><code>launchd</code> is a unified service-management framework, that starts, stops and
+manages daemons, applications, processes, and scripts in MacOS.</p>
 <p>One of its key features is that it differentiates between agents and daemons.
 In <code>launchd</code> land, an agent runs on behalf of the logged in user while a daemon
 runs on behalf of the root user or any specified user.</p>
@@ -110,8 +111,8 @@ runs on behalf of the root user or any specified user.</p>
 program that will execute, among a list of other properties. Another aspect to
 keep in mind is that <code>launchd</code> decides if a program will be treated as a daemon
 or an agent by where the program XML is located.</p>
-<p>Over at <a href="https://launchd.info">launchd.info</a>, there's a simple table that shows where
-you would (or not) place your program's XML:</p>
+<p>Over at <a href="https://launchd.info">launchd.info</a>, there's a simple table that shows
+where you would (or not) place your program's XML:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">+----------------+-------------------------------+----------------------------------------------------+
 | Type           | Location                      | Run on behalf of                                   |
 +----------------+-------------------------------+----------------------------------------------------+
@@ -121,13 +122,13 @@ you would (or not) place your program's XML:</p>
 | System Agents  | /System/Library/LaunchAgents  | Currently logged in user                           |
 | System Daemons | /System/Library/LaunchDaemons | root or the user specified with the key &#39;UserName&#39; |
 +----------------+-------------------------------+----------------------------------------------------+</code></pre></div>
-<p>This means that when we set our XML file in, for example, the <code>/Library/LaunchAgents</code>
-path our process will be treated as a global agent. The main difference between the
-daemons and agents is that LaunchDaemons will run as root, and are generally
-background processes. On the other hand, LaunchAgents are jobs that will run as
-a user or in the context of userland. These may be scripts or other foreground
-items and they also have access to the MacOS UI (e.g. you can send notifications,
-control the windows, etc.)</p>
+<p>This means that when we set our XML file in, for example, the
+<code>/Library/LaunchAgents</code> path our process will be treated as a global agent. The
+main difference between the daemons and agents is that LaunchDaemons will run
+as root, and are generally background processes. On the other hand,
+LaunchAgents are jobs that will run as a user or in the context of userland.
+These may be scripts or other foreground items and they also have access to the
+MacOS UI (e.g. you can send notifications, control the windows, etc.)</p>
 <p>So, how do we define an agent? Let's take a look at a simple XML file that
 <code>launchd</code> understands:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#998;font-style:italic">&lt;!--</span><span style="color:#998;font-style:italic">-</span><span style="color:#998;font-style:italic"> Example blatantly ripped off from http://www.launchd.info/ </span><span style="color:#998;font-style:italic">--&gt;</span>
@@ -143,9 +144,9 @@ control the windows, etc.)</p>
 		<span style="color:#000080">&lt;true</span><span style="color:#000080">/&gt;</span>
 	<span style="color:#000080">&lt;/dict&gt;</span>
 <span style="color:#000080">&lt;/plist&gt;</span></code></pre></div>
-<p>The XML is quite self-explanatory, unless it's the first time you are seeing
-an XML file. The file has three main properties, with values. In fact, if you
-take a better look you will see the <code>dict</code> keyword which means <code>dictionary</code>. This
+<p>The XML is quite self-explanatory, unless it's the first time you are seeing an
+XML file. The file has three main properties, with values. In fact, if you take
+a better look you will see the <code>dict</code> keyword which means <code>dictionary</code>. This
 actually means that the XML represents a key-value structure, so in Go it would
 look like:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">map</span>[<span style="color:#458;font-weight:bold">string</span>]<span style="color:#458;font-weight:bold">string</span>{
@@ -155,10 +156,10 @@ look like:</p>
 }</code></pre></div>
 <p>Let’s look at each of the keys:</p>
 <ol>
-<li><code>Label</code> - The job definition or the name of the job. This is the
-unique identifier for the job within the <code>launchd</code> instance. Usually, the label
-(and hence the name) is written in
-<a href="en.wikipedia.org/wiki/Reverse_domain_name_notation">Reverse domain name notation</a>.</li>
+<li><code>Label</code> - The job definition or the name of the job. This is the unique
+identifier for the job within the <code>launchd</code> instance. Usually, the label
+(and hence the name) is written in <a href="en.wikipedia.org/wiki/Reverse_domain_name_notation">Reverse domain name
+notation</a>.</li>
 <li><code>Program</code> - This key defines what the job should start, in our case a script
 with the path <code>/Users/Me/Scripts/cleanup.sh</code>.</li>
 <li><code>RunAtLoad</code> - This key specifies when the job should be run, in this case
@@ -169,14 +170,14 @@ is the case for the remaining 30-40 keys that <code>launchd</code> supports. Las
 least these files although have an XML syntax, in fact, they have a <code>.plist</code>
 extension (which means <code>Property List</code>). Makes a lot of sense, right?</p>
 <h2 id="launchd-vs-launchctl"><code>launchd</code> v.s. <code>launchctl</code></h2>
-<p>Before we continue with our little exercise of creating daemons/agents with
-Go, let's first see how <code>launchd</code> allows us to control these jobs. While
+<p>Before we continue with our little exercise of creating daemons/agents with Go,
+let's first see how <code>launchd</code> allows us to control these jobs. While
 <code>launchd</code>'s job is to boot the system and to load and maintain services, there
 is a different command used for jobs management - <code>launchctl</code>. With <code>launchd</code>
 facilitating jobs, the control of services is centralized in the <code>launchctl</code>
 command.</p>
-<p><code>launchctl</code> has a long list of subcommands that we can use. For example, loading
-or unloading a job is done via:</p>
+<p><code>launchctl</code> has a long list of subcommands that we can use. For example,
+loading or unloading a job is done via:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">launchctl unload/load ~/Library/LaunchAgents/com.example.app.plist</code></pre></div>
 <p>Or, starting/stopping a job is done via:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">launchctl start/stop ~/Library/LaunchAgents/com.example.app.plist</code></pre></div>
@@ -201,19 +202,20 @@ the <code>RunAtLoad</code> property in the property list XML of the job:</p>
 <p>If you would like to see what other commands <code>launchctl</code> supports, you can run
 <code>man launchctl</code> in your terminal and see the options in detail.</p>
 <h2 id="automating-with-go">Automating with Go</h2>
-<p>After getting the basics of <code>launchd</code> and <code>launctl</code> out of the way, why don't we
-see how we can add an agent to any Go package? For our example, we are going to
-write a simple way of plugging in a <code>launchd</code> agent for any of your Go packages.</p>
+<p>After getting the basics of <code>launchd</code> and <code>launctl</code> out of the way, why don't
+we see how we can add an agent to any Go package? For our example, we are going
+to write a simple way of plugging in a <code>launchd</code> agent for any of your Go
+packages.</p>
 <p>As we already established before, <code>launchd</code> speaks in XML. Or, rather, it
 understands XML files, called <em>property lists</em> (or <code>.plist</code>). This means, for
-our Go package to have an agent running on MacOS, it will need to tell <code>launchd</code>
-&ldquo;hey, <code>launchd</code>, run this thing!&quot;. And since <code>launch</code> speaks only in <code>.plist</code>,
-that means our package needs to be capable of generating XML files.</p>
+our Go package to have an agent running on MacOS, it will need to tell
+<code>launchd</code> &ldquo;hey, <code>launchd</code>, run this thing!&quot;. And since <code>launch</code> speaks only in
+<code>.plist</code>, that means our package needs to be capable of generating XML files.</p>
 <h3 id="templates-in-go">Templates in Go</h3>
 <p>While one could have a hardcoded <code>.plist</code> file in their project and copy it
-across to the <code>~/Library/LaunchAgents</code> path, a more programmatical way
-to do this would be to use a template to generate these XML files. The good thing
-is Go's standard library has us covered - the <code>text/template</code> package
+across to the <code>~/Library/LaunchAgents</code> path, a more programmatical way to do
+this would be to use a template to generate these XML files. The good thing is
+Go's standard library has us covered - the <code>text/template</code> package
 (<a href="https://godoc.org/text/template">docs</a>) does exactly what we need.</p>
 <p>In a nutshell, <code>text/template</code> implements data-driven templates for generating
 textual output. Or in other words, you give it a template and a data structure,
@@ -542,14 +544,14 @@ of the <code>cmd</code> directory.</p>
 		fmt.<span style="color:#900;font-weight:bold">Println</span>(<span style="color:#b84">&#34;tick!&#34;</span>)
 	}
 }</code></pre></div>
-<p>To install them both, we need to run <code>go install ./...</code> in the project root. The
-command will install all the sub-packages that are located within the project.
-This will leave us with two available binaries, installed in the <code>$GOPATH/bin</code>
-path.</p>
+<p>To install them both, we need to run <code>go install ./...</code> in the project root.
+The command will install all the sub-packages that are located within the
+project.  This will leave us with two available binaries, installed in the
+<code>$GOPATH/bin</code> path.</p>
 <p>To install our launch agent, we need to run only the CLI tool, via the <code>cli</code>
 command. This will generate the <code>.plist</code> file and place it in the
-<code>~/Library/LaunchAgents</code> path. We don't need to touch the <code>ticker</code> binary - that
-one will be managed by <code>launchd</code>.</p>
+<code>~/Library/LaunchAgents</code> path. We don't need to touch the <code>ticker</code> binary -
+that one will be managed by <code>launchd</code>.</p>
 <p>To load the newly created <code>.plist</code> file, we need to run:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">launchctl load ~/Library/LaunchAgents/com.ieftimov.ticker.plist</code></pre></div>
 <p>When we run it, we will not see anything immediately, but after 30 seconds
@@ -557,22 +559,22 @@ the ticker will add a <code>tick!</code> line in <code>/tmp/ticker.out.log</code
 the file to see the new lines being added. If we want to unload the agent, we
 can use:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">launchctl unload ~/Library/LaunchAgents/com.ieftimov.ticker.plist</code></pre></div>
-<p>This will unload the launch agent and will stop the ticker from running. Remember
-the signal handling we added? This is the case where it's being used! Also, we
-could have automated the (un)loading of the file via the CLI tool but for
-simplicity, we left it out. You can try to improve the CLI tool by making it a
-bit smarter with subcommands and flags, as a follow-up exercise from this
+<p>This will unload the launch agent and will stop the ticker from running.
+Remember the signal handling we added? This is the case where it's being used!
+Also, we could have automated the (un)loading of the file via the CLI tool but
+for simplicity, we left it out. You can try to improve the CLI tool by making
+it a bit smarter with subcommands and flags, as a follow-up exercise from this
 tutorial.</p>
-<p>Finally, if you decide to completely delete the launch agent, you can remove the
-<code>.plist</code> file:</p>
+<p>Finally, if you decide to completely delete the launch agent, you can remove
+the <code>.plist</code> file:</p>
 <div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">rm ~/Library/LaunchAgents/com.ieftimov.ticker.plist</code></pre></div>
 <h2 id="in-closing">In closing</h2>
-<p>As part of this (quite long!) article, we saw how we can work with <code>launchd</code> and
-Golang. We took a detour, like learning about <code>launchd</code> and
-<code>launchctl</code>, generating XML files using the <code>text/template</code> package, we took
-a look at OS signals and how we can gracefully shutdown a Go program by handling
-the <code>SIGINT</code> and <code>SIGTERM</code> signals. There was quite a bit to learn and see, but
-we got to the end.</p>
+<p>As part of this (quite long!) article, we saw how we can work with <code>launchd</code>
+and Golang. We took a detour, like learning about <code>launchd</code> and <code>launchctl</code>,
+generating XML files using the <code>text/template</code> package, we took a look at OS
+signals and how we can gracefully shutdown a Go program by handling the
+<code>SIGINT</code> and <code>SIGTERM</code> signals. There was quite a bit to learn and see, but we
+got to the end.</p>
 <p>Of course, we only scratched the surface with this article. For example,
 <code>launchd</code> is quite an interesting tool. You can use it also like <code>crontab</code>
 because it allows running programs at explicit time/date combinations or on
@@ -583,8 +585,8 @@ how they work and how Go implements these low-level primitives so you can use
 them with ease in your programs. The options are plenty, feel free to explore!</p>
 <p>If you have found any mistakes in the article, feel free to drop a comment
 below - I will appreciate it a ton. I find learning through teaching (blogging)
-a very pleasant experience and would like to have all the details fully
-correct in my posts.</p>
+a very pleasant experience and would like to have all the details fully correct
+in my posts.</p>
 
 			</div>
 
