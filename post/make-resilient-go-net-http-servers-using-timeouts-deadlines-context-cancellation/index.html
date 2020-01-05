@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Make resilient Go net/http servers using timeouts, deadlines and context cancellation - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Make resilient Go net/http servers using timeouts, deadlines and context cancellation" />
+<meta property="og:description" content="When it comes to timeouts, there are two types of people: those who know how tricky they can be, and those who are yet to find out.
+As tricky as they are, timeouts are a reality in the connected world we live in. As I am writing this, on the other side of the table, two persons are typing on their smartphones, probably chatting to people very far from them. All made possible because of networks." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/make-resilient-go-net-http-servers-using-timeouts-deadlines-context-cancellation/" />
+<meta property="og:image" content="https://ieftimov.com/cards/make-resilient-go-net-http-servers-using-timeouts-deadlines-context-cancellation.png" />
+<meta property="article:published_time" content="2020-01-05T00:00:00+00:00" />
+<meta property="article:modified_time" content="2020-01-05T00:00:00+00:00" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/make-resilient-go-net-http-servers-using-timeouts-deadlines-context-cancellation.png"/>
+
+<meta name="twitter:title" content="Make resilient Go net/http servers using timeouts, deadlines and context cancellation"/>
+<meta name="twitter:description" content="When it comes to timeouts, there are two types of people: those who know how tricky they can be, and those who are yet to find out.
+As tricky as they are, timeouts are a reality in the connected world we live in. As I am writing this, on the other side of the table, two persons are typing on their smartphones, probably chatting to people very far from them. All made possible because of networks."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.com/css/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.com/js/main.js"></script><script src="https://ieftimov.com/js/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com/">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com/">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/categories/testing-in-go">Testing in Go</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">05</span>
+							<span class="rest">Jan 2020</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Make resilient Go net/http servers using timeouts, deadlines and context cancellation</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>When it comes to timeouts, there are two types of people: those who know how
+tricky they can be, and those who are yet to find out.</p>
+<p>As tricky as they are, timeouts are a reality in the connected world we live
+in. As I am writing this, on the other side of the table, two persons are
+typing on their smartphones, probably chatting to people very far from them.
+All made possible because of networks.</p>
+<p>Networks and all their intricacies are here to stay, and we, who write servers
+for the web, have to know how to use them efficiently and guard against their
+deficiencies.</p>
+<p>Without further ado, let's look at timeouts and how they affect our <code>net/http</code>
+servers.</p>
+<h2 id="server-timeouts---first-principles">Server timeouts - first principles</h2>
+<p>In web programming, the general classification of timeouts is client and server
+timeouts. What inspired me to dive into this topic was an interesting server
+timeout problem I found myself in. That's why, in this article, we will focus
+on server-side timeouts.</p>
+<p>To get the basic terminology out of the way: timeout is a time interval (or
+limit) in which a specific action must complete. If the operation does not
+complete in the given time limit, a timeout occurs, and the operation is
+canceled.</p>
+<p>Initializing a <code>net/http</code> server in Golang reveals a few basic timeout
+configurations:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">srv <span style="font-weight:bold">:=</span> <span style="font-weight:bold">&amp;</span>http.Server{
+    ReadTimeout:       <span style="color:#099">1</span> <span style="font-weight:bold">*</span> time.Second,
+    WriteTimeout:      <span style="color:#099">1</span> <span style="font-weight:bold">*</span> time.Second,
+    IdleTimeout:       <span style="color:#099">30</span> <span style="font-weight:bold">*</span> time.Second,
+    ReadHeaderTimeout: <span style="color:#099">2</span> <span style="font-weight:bold">*</span> time.Second,
+    TLSConfig:         tlsConfig,
+    Handler:           srvMux,
+}</code></pre></div>
+<p>This server of <code>http.Server</code> type can be initialized with four different
+timeouts:</p>
+<ul>
+<li><code>ReadTimeout</code>: the maximum duration for reading the entire request, including
+the body</li>
+<li><code>WriteTimeout</code>: the maximum duration before timing out writes of the response</li>
+<li><code>IdleTimetout</code>: the maximum amount of time to wait for the next request when
+keep-alive is enabled</li>
+<li><code>ReadHeaderTimeout</code>: the amount of time allowed to read request headers</li>
+</ul>
+<p>A graphical representation of the above timeouts:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure class="imagecaption">
+  <img class="caption" src="/make-resilient-go-net-http-servers-using-timeouts-deadlines-context-cancellation/request-lifecycle-timeouts.png" title="Server lifecycle and timeouts" alt="Server lifecycle and timeouts">
+  <span class="caption-text">Server lifecycle and timeouts</span>
+</figure>
+
+<p>Before you start thinking that these are all the timeouts you need, tread
+carefully! There's more than meets the eye here. These timeout values provide
+much more fine-grained control, and they are not going to help us to timeout
+our long-running HTTP handlers.</p>
+<p>Let me explain.</p>
+<h2 id="timeouts-and-deadlines">Timeouts and deadlines</h2>
+<p>If we look at the source of <code>net/http</code>, in particular, the <a href="https://github.com/golang/go/blob/bbbc658/src/net/http/server.go#L248"><code>conn</code>
+type</a>,
+we will notice that it uses <code>net.Conn</code> connection under the hood which
+represents the underlying network connection:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#998;font-style:italic">// Taken from: https://github.com/golang/go/blob/bbbc658/src/net/http/server.go#L247
+</span><span style="color:#998;font-style:italic"></span><span style="color:#998;font-style:italic">// A conn represents the server-side of an HTTP connection.
+</span><span style="color:#998;font-style:italic"></span><span style="font-weight:bold">type</span> conn <span style="font-weight:bold">struct</span> {
+    <span style="color:#998;font-style:italic">// server is the server on which the connection arrived.
+</span><span style="color:#998;font-style:italic"></span>    <span style="color:#998;font-style:italic">// Immutable; never nil.
+</span><span style="color:#998;font-style:italic"></span>    server <span style="font-weight:bold">*</span>Server
+
+    <span style="color:#998;font-style:italic">// * Snipped *
+</span><span style="color:#998;font-style:italic"></span>
+    <span style="color:#998;font-style:italic">// rwc is the underlying network connection.
+</span><span style="color:#998;font-style:italic"></span>    <span style="color:#998;font-style:italic">// This is never wrapped by other types and is the value given out
+</span><span style="color:#998;font-style:italic"></span>    <span style="color:#998;font-style:italic">// to CloseNotifier callers. It is usually of type *net.TCPConn or
+</span><span style="color:#998;font-style:italic"></span>    <span style="color:#998;font-style:italic">// *tls.Conn.
+</span><span style="color:#998;font-style:italic"></span>    rwc net.Conn
+
+    <span style="color:#998;font-style:italic">// * Snipped *
+</span><span style="color:#998;font-style:italic"></span>}</code></pre></div>
+<p>In other words, it's the actual TCP connection that our HTTP
+request travels on. From a type perspective, it's a <code>*net.TCPConn</code> or
+<code>*tls.Conn</code> if it's a TLS connection.</p>
+<p>The <code>serve</code>
+<a href="https://github.com/golang/go/blob/bbbc658/src/net/http/server.go#L1765">function</a>,
+calls the <code>readRequest</code> function <a href="https://github.com/golang/go/blob/bbbc658/src/net/http/server.go#L1822">for each incoming
+request</a>.
+<code>readRequest</code> <a href="https://github.com/golang/go/blob/bbbc658/src/net/http/server.go#L946-L958">uses the timeout
+values</a>
+that we set on the server to <strong>set deadlines on the TCP connection</strong>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#998;font-style:italic">// Taken from: https://github.com/golang/go/blob/bbbc658/src/net/http/server.go#L936
+</span><span style="color:#998;font-style:italic"></span><span style="color:#998;font-style:italic">// Read next request from connection.
+</span><span style="color:#998;font-style:italic"></span><span style="font-weight:bold">func</span> (c <span style="font-weight:bold">*</span>conn) <span style="color:#900;font-weight:bold">readRequest</span>(ctx context.Context) (w <span style="font-weight:bold">*</span>response, err <span style="color:#458;font-weight:bold">error</span>) {
+        <span style="color:#998;font-style:italic">// *Snipped*
+</span><span style="color:#998;font-style:italic"></span>
+        t0 <span style="font-weight:bold">:=</span> time.<span style="color:#900;font-weight:bold">Now</span>()
+        <span style="font-weight:bold">if</span> d <span style="font-weight:bold">:=</span> c.server.<span style="color:#900;font-weight:bold">readHeaderTimeout</span>(); d <span style="font-weight:bold">!=</span> <span style="color:#099">0</span> {
+                hdrDeadline = t0.<span style="color:#900;font-weight:bold">Add</span>(d)
+        }
+        <span style="font-weight:bold">if</span> d <span style="font-weight:bold">:=</span> c.server.ReadTimeout; d <span style="font-weight:bold">!=</span> <span style="color:#099">0</span> {
+                wholeReqDeadline = t0.<span style="color:#900;font-weight:bold">Add</span>(d)
+        }
+        c.rwc.<span style="color:#900;font-weight:bold">SetReadDeadline</span>(hdrDeadline)
+        <span style="font-weight:bold">if</span> d <span style="font-weight:bold">:=</span> c.server.WriteTimeout; d <span style="font-weight:bold">!=</span> <span style="color:#099">0</span> {
+                <span style="font-weight:bold">defer</span> <span style="font-weight:bold">func</span>() {
+                        c.rwc.<span style="color:#900;font-weight:bold">SetWriteDeadline</span>(time.<span style="color:#900;font-weight:bold">Now</span>().<span style="color:#900;font-weight:bold">Add</span>(d))
+                }()
+        }
+
+        <span style="color:#998;font-style:italic">// *Snipped*
+</span><span style="color:#998;font-style:italic"></span>}</code></pre></div>
+<p>From the snippet above, we can conclude that the timeout values set on the
+server end up as TCP connection deadlines instead of HTTP timeouts.</p>
+<p>So, what are deadlines then? How do they work? Will they timeout our connection
+if our request takes too long?</p>
+<p>A simple way to think about deadlines is as a point in time at which
+restrictions on specific actions on the connection are enforced. For example,
+if we set a write deadline after the deadline time passes, any write actions on
+the connection will be forbidden.</p>
+<p>While we can create timeout-like behavior using deadlines, we cannot control
+the time it takes for our handlers to complete. Deadlines operate on the
+connection, so our server will fail to return a result only after the handlers
+try to access connection properties (such as writing to <code>http.ResponseWriter</code>).</p>
+<p>To see this in action, let's create a tiny handler that takes longer to
+complete relative to the timeouts we set on the server:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+	<span style="color:#b84">&#34;fmt&#34;</span>
+	<span style="color:#b84">&#34;io&#34;</span>
+	<span style="color:#b84">&#34;net/http&#34;</span>
+	<span style="color:#b84">&#34;time&#34;</span>
+)
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">slowHandler</span>(w http.ResponseWriter, req <span style="font-weight:bold">*</span>http.Request) {
+	time.<span style="color:#900;font-weight:bold">Sleep</span>(<span style="color:#099">2</span> <span style="font-weight:bold">*</span> time.Second)
+	io.<span style="color:#900;font-weight:bold">WriteString</span>(w, <span style="color:#b84">&#34;I am slow!\n&#34;</span>)
+}
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	srv <span style="font-weight:bold">:=</span> http.Server{
+		Addr:         <span style="color:#b84">&#34;:8888&#34;</span>,
+		WriteTimeout: <span style="color:#099">1</span> <span style="font-weight:bold">*</span> time.Second,
+		Handler:      http.<span style="color:#900;font-weight:bold">HandlerFunc</span>(slowHandler),
+	}
+
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">:=</span> srv.<span style="color:#900;font-weight:bold">ListenAndServe</span>(); err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		fmt.<span style="color:#900;font-weight:bold">Printf</span>(<span style="color:#b84">&#34;Server failed: %s\n&#34;</span>, err)
+	}
+}</code></pre></div>
+<p>The server above has a single handler, which takes 2 seconds to complete. On the
+other hand, the <code>http.Server</code> has a <code>WriteTimeout</code> set to 1 second. Due to the
+configuration of the server, we expect the handler to be unable to write the
+response to the connection.</p>
+<p>We can start the server using <code>go run server.go</code>. To send a request we can
+<code>curl localhost:8888</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ <span style="color:#999">time</span> curl localhost:8888
+curl: <span style="font-weight:bold">(</span>52<span style="font-weight:bold">)</span> Empty reply from server
+curl localhost:8888  0.01s user 0.01s system 0% cpu 2.021 total</code></pre></div>
+<p>The request took 2 seconds to complete, and the response from the server was
+empty. While our server knows that we cannot write to our response after 1
+second, the handler still took 100% more (2 seconds) to complete.</p>
+<p>While this is a timeout-like behavior, it would be more useful to stop our
+server from further execution when it reaches the timeout, ending the request.
+In our example above, the handler proceeds to process the request until it
+completes, although it takes 100% longer (2 seconds) than the response write
+timeout time (1 second).</p>
+<p>The natural question is, how can we have efficient timeouts for our handlers?</p>
+<h2 id="handler-timeout">Handler timeout</h2>
+<p>Our goal is to make sure our <code>slowHandler</code> does not take longer than 1 seconds
+to complete. If it does take longer, our server should stop its execution and
+return a proper timeout error.</p>
+<p>In Go, as with other programming languages, composition is very often the
+favored approach to writing and designing code. The <a href="https://golang.org/pkg/net/http"><code>net/http</code>
+package</a> of the standard library is one of the
+places where having compatible components that one can put together with little
+effort is an obvious design choice.</p>
+<p>In that light, the <code>net/http</code> packages provide <a href="https://golang.org/pkg/net/http/#TimeoutHandler">a
+<code>TimeoutHandler</code></a> - it returns
+a handler that runs a handler within the given time limit.</p>
+<p>Its signature is:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TimeoutHandler</span>(h Handler, dt time.Duration, msg <span style="color:#458;font-weight:bold">string</span>) Handler</code></pre></div>
+<p>It takes a <code>Handler</code> as the first argument, a <code>time.Duration</code> as the second
+argument (the timeout time) and a <code>string</code>, the message returned when it hits
+the timeout.</p>
+<p>To wrap our <code>slowHandler</code> within a <code>TimeoutHandler</code>, all we have to do is:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+	<span style="color:#b84">&#34;fmt&#34;</span>
+	<span style="color:#b84">&#34;io&#34;</span>
+	<span style="color:#b84">&#34;net/http&#34;</span>
+	<span style="color:#b84">&#34;time&#34;</span>
+)
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">slowHandler</span>(w http.ResponseWriter, req <span style="font-weight:bold">*</span>http.Request) {
+	time.<span style="color:#900;font-weight:bold">Sleep</span>(<span style="color:#099">2</span> <span style="font-weight:bold">*</span> time.Second)
+	io.<span style="color:#900;font-weight:bold">WriteString</span>(w, <span style="color:#b84">&#34;I am slow!\n&#34;</span>)
+}
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	srv <span style="font-weight:bold">:=</span> http.Server{
+		Addr:         <span style="color:#b84">&#34;:8888&#34;</span>,
+		WriteTimeout: <span style="color:#099">5</span> <span style="font-weight:bold">*</span> time.Second,
+		Handler:      http.<span style="color:#900;font-weight:bold">TimeoutHandler</span>(http.<span style="color:#900;font-weight:bold">HandlerFunc</span>(slowHandler), <span style="color:#099">1</span><span style="font-weight:bold">*</span>time.Second, <span style="color:#b84">&#34;Timeout!\n&#34;</span>),
+	}
+
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">:=</span> srv.<span style="color:#900;font-weight:bold">ListenAndServe</span>(); err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		fmt.<span style="color:#900;font-weight:bold">Printf</span>(<span style="color:#b84">&#34;Server failed: %s\n&#34;</span>, err)
+	}
+}</code></pre></div>
+<p>The two notable changes are:</p>
+<ul>
+<li>We wrap our <code>slowHanlder</code> in the <code>http.TimetoutHandler</code>, setting the timeout
+to 1 second and the timeout message to &ldquo;Timeout!&quot;.</li>
+<li>We increase the <code>WriteTimeout</code> to 5 seconds, to give the
+<code>http.TimeoutHandler</code> time to kick in. If we don't do this when the
+<code>TimeoutHandler</code> kicks in, the deadline will pass, and it won't be able to
+write to the response.</li>
+</ul>
+<p>If we started the server again and hit the slow handler we'll get the following
+output:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ <span style="color:#999">time</span> curl localhost:8888
+Timeout!
+curl localhost:8888  0.01s user 0.01s system 1% cpu 1.023 total</code></pre></div>
+<p>After a second, our <code>TimeoutHandler</code> will kick in, stop processing the
+<code>slowHandler</code>, and return a plain &ldquo;<code>Timeout!</code>&rdquo; message. If the message we set
+is blank, then the handler will return the default timeout response, which is:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#000080">html</span>&gt;
+  &lt;<span style="color:#000080">head</span>&gt;
+    &lt;<span style="color:#000080">title</span>&gt;Timeout&lt;/<span style="color:#000080">title</span>&gt;
+  &lt;/<span style="color:#000080">head</span>&gt;
+  &lt;<span style="color:#000080">body</span>&gt;
+   &lt;<span style="color:#000080">h1</span>&gt;Timeout&lt;/<span style="color:#000080">h1</span>&gt;
+  &lt;/<span style="color:#000080">body</span>&gt;
+&lt;/<span style="color:#000080">html</span>&gt;</code></pre></div>
+<p>Regardless of the output, this is pretty neat, isn't it? Our application now is
+protected from long-running handlers and specially crafted requests made to
+cause very long-running handlers, leading to a potential DoS (Denial of
+Service) attack.</p>
+<p>It's worth noting that although setting timeouts is a great start, it's still
+elementary protection. If you're under threat of an imminent DoS attack, you
+should look into more advanced protection tools and techniques.
+(<a href="https://www.cloudflare.com/ddos/">Cloudflare</a> is a good start.)</p>
+<p>Our <code>slowHandler</code> is a simple example-only handler. But, what if our
+application was much more complicated, making external calls to other services
+or resources? What if we had an outgoing request to a service such as S3 when
+our handler would time out?</p>
+<p>What would happen then?</p>
+<h2 id="unhandled-timeouts-and-request-cancellations">Unhandled timeouts and request cancellations</h2>
+<p>Let's expand our example a bit:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">slowAPICall</span>() <span style="color:#458;font-weight:bold">string</span> {
+	d <span style="font-weight:bold">:=</span> rand.<span style="color:#900;font-weight:bold">Intn</span>(<span style="color:#099">5</span>)
+	<span style="font-weight:bold">select</span> {
+	<span style="font-weight:bold">case</span> <span style="font-weight:bold">&lt;-</span>time.<span style="color:#900;font-weight:bold">After</span>(time.<span style="color:#900;font-weight:bold">Duration</span>(d) <span style="font-weight:bold">*</span> time.Second):
+		log.<span style="color:#900;font-weight:bold">Printf</span>(<span style="color:#b84">&#34;Slow API call done after %s seconds.\n&#34;</span>, d)
+		<span style="font-weight:bold">return</span> <span style="color:#b84">&#34;foobar&#34;</span>
+	}
+}
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">slowHandler</span>(w http.ResponseWriter, r <span style="font-weight:bold">*</span>http.Request) {
+	result <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">slowAPICall</span>()
+	io.<span style="color:#900;font-weight:bold">WriteString</span>(w, result<span style="font-weight:bold">+</span><span style="color:#b84">&#34;\n&#34;</span>)
+}</code></pre></div>
+<p>Let's imagine that initially we didn't know that our <code>slowHandler</code> took so long
+to complete because it was sending a request to an API - using the
+<code>slowAPICall</code> function.</p>
+<p>The <code>slowAPICall</code> function is straightforward: using <code>select</code> and a
+<code>time.After</code> it blocks between 0 and 5 seconds. Once that period passes, the
+<code>time.After</code> method sends a value through its channel and <code>&quot;foobar&quot;</code> will be
+returned.</p>
+<p>(An alternative approach is to use <code>sleep(time.Duration(rand.Intn(5)) * time.Second)</code>, but we will stick to <code>select</code> because it will make our life
+simpler in the next example.)</p>
+<p>If we run our server, we would expect the timeout handler to cut off the
+request processing after 1 second. Sending a request proves that:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ <span style="color:#999">time</span> curl localhost:8888
+Timeout!
+curl localhost:8888  0.01s user 0.01s system 1% cpu 1.021 total</code></pre></div>
+<p>By looking at the server output, we will notice that it prints the loglines
+after a few seconds instead of when the timeout handler kicks in:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ go run server.go
+2019/12/29 17:20:03 Slow API call <span style="font-weight:bold">done</span> after <span style="color:#099">4</span> seconds.</code></pre></div>
+<p>Such behavior suggests that although the request timed out after 1 second, the
+server proceeded to process the request fully. That's why it printed the
+logline after 4 seconds passed.</p>
+<p>While this example is trivial and naive, such behavior in production servers
+can become a rather big problem. For example, imagine if the <code>slowAPICall</code>
+function spawned hundreds of goroutines, each of them processing some data. Or
+if it was issuing multiple API calls to various systems. Such long-running
+processes will eat up resources from your system, while the caller/client won't
+ever use their result.</p>
+<p>So, how can we guard our system from such unoptimized timeouts or request
+cancellations?</p>
+<h2 id="context-timeouts-and-cancellation">Context timeouts and cancellation</h2>
+<p>Go comes with a neat package for handling such scenarios called
+<a href="https://golang.org/pkg/context/"><code>context</code></a>.</p>
+<p>The <code>context</code> package was promoted to the standard library as of Go 1.7.
+Previously it was part of the <a href="https://godoc.org/-/subrepo">Go Sub-repository
+Packages</a>, with the name
+<a href="https://godoc.org/golang.org/x/net/context"><code>golang.org/x/net/context</code></a></p>
+<p>The package defines the <code>Context</code> type. It's primary purpose is to carry
+deadlines, cancellation signals, and other request-scoped values across API
+boundaries and between processes. If you would like to learn more about the
+context package, I recommend reading &ldquo;Go Concurrency Patterns: Context&rdquo; on
+<a href="https://blog.golang.org/context">Golang's blog</a>.</p>
+<p>The <code>Request</code> type that is part of the <code>net/http</code> package already has a
+<code>context</code> attached to it. As of Go 1.7, <code>Request</code> has <a href="https://golang.org/pkg/net/http/#Request.Context">a <code>Context</code>
+function</a>, which returns the
+request's context. For incoming server requests, the server cancels the context
+when the client's connection closes, when the request is canceled (in HTTP/2),
+or when the <code>ServeHTTP</code> method returns.</p>
+<p>The behavior we are looking for is to stop all further processing on the
+server-side when the client cancels the request (we hit <code>CTRL + C</code> on our
+<code>cURL</code>) or the <code>TimeoutHandler</code> steps in after some time and ends the request.
+That will effectively close all connections and free all other resources taken
+up by the running handler (and all of its children goroutines).</p>
+<p>Let's use the request Context to pass it to the <code>slowAPICall</code> function as
+an argument:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">slowAPICall</span>(ctx context.Context) <span style="color:#458;font-weight:bold">string</span> {
+	d <span style="font-weight:bold">:=</span> rand.<span style="color:#900;font-weight:bold">Intn</span>(<span style="color:#099">5</span>)
+	<span style="font-weight:bold">select</span> {
+	<span style="font-weight:bold">case</span> <span style="font-weight:bold">&lt;-</span>time.<span style="color:#900;font-weight:bold">After</span>(time.<span style="color:#900;font-weight:bold">Duration</span>(d) <span style="font-weight:bold">*</span> time.Second):
+		log.<span style="color:#900;font-weight:bold">Printf</span>(<span style="color:#b84">&#34;Slow API call done after %d seconds.\n&#34;</span>, d)
+		<span style="font-weight:bold">return</span> <span style="color:#b84">&#34;foobar&#34;</span>
+	}
+}
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">slowHandler</span>(w http.ResponseWriter, r <span style="font-weight:bold">*</span>http.Request) {
+	result <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">slowAPICall</span>(r.<span style="color:#900;font-weight:bold">Context</span>())
+	io.<span style="color:#900;font-weight:bold">WriteString</span>(w, result<span style="font-weight:bold">+</span><span style="color:#b84">&#34;\n&#34;</span>)
+}</code></pre></div>
+<p>Now that we utilize the request context, how can we put it in action?  <a href="https://golang.org/pkg/context/#Context">The
+<code>Context</code> type</a> has a <code>Done</code>
+attribute, which is of type <code>&lt;-chan struct{}</code>. <code>Done</code> closes when the work
+done on behalf of the context should be canceled, which is what we need in the
+example.</p>
+<p>Let's handle the <code>ctx.Done</code> channel in the <code>select</code> block in the <code>slowAPICall</code>
+function. When we receive an empty <code>struct</code> via the <code>Done</code> channel, this
+signifies the context cancellation, and we have to return a zero-value string
+from the <code>slowAPICall</code> function:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">slowAPICall</span>(ctx context.Context) <span style="color:#458;font-weight:bold">string</span> {
+	d <span style="font-weight:bold">:=</span> rand.<span style="color:#900;font-weight:bold">Intn</span>(<span style="color:#099">5</span>)
+	<span style="font-weight:bold">select</span> {
+	<span style="font-weight:bold">case</span> <span style="font-weight:bold">&lt;-</span>ctx.<span style="color:#900;font-weight:bold">Done</span>():
+		log.<span style="color:#900;font-weight:bold">Printf</span>(<span style="color:#b84">&#34;slowAPICall was supposed to take %s seconds, but was canceled.&#34;</span>, d)
+		<span style="font-weight:bold">return</span> <span style="color:#b84">&#34;&#34;</span>
+	<span style="font-weight:bold">case</span> <span style="font-weight:bold">&lt;-</span>time.<span style="color:#900;font-weight:bold">After</span>(time.<span style="color:#900;font-weight:bold">Duration</span>(d) <span style="font-weight:bold">*</span> time.Second):
+		log.<span style="color:#900;font-weight:bold">Printf</span>(<span style="color:#b84">&#34;Slow API call done after %d seconds.\n&#34;</span>, d)
+		<span style="font-weight:bold">return</span> <span style="color:#b84">&#34;foobar&#34;</span>
+	}
+}</code></pre></div>
+<p>(This is the reason we used a <code>select</code> block, instead of the <code>time.Sleep</code> - we
+can just handle the <code>Done</code> channel in the <code>select</code> here.)</p>
+<p>In our limited example, this does the trick – when we receive value through the
+<code>Done</code> channel, we log a line to STDOUT and return an empty string. In more
+complicated situations, such as sending real API requests, you might need to
+close down connections or clean up file descriptors.</p>
+<p>Let's spin up the server again and send a <code>cURL</code> request:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#998;font-style:italic"># The cURL command:</span>
+$ curl localhost:8888
+Timeout!
+
+<span style="color:#998;font-style:italic"># The server output:</span>
+$ go run server.go
+2019/12/30 00:07:15 slowAPICall was supposed to take <span style="color:#099">2</span> seconds, but was canceled.</code></pre></div>
+<p>So check this out: we ran a <code>cURL</code> to the server, it took longer than 1 second,
+and our server canceled the <code>slowAPICall</code> function. And we didn't need to write
+almost any code for it. The <code>TimeoutHandler</code> did this for us - when the handler
+took longer than expected, the <code>TimeoutHandler</code> stopped the execution of the
+handler and canceled the request context.</p>
+<p>The <code>TimeoutHandler</code> performs the context cancellation in <a href="https://github.com/golang/go/blob/bbbc658/src/net/http/server.go#L3217-L3263">the
+<code>timeoutHandler.ServeHTTP</code>
+method</a>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#998;font-style:italic">// Taken from: https://github.com/golang/go/blob/bbbc658/src/net/http/server.go#L3217-L3263
+</span><span style="color:#998;font-style:italic"></span><span style="font-weight:bold">func</span> (h <span style="font-weight:bold">*</span>timeoutHandler) <span style="color:#900;font-weight:bold">ServeHTTP</span>(w ResponseWriter, r <span style="font-weight:bold">*</span>Request) {
+        ctx <span style="font-weight:bold">:=</span> h.testContext
+        <span style="font-weight:bold">if</span> ctx <span style="font-weight:bold">==</span> <span style="font-weight:bold">nil</span> {
+        	<span style="font-weight:bold">var</span> cancelCtx context.CancelFunc
+        	ctx, cancelCtx = context.<span style="color:#900;font-weight:bold">WithTimeout</span>(r.<span style="color:#900;font-weight:bold">Context</span>(), h.dt)
+        	<span style="font-weight:bold">defer</span> <span style="color:#900;font-weight:bold">cancelCtx</span>()
+        }
+        r = r.<span style="color:#900;font-weight:bold">WithContext</span>(ctx)
+
+        <span style="color:#998;font-style:italic">// *Snipped*
+</span><span style="color:#998;font-style:italic"></span>}</code></pre></div>
+<p>Above, we use the request context by invoking <code>context.WithTimeout</code> on it. The
+timeout value <code>h.dt</code>, which is the second argument received by the
+<code>TimeoutHandler</code>, is applied to the context. The returned context is a copy of
+the request context with a timeout attached. Right after, it's set as the
+request's context using the <code>r.WithContext(ctx)</code> invocation.</p>
+<p>The <code>context.WithTimeout</code> function makes the context cancellation. It returns a
+copy of the <code>Context</code> with a timeout set to the duration passed as an argument.
+Once it reaches the timeout, it cancels the context.</p>
+<p>Here's the code that does it:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#998;font-style:italic">// Taken from: https://github.com/golang/go/blob/bbbc6589/src/context/context.go#L486-L498
+</span><span style="color:#998;font-style:italic"></span><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">WithTimeout</span>(parent Context, timeout time.Duration) (Context, CancelFunc) {
+	<span style="font-weight:bold">return</span> <span style="color:#900;font-weight:bold">WithDeadline</span>(parent, time.<span style="color:#900;font-weight:bold">Now</span>().<span style="color:#900;font-weight:bold">Add</span>(timeout))
+}
+
+<span style="color:#998;font-style:italic">// Taken from: https://github.com/golang/go/blob/bbbc6589/src/context/context.go#L418-L450
+</span><span style="color:#998;font-style:italic"></span><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">WithDeadline</span>(parent Context, d time.Time) (Context, CancelFunc) {
+        <span style="color:#998;font-style:italic">// *Snipped*
+</span><span style="color:#998;font-style:italic"></span>
+        c <span style="font-weight:bold">:=</span> <span style="font-weight:bold">&amp;</span>timerCtx{
+        	cancelCtx: <span style="color:#900;font-weight:bold">newCancelCtx</span>(parent),
+        	deadline:  d,
+        }
+
+        <span style="color:#998;font-style:italic">// *Snipped*
+</span><span style="color:#998;font-style:italic"></span>
+        <span style="font-weight:bold">if</span> c.err <span style="font-weight:bold">==</span> <span style="font-weight:bold">nil</span> {
+        	c.timer = time.<span style="color:#900;font-weight:bold">AfterFunc</span>(dur, <span style="font-weight:bold">func</span>() {
+        		c.<span style="color:#900;font-weight:bold">cancel</span>(<span style="font-weight:bold">true</span>, DeadlineExceeded)
+        	})
+        }
+        <span style="font-weight:bold">return</span> c, <span style="font-weight:bold">func</span>() { c.<span style="color:#900;font-weight:bold">cancel</span>(<span style="font-weight:bold">true</span>, Canceled) }
+}</code></pre></div>
+<p>Here we meet deadlines again. The <code>WithDeadline</code> function sets a function that
+executes after the duration <code>d</code> passes. Once the duration passes, it invokes
+the <code>cancel</code> method on the context, which will close the <code>done</code> channel of the
+context and will set the context's <code>timer</code> attribute to <code>nil</code>.</p>
+<p>The closing of the <code>Done</code> channel effectively cancels the context, which allows
+our <code>slowAPICall</code> function to stop its execution. That's how the
+<code>TimeoutHandler</code> timeouts long-running handlers.</p>
+<p>(If you would like to read the code that does the above, you should see the
+<code>cancel</code> functions on <a href="https://github.com/golang/go/blob/bbbc6589dfbc05be2bfa59f51c20f9eaa8d0c531/src/context/context.go#L389-L416">the <code>cancelCtx</code>
+type</a>
+and <a href="https://github.com/golang/go/blob/bbbc6589dfbc05be2bfa59f51c20f9eaa8d0c531/src/context/context.go#L472-L484">the <code>timerCtx</code>
+type</a>.)</p>
+<h2 id="resilient-nethttp-servers">Resilient <code>net/http</code> servers</h2>
+<p>Connection deadlines provide low-level fine-grained control. While their names
+contain &ldquo;timeout&rdquo; they do not have the behavior that folks commonly expect from
+timeouts. They are in fact very powerful, but they expect the programmer to
+know how to wield that weapon.</p>
+<p>On the other hand, when working with HTTP handlers, the <code>TimeoutHandler</code> should
+be our go-to tool. The design chosen by the Go authors, of having composable
+handlers, provides flexibility, so much that we could even have different
+timeouts per handler if we decided to. <code>TimeoutHandler</code> provides execution
+control while maintaining the behavior that we commonly expect when thinking of
+timeouts.</p>
+<p>On top of that, the <code>TimeoutHandler</code> works well with the <code>context</code> package.
+While the <code>context</code> package is simple, it carries cancellation signals and
+request-scoped data, that we can use to make our applications adhere better to
+the intricacies of networks.</p>
+<p>Before we close, here are three suggestions on how to think of timeouts while
+writing your HTTP servers:</p>
+<ol>
+<li>Most-often, reach for <code>TimeoutHandler</code>. It does what we commonly expect of
+timeouts.</li>
+<li>Never forget context cancellations. The <code>context</code> package is simple to use
+and can save your servers lots of processing resources. Especially againts
+bad actors or misbehaving networks.</li>
+<li>By all means, use deadlines. Just make sure you test thoroughly that they
+provide you the functionality that you want.</li>
+</ol>
+<p>To read more on the topic:</p>
+<ul>
+<li>&ldquo;The complete guide to Go net/http timeouts&rdquo; on <a href="https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/">Cloudflare's
+blog</a></li>
+<li>&ldquo;So you want to expose Go on the Internet&rdquo; on <a href="https://blog.cloudflare.com/exposing-go-on-the-internet/">Cloudflare's
+blog</a></li>
+<li>&ldquo;Use http.TimeoutHandler or ReadTimeout/WriteTimeout?&rdquo; on
+<a href="https://stackoverflow.com/questions/51258952/use-http-timeouthandler-or-readtimeout-writetimeout">Stackoverflow</a></li>
+<li>&ldquo;Standard net/http config will break your production environment&rdquo; on <a href="https://blog.simon-frey.eu/go-as-in-golang-standard-net-http-config-will-break-your-production">Simon
+Frey's
+blog</a></li>
+</ul>
+
+			</div>
+
+			<div class="tags">
+				
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+		Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2019 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>
