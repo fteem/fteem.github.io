@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Testing in Go: Golden Files - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Testing in Go: Golden Files" />
+<meta property="og:description" content="Hardcoding the expected values in an assertion is a straightforward approach in testing. Most of the time, we know the expected output of the unit under test, so simply adding the raw value to the assertion works well.
+Things can get tricky when we are testing a unit whose output is cumbersome to hardcode. The straightforward remedy is to extract this cumbersome value to a file that we can then read and compare the output of the unit under test to the output of the file." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/testing-in-go-golden-files/" />
+<meta property="og:image" content="https://ieftimov.com/cards/testing-in-go-golden-files.png" />
+<meta property="article:published_time" content="2020-02-02T00:00:00+00:00" />
+<meta property="article:modified_time" content="2020-02-02T00:00:00+00:00" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/testing-in-go-golden-files.png"/>
+
+<meta name="twitter:title" content="Testing in Go: Golden Files"/>
+<meta name="twitter:description" content="Hardcoding the expected values in an assertion is a straightforward approach in testing. Most of the time, we know the expected output of the unit under test, so simply adding the raw value to the assertion works well.
+Things can get tricky when we are testing a unit whose output is cumbersome to hardcode. The straightforward remedy is to extract this cumbersome value to a file that we can then read and compare the output of the unit under test to the output of the file."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.com/css/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.com/js/main.js"></script><script src="https://ieftimov.com/js/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com/">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com/">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>Software engineer, author and open source contributor</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/categories/testing-in-go">Testing in Go</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">02</span>
+							<span class="rest">Feb 2020</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Testing in Go: Golden Files</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>Hardcoding the expected values in an assertion is a straightforward approach
+in testing. Most of the time, we know the expected output of the unit under
+test, so simply adding the raw value to the assertion works well.</p>
+<p>Things can get tricky when we are testing a unit whose output is cumbersome to
+hardcode. The straightforward remedy is to extract this cumbersome value to a
+file that we can then read and compare the output of the unit under test to the
+output of the file.</p>
+<p>In Go, we call such files <em>golden files</em>. Golden files contain the expected
+output of a test. When tests run, they read the contents of the golden file and
+compare it to the output of the unit under test.</p>
+<p>As always, let's make our lives easier and discuss golden files using an
+example.</p>
+<h2 id="book-reports">Book reports</h2>
+<p>Imagine you own a small library or a book store. Your inventory software
+exposes an API where you can get the list of books in said inventory. You want
+a program that will take all that data and format it in a Markdown table. Maybe
+you want to print this table or send it to your accountant. The possibilities
+are endless!</p>
+<p>Let's see a simulation of such a program:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#998;font-style:italic">// report/report.go
+</span><span style="color:#998;font-style:italic"></span>
+<span style="font-weight:bold">package</span> report
+
+<span style="font-weight:bold">import</span> (
+	<span style="color:#b84">&#34;bytes&#34;</span>
+	<span style="color:#b84">&#34;log&#34;</span>
+	<span style="color:#b84">&#34;text/template&#34;</span>
+
+	<span style="color:#b84">&#34;github.com/fteem/go-playground/golden-files/books&#34;</span>
+)
+
+<span style="font-weight:bold">const</span> (
+	header <span style="color:#458;font-weight:bold">string</span> = <span style="color:#b84">`</span><span style="color:#b84">
+</span><span style="color:#b84">| Title         | Author        | Publisher |  Pages  |  ISBN  |  Price  |
+</span><span style="color:#b84">| ------------- | ------------- | --------- | ------- | ------ | ------- |
+</span><span style="color:#b84"></span><span style="color:#b84">`</span>
+	rowTemplate <span style="color:#458;font-weight:bold">string</span> = <span style="color:#b84">&#34;|  {{ .Title }}  |  {{ .Author }}  |  {{ .Publisher }}  |  {{ .Pages }}  |  {{ .ISBN }}  |  {{ .Price }}  |\n&#34;</span>
+)
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">Generate</span>(books []books.Book) <span style="color:#458;font-weight:bold">string</span> {
+	buf <span style="font-weight:bold">:=</span> bytes.<span style="color:#900;font-weight:bold">NewBufferString</span>(header)
+
+	t <span style="font-weight:bold">:=</span> template.<span style="color:#900;font-weight:bold">Must</span>(template.<span style="color:#900;font-weight:bold">New</span>(<span style="color:#b84">&#34;table&#34;</span>).<span style="color:#900;font-weight:bold">Parse</span>(rowTemplate))
+
+	<span style="font-weight:bold">for</span> _, book <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> books {
+		err <span style="font-weight:bold">:=</span> t.<span style="color:#900;font-weight:bold">Execute</span>(buf, book)
+		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+			log.<span style="color:#900;font-weight:bold">Println</span>(<span style="color:#b84">&#34;Error executing template:&#34;</span>, err)
+		}
+	}
+
+	<span style="font-weight:bold">return</span> buf.<span style="color:#900;font-weight:bold">String</span>()
+}</code></pre></div>
+<p>In the <code>report</code> package, we have a single function <code>Generate</code> which generates
+the report Markdown table. It gets all the books from the <code>books.Books</code>
+package, iterates over them and uses the <code>rowTemplate</code> to generate each of the
+rows of the table. In the end, it returns the whole Markdown table as in a
+single string.</p>
+<p>Let's take a quick peek at the <code>books</code> package:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#998;font-style:italic">// books/books.go
+</span><span style="color:#998;font-style:italic"></span>
+<span style="font-weight:bold">package</span> books
+
+<span style="font-weight:bold">type</span> Book <span style="font-weight:bold">struct</span> {
+	ISBN      <span style="color:#458;font-weight:bold">string</span>
+	Title     <span style="color:#458;font-weight:bold">string</span>
+	Author    <span style="color:#458;font-weight:bold">string</span>
+	Pages     <span style="color:#458;font-weight:bold">int</span>
+	Publisher <span style="color:#458;font-weight:bold">string</span>
+	Price     <span style="color:#458;font-weight:bold">int</span>
+}
+
+<span style="font-weight:bold">var</span> Books []Book = []Book{
+	Book{
+		ISBN:      <span style="color:#b84">&#34;978-1591847786&#34;</span>,
+		Title:     <span style="color:#b84">&#34;Hooked&#34;</span>,
+		Author:    <span style="color:#b84">&#34;Nir Eyal&#34;</span>,
+		Pages:     <span style="color:#099">256</span>,
+		Publisher: <span style="color:#b84">&#34;Portfolio&#34;</span>,
+		Price:     <span style="color:#099">19</span>,
+	},
+	Book{
+		ISBN:      <span style="color:#b84">&#34;978-1434442017&#34;</span>,
+		Title:     <span style="color:#b84">&#34;The Great Gatsby&#34;</span>,
+		Author:    <span style="color:#b84">&#34;F. Scott Fitzgerald&#34;</span>,
+		Pages:     <span style="color:#099">140</span>,
+		Publisher: <span style="color:#b84">&#34;Wildside Press&#34;</span>,
+		Price:     <span style="color:#099">12</span>,
+	},
+	Book{
+		ISBN:      <span style="color:#b84">&#34;978-1784756260&#34;</span>,
+		Title:     <span style="color:#b84">&#34;Then She Was Gone: A Novel&#34;</span>,
+		Author:    <span style="color:#b84">&#34;Lisa Jewell&#34;</span>,
+		Pages:     <span style="color:#099">448</span>,
+		Publisher: <span style="color:#b84">&#34;Arrow&#34;</span>,
+		Price:     <span style="color:#099">29</span>,
+	},
+	Book{
+		ISBN:      <span style="color:#b84">&#34;978-1094400648&#34;</span>,
+		Title:     <span style="color:#b84">&#34;Think Like a Billionaire&#34;</span>,
+		Author:    <span style="color:#b84">&#34;James Altucher&#34;</span>,
+		Pages:     <span style="color:#099">852</span>,
+		Publisher: <span style="color:#b84">&#34;Scribd, Inc.&#34;</span>,
+		Price:     <span style="color:#099">9</span>,
+	},
+}</code></pre></div>
+<p>The <code>books</code> package contains just the list of the books in our fake inventory.</p>
+<p>If we ran the code we would get the following output:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go run main.go
+
+| Title         | Author        | Publisher |  Pages  |  ISBN  |  Price  |
+| ------------- | ------------- | --------- | ------- | ------ | ------- |
+|  Hooked  |  Nir Eyal  |  Portfolio  |  <span style="color:#099">256</span>  |  978-1591847786  |  <span style="color:#099">19</span>  |
+|  The Great Gatsby  |  F. Scott Fitzgerald  |  Wildside Press  |  <span style="color:#099">140</span>  |  978-1434442017  |  <span style="color:#099">12</span>  |
+|  Then She Was Gone: A Novel  |  Lisa Jewell  |  Arrow  |  <span style="color:#099">448</span>  |  978-1784756260  |  <span style="color:#099">29</span>  |
+|  Think Like a Billionaire  |  James Altucher  |  Scribd, Inc.  |  <span style="color:#099">852</span>  |  978-1094400648  |  <span style="color:#099">9</span>  |</code></pre></div>
+<p>Given that this blog is generated using Markdown, here's the table rendered:</p>
+<table>
+<thead>
+<tr>
+<th>Title</th>
+<th>Author</th>
+<th>Publisher</th>
+<th>Pages</th>
+<th>ISBN</th>
+<th>Price</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hooked</td>
+<td>Nir Eyal</td>
+<td>Portfolio</td>
+<td>256</td>
+<td>978-1591847786</td>
+<td>19</td>
+</tr>
+<tr>
+<td>The Great Gatsby</td>
+<td>F. Scott Fitzgerald</td>
+<td>Wildside Press</td>
+<td>140</td>
+<td>978-1434442017</td>
+<td>12</td>
+</tr>
+<tr>
+<td>Then She Was Gone: A Novel</td>
+<td>Lisa Jewell</td>
+<td>Arrow</td>
+<td>448</td>
+<td>978-1784756260</td>
+<td>29</td>
+</tr>
+<tr>
+<td>Think Like a Billionaire</td>
+<td>James Altucher</td>
+<td>Scribd, Inc.</td>
+<td>852</td>
+<td>978-1094400648</td>
+<td>9</td>
+</tr>
+</tbody>
+</table>
+<p>Not the prettiest table in the world, still a good overview of the inventory.
+Now that we have the report in place let's see how we can test it.</p>
+<h2 id="testing-our-reports">Testing our reports</h2>
+<p>Testing the <code>Generate</code> function is straightforward, using the <a href="/post/testing-in-go-table-driven-tests/">table-driven
+approach</a>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> report
+
+<span style="font-weight:bold">import</span> (
+	<span style="color:#b84">&#34;strings&#34;</span>
+	<span style="color:#b84">&#34;testing&#34;</span>
+
+	<span style="color:#b84">&#34;github.com/fteem/go-playground/golden-files/books&#34;</span>
+)
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestGenerate</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	testcases <span style="font-weight:bold">:=</span> []<span style="font-weight:bold">struct</span> {
+		name  <span style="color:#458;font-weight:bold">string</span>
+		books []books.Book
+		want  <span style="color:#458;font-weight:bold">string</span>
+	}{
+		{
+			name: <span style="color:#b84">&#34;WithInventory&#34;</span>,
+			books: []books.Book{
+				books.Book{
+					Title:  <span style="color:#b84">&#34;The Da Vinci Code&#34;</span>,
+					Author: <span style="color:#b84">&#34;Dan Brown&#34;</span>,
+					Pages:  <span style="color:#099">592</span>,
+					ISBN:   <span style="color:#b84">&#34;978-0552161275&#34;</span>,
+					Price:  <span style="color:#099">7</span>,
+				},
+				books.Book{
+					Title:  <span style="color:#b84">&#34;American on Purpose&#34;</span>,
+					Author: <span style="color:#b84">&#34;Craig Ferguson&#34;</span>,
+					Pages:  <span style="color:#099">288</span>,
+					ISBN:   <span style="color:#b84">&#34;978-0061959158&#34;</span>,
+					Price:  <span style="color:#099">19</span>,
+				},
+			},
+			want: <span style="color:#b84">`</span><span style="color:#b84">
+</span><span style="color:#b84">| Title         | Author        | Pages  | ISBN  | Price  |
+</span><span style="color:#b84">| ------------- | ------------- | ------ | ----- | ------ |
+</span><span style="color:#b84">| The Da Vinci Code | Dan Brown | 592 | 978-0552161275 | 7 |
+</span><span style="color:#b84">| American on Purpose | Craig Ferguson | 288 | 978-0061959158 | 19 |
+</span><span style="color:#b84"></span><span style="color:#b84">`</span>,
+		},
+		{
+			name:  <span style="color:#b84">&#34;EmptyInventory&#34;</span>,
+			books: []books.Book{},
+			want: <span style="color:#b84">`</span><span style="color:#b84">
+</span><span style="color:#b84">| Title         | Author        | Pages  | ISBN  | Price  |
+</span><span style="color:#b84">| ------------- | ------------- | ------ | ----- | ------ |
+</span><span style="color:#b84"></span><span style="color:#b84">`</span>,
+		},
+	}
+
+	<span style="font-weight:bold">for</span> _, testcase <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> testcases {
+		got <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">Generate</span>(testcase.books)
+		<span style="font-weight:bold">if</span> got <span style="font-weight:bold">!=</span> testcase.want {
+			t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Want:\n%s\nGot:%s&#34;</span>, testcase.want, got)
+		}
+	}
+}</code></pre></div>
+<p>The formatting of the expected output is rather hard to scan. That's because
+our test cases test the actual output of the table, which is a string with a
+particular format.</p>
+<p>Even worse, in cases when these inconvenient strings are hardcoded, a failing
+test can be hard to debug if there's a mismatch in leading or trailing
+whitespace. Consider this case, for example:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#999">test</span> -v
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestGenerate
+--- FAIL: TestGenerate <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+    report_test.go:54: Want:
+
+        | Title         | Author        | Pages  | ISBN  | Price  |
+        | ------------- | ------------- | ------ | ----- | ------ |
+        | The Da Vinci Code | Dan Brown | <span style="color:#099">592</span> | 978-0552161275 | <span style="color:#099">7</span> |
+        | American on Purpose | Craig Ferguson | <span style="color:#099">288</span> | 978-0061959158 | <span style="color:#099">19</span> |
+
+        Got:
+        | Title         | Author        | Pages  | ISBN  | Price  |
+        | ------------- | ------------- | ------ | ----- | ------ |
+        | The Da Vinci Code | Dan Brown | <span style="color:#099">592</span> | 978-0552161275 | <span style="color:#099">7</span> |
+        | American on Purpose | Craig Ferguson | <span style="color:#099">288</span> | 978-0061959158 | <span style="color:#099">19</span> |
+FAIL
+<span style="color:#999">exit</span> status <span style="color:#099">1</span>
+FAIL	github.com/fteem/go-playground/golden-files/report-verbose	0.005s</code></pre></div>
+<p>While the <code>want</code>ed and the <code>got</code>ten values look identical, the test is failing
+because one of the values has trailing whitespace. To avoid hardcoding such
+outputs in our tests, we resort to using golden files.</p>
+<h2 id="converting-to-golden-files">Converting to golden files</h2>
+<p>To use the golden files, we need to extract the tables to a separate file in
+the <code>testdata</code> directory. If the <code>testdata</code> directory is foreign to you: it is
+a directory that the <code>go build</code> tool will ignore when building the binaries of
+your programs. You can read more about it in <a href="/post/testing-in-go-fixtures">my post on fixtures in
+Go</a>.</p>
+<p>Using this approach, we want to move the two table outputs to two different
+files:</p>
+<ol>
+<li><code>testdata/empty_inventory.golden</code>, and</li>
+<li><code>testdata/with_inventory.golden</code></li>
+</ol>
+<p>Both of them will have the corresponding output of the test cases:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ cat report/testdata/empty_inventory.golden
+| Title         | Author        | Publisher |  Pages  |  ISBN  |  Price  |
+| ------------- | ------------- | --------- | ------- | ------ | ------- |
+
+$ cat report/testdata/with_inventory.golden
+| Title         | Author        | Publisher |  Pages  |  ISBN  |  Price  |
+| ------------- | ------------- | --------- | ------- | ------ | ------- |
+| The Da Vinci Code | Dan Brown | Corgi | <span style="color:#099">592</span> | 978-0552161275 | <span style="color:#099">7</span> |
+| American on Purpose | Craig Ferguson | Harper Collins | <span style="color:#099">288</span> | 978-0061959158 | <span style="color:#099">19</span> |</code></pre></div>
+<p>Now, let's change up our test cases to use the golden files to compare the
+outputs:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> report
+
+<span style="font-weight:bold">import</span> (
+	<span style="color:#b84">&#34;io/ioutil&#34;</span>
+	<span style="color:#b84">&#34;testing&#34;</span>
+
+	<span style="color:#b84">&#34;github.com/fteem/go-playground/golden-files/books&#34;</span>
+)
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestGenerate</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	testcases <span style="font-weight:bold">:=</span> []<span style="font-weight:bold">struct</span> {
+		name   <span style="color:#458;font-weight:bold">string</span>
+		books  []books.Book
+<span style="display:block;width:100%;background-color:#e5e5e5">		golden <span style="color:#458;font-weight:bold">string</span>
+</span>	}{
+		{
+			name: <span style="color:#b84">&#34;WithInventory&#34;</span>,
+			books: []books.Book{
+				books.Book{
+					Title:     <span style="color:#b84">&#34;The Da Vinci Code&#34;</span>,
+					Author:    <span style="color:#b84">&#34;Dan Brown&#34;</span>,
+					Publisher: <span style="color:#b84">&#34;Corgi&#34;</span>,
+					Pages:     <span style="color:#099">592</span>,
+					ISBN:      <span style="color:#b84">&#34;978-0552161275&#34;</span>,
+					Price:     <span style="color:#099">7</span>,
+				},
+				books.Book{
+					Title:     <span style="color:#b84">&#34;American on Purpose&#34;</span>,
+					Author:    <span style="color:#b84">&#34;Craig Ferguson&#34;</span>,
+					Publisher: <span style="color:#b84">&#34;Harper Collins&#34;</span>,
+					Pages:     <span style="color:#099">288</span>,
+					ISBN:      <span style="color:#b84">&#34;978-0061959158&#34;</span>,
+					Price:     <span style="color:#099">19</span>,
+				},
+			},
+<span style="display:block;width:100%;background-color:#e5e5e5">			golden: <span style="color:#b84">&#34;with_inventory&#34;</span>,
+</span>		},
+		{
+			name:   <span style="color:#b84">&#34;EmptyInventory&#34;</span>,
+			books:  []books.Book{},
+<span style="display:block;width:100%;background-color:#e5e5e5">			golden: <span style="color:#b84">&#34;empty_inventory&#34;</span>,
+</span>		},
+	}
+
+	<span style="font-weight:bold">for</span> _, testcase <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> testcases {
+		got <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">Generate</span>(testcase.books)
+<span style="display:block;width:100%;background-color:#e5e5e5">		content, err <span style="font-weight:bold">:=</span> ioutil.<span style="color:#900;font-weight:bold">ReadFile</span>(<span style="color:#b84">&#34;testdata/&#34;</span> <span style="font-weight:bold">+</span> testcase.golden <span style="font-weight:bold">+</span> <span style="color:#b84">&#34;.golden&#34;</span>)
+</span><span style="display:block;width:100%;background-color:#e5e5e5">		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+</span><span style="display:block;width:100%;background-color:#e5e5e5">			t.<span style="color:#900;font-weight:bold">Fatalf</span>(<span style="color:#b84">&#34;Error loading golden file: %s&#34;</span>, err)
+</span><span style="display:block;width:100%;background-color:#e5e5e5">		}
+</span><span style="display:block;width:100%;background-color:#e5e5e5">		want <span style="font-weight:bold">:=</span> <span style="color:#999">string</span>(content)
+</span>
+		<span style="font-weight:bold">if</span> got <span style="font-weight:bold">!=</span> want {
+			t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Want:\n%s\nGot:\n%s&#34;</span>, want, got)
+		}
+	}
+}</code></pre></div>
+<p>The notable changes are on the highlighted lines above:</p>
+<ul>
+<li>we add a <code>golden</code> attribute to each test case, representing the name of its
+golden file</li>
+<li>for each of the test cases, we open the respective golden file and read all
+of its contents</li>
+<li>we use the contents to compare the expected (<code>want</code>) and the actual (<code>got</code>)
+values</li>
+</ul>
+<p>This approach removes hardcoded strings from our tests, and it comes with two
+important features:</p>
+<p>First, golden files are coupled to the test cases (a.k.a. the inputs). That
+means that if the inputs change, the output will change, so you will have to
+update the contents of the golden file. Also, if you add another test case, you
+will probably have to create a golden file for it. If you forget to create it,
+your tests will fail - which is a good thing!</p>
+<p>Second, golden files contain the <em>expected outcome</em> of a test case. So, if the
+implementation of the code under test changes, your test will fail - which is
+also a good thing! But that also means our golden files will be out of date,
+and we have to update them.</p>
+<p>Keeping our golden files up to date is a caveat that we always have to keep in
+mind. As our applications evolve and their functionalities change, the golden
+files will have to follow suit. If we're working on a project with many golden
+files, keeping them up to date can be a frustrating exercise. Therefore it's
+often a good idea to automate this, so it becomes an effortless task.</p>
+<p>Here's a straightforward way to automate the golden file updating.</p>
+<h2 id="keeping-our-golden-files-up-to-date">Keeping our golden files up to date</h2>
+<p>The whole idea here is, after any change of the implementation or the test
+inputs, to update the golden files saving ourselves time from copy-pasting
+outputs to files.</p>
+<p>The usual approach in the wild is to provide a command-line flag, usually
+<code>-update</code>, which you can use with the <code>go test</code> tool:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#998;font-style:italic">// report/report_test.go
+</span><span style="color:#998;font-style:italic"></span><span style="font-weight:bold">var</span> (
+	update = flag.<span style="color:#900;font-weight:bold">Bool</span>(<span style="color:#b84">&#34;update&#34;</span>, <span style="font-weight:bold">false</span>, <span style="color:#b84">&#34;update the golden files of this test&#34;</span>)
+)
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestMain</span>(m <span style="font-weight:bold">*</span>testing.M) {
+	flag.<span style="color:#900;font-weight:bold">Parse</span>()
+	os.<span style="color:#900;font-weight:bold">Exit</span>(m.<span style="color:#900;font-weight:bold">Run</span>())
+}</code></pre></div>
+<p>The <code>update</code> flag will be a <code>bool</code> that we will use in our function that will
+read and write to the golden files.</p>
+<p>Before Go v1.13, the test's <code>init</code> function invoked <code>flag.Parse()</code>. Since Go
+v1.13, the <code>TestMain</code> function should invoke the <code>flag.Parse()</code> function. This
+change of behavior is due to <a href="https://golang.org/doc/go1.13#testing">changes introduced in Go
+1.13</a>, where the <code>testing</code> package
+internally parses the flags before it runs the tests. Consequently, if we would
+skip the <code>TestMain</code> function, <code>go test</code> would not recognize the <code>-update</code> flag.</p>
+<p>(You can read more about the change in <a href="https://github.com/golang/go/issues/31859">this Github
+issue</a>.)</p>
+<p>If you are unsure about the meaning of the <code>TestMain</code> function, you can read
+more about it in my article on the topic
+<a href="/post/testing-in-go-subtests/#testmain">here</a>.</p>
+<p>Let's see the rest of the test file and the notable changes:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestGenerate</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	testcases <span style="font-weight:bold">:=</span> []<span style="font-weight:bold">struct</span> {
+		name   <span style="color:#458;font-weight:bold">string</span>
+		books  []books.Book
+		golden <span style="color:#458;font-weight:bold">string</span>
+	}{
+		{
+			name: <span style="color:#b84">&#34;WithInventory&#34;</span>,
+			books: []books.Book{
+				books.Book{
+					Title:     <span style="color:#b84">&#34;The Da Vinci Code&#34;</span>,
+					Author:    <span style="color:#b84">&#34;Dan Brown&#34;</span>,
+					Publisher: <span style="color:#b84">&#34;Corgi&#34;</span>,
+					Pages:     <span style="color:#099">592</span>,
+					ISBN:      <span style="color:#b84">&#34;978-0552161275&#34;</span>,
+					Price:     <span style="color:#099">7</span>,
+				},
+				books.Book{
+					Title:     <span style="color:#b84">&#34;American on Purpose&#34;</span>,
+					Author:    <span style="color:#b84">&#34;Craig Ferguson&#34;</span>,
+					Publisher: <span style="color:#b84">&#34;Harper Collins&#34;</span>,
+					Pages:     <span style="color:#099">288</span>,
+					ISBN:      <span style="color:#b84">&#34;978-0061959158&#34;</span>,
+					Price:     <span style="color:#099">19</span>,
+				},
+			},
+			golden: <span style="color:#b84">&#34;with_inventory&#34;</span>,
+		},
+		{
+			name:   <span style="color:#b84">&#34;EmptyInventory&#34;</span>,
+			books:  []books.Book{},
+			golden: <span style="color:#b84">&#34;empty_inventory&#34;</span>,
+		},
+	}
+
+	<span style="font-weight:bold">for</span> _, testcase <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> testcases {
+		got <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">Generate</span>(testcase.books)
+<span style="display:block;width:100%;background-color:#e5e5e5">		want <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">goldenValue</span>(t, testcase.golden, got, <span style="font-weight:bold">*</span>update)
+</span>
+		<span style="font-weight:bold">if</span> got <span style="font-weight:bold">!=</span> want {
+			t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Want:\n%s\nGot:\n%s&#34;</span>, want, got)
+		}
+	}
+}
+
+<span style="display:block;width:100%;background-color:#e5e5e5"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">goldenValue</span>(t <span style="font-weight:bold">*</span>testing.T, goldenFile <span style="color:#458;font-weight:bold">string</span>, actual <span style="color:#458;font-weight:bold">string</span>, update <span style="color:#458;font-weight:bold">bool</span>) <span style="color:#458;font-weight:bold">string</span> {
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	t.<span style="color:#900;font-weight:bold">Helper</span>()
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	goldenPath <span style="font-weight:bold">:=</span> <span style="color:#b84">&#34;testdata/&#34;</span> <span style="font-weight:bold">+</span> goldenFile <span style="font-weight:bold">+</span> <span style="color:#b84">&#34;.golden&#34;</span>
+</span><span style="display:block;width:100%;background-color:#e5e5e5">
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	f, err <span style="font-weight:bold">:=</span> os.<span style="color:#900;font-weight:bold">OpenFile</span>(goldenPath, os.O_RDWR, <span style="color:#099">0644</span>)
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	<span style="font-weight:bold">defer</span> f.<span style="color:#900;font-weight:bold">Close</span>()
+</span><span style="display:block;width:100%;background-color:#e5e5e5">
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	<span style="font-weight:bold">if</span> update {
+</span><span style="display:block;width:100%;background-color:#e5e5e5">		_, err <span style="font-weight:bold">:=</span> f.<span style="color:#900;font-weight:bold">WriteString</span>(actual)
+</span><span style="display:block;width:100%;background-color:#e5e5e5">		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+</span><span style="display:block;width:100%;background-color:#e5e5e5">			t.<span style="color:#900;font-weight:bold">Fatalf</span>(<span style="color:#b84">&#34;Error writing to file %s: %s&#34;</span>, goldenPath, err)
+</span><span style="display:block;width:100%;background-color:#e5e5e5">		}
+</span><span style="display:block;width:100%;background-color:#e5e5e5">
+</span><span style="display:block;width:100%;background-color:#e5e5e5">		<span style="font-weight:bold">return</span> actual
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	}
+</span><span style="display:block;width:100%;background-color:#e5e5e5">
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	content, err <span style="font-weight:bold">:=</span> ioutil.<span style="color:#900;font-weight:bold">ReadAll</span>(f)
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+</span><span style="display:block;width:100%;background-color:#e5e5e5">		t.<span style="color:#900;font-weight:bold">Fatalf</span>(<span style="color:#b84">&#34;Error opening file %s: %s&#34;</span>, goldenPath, err)
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	}
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	<span style="font-weight:bold">return</span> <span style="color:#999">string</span>(content)
+</span><span style="display:block;width:100%;background-color:#e5e5e5">}</span></code></pre></div>
+<p>The significant changes are in the highlighted lines above.</p>
+<p>The <code>goldenValue</code> function takes the <code>goldenFile</code> name as an argument, with the
+<code>actual</code> value of the test returned by the function under test and with the
+<code>update</code> bool passed from the flag.</p>
+<p>Then it takes three steps:</p>
+<ol>
+<li>It opens the golden file in an R/W mode.</li>
+<li>If the <code>update</code> flag is <code>true</code>, it will update the golden file with the
+contents saved in the <code>actual</code> argument and return it.</li>
+<li>If the <code>update</code> flag is not set, it will continue to read the contents of
+the golden file and return them as a string.</li>
+</ol>
+<p>If any of the reading or writing steps fail, it will crash the test and stop
+further test execution.</p>
+<p>Let's test this in action. First, the usual, flag-less run of <code>go test</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#999">test</span> -v ./report/...
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestGenerate
+--- PASS: TestGenerate <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+PASS
+ok  	github.com/fteem/go-playground/golden-files/report0.005s &gt;<span style="font-weight:bold">}</span><span style="font-weight:bold">}</span></code></pre></div>
+<p>Now, let's change our implementation. We will remove the publisher column from
+the report that will make our tests fail because the golden file expects the
+Publisher column to be present:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#999">test</span> -v ./report/...
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestGenerate
+--- FAIL: TestGenerate <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+    report_test.go:61: Want:
+
+        | Title         | Author        | Publisher |  Pages  |  ISBN  |  Price  |
+        | ------------- | ------------- | --------- | ------- | ------ | ------- |
+        | The Da Vinci Code | Dan Brown | Corgi | <span style="color:#099">592</span> | 978-0552161275 | <span style="color:#099">7</span> |
+        | American on Purpose | Craig Ferguson | Harper Collins | <span style="color:#099">288</span> | 978-0061959158 | <span style="color:#099">19</span> |
+
+        Got:
+
+        | Title         | Author        |  Pages  |  ISBN  |  Price  |
+        | ------------- | ------------- | ------- | ------ | ------- |
+        | The Da Vinci Code | Dan Brown | <span style="color:#099">592</span> | 978-0552161275 | <span style="color:#099">7</span> |
+        | American on Purpose | Craig Ferguson | <span style="color:#099">288</span> | 978-0061959158 | <span style="color:#099">19</span> |
+    report_test.go:61: Want:
+
+        | Title         | Author        | Publisher |  Pages  |  ISBN  |  Price  |
+        | ------------- | ------------- | --------- | ------- | ------ | ------- |
+
+        Got:
+
+        | Title         | Author        |  Pages  |  ISBN  |  Price  |
+        | ------------- | ------------- | ------- | ------ | ------- |
+FAIL
+FAIL	github.com/fteem/go-playground/golden-files/report	0.006s
+FAIL</code></pre></div>
+<p>The difference in the two failing tests is noticeable – we're missing the
+column. Since we know that this is the new behavior of the report going
+forward, we only want to update the golden files. Let's add the <code>-update</code> flag:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#999">test</span> -v ./report/... -update
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestGenerate
+--- PASS: TestGenerate <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+PASS
+ok  	github.com/fteem/go-playground/golden-files/report	0.006s</code></pre></div>
+<p>Nothing special, only passing tests? Let's inspect the contents of the golden
+files:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ cat report/testdata/with_inventory.golden report/testdata/empty_inventory.golden
+
+report/testdata/with_inventory.golden
+| Title         | Author        |  Pages  |  ISBN  |  Price  |
+| ------------- | ------------- | ------- | ------ | ------- |
+| The Da Vinci Code | Dan Brown | <span style="color:#099">592</span> | 978-0552161275 | <span style="color:#099">7</span> |
+| American on Purpose | Craig Ferguson | <span style="color:#099">288</span> | 978-0061959158 | <span style="color:#099">19</span> |
+
+report/testdata/empty_inventory.golden
+
+| Title         | Author        |  Pages  |  ISBN  |  Price  |
+| ------------- | ------------- | ------- | ------ | ------- |</code></pre></div>
+<p>Voilà! The using the <code>-update</code> flag, we removed the &ldquo;Publisher&rdquo; from our golden
+files, and the tests pass.</p>
+<h2 id="few-words-of-caution">Few words of caution</h2>
+<p>While the golden files are a simple technique that improves our tests&rsquo;
+legibility, they come with a few caveats.</p>
+<p>It's important to remember that you have to version these files. They are part
+of the project, and if you do not check them in your version control, your test
+suite will fail the moment it's run in continuous integration.</p>
+<p>Also, like <a href="/post/testing-in-go-fixtures">fixtures</a>, you should keep them in
+your <code>testdata</code> directory. The <code>go build</code> tool ignores any files in a
+<code>testdata</code> directory, and it excludes these files when building the binary.
+While we are comparing golden files and fixtures, there is another similarity
+between the two - the test files are not self-sufficient. This means that you
+will have to know the contents of another file to understand what is the
+expected outcome of your tests.</p>
+<p>Furthermore, parsing the golden files can be funny (or frustrating), depending
+on their content. Be careful when you're storing content like the one I showed
+in the example above. If the golden file has lots of whitespaces, new lines or
+indentation, parsing, and comparing it to other strings can be annoying to
+debug.</p>
+<p>Lastly, the <code>-update</code> flag has an important caveat: <strong>it must be available in
+all packages</strong> of your project to function. If you would like to be able to run
+<code>go test ./...  -update</code> to update all golden files in your project, all
+packages in the project must know of <code>-update</code>.</p>
+<p>Even if there's one package that is not aware of <code>-update</code>, running the tests will
+error out:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">❯ go <span style="color:#999">test</span> ./... -v -update
+?   	github.com/fteem/go-playground/golden-files	<span style="font-weight:bold">[</span>no <span style="color:#999">test</span> files<span style="font-weight:bold">]</span>
+flag provided but not defined: -update</code></pre></div>
+<p>Such a behavior is because my Go module has more than one package in it, while
+only one of them (<code>report</code>) knows of <code>-update</code>'s existence.</p>
+<p>In general, the benefits you get with golden files are great, but I suggest
+treading carefully, given the caveats mentioned above.</p>
+
+			</div>
+
+			<div class="tags">
+				
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the </a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2020 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>
