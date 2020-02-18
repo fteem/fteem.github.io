@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Testing in Go: Clean Tests Using t.Cleanup - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Testing in Go: Clean Tests Using t.Cleanup" />
+<meta property="og:description" content="Go v1.14 ships with improvements across different aspects of the language. Two of them are brand new t.Cleanup, and b.Cleanup methods, added to the testing package.
+The introduction of these methods will make it easier for our tests to clean up after themselves. This was always achievable through the careful composition of (sub)tests and helper functions, but since Go 1.14, the testing package will ship with one right way to do that." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/testing-in-go-clean-tests-using-t-cleanup/" />
+<meta property="og:image" content="https://ieftimov.com/cards/testing-in-go-clean-tests-using-t-cleanup.png" />
+<meta property="article:published_time" content="2020-02-18T00:00:00+00:00" />
+<meta property="article:modified_time" content="2020-02-18T00:00:00+00:00" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/testing-in-go-clean-tests-using-t-cleanup.png"/>
+
+<meta name="twitter:title" content="Testing in Go: Clean Tests Using t.Cleanup"/>
+<meta name="twitter:description" content="Go v1.14 ships with improvements across different aspects of the language. Two of them are brand new t.Cleanup, and b.Cleanup methods, added to the testing package.
+The introduction of these methods will make it easier for our tests to clean up after themselves. This was always achievable through the careful composition of (sub)tests and helper functions, but since Go 1.14, the testing package will ship with one right way to do that."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.com/css/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.com/js/main.js"></script><script src="https://ieftimov.com/js/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com/">
+				<img src="https://pbs.twimg.com/profile_images/1194757753585225728/JbET17PZ_400x400.jpg" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com/">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>A human, interested in building products and software.</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/categories/testing-in-go">Testing in Go</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">18</span>
+							<span class="rest">Feb 2020</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Testing in Go: Clean Tests Using t.Cleanup</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>Go v1.14 ships with improvements across different aspects of the language. Two
+of them are brand new <code>t.Cleanup</code>, and <code>b.Cleanup</code> methods, added to the
+<code>testing</code> package.</p>
+<p>The introduction of these methods will make it easier for our tests to clean up
+after themselves. This was always achievable through the careful composition of
+(sub)tests and helper functions, but since Go 1.14, the <code>testing</code> package will
+ship with one right way to do that.</p>
+<p>Let's explore through a scenario, one very common in web development, how these
+methods work, and how to put them in use.</p>
+<p><em>In this article, we will focus on the <a href="https://tip.golang.org/pkg/testing/#T.Cleanup"><code>t.Cleanup</code>
+function</a>, but the points made
+here apply to the <a href="https://tip.golang.org/pkg/testing/#B.Cleanup"><code>b.Cleanup</code>
+function</a> too.</em></p>
+<h2 id="vulnerable-authentication">Vulnerable Authentication</h2>
+<p>A web service that we own has an authentication middleware that uses HTTP
+Basic Authentication. The middleware takes the <code>Authorization</code> header values of
+an HTTP request using the <a href="https://golang.org/pkg/net/http/#Request.BasicAuth"><code>BasicAuth</code> helper
+method</a> and authenticates
+the request. Depending on the authentication result, it will return an error
+response or let the request go through.</p>
+<p>The <code>AuthMiddleware</code> authorization middleware:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> AuthMiddleware <span style="font-weight:bold">struct</span> {
+	db <span style="font-weight:bold">*</span>gorm.DB
+}
+
+<span style="font-weight:bold">func</span> (am <span style="font-weight:bold">*</span>AuthMiddleware) <span style="color:#900;font-weight:bold">Validate</span>(username, password <span style="color:#458;font-weight:bold">string</span>) <span style="color:#458;font-weight:bold">bool</span> {
+	<span style="font-weight:bold">var</span> u User
+
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">:=</span> am.db.<span style="color:#900;font-weight:bold">Where</span>(<span style="color:#b84">&#34;username = ? AND password = ?&#34;</span>, username, password).<span style="color:#900;font-weight:bold">First</span>(<span style="font-weight:bold">&amp;</span>u).Error; err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		<span style="font-weight:bold">return</span> <span style="font-weight:bold">false</span>
+	}
+
+	<span style="font-weight:bold">return</span> <span style="font-weight:bold">true</span>
+}
+
+<span style="font-weight:bold">func</span> (am <span style="font-weight:bold">*</span>AuthMiddleware) <span style="color:#900;font-weight:bold">Middleware</span>(next http.Handler) http.Handler {
+	<span style="font-weight:bold">return</span> http.<span style="color:#900;font-weight:bold">HandlerFunc</span>(<span style="font-weight:bold">func</span>(w http.ResponseWriter, r <span style="font-weight:bold">*</span>http.Request) {
+		<span style="font-weight:bold">if</span> u, p, ok <span style="font-weight:bold">:=</span> r.<span style="color:#900;font-weight:bold">BasicAuth</span>(); ok <span style="font-weight:bold">&amp;&amp;</span> am.<span style="color:#900;font-weight:bold">Validate</span>(u, p) {
+			next.<span style="color:#900;font-weight:bold">ServeHTTP</span>(w, r)
+		} <span style="font-weight:bold">else</span> {
+			http.<span style="color:#900;font-weight:bold">Error</span>(w, <span style="color:#b84">&#34;Forbidden&#34;</span>, http.StatusForbidden)
+		}
+	})
+}</code></pre></div>
+<p>The <code>AuthMiddleware</code> is a <code>struct</code> that has a <code>db</code> attribute of the type
+<code>*gorm.DB</code>, which, in fact, is a <a href="https://gorm.io">Gorm</a> database connection
+pool. The <code>Validate</code> method of the middleware will check the validity of the
+authorization credentials sent by the client. (Yes, this is a very dumb and
+vulnerable service - stores plain text passwords in the database. No, you
+should <strong>never</strong> keep your customers&rsquo; passwords in plain text.)</p>
+<p>To do that, it uses the <a href="https://golang.org/pkg/net/http/#Request.BasicAuth"><code>Request.BasicAuth</code>
+method</a> that returns the
+username and password provided in the request's <code>Authorization</code> header. Then,
+we invoke the <code>Validate</code> method with <code>u</code> (the username) and <code>p</code> (the password)
+as arguments, that returns a <code>bool</code>.</p>
+<p>When the request successfully authorized, the response of the endpoint will be
+returned. If the request does not supply proper HTTP Basic Authentication
+credentials, or the supplied credentials are invalid, it will return an <code>HTTP 403</code> Forbidden error.</p>
+<p>The simplistic server that builds the router and mounts the handler and the
+middleware:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	db, err <span style="font-weight:bold">:=</span> gorm.<span style="color:#900;font-weight:bold">Open</span>(<span style="color:#b84">&#34;sqlite3&#34;</span>, <span style="color:#b84">&#34;./cleanups.db&#34;</span>)
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		log.<span style="color:#900;font-weight:bold">Fatal</span>(err)
+	}
+	<span style="font-weight:bold">defer</span> db.<span style="color:#900;font-weight:bold">Close</span>()
+
+	aum <span style="font-weight:bold">:=</span> <span style="font-weight:bold">&amp;</span>AuthMiddleware{db}
+	r <span style="font-weight:bold">:=</span> mux.<span style="color:#900;font-weight:bold">NewRouter</span>()
+	r.<span style="color:#900;font-weight:bold">Use</span>(aum.Middleware)
+	r.<span style="color:#900;font-weight:bold">HandleFunc</span>(<span style="color:#b84">&#34;/foo&#34;</span>, <span style="font-weight:bold">func</span>(w http.ResponseWriter, r <span style="font-weight:bold">*</span>http.Request) {
+                io.<span style="color:#900;font-weight:bold">WriteString</span>(w, <span style="color:#b84">&#34;6 x 9 = 42\n&#34;</span>)
+	})
+
+	log.<span style="color:#900;font-weight:bold">Fatal</span>(http.<span style="color:#900;font-weight:bold">ListenAndServe</span>(<span style="color:#b84">&#34;:8888&#34;</span>, r))
+}</code></pre></div>
+<p>The <code>main</code> function opens a Gorm connection to an <code>SQLite3</code> database, builds a
+<code>mux</code> router, and mounts a handler at the <code>/foo</code> URI. Then, it mounts the
+router on a server and starts listening on <code>127.0.0.1:8888</code>.</p>
+<p>So, a sensible question would be, how can we test such a middleware? Since
+there is a database connection in play here, we have to make sure the database
+contains the actual <code>username</code> and <code>password</code> we want to send in the test.</p>
+<h2 id="testing-the-vulnerable-authentication">Testing the Vulnerable Authentication</h2>
+<p>Given that the authorization middleware expects a database connection, testing
+it can be a messy exercise. To test it, we will have to open a database
+connection (to a test database) and then use it to initialize a test server
+that mounts the router. Then, we have to send requests to that same server and
+run our assertions on its response body and status.</p>
+<p>Let's take a stab at it:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+	<span style="color:#b84">&#34;fmt&#34;</span>
+	<span style="color:#b84">&#34;io/ioutil&#34;</span>
+	<span style="color:#b84">&#34;log&#34;</span>
+	<span style="color:#b84">&#34;net/http&#34;</span>
+	<span style="color:#b84">&#34;net/http/httptest&#34;</span>
+	<span style="color:#b84">&#34;os&#34;</span>
+	<span style="color:#b84">&#34;strings&#34;</span>
+	<span style="color:#b84">&#34;testing&#34;</span>
+
+	<span style="color:#b84">&#34;github.com/jinzhu/gorm&#34;</span>
+)
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestServer</span>(t <span style="font-weight:bold">*</span>testing.T) {
+<span style="display:block;width:100%;background-color:#e5e5e5">	db, err <span style="font-weight:bold">:=</span> gorm.<span style="color:#900;font-weight:bold">Open</span>(<span style="color:#b84">&#34;sqlite3&#34;</span>, <span style="color:#b84">&#34;./cleanups_test.db&#34;</span>)
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+</span><span style="display:block;width:100%;background-color:#e5e5e5">		t.<span style="color:#900;font-weight:bold">Fatal</span>(err)
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	}
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	<span style="font-weight:bold">defer</span> db.<span style="color:#900;font-weight:bold">Close</span>()
+</span><span style="display:block;width:100%;background-color:#e5e5e5">
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	r <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">Router</span>(db)
+</span>
+	tcs <span style="font-weight:bold">:=</span> []<span style="font-weight:bold">struct</span> {
+		name           <span style="color:#458;font-weight:bold">string</span>
+		username       <span style="color:#458;font-weight:bold">string</span>
+		password       <span style="color:#458;font-weight:bold">string</span>
+		responseBody   <span style="color:#458;font-weight:bold">string</span>
+		responseStatus <span style="color:#458;font-weight:bold">int</span>
+	}{
+		{
+			name:           <span style="color:#b84">&#34;with invalid username-password combo&#34;</span>,
+			username:       <span style="color:#b84">&#34;jane&#34;</span>,
+			password:       <span style="color:#b84">&#34;doe&#34;</span>,
+			responseBody:   <span style="color:#b84">&#34;Forbidden&#34;</span>,
+			responseStatus: http.StatusForbidden,
+		},
+		{
+			name:           <span style="color:#b84">&#34;with valid username-password combo&#34;</span>,
+			username:       <span style="color:#b84">&#34;jane&#34;</span>,
+			password:       <span style="color:#b84">&#34;doe123&#34;</span>,
+			responseBody:   <span style="color:#b84">&#34;6 x 9 = 42&#34;</span>,
+			responseStatus: http.StatusOK,
+		},
+	}
+
+<span style="display:block;width:100%;background-color:#e5e5e5">	ts <span style="font-weight:bold">:=</span> httptest.<span style="color:#900;font-weight:bold">NewServer</span>(r)
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	<span style="font-weight:bold">defer</span> ts.<span style="color:#900;font-weight:bold">Close</span>()
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	client <span style="font-weight:bold">:=</span> ts.<span style="color:#900;font-weight:bold">Client</span>()
+</span><span style="display:block;width:100%;background-color:#e5e5e5">
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	req, err <span style="font-weight:bold">:=</span> http.<span style="color:#900;font-weight:bold">NewRequest</span>(<span style="color:#b84">&#34;GET&#34;</span>, fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;%s/foo&#34;</span>, ts.URL), <span style="font-weight:bold">nil</span>)
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+</span><span style="display:block;width:100%;background-color:#e5e5e5">		t.<span style="color:#900;font-weight:bold">Fatal</span>(err)
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	}
+</span>
+	<span style="font-weight:bold">for</span> _, tc <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> tcs {
+		t.<span style="color:#900;font-weight:bold">Run</span>(tc.name, <span style="font-weight:bold">func</span>(t <span style="font-weight:bold">*</span>testing.T) {
+<span style="display:block;width:100%;background-color:#e5e5e5">			req.<span style="color:#900;font-weight:bold">SetBasicAuth</span>(tc.username, tc.password)
+</span>
+			res, err <span style="font-weight:bold">:=</span> client.<span style="color:#900;font-weight:bold">Do</span>(req)
+			<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+				t.<span style="color:#900;font-weight:bold">Fatal</span>(err)
+			}
+			<span style="font-weight:bold">defer</span> res.Body.<span style="color:#900;font-weight:bold">Close</span>()
+
+			response, err <span style="font-weight:bold">:=</span> ioutil.<span style="color:#900;font-weight:bold">ReadAll</span>(res.Body)
+			<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+				t.<span style="color:#900;font-weight:bold">Errorf</span>(err)
+			}
+
+			<span style="font-weight:bold">if</span> res.StatusCode <span style="font-weight:bold">!=</span> tc.responseStatus {
+				t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Want &#39;%d&#39;, got &#39;%d&#39;&#34;</span>, tc.responseStatus, res.StatusCode)
+			}
+
+			<span style="font-weight:bold">if</span> strings.<span style="color:#900;font-weight:bold">TrimSpace</span>(<span style="color:#999">string</span>(response)) <span style="font-weight:bold">!=</span> tc.responseBody {
+				t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span>, tc.responseBody, <span style="color:#999">string</span>(response))
+			}
+		})
+	}
+}</code></pre></div>
+<p>We first open a database connection to a test database and pass the
+connection as an argument to the <code>Router</code> function. In the second highlighted
+block, we mount the returned router from the <code>Router</code> function on the test HTTP
+server. Also, we create a client for the server that we will use to send
+requests to the server.</p>
+<p>We then build a new request for the server, and in the next highlighted block,
+we attach the <code>username</code> and the <code>password</code> of the test case to the request
+using the <a href="https://golang.org/pkg/net/http/#Request.SetBasicAuth"><code>Request.SetBasicAuth</code>
+method</a>.</p>
+<p>We send the request to the HTTP server using the <a href="https://golang.org/pkg/net/http/#Client.Do"><code>client.Do</code>
+method</a>, and get a response back.
+We then parse the response and do our assertions on the status code of the
+response and the contents of the body.</p>
+<p>If we ran this test, it would fail. Why? Although the test setup is correct,
+the test database is empty. When we send a request to the HTTP server, it will
+try to validate the credentials our test sends, and it will find an empty
+database:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#999">test</span> ./... -v -count<span style="font-weight:bold">=</span><span style="color:#008080">1</span>
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestServer
+    TestServer: server_test.go:17: no such table: users
+
+<span style="font-weight:bold">(</span>/app/server_test.go:16<span style="font-weight:bold">)</span>
+<span style="font-weight:bold">[</span>2020-02-16 17:29:26<span style="font-weight:bold">]</span>  no such table: users
+--- FAIL: TestServer <span style="font-weight:bold">(</span>0.01s<span style="font-weight:bold">)</span>
+FAIL
+FAIL	github.com/fteem/go-playground/testing-in-go-cleanup	0.015s
+FAIL</code></pre></div>
+<p>This means our test is missing an initial seed of test data, where we create
+the <code>users</code> table and put some records in it so we can use them in the test.</p>
+<h2 id="adding-data-and-cleaning-it-up-the-old-way">Adding data and cleaning it up, the old way</h2>
+<p>The widely-approved approach to seeding the test database is to insert some
+records before running the test and then remove them once the test is done.
+The benefit being that the database will always be empty after the tests are
+done running, without the need to recreate the database and its tables every
+time we run the tests. Precisely what our failing tests need.</p>
+<p>Achieving this in the most idiomatic way is by using a cleanup closure that is
+returned by the function that inserts the data. Usually, the returning cleanup
+function &ldquo;pattern&rdquo; looks like this:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="display:block;width:100%;background-color:#e5e5e5"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">createUser</span>(t <span style="font-weight:bold">*</span>testing.T, db <span style="font-weight:bold">*</span>gorm.DB) <span style="font-weight:bold">func</span>() {
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	user <span style="font-weight:bold">:=</span> User{Username: <span style="color:#b84">&#34;jane&#34;</span>, Password: <span style="color:#b84">&#34;doe123&#34;</span>}
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">:=</span> db.<span style="color:#900;font-weight:bold">Create</span>(<span style="font-weight:bold">&amp;</span>user).Error; err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+</span><span style="display:block;width:100%;background-color:#e5e5e5">		t.<span style="color:#900;font-weight:bold">Fatal</span>(err)
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	}
+</span><span style="display:block;width:100%;background-color:#e5e5e5">
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	<span style="font-weight:bold">return</span> <span style="font-weight:bold">func</span>() {
+</span><span style="display:block;width:100%;background-color:#e5e5e5">		db.<span style="color:#900;font-weight:bold">Delete</span>(<span style="font-weight:bold">&amp;</span>user)
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	}
+</span><span style="display:block;width:100%;background-color:#e5e5e5">}
+</span>
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestServer</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	db, err <span style="font-weight:bold">:=</span> gorm.<span style="color:#900;font-weight:bold">Open</span>(<span style="color:#b84">&#34;sqlite3&#34;</span>, <span style="color:#b84">&#34;./cleanups_test.db&#34;</span>)
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		t.<span style="color:#900;font-weight:bold">Fatal</span>(err)
+	}
+	<span style="font-weight:bold">defer</span> db.<span style="color:#900;font-weight:bold">Close</span>()
+
+<span style="display:block;width:100%;background-color:#e5e5e5">	cleanup <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">createUser</span>(t, db)
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	<span style="font-weight:bold">defer</span> <span style="color:#900;font-weight:bold">cleanup</span>()
+</span>
+	r <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">Router</span>(db)
+
+	tcs <span style="font-weight:bold">:=</span> []<span style="font-weight:bold">struct</span> {
+		name           <span style="color:#458;font-weight:bold">string</span>
+		username       <span style="color:#458;font-weight:bold">string</span>
+		password       <span style="color:#458;font-weight:bold">string</span>
+		responseBody   <span style="color:#458;font-weight:bold">string</span> responseStatus <span style="color:#458;font-weight:bold">int</span>
+	}{
+		{
+			name:           <span style="color:#b84">&#34;with invalid username-password combo&#34;</span>,
+			username:       <span style="color:#b84">&#34;jane&#34;</span>,
+			password:       <span style="color:#b84">&#34;doe&#34;</span>,
+			responseBody:   <span style="color:#b84">&#34;Forbidden&#34;</span>,
+			responseStatus: http.StatusForbidden,
+		},
+		{
+			name:           <span style="color:#b84">&#34;with valid username-password combo&#34;</span>,
+			username:       <span style="color:#b84">&#34;jane&#34;</span>,
+			password:       <span style="color:#b84">&#34;doe123&#34;</span>,
+			responseBody:   <span style="color:#b84">&#34;6 x 9 = 42&#34;</span>,
+			responseStatus: http.StatusOK,
+		},
+	}
+
+	ts <span style="font-weight:bold">:=</span> httptest.<span style="color:#900;font-weight:bold">NewServer</span>(r)
+	<span style="font-weight:bold">defer</span> ts.<span style="color:#900;font-weight:bold">Close</span>()
+	client <span style="font-weight:bold">:=</span> ts.<span style="color:#900;font-weight:bold">Client</span>()
+
+	req, err <span style="font-weight:bold">:=</span> http.<span style="color:#900;font-weight:bold">NewRequest</span>(<span style="color:#b84">&#34;GET&#34;</span>, fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;%s/foo&#34;</span>, ts.URL), <span style="font-weight:bold">nil</span>)
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		t.<span style="color:#900;font-weight:bold">Fatal</span>(err)
+	}
+
+	<span style="font-weight:bold">for</span> _, tc <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> tcs {
+		t.<span style="color:#900;font-weight:bold">Run</span>(tc.name, <span style="font-weight:bold">func</span>(t <span style="font-weight:bold">*</span>testing.T) {
+			req.<span style="color:#900;font-weight:bold">SetBasicAuth</span>(tc.username, tc.password)
+
+			res, err <span style="font-weight:bold">:=</span> client.<span style="color:#900;font-weight:bold">Do</span>(req)
+			<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+				t.<span style="color:#900;font-weight:bold">Fatal</span>(err)
+			}
+			<span style="font-weight:bold">defer</span> res.Body.<span style="color:#900;font-weight:bold">Close</span>()
+
+			response, err <span style="font-weight:bold">:=</span> ioutil.<span style="color:#900;font-weight:bold">ReadAll</span>(res.Body)
+			<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+				t.<span style="color:#900;font-weight:bold">Error</span>(err)
+			}
+
+			<span style="font-weight:bold">if</span> res.StatusCode <span style="font-weight:bold">!=</span> tc.responseStatus {
+				t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Want &#39;%d&#39;, got &#39;%d&#39;&#34;</span>, tc.responseStatus, res.StatusCode)
+			}
+
+			<span style="font-weight:bold">if</span> strings.<span style="color:#900;font-weight:bold">TrimSpace</span>(<span style="color:#999">string</span>(response)) <span style="font-weight:bold">!=</span> tc.responseBody {
+				t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span>, tc.responseBody, <span style="color:#999">string</span>(response))
+			}
+		})
+	}
+}</code></pre></div>
+<p>The <code>createUser</code> function takes a database connection as an argument and uses
+it to insert a new <code>User</code> in the <code>users</code> table. After that, it will return a
+closure that, when invoked, will remove the added user.</p>
+<p>The reason we pass the <code>testing.T</code> pointer to the <code>createUser</code> function is to
+be able to fail the test if the database cannot be opened for writing. We check
+the <code>db.Error</code> field on the Gorm database connection pool for any errors and
+invoke the <code>t.Fatal</code> function, if we hit any errors.</p>
+<p><em>(You can read more about the behavior of <code>t.Fatal</code> in <a href="/post/testing-in-go-failing-tests">my article on the
+topic</a>.)</em></p>
+<p>In the test itself, we invoke <code>createUser</code> with the test database connection
+and the <code>testing.T</code> pointer. The return value of <code>createUser</code> is a function
+which we store in the <code>cleanup</code> variable. Then, we <code>defer</code> the invocation of
+<code>cleanup</code> to happen at the exit of the test function. Using <code>cleanup</code>, we can
+remove the data from the test database before exiting the tests.</p>
+<p>While the approach above works and it's idiomatic Go, it has a few downsides
+worth mentioning:</p>
+<ul>
+<li>It works fine for one test case, but if the test file has many tests that
+modify the state of the test database, they will get contaminated with
+cleanup-like functions.</li>
+<li>Adding to the above point, imagine tests where we have to clean up other
+things, such as processes, files, or open sockets. That will lead to a
+substantial increase in cleanup-closures pollution.</li>
+<li>It adds cognitive overhead when reading the code, which otherwise is
+a straightforward testing code</li>
+<li>The definition of the <code>cleanup</code> function is buried in the <code>createUser</code>
+function, visually separated from the test function that uses/invokes it. A
+reader of the test file can experience difficulty navigating the functions
+and putting the pieces together</li>
+</ul>
+<p>Because of these reasons, the Go authors decided to add a <code>t.Cleanup</code> function
+to the <code>testing</code> package. <a href="https://go-review.googlesource.com/c/go/+/201359/">The
+change</a> was merged on
+November 4, 2019 – right on time to get into the v1.14 release.</p>
+<p>Let's explore how <code>t.Cleanup</code> can make our life easier.</p>
+<h2 id="adding-data-and-cleaning-it-up-using-tcleanup">Adding data and cleaning it up, using <code>t.Cleanup</code></h2>
+<p>With the <code>t.Cleanup</code>, and <code>b.Cleanup</code> methods, we get better control to
+cleaning up after our tests. <code>t.Cleanup</code> registers a function to be called when
+the test and all its subtests complete. This means that even if our tests run
+as subtests, which is the case in our example, the cleanup will only happen
+after all the subtests are done.</p>
+<p>Here's the reworked version of our tests:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">createUser</span>(t <span style="font-weight:bold">*</span>testing.T, db <span style="font-weight:bold">*</span>gorm.DB) {
+	user <span style="font-weight:bold">:=</span> User{Username: <span style="color:#b84">&#34;jane&#34;</span>, Password: <span style="color:#b84">&#34;doe123&#34;</span>}
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">:=</span> db.<span style="color:#900;font-weight:bold">Create</span>(<span style="font-weight:bold">&amp;</span>user).Error; err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		t.<span style="color:#900;font-weight:bold">Fatal</span>(err)
+	}
+
+<span style="display:block;width:100%;background-color:#e5e5e5">	t.<span style="color:#900;font-weight:bold">Cleanup</span>(<span style="font-weight:bold">func</span>() {
+</span><span style="display:block;width:100%;background-color:#e5e5e5">		db.<span style="color:#900;font-weight:bold">Delete</span>(<span style="font-weight:bold">&amp;</span>user)
+</span><span style="display:block;width:100%;background-color:#e5e5e5">	})
+</span>}
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestServer</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	db, err <span style="font-weight:bold">:=</span> gorm.<span style="color:#900;font-weight:bold">Open</span>(<span style="color:#b84">&#34;sqlite3&#34;</span>, <span style="color:#b84">&#34;./cleanups_test.db&#34;</span>)
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		t.<span style="color:#900;font-weight:bold">Fatal</span>(err)
+	}
+	<span style="font-weight:bold">defer</span> db.<span style="color:#900;font-weight:bold">Close</span>()
+
+<span style="display:block;width:100%;background-color:#e5e5e5">	<span style="color:#900;font-weight:bold">createUser</span>(t, db)
+</span>
+	r <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">Router</span>(db)
+
+    <span style="color:#998;font-style:italic">// Snipped for brewity...
+</span><span style="color:#998;font-style:italic"></span>}</code></pre></div>
+<p>While the code change is small, there is a substantial difference between the
+new and the old versions.</p>
+<p>The most significant difference lies in the fact that the <code>createUser</code> function
+takes care of its clean up now. The invoker function (<code>TestServer</code>) does not
+need to worry about the cleanup of the data added in the database – we know
+that the <code>createUser</code> will remove the data. Most importantly, it will remove
+the data <strong>just in time</strong> – once all of the subtests are done.</p>
+<p>Having <code>t.Cleanup</code>, and <code>b.Cleanup</code> in the standard library does not stop us
+from using the old way using composition and returning cleanup callbacks – it
+is still a valid way to clean up any state or files that our tests might
+create. But, using the new <code>t.Cleanup</code> &amp; <code>b.Cleanup</code> functions things get a bit
+easier: there's now a way to do just that, and the standard library supports
+it.</p>
+<p>And having the <a href="https://golang.org/doc/go1compat">Go v1 compatibility promise</a>
+in mind – it is here to stay.</p>
+
+			</div>
+
+			<div class="tags">
+				
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the </a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2020 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>
