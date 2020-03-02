@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Testing in Go: HTTP Servers - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Testing in Go: HTTP Servers" />
+<meta property="og:description" content="Go&#39;s a great hammer for a lot of nails, one of the areas where I find it fitting is building HTTP servers. The net/http package of Go&#39;s standard library makes it easy to attach HTTP handlers to any Go program. What I find delightful is that Go&#39;s standard library, also has packages that make testing HTTP servers as easy as building them.
+Nowadays, it&#39;s widely accepted that test coverage is important and useful." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/testing-in-go-testing-http-servers/" />
+<meta property="og:image" content="https://ieftimov.com/cards/testing-in-go-testing-http-servers.png" />
+<meta property="article:published_time" content="2020-03-02T00:00:00+00:00" />
+<meta property="article:modified_time" content="2020-03-02T00:00:00+00:00" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/testing-in-go-testing-http-servers.png"/>
+
+<meta name="twitter:title" content="Testing in Go: HTTP Servers"/>
+<meta name="twitter:description" content="Go&#39;s a great hammer for a lot of nails, one of the areas where I find it fitting is building HTTP servers. The net/http package of Go&#39;s standard library makes it easy to attach HTTP handlers to any Go program. What I find delightful is that Go&#39;s standard library, also has packages that make testing HTTP servers as easy as building them.
+Nowadays, it&#39;s widely accepted that test coverage is important and useful."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.com/css/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.com/js/main.js"></script><script src="https://ieftimov.com/js/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com/">
+				<img src="https://ieftimov.com/avatar.png" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com/">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>A human, interested in building products and software.</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/categories/testing-in-go">Testing in Go</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">02</span>
+							<span class="rest">Mar 2020</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Testing in Go: HTTP Servers</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>Go's a great hammer for a lot of nails, one of the areas where I find it
+fitting is building HTTP servers. The <code>net/http</code> package of Go's standard
+library makes it easy to attach HTTP handlers to any Go program. What I find
+delightful is that Go's standard library, also has packages that make testing
+HTTP servers as easy as building them.</p>
+<p>Nowadays, it's widely accepted that test coverage is important and useful.
+Having the quick feedback loop when changing your code is valuable, hence we
+invest time in testing our code. When combined with methodologies like
+continious integration and continious delivery, a good test suite becomes an
+invaluable part of the software project.</p>
+<p>Knowing the value of a good test suite, what approach should we - developers
+using Go to build HTTP servers - take to testing our HTTP servers?</p>
+<p>Here's everything you need to know to test your Go HTTP servers well.</p>
+<h2 id="ordering-some-pizzas">Ordering some pizzas</h2>
+<p>As with any other article in this series on <a href="/categories/testing-in-go">testing in
+Go</a>, let's create an example implementation that we
+can use as a test subject.</p>
+<p>Here's a small implementation of a pizza restaurant API with three endpoints:</p>
+<ol>
+<li>List all pizzas on the menu: <code>GET /pizzas</code></li>
+<li>Make a simple pizza order: <code>POST /orders</code></li>
+<li>List all orders in the system: <code>GET /orders</code></li>
+</ol>
+<p>Here's the code:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+	<span style="color:#b84">&#34;encoding/json&#34;</span>
+	<span style="color:#b84">&#34;fmt&#34;</span>
+	<span style="color:#b84">&#34;log&#34;</span>
+	<span style="color:#b84">&#34;net/http&#34;</span>
+)
+
+<span style="font-weight:bold">type</span> Pizza <span style="font-weight:bold">struct</span> {
+	ID    <span style="color:#458;font-weight:bold">int</span>    <span style="color:#b84">`</span><span style="color:#b84">json:&#34;id&#34;</span><span style="color:#b84">`</span>
+	Name  <span style="color:#458;font-weight:bold">string</span> <span style="color:#b84">`</span><span style="color:#b84">json:&#34;name&#34;</span><span style="color:#b84">`</span>
+	Price <span style="color:#458;font-weight:bold">int</span>    <span style="color:#b84">`</span><span style="color:#b84">json:&#34;price&#34;</span><span style="color:#b84">`</span>
+}
+
+<span style="font-weight:bold">type</span> Pizzas []Pizza
+
+<span style="font-weight:bold">func</span> (ps Pizzas) <span style="color:#900;font-weight:bold">FindByID</span>(ID <span style="color:#458;font-weight:bold">int</span>) (Pizza, <span style="color:#458;font-weight:bold">error</span>) {
+	<span style="font-weight:bold">for</span> _, pizza <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> ps {
+		<span style="font-weight:bold">if</span> pizza.ID <span style="font-weight:bold">==</span> ID {
+			<span style="font-weight:bold">return</span> pizza, <span style="font-weight:bold">nil</span>
+		}
+	}
+
+	<span style="font-weight:bold">return</span> Pizza{}, fmt.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Couldn&#39;t find pizza with ID: %d&#34;</span>, ID)
+}
+
+<span style="font-weight:bold">type</span> Order <span style="font-weight:bold">struct</span> {
+	PizzaID  <span style="color:#458;font-weight:bold">int</span> <span style="color:#b84">`</span><span style="color:#b84">json:&#34;pizza_id&#34;</span><span style="color:#b84">`</span>
+	Quantity <span style="color:#458;font-weight:bold">int</span> <span style="color:#b84">`</span><span style="color:#b84">json:&#34;quantity&#34;</span><span style="color:#b84">`</span>
+	Total    <span style="color:#458;font-weight:bold">int</span> <span style="color:#b84">`</span><span style="color:#b84">json:&#34;total&#34;</span><span style="color:#b84">`</span>
+}
+
+<span style="font-weight:bold">type</span> Orders []Order
+
+<span style="font-weight:bold">type</span> pizzasHandler <span style="font-weight:bold">struct</span> {
+	pizzas <span style="font-weight:bold">*</span>Pizzas
+}
+
+<span style="font-weight:bold">func</span> (ph pizzasHandler) <span style="color:#900;font-weight:bold">ServeHTTP</span>(w http.ResponseWriter, r <span style="font-weight:bold">*</span>http.Request) {
+	w.<span style="color:#900;font-weight:bold">Header</span>().<span style="color:#900;font-weight:bold">Set</span>(<span style="color:#b84">&#34;Content-Type&#34;</span>, <span style="color:#b84">&#34;application/json&#34;</span>)
+
+	<span style="font-weight:bold">switch</span> r.Method {
+	<span style="font-weight:bold">case</span> http.MethodGet:
+		<span style="font-weight:bold">if</span> <span style="color:#999">len</span>(<span style="font-weight:bold">*</span>ph.pizzas) <span style="font-weight:bold">==</span> <span style="color:#099">0</span> {
+			http.<span style="color:#900;font-weight:bold">Error</span>(w, <span style="color:#b84">&#34;Error: No pizzas found&#34;</span>, http.StatusNotFound)
+			<span style="font-weight:bold">return</span>
+		}
+
+		json.<span style="color:#900;font-weight:bold">NewEncoder</span>(w).<span style="color:#900;font-weight:bold">Encode</span>(ph.pizzas)
+	<span style="font-weight:bold">default</span>:
+		http.<span style="color:#900;font-weight:bold">Error</span>(w, <span style="color:#b84">&#34;Method not allowed&#34;</span>, http.StatusMethodNotAllowed)
+	}
+}
+
+<span style="font-weight:bold">type</span> ordersHandler <span style="font-weight:bold">struct</span> {
+	pizzas <span style="font-weight:bold">*</span>Pizzas
+	orders <span style="font-weight:bold">*</span>Orders
+}
+
+<span style="font-weight:bold">func</span> (oh ordersHandler) <span style="color:#900;font-weight:bold">ServeHTTP</span>(w http.ResponseWriter, r <span style="font-weight:bold">*</span>http.Request) {
+	w.<span style="color:#900;font-weight:bold">Header</span>().<span style="color:#900;font-weight:bold">Set</span>(<span style="color:#b84">&#34;Content-Type&#34;</span>, <span style="color:#b84">&#34;application/json&#34;</span>)
+
+	<span style="font-weight:bold">switch</span> r.Method {
+	<span style="font-weight:bold">case</span> http.MethodPost:
+		<span style="font-weight:bold">var</span> o Order
+
+		<span style="font-weight:bold">if</span> <span style="color:#999">len</span>(<span style="font-weight:bold">*</span>oh.pizzas) <span style="font-weight:bold">==</span> <span style="color:#099">0</span> {
+			http.<span style="color:#900;font-weight:bold">Error</span>(w, <span style="color:#b84">&#34;Error: No pizzas found&#34;</span>, http.StatusNotFound)
+			<span style="font-weight:bold">return</span>
+		}
+
+		err <span style="font-weight:bold">:=</span> json.<span style="color:#900;font-weight:bold">NewDecoder</span>(r.Body).<span style="color:#900;font-weight:bold">Decode</span>(<span style="font-weight:bold">&amp;</span>o)
+		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+			http.<span style="color:#900;font-weight:bold">Error</span>(w, <span style="color:#b84">&#34;Can&#39;t decode body&#34;</span>, http.StatusBadRequest)
+			<span style="font-weight:bold">return</span>
+		}
+
+		p, err <span style="font-weight:bold">:=</span> oh.pizzas.<span style="color:#900;font-weight:bold">FindByID</span>(o.PizzaID)
+		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+			http.<span style="color:#900;font-weight:bold">Error</span>(w, fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Error: %s&#34;</span>, err), http.StatusBadRequest)
+			<span style="font-weight:bold">return</span>
+		}
+
+		o.Total = p.Price <span style="font-weight:bold">*</span> o.Quantity
+		<span style="font-weight:bold">*</span>oh.orders = <span style="color:#999">append</span>(<span style="font-weight:bold">*</span>oh.orders, o)
+		json.<span style="color:#900;font-weight:bold">NewEncoder</span>(w).<span style="color:#900;font-weight:bold">Encode</span>(o)
+	<span style="font-weight:bold">case</span> http.MethodGet:
+		json.<span style="color:#900;font-weight:bold">NewEncoder</span>(w).<span style="color:#900;font-weight:bold">Encode</span>(oh.orders)
+	<span style="font-weight:bold">default</span>:
+		http.<span style="color:#900;font-weight:bold">Error</span>(w, <span style="color:#b84">&#34;Method not allowed&#34;</span>, http.StatusMethodNotAllowed)
+	}
+}
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	<span style="font-weight:bold">var</span> orders Orders
+	pizzas <span style="font-weight:bold">:=</span> Pizzas{
+		Pizza{
+			ID:    <span style="color:#099">1</span>,
+			Name:  <span style="color:#b84">&#34;Pepperoni&#34;</span>,
+			Price: <span style="color:#099">12</span>,
+		},
+		Pizza{
+			ID:    <span style="color:#099">2</span>,
+			Name:  <span style="color:#b84">&#34;Capricciosa&#34;</span>,
+			Price: <span style="color:#099">11</span>,
+		},
+		Pizza{
+			ID:    <span style="color:#099">3</span>,
+			Name:  <span style="color:#b84">&#34;Margherita&#34;</span>,
+			Price: <span style="color:#099">10</span>,
+		},
+	}
+
+	mux <span style="font-weight:bold">:=</span> http.<span style="color:#900;font-weight:bold">NewServeMux</span>()
+	mux.<span style="color:#900;font-weight:bold">Handle</span>(<span style="color:#b84">&#34;/pizzas&#34;</span>, pizzasHandler{<span style="font-weight:bold">&amp;</span>pizzas})
+	mux.<span style="color:#900;font-weight:bold">Handle</span>(<span style="color:#b84">&#34;/orders&#34;</span>, ordersHandler{<span style="font-weight:bold">&amp;</span>pizzas, <span style="font-weight:bold">&amp;</span>orders})
+
+	log.<span style="color:#900;font-weight:bold">Fatal</span>(http.<span style="color:#900;font-weight:bold">ListenAndServe</span>(<span style="color:#b84">&#34;:8080&#34;</span>, mux))
+}</code></pre></div>
+<p>The orders and the pizzas are kept in-memory – the example is simple on purpose
+and adding any storage solution will greatly complicate the example. The body
+of the <code>POST /orders</code> endpoint expects a JSON body, with a <code>pizza_id</code> and
+<code>quantity</code>.</p>
+<p>This server has a bunch of downsides and is absolutely not ready for production
+usage. It never checks the <code>Accept</code> header of the request, the errors responses
+are lacking additional details and proper envelopes. Our little HTTP server
+also never validates the data the client sends – if the quantity is missing
+from the request body of the <code>POST /orders</code> it will create a new order with a
+total of $0:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ curl -X POST localhost:8080/orders -d <span style="color:#b84">&#39;{&#34;pizza_id&#34;:1,&#34;quantity&#34;:0}&#39;</span> | jq
+<span style="font-weight:bold">{</span>
+  <span style="color:#b84">&#34;pizza_id&#34;</span>: 1,
+  <span style="color:#b84">&#34;quantity&#34;</span>: 0,
+  <span style="color:#b84">&#34;total&#34;</span>: <span style="color:#099">0</span>
+<span style="font-weight:bold">}</span></code></pre></div>
+<p>Lastly, it allows us to order only one type of pizza per order. What a weird
+pizza shop, isn't it? Still, as an example for this article it will do just
+fine.</p>
+<p>Let's run it locally and send a few requests using <code>cURL</code>. To see all of the
+available pizzas on the menu:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ curl -X GET localhost:8080/pizzas | jq
+<span style="font-weight:bold">[</span>
+  <span style="font-weight:bold">{</span>
+    <span style="color:#b84">&#34;id&#34;</span>: 1,
+    <span style="color:#b84">&#34;name&#34;</span>: <span style="color:#b84">&#34;Pepperoni&#34;</span>,
+    <span style="color:#b84">&#34;price&#34;</span>: <span style="color:#099">12</span>
+  <span style="font-weight:bold">}</span>,
+  <span style="font-weight:bold">{</span>
+    <span style="color:#b84">&#34;id&#34;</span>: 2,
+    <span style="color:#b84">&#34;name&#34;</span>: <span style="color:#b84">&#34;Capricciosa&#34;</span>,
+    <span style="color:#b84">&#34;price&#34;</span>: <span style="color:#099">11</span>
+  <span style="font-weight:bold">}</span>,
+  <span style="font-weight:bold">{</span>
+    <span style="color:#b84">&#34;id&#34;</span>: 3,
+    <span style="color:#b84">&#34;name&#34;</span>: <span style="color:#b84">&#34;Margherita&#34;</span>,
+    <span style="color:#b84">&#34;price&#34;</span>: <span style="color:#099">10</span>
+  <span style="font-weight:bold">}</span></code></pre></div>
+<p>To see the (empty) list of orders:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ curl -X GET localhost:8080/orders
+null</code></pre></div>
+<p>To create an order of four Pepperoni pizzas:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ curl -X POST localhost:8080/orders -d <span style="color:#b84">&#39;{&#34;pizza_id&#34;:1,&#34;quantity&#34;:4}&#39;</span> | jq
+<span style="font-weight:bold">{</span>
+  <span style="color:#b84">&#34;pizza_id&#34;</span>: 1,
+  <span style="color:#b84">&#34;quantity&#34;</span>: 4,
+  <span style="color:#b84">&#34;total&#34;</span>: <span style="color:#099">48</span>
+<span style="font-weight:bold">}</span></code></pre></div>
+<p>From the response it is clear that the total is $48. To see the new order in
+the list of orders:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ curl -X GET localhost:8080/orders | jq
+<span style="font-weight:bold">[</span>
+  <span style="font-weight:bold">{</span>
+    <span style="color:#b84">&#34;pizza_id&#34;</span>: 1,
+    <span style="color:#b84">&#34;quantity&#34;</span>: 4,
+    <span style="color:#b84">&#34;total&#34;</span>: <span style="color:#099">48</span>
+  <span style="font-weight:bold">}</span>
+<span style="font-weight:bold">]</span></code></pre></div>
+<p>Great! Our simple HTTP server is working as it should. So, how do we test it?</p>
+<h2 id="testing-the-pizzashandler">Testing the <code>pizzasHandler</code></h2>
+<p>As mentioned in the first section of this article, Go ships with everything we
+need to test our HTTP server in a single package called <code>net/http/httptest</code>
+(<a href="https://golang.org/pkg/net/http/httptest">docs</a>). Simply put, this package
+provides utilities for HTTP testing.</p>
+<p>Let's create a <code>main_test.go</code> file where we will add our tests. First, we will
+test our <code>pizzasHandler</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestPizzasHandler</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	tt <span style="font-weight:bold">:=</span> []<span style="font-weight:bold">struct</span> {
+		name       <span style="color:#458;font-weight:bold">string</span>
+		method     <span style="color:#458;font-weight:bold">string</span>
+		input      <span style="font-weight:bold">*</span>Pizzas
+		want       <span style="color:#458;font-weight:bold">string</span>
+		statusCode <span style="color:#458;font-weight:bold">int</span>
+	}{
+		{
+			name:       <span style="color:#b84">&#34;without pizzas&#34;</span>,
+			method:     http.MethodGet,
+			input:      <span style="font-weight:bold">&amp;</span>Pizzas{},
+			want:       <span style="color:#b84">&#34;Error: No pizzas found&#34;</span>,
+			statusCode: http.StatusNotFound,
+		},
+		{
+			name:   <span style="color:#b84">&#34;with pizzas&#34;</span>,
+			method: http.MethodGet,
+			input: <span style="font-weight:bold">&amp;</span>Pizzas{
+				Pizza{
+					ID:    <span style="color:#099">1</span>,
+					Name:  <span style="color:#b84">&#34;Foo&#34;</span>,
+					Price: <span style="color:#099">10</span>,
+				},
+			},
+			want:       <span style="color:#b84">`</span><span style="color:#b84">[</span><span style="color:#b84">{</span><span style="color:#b84">&#34;id&#34;:1,&#34;name&#34;:&#34;Foo&#34;,&#34;price&#34;:10}]</span><span style="color:#b84">`</span>,
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       <span style="color:#b84">&#34;with bad method&#34;</span>,
+			method:     http.MethodPost,
+			input:      <span style="font-weight:bold">&amp;</span>Pizzas{},
+			want:       <span style="color:#b84">&#34;Method not allowed&#34;</span>,
+			statusCode: http.StatusMethodNotAllowed,
+		},
+	}
+
+	<span style="font-weight:bold">for</span> _, tc <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> tt {
+		t.<span style="color:#900;font-weight:bold">Run</span>(tc.name, <span style="font-weight:bold">func</span>(t <span style="font-weight:bold">*</span>testing.T) {
+			request <span style="font-weight:bold">:=</span> httptest.<span style="color:#900;font-weight:bold">NewRequest</span>(tc.method, <span style="color:#b84">&#34;/orders&#34;</span>, <span style="font-weight:bold">nil</span>)
+			responseRecorder <span style="font-weight:bold">:=</span> httptest.<span style="color:#900;font-weight:bold">NewRecorder</span>()
+
+			pizzasHandler{tc.input}.<span style="color:#900;font-weight:bold">ServeHTTP</span>(responseRecorder, request)
+
+			<span style="font-weight:bold">if</span> responseRecorder.Code <span style="font-weight:bold">!=</span> tc.statusCode {
+				t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Want status &#39;%d&#39;, got &#39;%d&#39;&#34;</span>, tc.statusCode, responseRecorder.Code)
+			}
+
+			<span style="font-weight:bold">if</span> strings.<span style="color:#900;font-weight:bold">TrimSpace</span>(responseRecorder.Body.<span style="color:#900;font-weight:bold">String</span>()) <span style="font-weight:bold">!=</span> tc.want {
+				t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span>, tc.want, responseRecorder.Body)
+			}
+		})
+	}
+}</code></pre></div>
+<p>In this test we take the common <a href="/post/testing-in-go-table-driven-tests">table-driven
+approach</a> to testing the handler. We
+provide three cases: without any pizzas on the menu, with some pizzas on the
+menu and with a bad HTTP method being used.</p>
+<p>Then, for each of the test cases we run <a href="/post/testing-in-go-subtests">a
+subtest</a>, which creates a new <code>request</code> and a
+<code>responseRecorder</code>.</p>
+<p>The <code>httptest.NewRequest</code> function returns a new <code>http.Request</code>, which we can
+then use to invoke the handler with. The returned <code>http.Request</code> represents an
+incoming request to the handler. By creating this struct within the test we do
+not have to rely on booting up an actual HTTP server and sending an actual HTTP
+request to it. The <code>http.Request</code> struct gives us the ability to simulate a
+real request just by passing the struct to the handler under test.</p>
+<p>The <code>httptest.NewRequest</code> function is essential to unit testing HTTP handlers
+here. Yet, it does only half of the job - &ldquo;sending&rdquo; a request to the handler.
+What about the other half - the response?</p>
+<p>Writing the response is done using the <code>httptest.ResponseRecorder</code> – it
+represents an actual implementation of <code>http.ResponseWriter</code> (the second
+argument of <code>pizzasHandler</code>'s <code>ServeHTTP</code> method). It records its mutations and
+allows us to make any assertions on it later in the test.</p>
+<p>The <code>httptest.ResponseRecorder</code> and <code>http.Request</code> duo are all we need to
+sucessfully test any HTTP handler in Go.</p>
+<p>If we run the above test, we'll see the following output:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#a61717;background-color:#e3d2d2">$</span> <span style="font-weight:bold">go</span> test <span style="font-weight:bold">-</span>v <span style="font-weight:bold">-</span>run PizzasHandler
+<span style="font-weight:bold">==</span>= RUN   TestPizzasHandler
+<span style="font-weight:bold">==</span>= RUN   TestPizzasHandler<span style="font-weight:bold">/</span>without_pizzas
+<span style="font-weight:bold">==</span>= RUN   TestPizzasHandler<span style="font-weight:bold">/</span>with_pizzas
+<span style="font-weight:bold">==</span>= RUN   TestPizzasHandler<span style="font-weight:bold">/</span>with_bad_method
+<span style="font-weight:bold">--</span><span style="font-weight:bold">-</span> PASS: <span style="color:#900;font-weight:bold">TestPizzasHandler</span> (<span style="color:#099">0.00</span>s)
+    <span style="font-weight:bold">--</span><span style="font-weight:bold">-</span> PASS: TestPizzasHandler<span style="font-weight:bold">/</span><span style="color:#900;font-weight:bold">without_pizzas</span> (<span style="color:#099">0.00</span>s)
+    <span style="font-weight:bold">--</span><span style="font-weight:bold">-</span> PASS: TestPizzasHandler<span style="font-weight:bold">/</span><span style="color:#900;font-weight:bold">with_pizzas</span> (<span style="color:#099">0.00</span>s)
+    <span style="font-weight:bold">--</span><span style="font-weight:bold">-</span> PASS: TestPizzasHandler<span style="font-weight:bold">/</span><span style="color:#900;font-weight:bold">with_bad_method</span> (<span style="color:#099">0.00</span>s)
+PASS
+ok  	_<span style="font-weight:bold">/</span>Users<span style="font-weight:bold">/</span>Ilija<span style="font-weight:bold">/</span>Documents<span style="font-weight:bold">/</span><span style="font-weight:bold">go</span><span style="font-weight:bold">-</span>playground<span style="font-weight:bold">/</span>testing<span style="font-weight:bold">-</span>in<span style="font-weight:bold">-</span><span style="font-weight:bold">go</span><span style="font-weight:bold">-</span>http<span style="font-weight:bold">-</span>servers	<span style="color:#099">0.023</span>s</code></pre></div>
+<p>(In case you're following along, I recommend breaking the tests by changing any
+of the expected values and seeing how these tests fail.)</p>
+<p>Testing the <code>pizzasHandler</code> is straightforward - we have only one <code>GET</code>
+endpoint. How about we test our <code>ordersHandler</code>, which is a tad more
+complicated?</p>
+<h2 id="testing-the-ordershandler">Testing the <code>ordersHandler</code></h2>
+<p>The <code>ordersHandler</code> is more complicated relative to the <code>pizzaHandler</code> because
+it contains two endpoints, the <code>POST</code> one creates a new order while the <code>GET</code>
+one returns the list of all orders. This means that when testing, we will have
+to cover more cases.</p>
+<p>Here's a test:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestOrdersHandler</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	tt <span style="font-weight:bold">:=</span> []<span style="font-weight:bold">struct</span> {
+		name       <span style="color:#458;font-weight:bold">string</span>
+		method     <span style="color:#458;font-weight:bold">string</span>
+		pizzas     <span style="font-weight:bold">*</span>Pizzas
+		orders     <span style="font-weight:bold">*</span>Orders
+		body       <span style="color:#458;font-weight:bold">string</span>
+		want       <span style="color:#458;font-weight:bold">string</span>
+		statusCode <span style="color:#458;font-weight:bold">int</span>
+	}{
+		{
+			name:   <span style="color:#b84">&#34;with a pizza ID and quantity&#34;</span>,
+			method: http.MethodPost,
+			pizzas: <span style="font-weight:bold">&amp;</span>Pizzas{
+				Pizza{
+					ID:    <span style="color:#099">1</span>,
+					Name:  <span style="color:#b84">&#34;Margherita&#34;</span>,
+					Price: <span style="color:#099">8</span>,
+				},
+			},
+			orders:     <span style="font-weight:bold">&amp;</span>Orders{},
+			body:       <span style="color:#b84">`</span><span style="color:#b84">{</span><span style="color:#b84">&#34;pizza_id&#34;:1,&#34;quantity&#34;:1}</span><span style="color:#b84">`</span>,
+			want:       <span style="color:#b84">`</span><span style="color:#b84">{</span><span style="color:#b84">&#34;pizza_id&#34;:1,&#34;quantity&#34;:1,&#34;total&#34;:8}</span><span style="color:#b84">`</span>,
+			statusCode: http.StatusOK,
+		},
+		{
+			name:   <span style="color:#b84">&#34;with a pizza and no quantity&#34;</span>,
+			method: http.MethodPost,
+			pizzas: <span style="font-weight:bold">&amp;</span>Pizzas{
+				Pizza{
+					ID:    <span style="color:#099">1</span>,
+					Name:  <span style="color:#b84">&#34;Margherita&#34;</span>,
+					Price: <span style="color:#099">8</span>,
+				},
+			},
+			orders:     <span style="font-weight:bold">&amp;</span>Orders{},
+			body:       <span style="color:#b84">`</span><span style="color:#b84">{</span><span style="color:#b84">&#34;pizza_id&#34;:1}</span><span style="color:#b84">`</span>,
+			want:       <span style="color:#b84">`</span><span style="color:#b84">{</span><span style="color:#b84">&#34;pizza_id&#34;:1,&#34;quantity&#34;:0,&#34;total&#34;:0}</span><span style="color:#b84">`</span>,
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       <span style="color:#b84">&#34;with no pizzas on menu&#34;</span>,
+			method:     http.MethodPost,
+			pizzas:     <span style="font-weight:bold">&amp;</span>Pizzas{},
+			orders:     <span style="font-weight:bold">&amp;</span>Orders{},
+			body:       <span style="color:#b84">`</span><span style="color:#b84">{</span><span style="color:#b84">&#34;pizza_id&#34;:1,&#34;quantity&#34;:1}</span><span style="color:#b84">`</span>,
+			want:       <span style="color:#b84">&#34;Error: No pizzas found&#34;</span>,
+			statusCode: http.StatusNotFound,
+		},
+		{
+			name:       <span style="color:#b84">&#34;with GET method and no orders in memory&#34;</span>,
+			method:     http.MethodGet,
+			pizzas:     <span style="font-weight:bold">&amp;</span>Pizzas{},
+			orders:     <span style="font-weight:bold">&amp;</span>Orders{},
+			body:       <span style="color:#b84">&#34;&#34;</span>,
+			want:       <span style="color:#b84">&#34;[]&#34;</span>,
+			statusCode: http.StatusOK,
+		},
+		{
+			name:   <span style="color:#b84">&#34;with GET method and with orders in memory&#34;</span>,
+			method: http.MethodGet,
+			pizzas: <span style="font-weight:bold">&amp;</span>Pizzas{},
+			orders: <span style="font-weight:bold">&amp;</span>Orders{
+				Order{
+					Quantity: <span style="color:#099">10</span>,
+					PizzaID:  <span style="color:#099">1</span>,
+					Total:    <span style="color:#099">100</span>,
+				},
+			},
+			body:       <span style="color:#b84">&#34;&#34;</span>,
+			want:       <span style="color:#b84">`</span><span style="color:#b84">[</span><span style="color:#b84">{</span><span style="color:#b84">&#34;pizza_id&#34;:1,&#34;quantity&#34;:10,&#34;total&#34;:100}]</span><span style="color:#b84">`</span>,
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       <span style="color:#b84">&#34;with bad HTTP method&#34;</span>,
+			method:     http.MethodDelete,
+			pizzas:     <span style="font-weight:bold">&amp;</span>Pizzas{},
+			orders:     <span style="font-weight:bold">&amp;</span>Orders{},
+			body:       <span style="color:#b84">&#34;&#34;</span>,
+			want:       <span style="color:#b84">&#34;Method not allowed&#34;</span>,
+			statusCode: http.StatusMethodNotAllowed,
+		},
+	}
+
+	<span style="font-weight:bold">for</span> _, tc <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> tt {
+		t.<span style="color:#900;font-weight:bold">Run</span>(tc.name, <span style="font-weight:bold">func</span>(t <span style="font-weight:bold">*</span>testing.T) {
+			request <span style="font-weight:bold">:=</span> httptest.<span style="color:#900;font-weight:bold">NewRequest</span>(tc.method, <span style="color:#b84">&#34;/orders&#34;</span>, strings.<span style="color:#900;font-weight:bold">NewReader</span>(tc.body))
+			responseRecorder <span style="font-weight:bold">:=</span> httptest.<span style="color:#900;font-weight:bold">NewRecorder</span>()
+
+			handler <span style="font-weight:bold">:=</span> ordersHandler{tc.pizzas, tc.orders}
+			handler.<span style="color:#900;font-weight:bold">ServeHTTP</span>(responseRecorder, request)
+
+			<span style="font-weight:bold">if</span> responseRecorder.Code <span style="font-weight:bold">!=</span> tc.statusCode {
+				t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Want status &#39;%d&#39;, got &#39;%d&#39;&#34;</span>, tc.statusCode, responseRecorder.Code)
+			}
+
+			<span style="font-weight:bold">if</span> strings.<span style="color:#900;font-weight:bold">TrimSpace</span>(responseRecorder.Body.<span style="color:#900;font-weight:bold">String</span>()) <span style="font-weight:bold">!=</span> tc.want {
+				t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span>, tc.want, responseRecorder.Body)
+			}
+		})
+	}
+}</code></pre></div>
+<p>The tests are similar to the previous, but here each of the requests that we
+create using the <code>httptest.NewRequest</code> function also take a body as the third
+parameter. The body has to be of type <code>io.Reader</code>, which is <a href="https://golang.org/pkg/io/#Reader">an
+interface</a> that wraps the basic <code>Read</code>
+method.</p>
+<p>In cases where you need to wrap a simple <code>string</code> as an <code>io.Reader</code> one
+function that I've found fitting is <code>string.NewReader</code>. As you might notice if
+you visit <a href="https://golang.org/pkg/strings/#NewReader">its documentation</a>, it is
+just a plain wrapper around the string as a read-only <code>io.Reader</code>.</p>
+<p>In the rest of the test we - once again - create a <code>responseRecorder</code> and then
+pass it along with the <code>request</code> to the <code>ordersHandler</code>'s <code>ServeHTTP</code> function.
+Right after we compare the <code>Body</code> of the <code>responseRecorder</code> and the expected
+body from the test case.</p>
+<p>If we run the test, we will see the following output:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#999">test</span> -v -run <span style="color:#008080">OrdersHandler</span>
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   <span style="color:#008080">TestOrdersHandler</span>
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestOrdersHandler/with_a_pizza_ID_and_quantity
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestOrdersHandler/with_a_pizza_and_no_quantity
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestOrdersHandler/with_no_pizzas_on_menu
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestOrdersHandler/with_GET_method_and_no_orders_in_memory
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestOrdersHandler/with_GET_method_and_with_orders_in_memory
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestOrdersHandler/with_bad_HTTP_method
+--- PASS: TestOrdersHandler <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+    --- PASS: TestOrdersHandler/with_a_pizza_ID_and_quantity <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+    --- PASS: TestOrdersHandler/with_a_pizza_and_no_quantity <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+    --- PASS: TestOrdersHandler/with_no_pizzas_on_menu <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+    --- PASS: TestOrdersHandler/with_GET_method_and_no_orders_in_memory <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+    --- PASS: TestOrdersHandler/with_GET_method_and_with_orders_in_memory <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+    --- PASS: TestOrdersHandler/with_bad_HTTP_method <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+PASS
+ok  	_/Users/Ilija/Documents/go-playground/testing-in-go-http-servers	0.011s</code></pre></div>
+<p>(In case you're following along, I recommend breaking the tests by changing any
+of the expected values and seeing how these tests fail.)</p>
+<p>As you can see, the <code>testing</code> package in combination with the
+<code>net/http/httptest</code> package, using the <code>httptest.NewRequest</code> and
+<code>httptest.Recorder</code> functions provide flexibility and enough power to test any
+HTTP server.</p>
+<p>To undersand all of the possibilities, I recommend checking out the
+<code>net/http/httptest</code> <a href="https://golang.org/pkg/net/http/httptest">package
+documentation</a>.</p>
+<p><em>P.S. You can read more about the <code>jq</code> tool on <a href="https://stedolan.github.io/jq/">its
+homepage</a>.</em></p>
+
+			</div>
+
+			<div class="tags">
+				
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the </a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2020 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>
