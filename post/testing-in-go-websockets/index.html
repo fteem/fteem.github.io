@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Testing in Go: WebSockets - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Testing in Go: WebSockets" />
+<meta property="og:description" content="WebSockets offer duplex communication from a non-trusted source to a server that we own across a TCP socket connection. This means that, instead of continually polling the web server for updates and having to perform the whole TCP dance with each request, we can maintain a single TCP socket connection and then send and listen to messages on said connection.
+In Go&#39;s ecosystem there are few different implementations of the WebSocket protocol." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/testing-in-go-websockets/" />
+<meta property="og:image" content="https://ieftimov.com/cards/testing-in-go-websockets.gif" />
+<meta property="article:published_time" content="2020-02-22T12:32:51+01:00" />
+<meta property="article:modified_time" content="2020-02-22T12:32:51+01:00" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/testing-in-go-websockets.gif"/>
+
+<meta name="twitter:title" content="Testing in Go: WebSockets"/>
+<meta name="twitter:description" content="WebSockets offer duplex communication from a non-trusted source to a server that we own across a TCP socket connection. This means that, instead of continually polling the web server for updates and having to perform the whole TCP dance with each request, we can maintain a single TCP socket connection and then send and listen to messages on said connection.
+In Go&#39;s ecosystem there are few different implementations of the WebSocket protocol."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.com/css/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.com/js/main.js"></script><script src="https://ieftimov.com/js/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com/">
+				<img src="https://ieftimov.com/avatar.png" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com/">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>A human, interested in building products and software.</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/categories/testing-in-go">Testing in Go</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">13</span>
+							<span class="rest">Mar 2020</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Testing in Go: WebSockets</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>WebSockets offer duplex communication from a non-trusted source to a server
+that we own across a TCP socket connection. This means that, instead of
+continually polling the web server for updates and having to perform the whole
+TCP dance with each request, we can maintain a single TCP socket connection and
+then send and listen to messages on said connection.</p>
+<p>In Go's ecosystem there are few different implementations of <a href="https://tools.ietf.org/html/rfc6455">the WebSocket
+protocol</a>. Some libraries are pure
+implementation of the protocol. Others though, have chosen to build on top of
+the WebSocket protocol to create better abstractions for their particular
+use-case.</p>
+<p>Here's a non-exhaustive list of Go WebSocket protocol implementations:</p>
+<ul>
+<li><a href="https://pkg.go.dev/golang.org/x/net/websocket"><code>x/net/websocket</code></a> (from
+<a href="https://godoc.org/-/subrepo">Go sub-repository packages</a>)</li>
+<li><a href="https://github.com/gorilla/websocket"><code>gorilla/websocket</code></a></li>
+<li><a href="https://github.com/nhooyr/websocket"><code>nhooyr/websocket</code></a></li>
+<li><a href="https://github.com/gobwas/ws"><code>gobwas/ws</code></a></li>
+<li><a href="https://github.com/sacOO7/gowebsocket"><code>sacOO7/gowebsocket</code></a></li>
+</ul>
+<p>In this article we will use the excellent <code>gorilla/websocket</code> implementation of
+the WebSocket protocol, from the <a href="https://github.com/gorilla/websocket">Gorilla Web
+Toolkit</a> project. You will notice that
+testing WebSocket is not much different from <a href="/post/testing-in-go-testing-http-servers">testing HTTP
+servers</a>. Still, there are aspects of
+WebSockets that we have to take into account while testing.</p>
+<h2 id="auctions">Auctions</h2>
+<p>One of the businesses whose backbone is real-time communication are online
+auction houses. During an auction, seconds make the difference between winning
+or losing a collectible item that you have been wanting for so long.</p>
+<p>Let's use a simple auction application powered by <code>gorilla/websocket</code> as an
+example for this article.</p>
+<p>First, we will define two very simple entities <code>Bid</code> and <code>Auction</code> that we will
+use in our WebSocket handlers. The <code>Auction</code> will receive a <code>Bid</code> method that
+we will use to place a new bid on the <code>Auction</code>.</p>
+<h3 id="entities">Entities</h3>
+<p>Let's look at the <code>Auction</code> and <code>Bid</code> types, in all of their glory:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> Bid <span style="font-weight:bold">struct</span> {
+	UserID <span style="color:#458;font-weight:bold">int</span>     <span style="color:#b84">`</span><span style="color:#b84">json:&#34;user_id&#34;</span><span style="color:#b84">`</span>
+	Amount <span style="color:#458;font-weight:bold">float64</span> <span style="color:#b84">`</span><span style="color:#b84">json:&#34;amount&#34;</span><span style="color:#b84">`</span>
+}
+
+<span style="font-weight:bold">type</span> Auction <span style="font-weight:bold">struct</span> {
+	ItemID  <span style="color:#458;font-weight:bold">int</span>   <span style="color:#b84">`</span><span style="color:#b84">json:&#34;item_id&#34;</span><span style="color:#b84">`</span>
+	EndTime <span style="color:#458;font-weight:bold">int64</span> <span style="color:#b84">`</span><span style="color:#b84">json:&#34;end_time&#34;</span><span style="color:#b84">`</span>
+	Bids    []<span style="font-weight:bold">*</span>Bid
+}
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">NewAuction</span>(d time.Duration, itemID <span style="color:#458;font-weight:bold">int</span>, b []<span style="font-weight:bold">*</span>Bid) Auction {
+	<span style="font-weight:bold">return</span> Auction{
+		ItemID:  itemID,
+		EndTime: time.<span style="color:#900;font-weight:bold">Now</span>().<span style="color:#900;font-weight:bold">Add</span>(d).<span style="color:#900;font-weight:bold">Unix</span>(),
+		Bids:    b,
+	}
+}</code></pre></div>
+<p>Both of the types are fairly simple, encapsulating very little data. The
+<code>NewAuction</code> constructor function builds an auction with a duration, <code>itemID</code>
+and a slice of <code>*Bid</code>s.</p>
+<h3 id="bidding">Bidding</h3>
+<p>We will place a bid on an auction through the <code>Bid</code> method:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (a <span style="font-weight:bold">*</span>Auction) <span style="color:#900;font-weight:bold">Bid</span>(amount <span style="color:#458;font-weight:bold">float64</span>, userID <span style="color:#458;font-weight:bold">int</span>) (<span style="font-weight:bold">*</span>Bid, <span style="color:#458;font-weight:bold">error</span>) {
+	<span style="font-weight:bold">if</span> <span style="color:#999">len</span>(a.Bids) &gt; <span style="color:#099">0</span> {
+		largestBid <span style="font-weight:bold">:=</span> a.Bids[<span style="color:#999">len</span>(a.Bids)<span style="font-weight:bold">-</span><span style="color:#099">1</span>]
+		<span style="font-weight:bold">if</span> largestBid.Amount <span style="font-weight:bold">&gt;=</span> amount {
+			<span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>, fmt.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;amount must be larger than %.2f&#34;</span>, largestBid.Amount)
+		}
+	}
+
+	<span style="font-weight:bold">if</span> a.EndTime &lt; time.<span style="color:#900;font-weight:bold">Now</span>().<span style="color:#900;font-weight:bold">Unix</span>() {
+		<span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>, fmt.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;auction already closed&#34;</span>)
+	}
+
+	bid <span style="font-weight:bold">:=</span> Bid{
+		Amount: amount,
+		UserID: userID,
+	}
+
+	<span style="color:#998;font-style:italic">// Mutex lock
+</span><span style="color:#998;font-style:italic"></span>	a.Bids = <span style="color:#999">append</span>(a.Bids, <span style="font-weight:bold">&amp;</span>bid)
+	<span style="color:#998;font-style:italic">// Mutex unlock
+</span><span style="color:#998;font-style:italic"></span>
+	<span style="font-weight:bold">return</span> <span style="font-weight:bold">&amp;</span>bid, <span style="font-weight:bold">nil</span>
+}</code></pre></div>
+<p>The <code>Auction</code>'s <code>Bid</code> method is where the bidding magic happens. It takes an
+<code>amount</code> and a <code>userID</code> as arguments and adds a <code>Bid</code> to the <code>Auction</code>. Also,
+it checks if the <code>Auction</code> has already closed and that the new bid <code>amount</code> is
+larger than the <code>amount</code> of the largest bid. If any of these conditions are not
+true, it will return an appropriate error to the caller.</p>
+<p>Having the types and the <code>Bid</code> method out of the way, let's dive into the
+WebSockets mechanics.</p>
+<h2 id="handling-websockets">Handling WebSockets</h2>
+<p>Imagine a web frontend that can place bids on an auction in real time. With
+every JSON message it sends over WebSockets it will supply the identifier of
+the user placing the bid (<code>UserID</code>) and the amount (<code>Amount</code>) of the bid. Once
+the server accepts the message, it will place the bid and reply with a
+meaningful answer to the client.</p>
+<p>On the server side, this communication will be done by a <code>net/http</code> <code>Handler</code>.
+It will handle all of the WebSocket intricacies, with a few notable steps:</p>
+<ol>
+<li>Upgrade the incoming HTTP connection to a WebSocket one</li>
+<li>Accept incoming messages from a client</li>
+<li>Decode bid from the inbound message</li>
+<li>Place the bid</li>
+<li>Send an outbound message with the reply to the client</li>
+</ol>
+<p>Let's write such a handler.</p>
+<p>First, let's define the <code>inbound</code> and <code>outbound</code> message types:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> inbound <span style="font-weight:bold">struct</span> {
+	UserID <span style="color:#458;font-weight:bold">int</span>     <span style="color:#b84">`</span><span style="color:#b84">json:&#34;user_id&#34;</span><span style="color:#b84">`</span>
+	Amount <span style="color:#458;font-weight:bold">float64</span> <span style="color:#b84">`</span><span style="color:#b84">json:&#34;amount&#34;</span><span style="color:#b84">`</span>
+}
+
+<span style="font-weight:bold">type</span> outbound <span style="font-weight:bold">struct</span> {
+	Body <span style="color:#458;font-weight:bold">string</span> <span style="color:#b84">`</span><span style="color:#b84">json:&#34;body&#34;</span><span style="color:#b84">`</span>
+}</code></pre></div>
+<p>Both of them represent the in/outbound messages respectively, which will be the
+data flowing between the client and the server. The <code>inbound</code> message will
+represent a bid, while the <code>outbound</code> type represents a simple message with
+some text in its <code>Body</code>.</p>
+<p>Next, let's define the <code>bidsHandler</code>, including its <code>ServeHTTP</code> method
+containing the HTTP connection upgrade:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">var</span> upgrader = websocket.Upgrader{}
+
+<span style="font-weight:bold">type</span> bidsHandler <span style="font-weight:bold">struct</span> {
+	auction <span style="font-weight:bold">*</span>Auction
+}
+
+<span style="font-weight:bold">func</span> (bh bidsHandler) <span style="color:#900;font-weight:bold">ServeHTTP</span>(w http.ResponseWriter, r <span style="font-weight:bold">*</span>http.Request) {
+	upgrader.CheckOrigin = <span style="font-weight:bold">func</span>(r <span style="font-weight:bold">*</span>http.Request) <span style="color:#458;font-weight:bold">bool</span> { <span style="font-weight:bold">return</span> <span style="font-weight:bold">true</span> }
+	ws, err <span style="font-weight:bold">:=</span> upgrader.<span style="color:#900;font-weight:bold">Upgrade</span>(w, r, <span style="font-weight:bold">nil</span>)
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		log.<span style="color:#900;font-weight:bold">Println</span>(<span style="color:#b84">&#34;upgrade:&#34;</span>, err)
+		<span style="font-weight:bold">return</span>
+	}
+	<span style="font-weight:bold">defer</span> ws.<span style="color:#900;font-weight:bold">Close</span>()
+
+	<span style="color:#998;font-style:italic">// More to come...
+</span><span style="color:#998;font-style:italic"></span>}</code></pre></div>
+<p>First, we define a <code>websocket.Upgrader</code>, which takes the <code>http.ResponseWriter</code>
+and the <code>*http.Request</code> from the handler and upgrades the connection. Because
+this is just an example application, the <code>upgrader.CheckOrigin</code> method will
+only return a <code>true</code> bool, without checking the origin of the incoming request.</p>
+<p>Once the <code>upgrader</code> finishes with the connection upgrade, it returns a
+<code>*websocket.Conn</code> object, stored in the <code>ws</code> variable. The <code>*websocket.Conn</code>
+will receive all of the incoming messages, where our handler will be reading
+from. Also, the handler will be writing messages to the <code>*websocket.Conn</code>,
+which will send an outbound message to the client.</p>
+<p>Let's add the message loop next:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (bh bidsHandler) <span style="color:#900;font-weight:bold">ServeHTTP</span>(w http.ResponseWriter, r <span style="font-weight:bold">*</span>http.Request) {
+	<span style="color:#998;font-style:italic">// Code from above...
+</span><span style="color:#998;font-style:italic"></span>
+	<span style="font-weight:bold">for</span> {
+		_, m, err <span style="font-weight:bold">:=</span> ws.<span style="color:#900;font-weight:bold">ReadMessage</span>()
+		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+			<span style="font-weight:bold">if</span> websocket.<span style="color:#900;font-weight:bold">IsUnexpectedCloseError</span>(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.<span style="color:#900;font-weight:bold">Printf</span>(<span style="color:#b84">&#34;error: %v&#34;</span>, err)
+			}
+			<span style="font-weight:bold">return</span>
+		}
+
+		<span style="font-weight:bold">var</span> in inbound
+		err = json.<span style="color:#900;font-weight:bold">Unmarshal</span>(m, <span style="font-weight:bold">&amp;</span>in)
+		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+			<span style="color:#900;font-weight:bold">handleError</span>(ws, err)
+			<span style="font-weight:bold">continue</span>
+		}
+
+		bid, err <span style="font-weight:bold">:=</span> bh.auction.<span style="color:#900;font-weight:bold">Bid</span>(in.Amount, in.UserID)
+		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+			<span style="color:#900;font-weight:bold">handleError</span>(ws, err)
+			<span style="font-weight:bold">continue</span>
+		}
+
+		out, err <span style="font-weight:bold">:=</span> json.<span style="color:#900;font-weight:bold">Marshal</span>(outbound{Body: fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Bid placed: %.2f&#34;</span>, bid.Amount)})
+		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+			<span style="color:#900;font-weight:bold">handleError</span>(ws, err)
+			<span style="font-weight:bold">continue</span>
+		}
+
+		err = ws.<span style="color:#900;font-weight:bold">WriteMessage</span>(websocket.BinaryMessage, out)
+		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+			<span style="color:#900;font-weight:bold">handleError</span>(ws, err)
+			<span style="font-weight:bold">continue</span>
+		}
+	}
+}</code></pre></div>
+<p>This <code>for</code> loop does a few things. First, it reads a new WebSocket message
+using <code>ws.ReadMessage()</code>, which returns the type of the message (binary or
+text), the message itself (<code>m</code>) and a potential error (<code>err</code>). Then, it checks
+the error if the client has closed the connection unexpectedly.</p>
+<p>Once the error handling is completed and the message is retrieved, we decode it
+using <code>json.Unmarshal</code> into the <code>in</code> inbound message. Once <code>in</code> is available,
+we invoke <code>bh.auction.Bid</code> which places a bid on the auction, using the amount
+of the bid (<code>in.Amount</code>) and the ID of the bidder (<code>in.UserID</code>) as arguments.
+The <code>Bid</code> method returns a bid (<code>bid</code>) and an error (<code>err</code>).</p>
+<p>After the bid is placed, we use <code>json.Marshal</code> to convert an <code>outbound</code> message
+with the bid confirmation message encapsulated to slice of bytes (<code>[]byte</code>).
+Then we send the bytes to the client using the <code>ws.WriteMessage</code> method, which
+concludes the request-response server loop.</p>
+<p>We can ignore the client side for now. Let's now see how we can test this
+WebSockets handler code.</p>
+<h2 id="testing-websockets-handlers">Testing WebSockets handlers</h2>
+<p>Although writing WebSocket handlers is more involved relative to ordinary HTTP
+handlers, testing them is simple. In fact, testing WebSockets handlers is as
+simple as testing HTTP handlers. This is because WebSockets are built on HTTP,
+so testing WebSockets is done using the same tools that <a href="/post/testing-in-go-testing-http-servers">testing HTTP
+servers</a> is done with.</p>
+<p>We will begin by adding the test setup:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestBidsHandler</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	tcs <span style="font-weight:bold">:=</span> []<span style="font-weight:bold">struct</span> {
+		name     <span style="color:#458;font-weight:bold">string</span>
+		bids     []<span style="font-weight:bold">*</span>Bid
+		duration time.Duration
+		message  inbound
+		reply    outbound
+	}{
+		{
+			name:     <span style="color:#b84">&#34;with good bid&#34;</span>,
+			bids:     []<span style="font-weight:bold">*</span>Bid{},
+			duration: time.Hour <span style="font-weight:bold">*</span> <span style="color:#099">1</span>,
+			message:  inbound{UserID: <span style="color:#099">1</span>, Amount: <span style="color:#099">10</span>},
+			reply:    outbound{Body: <span style="color:#b84">&#34;Bid placed: 10.00&#34;</span>},
+		},
+		{
+			name: <span style="color:#b84">&#34;with bad bid&#34;</span>,
+			bids: []<span style="font-weight:bold">*</span>Bid{
+				<span style="font-weight:bold">&amp;</span>Bid{
+					UserID: <span style="color:#099">1</span>,
+					Amount: <span style="color:#099">20</span>,
+				},
+			},
+			duration: time.Hour <span style="font-weight:bold">*</span> <span style="color:#099">1</span>,
+			message:  inbound{UserID: <span style="color:#099">1</span>, Amount: <span style="color:#099">10</span>},
+			reply:    outbound{Body: <span style="color:#b84">&#34;amount must be larger than 20.00&#34;</span>},
+		},
+		{
+
+			name: <span style="color:#b84">&#34;good bid on expired auction&#34;</span>,
+			bids: []<span style="font-weight:bold">*</span>Bid{
+				<span style="font-weight:bold">&amp;</span>Bid{
+					UserID: <span style="color:#099">1</span>,
+					Amount: <span style="color:#099">20</span>,
+				},
+			},
+			duration: time.Hour <span style="font-weight:bold">*</span> <span style="font-weight:bold">-</span><span style="color:#099">1</span>,
+			message:  inbound{UserID: <span style="color:#099">1</span>, Amount: <span style="color:#099">30</span>},
+			reply:    outbound{Body: <span style="color:#b84">&#34;auction already closed&#34;</span>},
+		},
+	}
+
+	<span style="font-weight:bold">for</span> _, tt <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> tcs {
+		t.<span style="color:#900;font-weight:bold">Run</span>(tt.name, <span style="font-weight:bold">func</span>(t <span style="font-weight:bold">*</span>testing.T) {
+			a <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">NewAuction</span>(tt.duration, <span style="color:#099">1</span>, tt.bids)
+			h <span style="font-weight:bold">:=</span> bidsHandler{<span style="font-weight:bold">&amp;</span>a}
+
+			<span style="color:#998;font-style:italic">// To be added...
+</span><span style="color:#998;font-style:italic"></span>		})
+	}
+}</code></pre></div>
+<p>First, we begin by defining the testcase type. It has a <code>name</code>, which is the
+human-readable name of the test case. Also, each testcase has a <code>bids</code> slice
+and a <code>duration</code> which will be used to create a test <code>Auction</code> with. The
+testcase also has an <code>inbound</code> <code>message</code> and an <code>outbound</code> <code>reply</code> - which is
+what the test case will send to and expect in return from the handler.</p>
+<p>After, in the <code>TestBidsHandler</code> we add three different test cases – one where
+the client wants to place a bad bid, that is lower than the largest bid,
+another test case where the client adds a good bid and a third one where the
+client bids on an expired auction.</p>
+<p>In the <code>for</code> loop, for each of the test cases, we create a subtest which uses
+the <code>NewAuction</code> constructor to create a new test auction. We also create a
+<code>bidsHandler</code> that takes the newly created <code>Auction</code> as an attribute.</p>
+<p>Let's finish off the subtest function:
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestBidsHandler</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	<span style="color:#998;font-style:italic">// Test cases and other setup from above...
+</span><span style="color:#998;font-style:italic"></span>
+	<span style="font-weight:bold">for</span> _, tt <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> tcs {
+		t.<span style="color:#900;font-weight:bold">Run</span>(tt.name, <span style="font-weight:bold">func</span>(t <span style="font-weight:bold">*</span>testing.T) {
+			a <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">NewAuction</span>(tt.duration, <span style="color:#099">1</span>, tt.bids)
+			h <span style="font-weight:bold">:=</span> bidsHandler{<span style="font-weight:bold">&amp;</span>a}
+
+			s, ws <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">newWSServer</span>(t, h)
+			<span style="font-weight:bold">defer</span> s.<span style="color:#900;font-weight:bold">Close</span>()
+			<span style="font-weight:bold">defer</span> ws.<span style="color:#900;font-weight:bold">Close</span>()
+
+			<span style="color:#900;font-weight:bold">sendMessage</span>(t, ws, tt.message)
+
+			reply <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">receiveWSMessage</span>(t, ws)
+
+			<span style="font-weight:bold">if</span> reply <span style="font-weight:bold">!=</span> tt.reply {
+				t.<span style="color:#900;font-weight:bold">Fatalf</span>(<span style="color:#b84">&#34;Expected &#39;%+v&#39;, got &#39;%+v&#39;&#34;</span>, tt.reply, reply)
+			}
+		})
+	}
+}</code></pre></div></p>
+<p>We added few new functions to the subtest function body. The <code>newWSServer</code> will
+create a test server and upgrade it to a WebSocket connection, returning both
+the server and the WebSocket connections. Then, the <code>sendMessage</code> function will
+send the message from the test case to the test server throught the WebSocket
+connection. After that, through the <code>receiveWSMessage</code> we will retrieve the
+reply from the server and assert for its correctness by comparing it to the
+<code>reply</code> of the test case.</p>
+<p>So, what do each of these small functions do? Let's break them down one by one.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">newWSServer</span>(t <span style="font-weight:bold">*</span>testing.T, h http.Handler) (<span style="font-weight:bold">*</span>httptest.Server, <span style="font-weight:bold">*</span>websocket.Conn) {
+	t.<span style="color:#900;font-weight:bold">Helper</span>()
+
+	s <span style="font-weight:bold">:=</span> httptest.<span style="color:#900;font-weight:bold">NewServer</span>(h)
+	wsURL <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">httpToWs</span>(t, s.URL)
+
+	ws, _, err <span style="font-weight:bold">:=</span> websocket.DefaultDialer.<span style="color:#900;font-weight:bold">Dial</span>(wsURL, <span style="font-weight:bold">nil</span>)
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		t.<span style="color:#900;font-weight:bold">Fatal</span>(err)
+	}
+
+	<span style="font-weight:bold">return</span> s, ws
+}</code></pre></div>
+<p>The <code>newWSServer</code> function will use the
+<a href="https://golang.org/pkg/net/http/httptest/#NewServer"><code>httptest.NewServer</code></a>
+function to mount the handler on a test HTTP server. Once that is done, it will
+convert the server's <code>URL</code> to a WebSocket URL through the <code>httpToWS</code> function.
+(It simply replaces the <code>http</code> protocol to a <code>ws</code>, or <code>https</code> to <code>wss</code>, protocol
+in the URL.`)</p>
+<p>To establish a WebSocket connection, we use the
+<a href="https://godoc.org/github.com/gorilla/websocket#pkg-variables"><code>websocket.DefaultDialer</code></a>
+which is a dialer with all fields set to the default values. We invoke the
+<code>Dial</code> method on the dialer, with the WebSocket server URL (<code>wsURL</code>) which
+returns the WebSocket connection.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">sendMessage</span>(t <span style="font-weight:bold">*</span>testing.T, ws <span style="font-weight:bold">*</span>websocket.Conn, msg inbound) {
+	t.<span style="color:#900;font-weight:bold">Helper</span>()
+
+	m, err <span style="font-weight:bold">:=</span> json.<span style="color:#900;font-weight:bold">Marshal</span>(msg)
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		t.<span style="color:#900;font-weight:bold">Fatal</span>(err)
+	}
+
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">:=</span> ws.<span style="color:#900;font-weight:bold">WriteMessage</span>(websocket.BinaryMessage, m); err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		t.<span style="color:#900;font-weight:bold">Fatalf</span>(<span style="color:#b84">&#34;%v&#34;</span>, err)
+	}
+}</code></pre></div>
+<p>The <code>sendMessage</code> function takes an <code>inbound</code> message as argument with the WebSocket
+connection (<code>ws</code>). It marshals the message into a JSON and it sends it over the
+WebSocket connection as a binary message.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">receiveWSMessage</span>(t <span style="font-weight:bold">*</span>testing.T, ws <span style="font-weight:bold">*</span>websocket.Conn) outbound {
+	t.<span style="color:#900;font-weight:bold">Helper</span>()
+
+	_, m, err <span style="font-weight:bold">:=</span> ws.<span style="color:#900;font-weight:bold">ReadMessage</span>()
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		t.<span style="color:#900;font-weight:bold">Fatalf</span>(<span style="color:#b84">&#34;%v&#34;</span>, err)
+	}
+
+	<span style="font-weight:bold">var</span> reply outbound
+	err = json.<span style="color:#900;font-weight:bold">Unmarshal</span>(m, <span style="font-weight:bold">&amp;</span>reply)
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		t.<span style="color:#900;font-weight:bold">Fatal</span>(err)
+	}
+
+	<span style="font-weight:bold">return</span> reply
+}</code></pre></div>
+<p><code>receiveWSMessage</code> takes the WebSocket connection (<code>ws</code>) as argument and it
+fetches a message using <code>ws.ReadMessage()</code>. Once the message is successfully
+retrieved, it unmarshals it into a <code>outbound</code> message using <code>json.Unmarshal</code>.
+As a last step, <code>receiveWSMessage</code> returns the <code>outbound</code> message to the test,
+so the test can continue with its assertions.</p>
+<p>If we would run the tests, we will see them passing:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#999">test</span> ./... -v
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   <span style="color:#008080">TestBidsHandler</span>
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestBidsHandler/with_good_bid
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestBidsHandler/with_bad_bid
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestBidsHandler/good_bid_on_expired_auction
+--- PASS: TestBidsHandler <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+    --- PASS: TestBidsHandler/with_good_bid <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+    --- PASS: TestBidsHandler/with_bad_bid <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+    --- PASS: TestBidsHandler/good_bid_on_expired_auction <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+PASS
+ok  	github.com/fteem/go-playground/testing-in-go-web-sockets	0.013s</code></pre></div>
+<p>You can see the example code <a href="https://github.com/fteem/go-playground/tree/master/testing-in-go-web-sockets">on
+Github</a>.</p>
+<p>Also, to see another approach at testing WebSockets in Go, you can head over to
+<a href="https://quii.gitbook.io/learn-go-with-tests/build-an-application/websockets">the WebSockets
+chapter</a>
+from the book <a href="https://quii.gitbook.io/learn-go-with-tests/">&ldquo;Learn Go with
+tests&rdquo;</a>.</p>
+<h2 id="more-websockets-reading">More WebSockets reading</h2>
+<p>If you would like to learn more about the details of the WebSocket protocol,
+I recommend reading <a href="https://tools.ietf.org/html/rfc6455"><code>RFC 6455</code></a> which defines
+the protocol itself. In addition, you can read more in follow-up RFCs regarding
+the WebSocket protocol:</p>
+<ul>
+<li><a href="https://tools.ietf.org/html/rfc7936">Clarifying Registry Procedures for the WebSocket Subprotocol Name Registry</a></li>
+<li><a href="https://tools.ietf.org/html/rfc8307">Well-Known URIs for the WebSocket Protocol</a></li>
+<li><a href="https://tools.ietf.org/html/rfc8441">Bootstrapping WebSockets with HTTP/2</a></li>
+</ul>
+
+			</div>
+
+			<div class="tags">
+				
+					
+						<ul class="flat">
+							
+							<li><a href="/tags/websockets">websockets</a></li>
+							
+						</ul>
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the </a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2020 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>
