@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Understanding bytes in Go by building a TCP protocol - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Understanding bytes in Go by building a TCP protocol" />
+<meta property="og:description" content="Some of my newsletter subscribers have asked me a few times what is the easiest way to think about byte slices, or using Go&#39;s syntax: []byte. Folks that have experience with low-level languages, where working with bytes is widespread, usually do not have challenges comprehending what []byte means and how to use it.
+But, if you come from a dynamic or a high-level language background, although everything we do ends up being a bunch of bytes, higher-level languages hide such details from us." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/understanding-bytes-golang-build-tcp-protocol/" />
+<meta property="article:published_time" content="2020-04-02T00:00:00+00:00" />
+<meta property="article:modified_time" content="2020-04-02T00:00:00+00:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Understanding bytes in Go by building a TCP protocol"/>
+<meta name="twitter:description" content="Some of my newsletter subscribers have asked me a few times what is the easiest way to think about byte slices, or using Go&#39;s syntax: []byte. Folks that have experience with low-level languages, where working with bytes is widespread, usually do not have challenges comprehending what []byte means and how to use it.
+But, if you come from a dynamic or a high-level language background, although everything we do ends up being a bunch of bytes, higher-level languages hide such details from us."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.com/css/overrides.css" />
+	
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.com/js/main.js"></script><script src="https://ieftimov.com/js/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com/">
+				<img src="/avatar.png" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com/">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>A human, interested in building products and software.</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/categories/testing-in-go">Testing in Go</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">02</span>
+							<span class="rest">Apr 2020</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Understanding bytes in Go by building a TCP protocol</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>Some of <a href="https://ieftimov.ck.page/subscribe">my newsletter</a> subscribers have
+asked me a few times what is the easiest way to think about <code>byte</code> slices, or
+using Go's syntax: <code>[]byte</code>. Folks that have experience with low-level
+languages, where working with bytes is widespread, usually do not have
+challenges comprehending what <code>[]byte</code> means and how to use it.</p>
+<p>But, if you come from a dynamic or a high-level language background, although
+everything we do ends up being a bunch of bytes, higher-level languages hide
+such details from us. Coming from a Ruby background, I sympathize with the
+folks that find this challenging.</p>
+<p>Inspired by the conversations I had with these readers, I decided to try to
+help out. So, without beating around the bush – let's explore how we can build
+a simple TCP-based application protocol. And thoroughly understand bytes in the
+process.</p>
+<h2 id="standing-on-shoulders-of-giants">Standing on shoulders of giants</h2>
+<p>The protocol that we will be implementing will work on top of TCP, because:</p>
+<ol>
+<li>TCP is high level enough, so we don't have to worry about too many low-level
+connection details</li>
+<li>Go has excellent TCP support through the <code>net</code> package</li>
+<li>The interfaces that the <code>net</code> packages provide allow us to play with bytes
+(and slices of bytes)</li>
+<li>TCP provides <a href="https://en.wikipedia.org/wiki/Transmission_Control_Protocol#Data_transfer">certain
+guarantees</a>
+when it comes to data transfer, so we are left with less to worry about</li>
+<li>Standing on the shoulders of giants is more uncomplicated than reinventing
+the wheel</li>
+</ol>
+<p>Now, because protocol design is no small feat, we will be implementing a very
+tiny and toyish protocol. I am by no means a protocol designer, so what we are
+going to be working on here is merely an example. But, if you have any
+experience with protocols, please do not hesitate to drop me a comment (or a
+message) and let me know what I got wrong.</p>
+<h2 id="enter-slck">Enter SLCK</h2>
+<p>Let us imagine that <a href="https://slack.com">Slack</a>, the omnipresent collaboration
+and communication app, wants to turn their chat design into an open internet
+protocol. Being an open internet protocol would allow anyone to create a
+Slack-compliant server by implementing the SLCK protocol and build their
+version of Slack.</p>
+<p>In theory, having an open protocol would allow Slack to become distributed,
+with people hosting their Slack servers. If people would host their SLCK
+servers, the servers will communicate with a cluster (or inter-server)
+protocol. With a cluster protocol (between servers) and a client protocol
+(between client and server), two SLCK servers will have the ability to
+communicate between themselves and with clients.</p>
+<p>But, a cluster protocol is not what we will explore here, as it is
+significantly more challenging to implement. That's why we will focus only on
+the client SLCK protocol.</p>
+<p>Now, to make the client SLCK protocol production-ready would be a massive
+effort, and it is beyond what an article can cover. But, I believe that it's a
+great example through which we can learn more about working with bytes.</p>
+<p>Without further ado, let's talk about <code>SLCK</code>.</p>
+<h3 id="slck-design">SLCK design</h3>
+<p>SLCK is a text-based wire protocol, meaning that the data that travels on the
+wire is not binary, but just ASCII text. The advantage of text-based protocols
+is that a client can practically open a TCP connection to a server that
+implements the protocol and talk to it by sending ASCII characters.</p>
+<p>Clients can connect to and communicate with a SLCK server through a TCP socket,
+using a set of commands and conventions that we will define next.</p>
+<h4 id="protocol-conventions">Protocol conventions</h4>
+<p>SLCK follows a few simple but important conventions:</p>
+<ul>
+<li>It has <a href="https://en.wikipedia.org/wiki/Type-length-value">TLV (type-length-value)
+format</a></li>
+<li>It has a control line &amp; a content line</li>
+<li>It uses carriage return (<code>\r\n</code>) as delimiter</li>
+<li>It contains a fixed list of subjects (tags) representing actions</li>
+<li>And as already mentioned, it uses ASCII encoded text on the wire</li>
+</ul>
+<p>Or, if we put all of these conventions in combination, a SLCK message would
+look like:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">MSG #general 11\r\nHello World
+</code></pre></div><p>So, why an ASCII-encoded text-based wire protocol? Well, the advantage of such
+protocols is that once the specification (usually called spec) of the protocol
+is public, anyone can write an implementation. Thus, such a protocol can be the
+backbone on top of which an ecosystem can be born.</p>
+<p>More practically, having a simple protocol makes it easy to work with it. We do
+not need fancy clients to talk to a server that implements SLCK. A connection
+through <code>telnet</code> would suffice, and the messages sent to the server can be
+written by anyone that understands the protocol specification, just by hand.</p>
+<h4 id="protocol-commands-subjects-and-options">Protocol commands (subjects and options)</h4>
+<p>SLCK has a few different commands:</p>
+<table>
+<thead>
+<tr>
+<th align="left">ID</th>
+<th align="left">Sent by</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><code>REG</code></td>
+<td align="left">Client</td>
+<td align="left">Register as client</td>
+</tr>
+<tr>
+<td align="left"><code>JOIN</code></td>
+<td align="left">Client</td>
+<td align="left">Join a channel</td>
+</tr>
+<tr>
+<td align="left"><code>LEAVE</code></td>
+<td align="left">Client</td>
+<td align="left">Leave a channel</td>
+</tr>
+<tr>
+<td align="left"><code>MSG</code></td>
+<td align="left">Both</td>
+<td align="left">Send or receive a message to/from entity (channel or user)</td>
+</tr>
+<tr>
+<td align="left"><code>CHNS</code></td>
+<td align="left">Client</td>
+<td align="left">List available channels</td>
+</tr>
+<tr>
+<td align="left"><code>USRS</code></td>
+<td align="left">Client</td>
+<td align="left">List users</td>
+</tr>
+<tr>
+<td align="left"><code>OK</code></td>
+<td align="left">Server</td>
+<td align="left">Command acknowledgement</td>
+</tr>
+<tr>
+<td align="left"><code>ERR</code></td>
+<td align="left">Server</td>
+<td align="left">Error</td>
+</tr>
+</tbody>
+</table>
+<p>Let's explore each of them:</p>
+<h4 id="reg">REG</h4>
+<p>When a client connects to a server, they can register as a client using the
+<code>REG</code> command. It takes an identifier as an argument, which is the client's
+username.</p>
+<p>Syntax:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">REG &lt;handle&gt;
+</code></pre></div><p>where:</p>
+<ul>
+<li><code>handle</code>: name of the user</li>
+</ul>
+<h4 id="join">JOIN</h4>
+<p>When a client connects to a server, they can join a channel using the <code>JOIN</code>
+command. It takes an identifier as an argument, which is the channel ID.</p>
+<p>Syntax:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">JOIN &lt;channel-id&gt;
+</code></pre></div><p>where:</p>
+<ul>
+<li><code>channel-id</code>: ID of the channel</li>
+</ul>
+<h4 id="leave">LEAVE</h4>
+<p>Once a user has joined a channel, they can leave the channel using the <code>LEAVE</code>
+command, with the channel ID as argument.</p>
+<p>Syntax:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">LEAVE &lt;channel-id&gt;
+</code></pre></div><p>where:</p>
+<ul>
+<li><code>channel-id</code>: ID of the channel</li>
+</ul>
+<p><strong>Example 1:</strong> to leave the <code>#general</code> channel, the client can send:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">LEAVE #general
+</code></pre></div><h4 id="msg">MSG</h4>
+<p>To send a message to a channel or a user, the client can use the <code>MSG</code> command,
+with the channel or user identifier as argument, followed with the body length
+and the body itself.</p>
+<p>Syntax:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">MSG &lt;entity-id&gt; &lt;length&gt;\r\n[payload]
+</code></pre></div><p>where:</p>
+<ul>
+<li><code>entity-id</code>: the ID of the channel or user</li>
+<li><code>length</code>: payload length</li>
+<li><code>payload</code>: the message body</li>
+</ul>
+<p><strong>Example 1:</strong> send a <code>Hello everyone!</code> message to the <code>#general</code> channel:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">MSG #general 16\r\nHello everyone!
+</code></pre></div><p><strong>Example 2:</strong> send a <code>Hello!</code> message to <code>@jane</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">MSG @jane 4\r\nHey!
+</code></pre></div><h4 id="chns">CHNS</h4>
+<p>To list all available channels, the client can send the <code>CHNS</code> message. The
+server will reply with the list of available channels.</p>
+<p>Syntax:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">CHNS
+</code></pre></div><h4 id="usrs">USRS</h4>
+<p>To list all users, the client can send the <code>USRS</code> message. The server will
+reply with the list of available users.</p>
+<p>Syntax:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">USRS
+</code></pre></div><h4 id="okerr">OK/ERR</h4>
+<p>When the server receives a command, it can reply with <code>OK</code> or <code>ERR</code>.</p>
+<p><code>OK</code> does not have any text after that, think of it as an <code>HTTP 204</code>.</p>
+<p><code>ERR &lt;error-message&gt;</code> is the format of the errors returned by the server to the
+client. No protocol errors result in the server closing the connection. That
+means that although an <code>ERR</code> has been returned, the server is still maintaining
+the connection with the client.</p>
+<p><strong>Example 1:</strong> Protocol error due to bad username selected during registration:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">ERR Username must begin with @
+</code></pre></div><p><strong>Example 2:</strong> Protocol error due to bad channel ID sent with <code>JOIN</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">ERR Channel ID must begin with #
+</code></pre></div><h2 id="implementing-a-server">Implementing a server</h2>
+<p>Now that we have the basics of the SLCK protocol in place, we can move on to
+the implementation. There are many ways to create the server, but as long as it
+implements the SLCK protocol correctly, the clients will not care about what
+happens under the hood of the server.</p>
+<p>In continuation, I will explain my approach to building the SLCK TCP server,
+and while we are on it, we will learn lots about bytes and slices of bytes.</p>
+<p>(If you would like to jump ahead, the full code of the SLCK protocol server
+implementation can be found in <a href="https://github.com/fteem/go-playground/tree/master/slck-protocol">this
+repo</a>.)</p>
+<h3 id="server-design">Server design</h3>
+<p>The server design will have four different parts: a client (user), a channel
+(chat room), a command (from the client to the server), and a hub - the server
+that manages it all.</p>
+<p>Let's take it from the most straightforward piece towards the most complicated.</p>
+<h3 id="commands">Commands</h3>
+<p>Commands are what flows from the clients to the hub. Each received command from
+the user, such as <code>REG</code>, <code>MSG</code>, and the others, has to be appropriately parsed,
+validated, and handled.</p>
+<p>Each command is of type <code>command</code>. The type definition is as follows:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> command <span style="font-weight:bold">struct</span> {
+	id        ID
+	recipient <span style="color:#458;font-weight:bold">string</span>
+	sender    <span style="color:#458;font-weight:bold">string</span>
+	body      []<span style="color:#458;font-weight:bold">byte</span>
+}
+</code></pre></div><p>The four attributes of the type, including their explanation:</p>
+<ul>
+<li><code>id</code> - the identification of the <code>command</code>, which can be one of the protocol
+commands.</li>
+<li><code>recipient</code> - who/what is the receiver of the command. It can be a <code>@user</code> or
+a <code>#channel</code>.</li>
+<li><code>sender</code> - the sender of the command, which is the <code>@username</code> of a user.</li>
+<li><code>body</code> - the body of the command sent by the sender to the receiver.</li>
+</ul>
+<p>The flow of <code>command</code>s will be: a <code>client</code> receives the wire-protocol message,
+parses it, and turns it in a <code>command</code>, that the <code>client</code> sends to the <code>hub</code>.</p>
+<p>Additionally, the <code>command</code> also uses a type <code>ID</code>, which is an <code>int</code> type
+alias. We use <code>ID</code> so we can control the valid command types using a constants
+and an <code>iota</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> ID <span style="color:#458;font-weight:bold">int</span>
+
+<span style="font-weight:bold">const</span> (
+	REG ID = <span style="font-weight:bold">iota</span>
+	JOIN
+	LEAVE
+	MSG
+	CHNS
+	USRS
+)
+</code></pre></div><p>Although the <code>client</code>s have to work with the raw strings that they receive from
+the network, internally in the server, we map the wire commands to their
+constant counterparts. This way, we establish strict control of all the command
+types, enforced by Go's compiler. Using this approach, we assure that the <code>id</code>
+will always be a valid command type.</p>
+<h3 id="channels">Channels</h3>
+<p>Channels in the <code>SLCK</code> protocol lingo are just chat rooms. It's worth
+mentioning they have nothing in common with Go channels, except the name.</p>
+<p>A <code>channel</code> is just a <code>type</code> with two attributes:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> channel <span style="font-weight:bold">struct</span> {
+	name    <span style="color:#458;font-weight:bold">string</span>
+	clients <span style="font-weight:bold">map</span>[<span style="font-weight:bold">*</span>client]<span style="color:#458;font-weight:bold">bool</span>
+}
+</code></pre></div><p>The <code>name</code> of the channel is just a <code>string</code> that contains the unique name of
+the channel. The <code>clients</code> map is a set of <code>*client</code>s that are part of the
+channel at a given time. Having the list of clients available allows us to
+easily broadcast messages to all clients in the channel, such as:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (c <span style="font-weight:bold">*</span>channel) <span style="color:#900;font-weight:bold">broadcast</span>(s <span style="color:#458;font-weight:bold">string</span>, m []<span style="color:#458;font-weight:bold">byte</span>) {
+	msg <span style="font-weight:bold">:=</span> <span style="color:#999">append</span>([]<span style="color:#999">byte</span>(s), <span style="color:#b84">&#34;: &#34;</span><span style="font-weight:bold">...</span>)
+	msg = <span style="color:#999">append</span>(msg, m<span style="font-weight:bold">...</span>)
+	msg = <span style="color:#999">append</span>(msg, <span style="color:#b84">&#39;\n&#39;</span>)
+
+	<span style="font-weight:bold">for</span> cl <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> c.clients {
+		cl.conn.<span style="color:#900;font-weight:bold">Write</span>(msg)
+	}
+}
+</code></pre></div><p>Which brings us to the <code>client</code> itself.</p>
+<h3 id="client">Client</h3>
+<p>A <code>client</code> is a wrapper around the TCP connection. It encapsulates all the
+functionality around accepting messages from the TCP connection, parsing the
+messages, validating their structure and content, and sending them for further
+processing and handling to the <code>hub</code>.</p>
+<p>Let's look closer into the <code>client</code> type:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> client <span style="font-weight:bold">struct</span> {
+	conn     net.Conn
+	outbound <span style="font-weight:bold">chan</span><span style="font-weight:bold">&lt;-</span> command
+	register <span style="font-weight:bold">chan</span><span style="font-weight:bold">&lt;-</span> <span style="font-weight:bold">*</span>client
+	username <span style="color:#458;font-weight:bold">string</span>
+}
+</code></pre></div><p>The four attributes of the <code>client</code> type, in order:</p>
+<ul>
+<li><code>conn</code> - the TCP connection itself (of type
+<a href="https://golang.org/pkg/net/#Conn"><code>net.Conn</code></a>)</li>
+<li><code>outbound</code> - a send-only channel of type <code>command</code>. This channel will be the
+connection between the <code>client</code> and the <code>hub</code>, through which the <code>client</code>
+will send <code>command</code>s to the <code>hub</code></li>
+<li><code>register</code> - a send-only channel of type <code>*client</code> through which the client
+will let the <code>hub</code> know that it wants to register itself with the <code>hub</code>
+(a.k.a. the chat server)</li>
+<li><code>deregister</code> - a send-only channel of type <code>*client</code> through which the client
+will let the <code>hub</code> know that the user has closed the socket, so the <code>hub</code>
+should deregister the client (by removing it from the clients <code>map</code> and from
+all channels)</li>
+<li><code>username</code> - the username of the user (of type <code>string</code>) that is sitting
+behind the TCP connection</li>
+</ul>
+<p>If this is a bit confusing, worry not. It will get more evident once you see
+the whole thing in action.</p>
+<p>Now, let's move on to the <code>client</code>'s methods. Once we intantiate a <code>client</code>, it
+can listen for incoming messages over the TCP connection. To do that, the
+<code>client</code> has a method called <code>read</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (c <span style="font-weight:bold">*</span>client) <span style="color:#900;font-weight:bold">read</span>() <span style="color:#458;font-weight:bold">error</span> {
+	<span style="font-weight:bold">for</span> {
+		msg, err <span style="font-weight:bold">:=</span> bufio.<span style="color:#900;font-weight:bold">NewReader</span>(c.conn).<span style="color:#900;font-weight:bold">ReadBytes</span>(<span style="color:#b84">&#39;\n&#39;</span>)
+		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">==</span> io.EOF {
+			<span style="color:#998;font-style:italic">// Connection closed, deregister client
+</span><span style="color:#998;font-style:italic"></span>			c.deregister <span style="font-weight:bold">&lt;-</span> c
+			<span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>
+		}
+		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+			<span style="font-weight:bold">return</span> err
+		}
+
+		c.<span style="color:#900;font-weight:bold">handle</span>(msg)
+	}
+}
+</code></pre></div><p><code>read</code> loops endlessly using a <code>for</code> loop, and accepts incoming messages from
+the <code>conn</code> attribute (the TCP connection). Once the message (<code>msg</code>) is
+received, it will pass it on to the <code>handle</code> method, which will process it.</p>
+<p>In case the <code>err</code> returned is <code>io.EOF</code>, meaning the user can closed the
+connection, the <code>client</code> will send notify the <code>hub</code> through the <code>deregister</code>
+channel. The <code>hub</code> will remove the deregistered client from the <code>clients</code> map
+and from all of the channels that the <code>client</code> participated in.</p>
+<h3 id="handling-bytes-in-handle-using-the-bytes-package">Handling bytes in <code>handle</code> using the <code>bytes</code> package</h3>
+<p>Because of the protocol definition, we know the structure of the commands that
+the chat server might receive from the user. That's what the <code>client</code>'s
+<code>handle</code> method does - it get the raw messages from the socket and parses the
+bytes to make meaning out of them.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (c <span style="font-weight:bold">*</span>client) <span style="color:#900;font-weight:bold">handle</span>(message []<span style="color:#458;font-weight:bold">byte</span>) {
+	cmd <span style="font-weight:bold">:=</span> bytes.<span style="color:#900;font-weight:bold">ToUpper</span>(bytes.<span style="color:#900;font-weight:bold">TrimSpace</span>(bytes.<span style="color:#900;font-weight:bold">Split</span>(message, []<span style="color:#999">byte</span>(<span style="color:#b84">&#34; &#34;</span>))[<span style="color:#099">0</span>]))
+	args <span style="font-weight:bold">:=</span> bytes.<span style="color:#900;font-weight:bold">TrimSpace</span>(bytes.<span style="color:#900;font-weight:bold">TrimPrefix</span>(message, cmd))
+
+	<span style="font-weight:bold">switch</span> <span style="color:#999">string</span>(cmd) {
+	<span style="font-weight:bold">case</span> <span style="color:#b84">&#34;REG&#34;</span>:
+		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">:=</span> c.<span style="color:#900;font-weight:bold">reg</span>(args); err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+			c.<span style="color:#900;font-weight:bold">err</span>(err)
+		}
+	<span style="font-weight:bold">case</span> <span style="color:#b84">&#34;JOIN&#34;</span>:
+		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">:=</span> c.<span style="color:#900;font-weight:bold">join</span>(args); err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+			c.<span style="color:#900;font-weight:bold">err</span>(err)
+		}
+	<span style="font-weight:bold">case</span> <span style="color:#b84">&#34;LEAVE&#34;</span>:
+		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">:=</span> c.<span style="color:#900;font-weight:bold">leave</span>(args); err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+			c.<span style="color:#900;font-weight:bold">err</span>(err)
+		}
+	<span style="font-weight:bold">case</span> <span style="color:#b84">&#34;MSG&#34;</span>:
+		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">:=</span> c.<span style="color:#900;font-weight:bold">msg</span>(args); err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+			c.<span style="color:#900;font-weight:bold">err</span>(err)
+		}
+	<span style="font-weight:bold">case</span> <span style="color:#b84">&#34;CHNS&#34;</span>:
+		c.<span style="color:#900;font-weight:bold">chns</span>()
+	<span style="font-weight:bold">case</span> <span style="color:#b84">&#34;USRS&#34;</span>:
+		c.<span style="color:#900;font-weight:bold">usrs</span>()
+	<span style="font-weight:bold">default</span>:
+		c.<span style="color:#900;font-weight:bold">err</span>(fmt.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Unknown command %s&#34;</span>, cmd))
+	}
+}
+</code></pre></div><p>Handling messages is where we get to see the slice of bytes (<code>[]byte</code>) type in
+action. So, what happens here? Let's break it down.</p>
+<p>Given that our SLCK protocol is a text-based wire protocol, the bytes that are
+flowing on the TCP connection are, in fact, plain ASCII text. Each byte (or
+octet, because a byte is eight bits) in the decimal number system has a value
+between 0 and 255 (2 to the power of 8). That means that each of the octets can
+contain any of the characters in the extended ASCII encoding.  (Refer to <a href="https://www.asciitable.com/">this
+ASCII table</a> to see all of the available
+characters.)</p>
+<p>Having a text-based protocol allows us to easily convert each of the bytes that
+arrive through the TCP connection into a meaningful text. That's why each
+<code>byte</code> in the <code>[]byte</code> slice represents one character. Because each byte in the
+slice <code>[]byte</code> is a character, converting a <code>[]byte</code> in a string is as easy as:
+<code>s := string(slice)</code>.</p>
+<p>And Go is good at handling bytes. For example, it has a
+<a href="https://golang.org/pkg/bytes/">bytes</a> package which lets us work with
+<code>[]byte</code>, instead of converting them into <code>string</code>s every time we want to work
+with bytes.</p>
+<p>Given that all SLCK commands begin with a single word separated with space
+after it, we can simply take the first word from the <code>[]byte</code>, upcase it and
+compare it with the valid keywords of the protocol. &ldquo;But, how are we supposed
+to take a word from a slice of bytes?&rdquo; you might ask. Since bytes are not
+words, we have to resort to either compare them byte-by-byte or use the
+built-in <code>bytes</code> package. To keep things simple, we will use the <code>bytes</code>
+package. (You can check <a href="https://play.golang.org/p/DSxiMiiDwta">this snippet</a>
+to compare the two approaches.)</p>
+<p>In the first line of the <code>handle</code>, method we take the first part of the
+received message, and we upcase it. Then, on the second line, we remove the
+first part from the rest of the message. The split allows us to have the
+command (<code>cmd</code>) and the rest of the command arguments (<code>args</code>) in separate
+variables.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#b84">&#34;))[0])) args := bytes.TrimSpace(bytes.TrimPrefix(message, cmd)) ```
+</span><span style="color:#b84">
+</span><span style="color:#b84">After that, in the `switch` construct, we handle all of the different commands.
+</span><span style="color:#b84">For example, handling the `REG` command is done using the `reg`, and the `err`
+</span><span style="color:#b84">methods:
+</span><span style="color:#b84">
+</span><span style="color:#b84">```go func (c *client) reg(args []byte) error { u := bytes.TrimSpace(args) if
+</span><span style="color:#b84">u[0] != &#39;@&#39; { return fmt.Errorf(&#34;</span>Username must begin with <span style="color:#a61717;background-color:#e3d2d2">@</span><span style="color:#b84">&#34;) } if len(u) == 0
+</span><span style="color:#b84">{ return fmt.Errorf(&#34;</span>Username cannot be blank<span style="color:#a61717;background-color:#e3d2d2">&#34;</span>) }
+
+        c.username = <span style="color:#999">string</span>(u) c.register <span style="font-weight:bold">&lt;-</span> c
+
+        <span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>
+}
+</code></pre></div><p>The <code>reg</code> method takes the <code>args</code> slice, and it removes any space bytes (using
+<code>bytes.TrimSpace</code>). Given that the second argument of the <code>REG</code> command is the
+<code>@username</code> of the user, it checks if the passed username begins with <code>@</code> and
+if it's blank. Once it does that, it converts the username to a string, and it
+assigns it to the client (<code>c</code>) itself. From then on, the client has an assigned
+username.</p>
+<p>As a second step, it sends the client itself through the <code>register</code> channel.
+This channel is read by the <code>hub</code> (the chat server), which will do more
+validation of the username before it successfully registers the client.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (c <span style="font-weight:bold">*</span>client) <span style="color:#900;font-weight:bold">err</span>(e <span style="color:#458;font-weight:bold">error</span>) {
+	c.conn.<span style="color:#900;font-weight:bold">Write</span>([]<span style="color:#999">byte</span>(<span style="color:#b84">&#34;ERR &#34;</span> <span style="font-weight:bold">+</span> e.<span style="color:#900;font-weight:bold">Error</span>() <span style="font-weight:bold">+</span> <span style="color:#b84">&#34;\n&#34;</span>))
+}
+</code></pre></div><p>The <code>err</code> func simply takes an error and sends its contents back to the user,
+using the underlying TCP connection of the client.</p>
+<p>We will come back to the other commands and methods once we have thoroughly
+explored the chat server.</p>
+<h3 id="the-hub">The hub</h3>
+<p>The <code>hub</code> is the central entity that the clients connect and register with.
+The <code>hub</code> also manages the available channels (chat rooms), broadcasting
+messages to said channels, and relaying messages (private/direct messages)
+between clients.</p>
+<p>All of the above functionality means that the <code>hub</code> is the central place of all
+communications, hence the name.</p>
+<p>First, let's explore the <code>hub</code> type with all of its attributes:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> hub <span style="font-weight:bold">struct</span> {
+	channels        <span style="font-weight:bold">map</span>[<span style="color:#458;font-weight:bold">string</span>]<span style="font-weight:bold">*</span>channel
+	clients         <span style="font-weight:bold">map</span>[<span style="color:#458;font-weight:bold">string</span>]<span style="font-weight:bold">*</span>client
+	commands        <span style="font-weight:bold">chan</span> command
+	deregistrations <span style="font-weight:bold">chan</span> <span style="font-weight:bold">*</span>client
+	registrations   <span style="font-weight:bold">chan</span> <span style="font-weight:bold">*</span>client
+}
+</code></pre></div><p>The attributes, and their explanations, in order:</p>
+<ul>
+<li><code>channels</code> - a <code>map</code> of the channels (chat rooms), with the name of the
+channel as the key and the <code>*channel</code> as value</li>
+<li><code>clients</code> - a <code>map</code> of the clients (connected users), with the username as
+the key and the <code>*client</code> as value</li>
+<li><code>commands</code> - a channel of <code>command</code> that are flowing from the clients to the
+<code>hub</code>, that the <code>hub</code> will validate and execute</li>
+<li><code>deregistrations</code> - a channel of <code>*client</code> through which a client deregisters
+itself, through which the <code>hub</code> will be informed that the user has closed the
+connection and it will clean up any references to that <code>client</code></li>
+<li><code>registrations</code> - a channel of <code>*client</code> through which new clients register
+themselves to the <code>hub</code>, through which the <code>hub</code> will accept the new client,
+validate their <code>username</code> and add them to the <code>clients</code> map</li>
+</ul>
+<p>So, how does the <code>hub</code> function? It all begins with the <code>run</code> method:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (h <span style="font-weight:bold">*</span>hub) <span style="color:#900;font-weight:bold">run</span>() {
+	<span style="font-weight:bold">for</span> {
+		<span style="font-weight:bold">select</span> {
+		<span style="font-weight:bold">case</span> client <span style="font-weight:bold">:=</span> <span style="font-weight:bold">&lt;-</span>h.registrations:
+			h.<span style="color:#900;font-weight:bold">register</span>(client)
+		<span style="font-weight:bold">case</span> client <span style="font-weight:bold">:=</span> <span style="font-weight:bold">&lt;-</span>h.deregistrations:
+			h.<span style="color:#900;font-weight:bold">unregister</span>(client)
+		<span style="font-weight:bold">case</span> cmd <span style="font-weight:bold">:=</span> <span style="font-weight:bold">&lt;-</span>h.commands:
+			<span style="font-weight:bold">switch</span> cmd.id {
+			<span style="font-weight:bold">case</span> JOIN:
+				h.<span style="color:#900;font-weight:bold">joinChannel</span>(cmd.sender, cmd.recipient)
+			<span style="font-weight:bold">case</span> LEAVE:
+				h.<span style="color:#900;font-weight:bold">leaveChannel</span>(cmd.sender, cmd.recipient)
+			<span style="font-weight:bold">case</span> MSG:
+				h.<span style="color:#900;font-weight:bold">message</span>(cmd.sender, cmd.recipient, cmd.body)
+			<span style="font-weight:bold">case</span> USRS:
+				h.<span style="color:#900;font-weight:bold">listUsers</span>(cmd.sender)
+			<span style="font-weight:bold">case</span> CHNS:
+				h.<span style="color:#900;font-weight:bold">listChannels</span>(cmd.sender)
+			<span style="font-weight:bold">default</span>:
+				<span style="color:#998;font-style:italic">// Freak out?
+</span><span style="color:#998;font-style:italic"></span>			}
+		}
+	}
+}
+</code></pre></div><p>When we establish a new <code>hub</code> instance (which we will see later), we execute
+the <code>run</code> method in a goroutine. The goroutine will run the <code>for</code> loop
+indefinitely, processing the <code>registrations</code>, <code>deregistrations</code>, and the
+<code>commands</code> channels. Messages arriving through the <code>registrations</code> and
+<code>deregistrations</code> channels will be handled differently from the messages that
+will come from the <code>commands</code> channel.</p>
+<p><code>run</code> will receive messages through the <code>registrations</code> channel, and it will
+send them to the <code>register</code> method for processing:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (h <span style="font-weight:bold">*</span>hub) <span style="color:#900;font-weight:bold">register</span>(c <span style="font-weight:bold">*</span>client) {
+	<span style="font-weight:bold">if</span> _, exists <span style="font-weight:bold">:=</span> h.clients[c.username]; exists {
+		c.username = <span style="color:#b84">&#34;&#34;</span>
+		c.conn.<span style="color:#900;font-weight:bold">Write</span>([]<span style="color:#999">byte</span>(<span style="color:#b84">&#34;ERR username taken\n&#34;</span>))
+	} <span style="font-weight:bold">else</span> {
+		h.clients[c.username] = c
+		c.conn.<span style="color:#900;font-weight:bold">Write</span>([]<span style="color:#999">byte</span>(<span style="color:#b84">&#34;OK\n&#34;</span>))
+	}
+}
+</code></pre></div><p>The <code>register</code> method will check if the <code>hub</code> already has a user with the given
+username, and it will react accordingly. If the username is taken, it will
+remove the username from the <code>client</code> and respond with an error. If the
+username is not taken, then it will add the <code>client</code> to the <code>clients</code> map, with
+the username as a key and the <code>client</code> reference as a value.</p>
+<p><code>run</code> will receive messages through the <code>deregistrations</code> channel, and it will
+send them to the <code>deregister</code> method for processing:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (h <span style="font-weight:bold">*</span>hub) <span style="color:#900;font-weight:bold">deregister</span>(c <span style="font-weight:bold">*</span>client) {
+	<span style="font-weight:bold">if</span> _, exists <span style="font-weight:bold">:=</span> h.clients[c.username]; exists {
+                <span style="color:#999">delete</span>(h.clients, c.username)
+
+		<span style="font-weight:bold">for</span> _, channel <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> h.channels {
+			<span style="color:#999">delete</span>(channel.clients, c)
+		}
+	}
+}
+</code></pre></div><p>The <code>deregister</code> method will check if the <code>hub</code> already has a user with the
+given username. If it finds the user, it will remove it from the <code>hub</code>'s
+<code>clients</code> map. Also, it will go through the map of <code>channels</code> and it will try
+to remove it from each of the <code>channel</code>'s <code>clients</code> map.</p>
+<p>When it comes to handling commands, things are more different. Each of the
+<code>command</code>s, as we already established, has an <code>id</code> attribute. For each of the
+<code>command</code>s that we receive, we do a switch on the <code>id</code> attribute, which will
+invoke a different method. For example, to join a channel, the <code>id</code> must be of
+value <code>JOIN</code>, which will invoke the <code>joinChannel</code> function, with the
+<code>command</code>'s <code>sender</code> and <code>recipient</code> attributes.</p>
+<p>The <code>joinChannel</code> function receives the username (<code>u</code>) and the channel (<code>c</code>) as
+arguments. Then, if it finds the channel, it will add the <code>client</code> to the
+channel's <code>clients</code> map. Otherwise, it will first create the channel, using the
+<code>newChannel</code> constructor, and then add the <code>client</code> as the first client to the
+<code>channel</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (h <span style="font-weight:bold">*</span>hub) <span style="color:#900;font-weight:bold">joinChannel</span>(u <span style="color:#458;font-weight:bold">string</span>, c <span style="color:#458;font-weight:bold">string</span>) {
+	<span style="font-weight:bold">if</span> client, ok <span style="font-weight:bold">:=</span> h.clients[u]; ok {
+		<span style="font-weight:bold">if</span> channel, ok <span style="font-weight:bold">:=</span> h.channels[c]; ok {
+			<span style="color:#998;font-style:italic">// Channel exists, join
+</span><span style="color:#998;font-style:italic"></span>			channel.clients[client] = <span style="font-weight:bold">true</span>
+		} <span style="font-weight:bold">else</span> {
+			<span style="color:#998;font-style:italic">// Channel doesn&#39;t exists, create and join
+</span><span style="color:#998;font-style:italic"></span>			h.channels[c] = <span style="color:#900;font-weight:bold">newChannel</span>(c)
+			h.channels[c].clients[client] = <span style="font-weight:bold">true</span>
+		}
+	}
+}
+</code></pre></div><p>Now, let's zoom out and see how a <code>client</code> wraps a TCP connection. Then, we
+will see how bytes are flowing from the user, through the <code>client</code>, to the
+<code>hub</code> ending up with the receiver (another channel or user).</p>
+<h3 id="sending-messages">Sending messages</h3>
+<p>The core functionality to a chat server and the purpose of our SLCK protocol
+is sending and receiving messages. Let's follow the flow of the bytes and see
+how we can implement sending messages between clients.</p>
+<p>The structure of the <code>MSG</code> command is as follows:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">MSG &lt;entity-id&gt; &lt;length&gt;\r\n[payload]
+</code></pre></div><p>For example, to send a <code>Hello!</code> message to the <code>#general</code> channel:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">MSG #general 6\r\nHello!
+</code></pre></div><p>Or, to send a <code>Hey!</code> message to <code>@jane</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">MSG @jane 4\r\nHey!
+</code></pre></div><p>Once the user sends the <code>MSG</code> command, the <code>client</code>'s <code>handle</code> method accepts
+it. Then, in <code>handle</code> we extract the message and the command, and we invoke the
+<code>msg</code> method of the <code>client</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (c <span style="font-weight:bold">*</span>client) <span style="color:#900;font-weight:bold">handle</span>(message []<span style="color:#458;font-weight:bold">byte</span>) {
+	cmd <span style="font-weight:bold">:=</span> bytes.<span style="color:#900;font-weight:bold">ToUpper</span>(bytes.<span style="color:#900;font-weight:bold">TrimSpace</span>(bytes.<span style="color:#900;font-weight:bold">Split</span>(message, []<span style="color:#999">byte</span>(<span style="color:#b84">&#34; &#34;</span>))[<span style="color:#099">0</span>]))
+	args <span style="font-weight:bold">:=</span> bytes.<span style="color:#900;font-weight:bold">TrimSpace</span>(bytes.<span style="color:#900;font-weight:bold">TrimPrefix</span>(message, cmd))
+
+	<span style="font-weight:bold">switch</span> <span style="color:#999">string</span>(cmd) {
+	<span style="color:#998;font-style:italic">// Some other stuff here...
+</span><span style="color:#998;font-style:italic"></span>	<span style="font-weight:bold">case</span> <span style="color:#b84">&#34;MSG&#34;</span>:
+		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">:=</span> c.<span style="color:#900;font-weight:bold">msg</span>(args); err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+			c.<span style="color:#900;font-weight:bold">err</span>(err)
+		}
+	<span style="color:#998;font-style:italic">// Some other stuff here...
+</span><span style="color:#998;font-style:italic"></span>	<span style="font-weight:bold">default</span>:
+		c.<span style="color:#900;font-weight:bold">err</span>(fmt.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Unknown command %s&#34;</span>, cmd))
+	}
+}
+</code></pre></div><p>The <code>args</code> are passed to the <code>msg</code> method, which does some heavy lifting.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (c <span style="font-weight:bold">*</span>client) <span style="color:#900;font-weight:bold">msg</span>(args []<span style="color:#458;font-weight:bold">byte</span>) <span style="color:#458;font-weight:bold">error</span> {
+	args = bytes.<span style="color:#900;font-weight:bold">TrimSpace</span>(args)
+	<span style="font-weight:bold">if</span> args[<span style="color:#099">0</span>] <span style="font-weight:bold">!=</span> <span style="color:#b84">&#39;#&#39;</span> <span style="font-weight:bold">&amp;&amp;</span> args[<span style="color:#099">0</span>] <span style="font-weight:bold">!=</span> <span style="color:#b84">&#39;@&#39;</span> {
+		<span style="font-weight:bold">return</span> fmt.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;recipient must be a channel (&#39;#name&#39;) or user (&#39;@user&#39;)&#34;</span>)
+	}
+
+	recipient <span style="font-weight:bold">:=</span> bytes.<span style="color:#900;font-weight:bold">Split</span>(args, []<span style="color:#999">byte</span>(<span style="color:#b84">&#34; &#34;</span>))[<span style="color:#099">0</span>]
+	<span style="font-weight:bold">if</span> <span style="color:#999">len</span>(recipient) <span style="font-weight:bold">==</span> <span style="color:#099">0</span> {
+		<span style="font-weight:bold">return</span> fmt.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;recipient must have a name&#34;</span>)
+	}
+
+	<span style="color:#998;font-style:italic">// More stuff here...
+</span><span style="color:#998;font-style:italic"></span>}
+</code></pre></div><p>The <code>msg</code> method's first step is to check if the first argument of the message
+begins with a <code>@</code> or <code>#</code> – a user or a channel name. If that's correct, we
+extract the <code>recipient</code>, which can be the username or the channel name.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (c <span style="font-weight:bold">*</span>client) <span style="color:#900;font-weight:bold">msg</span>(args []<span style="color:#458;font-weight:bold">byte</span>) <span style="color:#458;font-weight:bold">error</span> {
+	<span style="color:#998;font-style:italic">// The stuff from above here...
+</span><span style="color:#998;font-style:italic"></span>
+	args = bytes.<span style="color:#900;font-weight:bold">TrimSpace</span>(bytes.<span style="color:#900;font-weight:bold">TrimPrefix</span>(args, recipient))
+	l <span style="font-weight:bold">:=</span> bytes.<span style="color:#900;font-weight:bold">Split</span>(args, DELIMITER)[<span style="color:#099">0</span>]
+	length, err <span style="font-weight:bold">:=</span> strconv.<span style="color:#900;font-weight:bold">Atoi</span>(<span style="color:#999">string</span>(l))
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		<span style="font-weight:bold">return</span> fmt.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;body length must be present&#34;</span>)
+	}
+	<span style="font-weight:bold">if</span> length <span style="font-weight:bold">==</span> <span style="color:#099">0</span> {
+		<span style="font-weight:bold">return</span> fmt.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;body length must be at least 1&#34;</span>)
+	}
+
+	padding <span style="font-weight:bold">:=</span> <span style="color:#999">len</span>(l) <span style="font-weight:bold">+</span> <span style="color:#999">len</span>(DELIMITER) <span style="color:#998;font-style:italic">// Size of the body length + the delimiter
+</span><span style="color:#998;font-style:italic"></span>	body <span style="font-weight:bold">:=</span> args[padding : padding<span style="font-weight:bold">+</span>length]
+
+	c.outbound <span style="font-weight:bold">&lt;-</span> command{
+		recipient: <span style="color:#999">string</span>(recipient[<span style="color:#099">1</span>:]),
+		sender:    c.username,
+		body:      body,
+		id:        <span style="color:#b84">&#34;MSG&#34;</span>,
+	}
+
+	<span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>
+}
+</code></pre></div><p>We extract the next argument after, which, according to the protocol
+specification, is the length of the body in bytes. Having the size of the body
+(the length of the bytes) as part of the command that is sent by the client
+allows the server to slice off the bytes it needs from the body efficiently.</p>
+<p>Let's see an example:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">MSG #general 39\r\nHey folks, hope you are all doing well!
+</code></pre></div><p>In the <code>handle</code> method, we sliced off <code>MSG</code>, and we send the rest of the bytes
+to the <code>msg</code> method. In <code>msg</code>, we checked if the next argument is a channel or
+a username – which is correct. Then, we pick up the <code>39</code>, and we store them in
+the <code>l</code> variable.</p>
+<p>Having <code>l</code> being <code>39</code> is not enough – the slice of bytes that represent the
+ASCII <code>39</code> is <code>[51 57]</code>. The <code>51</code> and <code>57</code> bytes just mean that the two octets
+representing <code>3</code> and <code>9</code> in ASCII, have byte representation as <code>51</code> and <code>57</code>.
+To make our Go code understand <code>[51 57]</code> like <code>39</code>, we have to convert them
+into a <code>string</code>, so they become <code>&quot;39&quot;</code> and then use the <code>strconv</code> package to
+convert the <code>string</code> to an <code>int</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">l <span style="font-weight:bold">:=</span> bytes.<span style="color:#900;font-weight:bold">Split</span>(args, DELIMITER)[<span style="color:#099">0</span>]
+length, err <span style="font-weight:bold">:=</span> strconv.<span style="color:#900;font-weight:bold">Atoi</span>(<span style="color:#999">string</span>(l))
+</code></pre></div><p>Once we have the <code>length</code> of the body, we validate that it will be at least one
+byte. Next, we take the remaining bytes from the <code>args</code>, and we slice off the
+<code>length</code> amount of bytes from the <code>args</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">padding <span style="font-weight:bold">:=</span> <span style="color:#999">len</span>(l) <span style="font-weight:bold">+</span> <span style="color:#999">len</span>(DELIMITER) <span style="color:#998;font-style:italic">// Size of the body length + the delimiter
+</span><span style="color:#998;font-style:italic"></span>body <span style="font-weight:bold">:=</span> args[padding : padding<span style="font-weight:bold">+</span>length]
+</code></pre></div><p>In context of our example above:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">MSG #general 39\r\nHey folks, hope you are all doing well!
+</code></pre></div><p>we take the length (2) of the <code>39</code> plus the length of the <code>\r\n</code> delimiter and
+then take the body out of the <code>args</code> slice of bytes by using the &ldquo;slice&rdquo;
+operator (<code>:</code>). The slicing operation results in slicing all of the bytes
+between <code>\n</code> to the end of the body, meaning the <code>body</code> becomes:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Hey folks, hope you are all doing well!
+</code></pre></div><p>If the <code>length</code> were less then <code>39</code>, then the <code>body</code> would end up being
+shorter, because the user has sent the wrong body size to the server.
+Conversely, if we tried to slice off more than the size of the <code>body</code>, then the
+goroutine serving the <code>hub</code> would crash, rendering our server useless.</p>
+<p>Given that <code>body</code> now contains the message itself, the last step of the <code>msg</code>
+method is to send the new command it received through the <code>outbound</code> channel to
+the <code>hub</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">c.outbound <span style="font-weight:bold">&lt;-</span> command{
+        recipient: <span style="color:#999">string</span>(recipient[<span style="color:#099">1</span>:]),
+        sender:    c.username,
+        body:      body,
+        id:        MSG,
+}
+</code></pre></div><p>The <code>command</code> has a <code>recipient</code> (channel or user ID), the <code>sender</code>, which is
+the username of the message author, the <code>body</code> containing the <code>body</code> of the
+message, and the <code>id</code> that's the identifier of the <code>command</code> - <code>MSG</code> in this
+case.</p>
+<p>Then, the <code>hub</code> which infinitely loops and reads from the <code>commands</code> channel
+(which is the same channel as the <code>outbound</code> channel of the <code>client</code>), will
+pick up the message from the <code>client</code> and process it in the <code>message</code> method:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (h <span style="font-weight:bold">*</span>hub) <span style="color:#900;font-weight:bold">message</span>(u <span style="color:#458;font-weight:bold">string</span>, r <span style="color:#458;font-weight:bold">string</span>, m []<span style="color:#458;font-weight:bold">byte</span>) {
+	<span style="font-weight:bold">if</span> sender, ok <span style="font-weight:bold">:=</span> h.clients[u]; ok {
+		<span style="font-weight:bold">switch</span> r[<span style="color:#099">0</span>] {
+		<span style="font-weight:bold">case</span> <span style="color:#b84">&#39;#&#39;</span>:
+			<span style="font-weight:bold">if</span> channel, ok <span style="font-weight:bold">:=</span> h.channels[r]; ok {
+				<span style="font-weight:bold">if</span> _, ok <span style="font-weight:bold">:=</span> channel.clients[sender]; ok {
+					channel.<span style="color:#900;font-weight:bold">broadcast</span>(sender.username, m)
+				}
+			}
+		<span style="font-weight:bold">case</span> <span style="color:#b84">&#39;@&#39;</span>:
+			<span style="font-weight:bold">if</span> user, ok <span style="font-weight:bold">:=</span> h.clients[r]; ok {
+				user.conn.<span style="color:#900;font-weight:bold">Write</span>(<span style="color:#999">append</span>(m, <span style="color:#b84">&#39;\n&#39;</span>))
+			}
+		}
+	}
+}
+</code></pre></div><p>The <code>message</code> method will check if the sender username (<code>u</code>) is present in the
+list of active clients (<code>h.clients</code>). If the client is active, then it will
+check if the first byte of the message (<code>m</code>) is a <code>#</code> or a <code>@</code>. Based on the
+result of the <code>switch</code>, either it will broadcast the message (<code>m</code>) to the
+channel, or it will find the recipient (<code>r</code>) from the <code>h.clients</code> list and send
+the message through the recipient's TCP connection.</p>
+<p>Let's see this in action. I will start the server (using <code>go run .</code>) and open
+two <code>telnet</code> sessions with the server:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ telnet 127.0.0.1 <span style="color:#099">8081</span>
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is <span style="color:#b84">&#39;^]&#39;</span>.
+</code></pre></div><p>Given that SCLK is a ASCII wire protocol, it means we can just send some
+commands to the server right away. Let's first register both clients. The first
+one will be <code>@jane</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">REG @jane
+OK
+</code></pre></div><p>And the second client will be <code>@john</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">REG @john
+OK
+</code></pre></div><p>In both cases the registration with the server went well, so the server replied
+with <code>OK</code>. Now, let's make both of the clients join the <code>#general</code> channel. If
+any of the users listed the channels they would get an error:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">CHNS
+ERR no channels found
+</code></pre></div><p>Great, let's make them both join <code>#general</code>, so the channel would be created.
+First <code>@john</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">JOIN <span style="color:#998;font-style:italic">#general</span>
+OK
+</code></pre></div><p><code>@jane</code> righ after:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">CHNS
+#general
+
+JOIN #general
+OK
+</code></pre></div><p>Now that both are in the channel, we can also send a message from <code>@jane</code> to
+<code>#general</code>, and it should pop up on <code>@john</code>'s screen too.</p>
+<p>Sending the message:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">MSG <span style="color:#998;font-style:italic">#general 5\r\nHello</span>
+</code></pre></div><p>And in <code>@john</code>'s screen we can see:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">jane: Hello
+</code></pre></div><p>Voilá! <code>@john</code> received the message. Let's say <code>@john</code> would like to send
+<code>@jane</code> a direct message. He sends:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">MSG @jane 3<span style="color:#b84">\r</span><span style="color:#b84">\n</span>Hey
+</code></pre></div><p>And on <code>@jane</code>'s screen she will see:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">@john: Hey
+</code></pre></div><h2 id="tying-it-all-together">Tying it all together</h2>
+<p>Now that we went through the <code>client</code>, <code>hub</code>, <code>channel</code>, and <code>command</code>, we need
+to see the last piece of the puzzle - the <code>main</code> function that ties it all
+together.</p>
+<p>In the <code>main</code> func, we will initialize a TCP listener, through which we can
+accept a new TCP connection. Then, we will establish a new <code>hub</code> and invoke
+<code>run</code> in a separate goroutine.</p>
+<p>Once the <code>hub</code> is running, we will infinitely loop using a <code>for</code>. Within the
+<code>for</code> loop, we will accept new TCP connections, wrap them in a new <code>client</code> and
+spin them off in a new goroutine.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> main
+
+<span style="font-weight:bold">import</span> (
+	<span style="color:#b84">&#34;log&#34;</span>
+	<span style="color:#b84">&#34;net&#34;</span>
+)
+
+<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() { ln, err <span style="font-weight:bold">:=</span> net.<span style="color:#900;font-weight:bold">Listen</span>(<span style="color:#b84">&#34;tcp&#34;</span>, <span style="color:#b84">&#34;:8081&#34;</span>)
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		log.<span style="color:#900;font-weight:bold">Printf</span>(<span style="color:#b84">&#34;%v&#34;</span>, err)
+	}
+
+	hub <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">newHub</span>()
+	<span style="font-weight:bold">go</span> hub.<span style="color:#900;font-weight:bold">run</span>()
+
+	<span style="font-weight:bold">for</span> {
+		conn, err <span style="font-weight:bold">:=</span> ln.<span style="color:#900;font-weight:bold">Accept</span>()
+		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+			log.<span style="color:#900;font-weight:bold">Printf</span>(<span style="color:#b84">&#34;%v&#34;</span>, err)
+		}
+
+		c <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">newClient</span>(
+			conn,
+			hub.commands,
+			hub.registrations,
+			hub.deregistrations,
+		)
+		<span style="font-weight:bold">go</span> c.<span style="color:#900;font-weight:bold">read</span>()
+	}
+}
+</code></pre></div><p>As a refresher, within the <code>read</code> function of the <code>client</code>, we also infinitely
+loop using a <code>for</code> and accept new incoming TCP messages:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (c <span style="font-weight:bold">*</span>client) <span style="color:#900;font-weight:bold">read</span>() <span style="color:#458;font-weight:bold">error</span> {
+	<span style="font-weight:bold">for</span> {
+		msg, err <span style="font-weight:bold">:=</span> bufio.<span style="color:#900;font-weight:bold">NewReader</span>(c.conn).<span style="color:#900;font-weight:bold">ReadBytes</span>(<span style="color:#b84">&#39;\n&#39;</span>)
+		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">==</span> io.EOF {
+			<span style="color:#998;font-style:italic">// Connection closed, deregister client
+</span><span style="color:#998;font-style:italic"></span>			c.deregister <span style="font-weight:bold">&lt;-</span> c
+			<span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>
+		}
+
+		<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+			<span style="font-weight:bold">return</span> err
+		}
+
+		c.<span style="color:#900;font-weight:bold">handle</span>(msg)
+	}
+	<span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>
+}
+</code></pre></div><p>Having the <code>client</code>'s <code>read</code> method being run a separate goroutine allows us to
+spin off as many goroutines as we have connections. That leaves our main thread
+to accept new connections and just spin the off into goroutines. Once the
+goroutine is running, it will take care of itself until it crashes or the
+client exits.</p>
+<p>The pitfall of this approach is that we have a single <code>hub</code> instance, which
+means that there's only one goroutine that is accepting messages from what can
+be thousands of clients. While having a single <code>hub</code> instance simplifies the
+design, it also introduces a single point of failure. If the <code>hub.run</code>
+goroutine crashes/exits for whatever reason, the server will be rendered
+useless, although all of the client connections will be working fine.</p>
+<p>The full code of the SLCK protocol server implementation can be found in <a href="https://github.com/fteem/go-playground/tree/master/slck-protocol">this
+repo</a>.</p>
+<h2 id="notable-shortcuts">Notable shortcuts</h2>
+<p>Before we wrap up here, I would like to highlight a few of the shortcuts we
+took while building this server implementation. Cutting these corners was with
+a purpose - not making this long article even longer.</p>
+<p>First, we are missing resource locking when creating the channels or when a
+user joins/leaves a channel. If multiple people would join the same channel at
+the same time, it is possible to get a concurrent writes issue.</p>
+<p>Second, our server does not have a graceful shutdown. A production-ready
+implementation would gracefully shut down all of the connections, informing the
+clients about the shutdown. Then, it would potentially save some state on disk
+before shutting down.</p>
+<p>Another shortcut we took was validation of the body size in the <code>msg</code> method.
+When we are performing the slicing of the message body, we do not take into
+consideration if there are enough bytes in the message. If a client sends a
+body size larger then the body itself, we might slice off more bytes than
+available, which would result in a <code>panic</code> and a slice out of bounds error.</p>
+<p>If you would like to play more with our chat server, I recommend starting with
+adding each of these missing functionalities to it. And drop me the link to the
+repo in the comments, so I can see how you pulled it off.</p>
+
+			</div>
+
+			<div class="tags">
+				
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the </a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> Copyright © 2014 - 2020 Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>
