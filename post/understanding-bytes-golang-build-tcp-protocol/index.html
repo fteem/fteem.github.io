@@ -7,7 +7,7 @@
 <meta itemprop="description" content="Learn everything you need to know to work with bytes and slices of bytes ([]byte) by building a chat TCP-based protocol.">
 <meta itemprop="datePublished" content="2020-04-02T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2020-04-02T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="5720">
+<meta itemprop="wordCount" content="5722">
 <meta itemprop="image" content="https://ieftimov.com/cards/understanding-bytes-golang-build-tcp-protocol.gif">
 
 
@@ -488,19 +488,23 @@ received message, and we upcase it. Then, on the second line, we remove the
 first part from the rest of the message. The split allows us to have the
 command (<code>cmd</code>) and the rest of the command arguments (<code>args</code>) in separate
 variables.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#b84">&#34;))[0])) args := bytes.TrimSpace(bytes.TrimPrefix(message, cmd)) ```
-</span><span style="color:#b84">
-</span><span style="color:#b84">After that, in the `switch` construct, we handle all of the different commands.
-</span><span style="color:#b84">For example, handling the `REG` command is done using the `reg`, and the `err`
-</span><span style="color:#b84">methods:
-</span><span style="color:#b84">
-</span><span style="color:#b84">```go func (c *client) reg(args []byte) error { u := bytes.TrimSpace(args) if
-</span><span style="color:#b84">u[0] != &#39;@&#39; { return fmt.Errorf(&#34;</span>Username must begin with <span style="color:#a61717;background-color:#e3d2d2">@</span><span style="color:#b84">&#34;) } if len(u) == 0
-</span><span style="color:#b84">{ return fmt.Errorf(&#34;</span>Username cannot be blank<span style="color:#a61717;background-color:#e3d2d2">&#34;</span>) }
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">cmd <span style="font-weight:bold">:=</span> bytes.<span style="color:#900;font-weight:bold">ToUpper</span>(bytes.<span style="color:#900;font-weight:bold">TrimSpace</span>(bytes.<span style="color:#900;font-weight:bold">Split</span>(message, []<span style="color:#999">byte</span>(<span style="color:#b84">&#34; &#34;</span>))[<span style="color:#099">0</span>]))
+args <span style="font-weight:bold">:=</span> bytes.<span style="color:#900;font-weight:bold">TrimSpace</span>(bytes.<span style="color:#900;font-weight:bold">TrimPrefix</span>(message, cmd))
+</code></pre></div><p>After that, in the <code>switch</code> construct, we handle all of the different commands.
+For example, handling the <code>REG</code> command is done using the <code>reg</code>, and the <code>err</code>
+methods:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> (c <span style="font-weight:bold">*</span>client) <span style="color:#900;font-weight:bold">reg</span>(args []<span style="color:#458;font-weight:bold">byte</span>) <span style="color:#458;font-weight:bold">error</span> {
+	u <span style="font-weight:bold">:=</span> bytes.<span style="color:#900;font-weight:bold">TrimSpace</span>(args)
+	<span style="font-weight:bold">if</span> u[<span style="color:#099">0</span>] <span style="font-weight:bold">!=</span> <span style="color:#b84">&#39;@&#39;</span> {
+       		<span style="font-weight:bold">return</span> fmt.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Username must begin with @&#34;</span>)
+	}
+   	<span style="font-weight:bold">if</span> <span style="color:#999">len</span>(u) <span style="font-weight:bold">==</span> <span style="color:#099">0</span> {
+	     	<span style="font-weight:bold">return</span> fmt.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Username cannot be blank&#34;</span>)
+   	}
 
-        c.username = <span style="color:#999">string</span>(u) c.register <span style="font-weight:bold">&lt;-</span> c
+	c.username = <span style="color:#999">string</span>(u) c.register <span style="font-weight:bold">&lt;-</span> c
 
-        <span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>
+	<span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>
 }
 </code></pre></div><p>The <code>reg</code> method takes the <code>args</code> slice, and it removes any space bytes (using
 <code>bytes.TrimSpace</code>). Given that the second argument of the <code>REG</code> command is the
