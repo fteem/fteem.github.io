@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Testing in Go: Stop Leaking Files - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta itemprop="name" content="Testing in Go: Stop Leaking Files">
+<meta itemprop="description" content="No test suite is perfect. Some test suites are missing good helper functions; others are under-configured or over-customize. Some have obsolete packages included and are left unmaintained. Folks that have experience with more mature projects will likely agree that all of the above can be found in the wild.
+Often, when we test our Go programs, need to create files. Such files can be just fixture files, or whole file trees, to set up the correct environment for the tests to run.">
+<meta itemprop="datePublished" content="2020-05-22T00:00:00&#43;00:00" />
+<meta itemprop="dateModified" content="2020-05-22T00:00:00&#43;00:00" />
+<meta itemprop="wordCount" content="2860">
+<meta itemprop="image" content="https://ieftimov.com/cards/testing-in-go-stop-leaking-files.png">
+
+
+
+<meta itemprop="keywords" content="" /><meta property="og:title" content="Testing in Go: Stop Leaking Files" />
+<meta property="og:description" content="No test suite is perfect. Some test suites are missing good helper functions; others are under-configured or over-customize. Some have obsolete packages included and are left unmaintained. Folks that have experience with more mature projects will likely agree that all of the above can be found in the wild.
+Often, when we test our Go programs, need to create files. Such files can be just fixture files, or whole file trees, to set up the correct environment for the tests to run." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/post/testing-in-go-stop-leaking-files/" />
+<meta property="og:image" content="https://ieftimov.com/cards/testing-in-go-stop-leaking-files.png" />
+<meta property="article:published_time" content="2020-05-22T00:00:00+00:00" />
+<meta property="article:modified_time" content="2020-05-22T00:00:00+00:00" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/testing-in-go-stop-leaking-files.png"/>
+
+<meta name="twitter:title" content="Testing in Go: Stop Leaking Files"/>
+<meta name="twitter:description" content="No test suite is perfect. Some test suites are missing good helper functions; others are under-configured or over-customize. Some have obsolete packages included and are left unmaintained. Folks that have experience with more mature projects will likely agree that all of the above can be found in the wild.
+Often, when we test our Go programs, need to create files. Such files can be just fixture files, or whole file trees, to set up the correct environment for the tests to run."/>
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/main.css" />
+		<link rel="stylesheet" type="text/css" href="https://ieftimov.com/css/overrides.css" />
+	
+
+        <link id="dark-scheme" rel="stylesheet" type="text/css" href="https://ieftimov.com/css/dark.css" />
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+		<script src="https://ieftimov.com/js/main.js"></script><script src="https://ieftimov.com/js/tooltip.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper">
+		<div class="header">
+	
+		<div class="avatar">
+			<a href="https://ieftimov.com/">
+				<img src="/avatar.png" alt="Ilija Eftimov" />
+			</a>
+		</div>
+	
+	<h1 class="site-title"><a href="https://ieftimov.com/">Ilija Eftimov</a></h1>
+	<div class="site-description"><p>A human, interested in building products and software.</p><nav class="nav social">
+			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/fteem" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li><li><a href="https://t.me/ieftimovcom" title="Telegram Channel"><i data-feather="send"></i></a></li></ul>
+		</nav><span class="scheme-toggle"><a href="#" id="scheme-toggle"></a></div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/categories/testing-in-go">Testing in Go</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Archive</a>
+			</li>
+			
+			<li>
+				<a href="/about">About</a>
+			</li>
+			
+			<li>
+				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post">
+			<div class="post-header">
+				
+					<div class="meta">
+						<div class="date">
+							<span class="day">22</span>
+							<span class="rest">May 2020</span>
+						</div>
+					</div>
+				
+				<div class="matter">
+					<h1 class="title">Testing in Go: Stop Leaking Files</h1>
+				</div>
+			</div>
+					
+			<div class="markdown">
+				<p>No test suite is perfect. Some test suites are missing good helper functions;
+others are under-configured or over-customize. Some have obsolete packages
+included and are left unmaintained. Folks that have experience with more mature
+projects will likely agree that all of the above can be found in the wild.</p>
+<p>Often, when we test our Go programs, need to create files. Such files can be
+just fixture files, or whole file trees, to set up the correct environment for
+the tests to run. Once the tests finish running, we have to clean them up, so
+they don't linger around.</p>
+<p>We should rely on the test suite's set of helpers to provide us with a way to
+manage test files if they exist in the first place. Unfortunately, not all test
+suites have such clean-up helpers set up. Sometimes, you might find a few
+different implementations, instead of one obvious way to do it.</p>
+<p>Coming up in Go v1.15, the <a href="https://golang.org/pkg/testing/"><code>testing</code></a> package
+will improve the support for creating temporary test files and directories.
+Let's see how we can put them to use.</p>
+<h2 id="converting-pdfs-to-txt-files">Converting PDFs to TXT files</h2>
+<p>While thinking about a small program that will aid our understanding of leaking
+test files, I was asking myself, &ldquo;What is a program that generates files?&quot;.
+Because I work for a company that does a lot with documents, I thought, &ldquo;let's
+do something straightforward with PDFs&rdquo;.</p>
+<p>Imagine we have a program that extracts text out of PDFs. Why? Well, for one,
+if we want to know how long it will take us to read the PDF, we can take the
+number of words in a PDF and divide it by the average reading speed (which,
+according to Google, is 250 words per minute).</p>
+<p>But to do that, we first have to take a PDF and create a TXT file with all of
+the sentences inside. To do that, we can use <a href="https://github.com/ledongthuc/pdf">one of the many PDF parsing
+libraries for Go</a>.</p>
+<p>Here's the code that takes a PDF, extracts all rows of text from it, and saves
+them in a TXT file.</p>
+<p>First, the <code>persist</code> function:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">persist</span>(content []<span style="color:#458;font-weight:bold">byte</span>, w io.Writer) <span style="color:#458;font-weight:bold">error</span> {
+	_, err <span style="font-weight:bold">:=</span> w.<span style="color:#900;font-weight:bold">Write</span>(content)
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		log.<span style="color:#900;font-weight:bold">Println</span>(<span style="color:#b84">&#34;Failed to persist contents.&#34;</span>)
+		<span style="font-weight:bold">return</span> err
+	}
+
+	<span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>
+}
+</code></pre></div><p>It takes some bytes as <code>content</code> and persists them to a <code>io.Writer</code> - it can be
+a file, a <code>strings.StringBuilder</code> or a different type that implements the
+<code>io.Writer</code> interface. The argument types are generic (interfaces) by design,
+so the function arguments are more liberal. You will see why when we test this
+function.</p>
+<p>The <code>slurp</code> function is next. It will take a <code>pdf.Reader</code> type, which is a type
+from the <code>pdf</code> library we use. We will slurp all of the relevant content (text)
+from the PDF and return a slice of bytes.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">slurp</span>(r <span style="font-weight:bold">*</span>pdf.Reader) []<span style="color:#458;font-weight:bold">byte</span> {
+	<span style="font-weight:bold">var</span> bs []<span style="color:#458;font-weight:bold">byte</span>
+
+	total <span style="font-weight:bold">:=</span> r.<span style="color:#900;font-weight:bold">NumPage</span>()
+	<span style="font-weight:bold">for</span> i <span style="font-weight:bold">:=</span> <span style="color:#099">1</span>; i <span style="font-weight:bold">&lt;=</span> total; i<span style="font-weight:bold">++</span> {
+		p <span style="font-weight:bold">:=</span> r.<span style="color:#900;font-weight:bold">Page</span>(i)
+		<span style="font-weight:bold">if</span> p.V.<span style="color:#900;font-weight:bold">IsNull</span>() {
+			<span style="font-weight:bold">continue</span>
+		}
+
+		rows, _ <span style="font-weight:bold">:=</span> p.<span style="color:#900;font-weight:bold">GetTextByRow</span>()
+		<span style="font-weight:bold">for</span> _, row <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> rows {
+			<span style="font-weight:bold">for</span> _, word <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> row.Content {
+				bs = <span style="color:#999">append</span>(bs, []<span style="color:#999">byte</span>(word.S)<span style="font-weight:bold">...</span>)
+			}
+		}
+	}
+	<span style="font-weight:bold">return</span> bs
+}
+</code></pre></div><p>By returning a slice of bytes, instead of a string, we can use a generic
+interface such as <a href="https://golang.org/pkg/io/#Writer"><code>io.Writer</code></a> (like in
+<code>persist</code>). The interface is applicable because the <code>Write</code> function it
+implements takes a slice of bytes as an argument - making the arguments of
+<code>slurp</code> and the returned values of <code>persist</code> compatible.</p>
+<p>Next, the function that ties them all together – <code>run</code>:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">run</span>(args []<span style="color:#458;font-weight:bold">string</span>, out io.Writer) <span style="color:#458;font-weight:bold">error</span> {
+	log.<span style="color:#900;font-weight:bold">SetOutput</span>(out)
+
+	<span style="font-weight:bold">if</span> <span style="color:#999">len</span>(args) &lt; <span style="color:#099">3</span> {
+		<span style="font-weight:bold">return</span> fmt.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Expected at least 2 arguments, got %d.&#34;</span>, <span style="color:#999">len</span>(args)<span style="font-weight:bold">-</span><span style="color:#099">1</span>)
+	}
+
+	pdfFile, r, err <span style="font-weight:bold">:=</span> pdf.<span style="color:#900;font-weight:bold">Open</span>(args[<span style="color:#099">1</span>])
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		<span style="font-weight:bold">return</span> err
+	}
+	<span style="font-weight:bold">defer</span> pdfFile.<span style="color:#900;font-weight:bold">Close</span>()
+
+	contents <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">slurp</span>(r)
+
+	txtFile, err <span style="font-weight:bold">:=</span> os.<span style="color:#900;font-weight:bold">Create</span>(args[<span style="color:#099">2</span>])
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		<span style="font-weight:bold">return</span> err
+	}
+	<span style="font-weight:bold">defer</span> txtFile.<span style="color:#900;font-weight:bold">Close</span>()
+
+	err = <span style="color:#900;font-weight:bold">persist</span>(contents, txtFile)
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		<span style="font-weight:bold">return</span> err
+	}
+
+	<span style="font-weight:bold">return</span> <span style="font-weight:bold">nil</span>
+}
+</code></pre></div><p><code>run</code>'s role is to check the arguments received from <code>main</code> and the <code>io.Writer</code>
+to where it should send all of its output. Then it opens the PDF file for
+reading and passes the file reference to the <code>slurp</code> function.</p>
+<p>Once <code>slurp</code> returns the contents of the file, which is just a slice of bytes
+<code>run</code> will create a new file for writing, called <code>txtFile</code>. Once it opens the
+file, it will send the <code>contents</code> and the <code>txtFile</code> to <code>persist</code> as arguments.</p>
+<p>As we already saw above, <code>persist</code> will save the <code>contents</code> to the file and
+return any potential errors. If no errors are returned, <code>run</code> successfully
+exits.</p>
+<p>Lastly, the straightforward <code>main</code> function:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">main</span>() {
+	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">run</span>(os.Args, os.Stdout); err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+		log.<span style="color:#900;font-weight:bold">Fatal</span>(err)
+	}
+}
+</code></pre></div><p>Locally, I have a simple PDF with some text inside that I've found online. Its
+contents, according to the author, are popular interview questions. We will run
+the above program with any PDF, and as long as it finds some text inside it
+will save it to an output file.</p>
+<p>Here it is in action:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#a61717;background-color:#e3d2d2">$</span> <span style="font-weight:bold">go</span> run main.<span style="font-weight:bold">go</span> input.pdf out.txt
+<span style="color:#a61717;background-color:#e3d2d2">$</span> cat out.txt
+<span style="color:#099">50</span> Common Interview Questions and Answers1. Tell me about yourself: The most often asked question in interviews. <span style="font-weight:bold">...</span>
+</code></pre></div><p>That's really it. Our program took the contents from <code>input.pdf</code> and stored
+them in <code>out.txt</code>. Let's see how we can test this program.</p>
+<h2 id="testing-persist">Testing <code>persist</code></h2>
+<p>The <code>persist</code> function does not do much. In fact it just invokes the <code>Write</code>
+function of the <code>io.Writer</code> instance. Since we are using a file, that is part
+of the standard library, we do not need to test it. But, given that there's
+some error handling, which is a custom implementation, we can add some tests to
+strive to get to that full test coverage.</p>
+<p><code>TestPersist</code>, in all of its glory:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestPersist</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	tt <span style="font-weight:bold">:=</span> []<span style="font-weight:bold">struct</span> {
+		name    <span style="color:#458;font-weight:bold">string</span>
+		content []<span style="color:#458;font-weight:bold">byte</span>
+		out     <span style="font-weight:bold">func</span>() (io.ReadWriter, <span style="color:#458;font-weight:bold">error</span>)
+	}{
+		{
+			name:    <span style="color:#b84">&#34;WithNoContent&#34;</span>,
+			content: []<span style="color:#458;font-weight:bold">byte</span>{},
+			out: <span style="font-weight:bold">func</span>() (io.ReadWriter, <span style="color:#458;font-weight:bold">error</span>) {
+				<span style="font-weight:bold">return</span> os.<span style="color:#900;font-weight:bold">Create</span>(<span style="color:#b84">&#34;empty.txt&#34;</span>)
+			},
+		},
+		{
+			name:    <span style="color:#b84">&#34;WithContent&#34;</span>,
+			content: []<span style="color:#458;font-weight:bold">byte</span>{},
+			out: <span style="font-weight:bold">func</span>() (io.ReadWriter, <span style="color:#458;font-weight:bold">error</span>) {
+				<span style="font-weight:bold">return</span> os.<span style="color:#900;font-weight:bold">Create</span>(<span style="color:#b84">&#34;not-empty.txt&#34;</span>)
+			},
+		},
+	}
+
+	<span style="font-weight:bold">for</span> _, tc <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> tt {
+		t.<span style="color:#900;font-weight:bold">Run</span>(tc.name, <span style="font-weight:bold">func</span>(t <span style="font-weight:bold">*</span>testing.T) {
+			f, err <span style="font-weight:bold">:=</span> tc.<span style="color:#900;font-weight:bold">out</span>()
+			<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+				t.<span style="color:#900;font-weight:bold">Fatalf</span>(<span style="color:#b84">&#34;Cannot create output file: %s&#34;</span>, err)
+			}
+
+			err = <span style="color:#900;font-weight:bold">persist</span>(tc.content, f)
+			<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+				t.<span style="color:#900;font-weight:bold">Fatalf</span>(<span style="color:#b84">&#34;Cannot persits to output file: %s&#34;</span>, err)
+			}
+
+			b <span style="font-weight:bold">:=</span> []<span style="color:#458;font-weight:bold">byte</span>{}
+			<span style="font-weight:bold">if</span> _, err = io.<span style="color:#900;font-weight:bold">ReadFull</span>(f, b); err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+				t.<span style="color:#900;font-weight:bold">Fatalf</span>(<span style="color:#b84">&#34;Cannot read test output file: %s&#34;</span>, err)
+			}
+
+			<span style="font-weight:bold">if</span> !bytes.<span style="color:#900;font-weight:bold">Equal</span>(b, tc.content) {
+				t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Persisted content is different than saved content.&#34;</span>)
+			}
+		})
+	}
+}
+</code></pre></div><p>Each of the test cases, part of the table-driven tests, contains the <code>name</code> of
+the test case, the <code>content</code> that it will persist, and the <code>out</code> function,
+which will create the output file.</p>
+<p>In the test itself, we create a subtest for each of the test cases,
+which will try to write the <code>content</code> to a file, and then it will read all of
+the content back from the file. If the persisted content and the test case
+content are the same, then the test successfully passes.</p>
+<p>If we run the tests, this is the output we will see:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#999">test</span> -v -run <span style="color:#008080">TestPersist</span>
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   <span style="color:#008080">TestPersist</span>
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestPersist/WithNoContent
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestPersist/WithContent
+--- PASS: TestPersist <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+    --- PASS: TestPersist/WithNoContent <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+    --- PASS: TestPersist/WithContent <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+PASS
+ok  	github.com/fteem/go-playground/testing-in-go-leak-test-files	0.250s
+</code></pre></div><p>We ran the two test cases where we try to persist a file with no content and
+some content. Both of them passed, and we can move on!</p>
+<h2 id="testing-slurp">Testing <code>slurp</code></h2>
+<p>The <code>slurp</code> function is more involved. It requires two different test files
+– two dummy PDFs with some content and no content (empty). Then, by passing the
+two different files to <code>slurp</code>, we can test if extracting the text from the PDF
+works as intended.</p>
+<p>This is the test:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestSlurp</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	tt <span style="font-weight:bold">:=</span> []<span style="font-weight:bold">struct</span> {
+		name    <span style="color:#458;font-weight:bold">string</span>
+		pdfPath <span style="color:#458;font-weight:bold">string</span>
+		size    <span style="color:#458;font-weight:bold">int</span>
+	}{
+		{
+			name:    <span style="color:#b84">&#34;PDFWithContent&#34;</span>,
+			pdfPath: <span style="color:#b84">&#34;testdata/content.pdf&#34;</span>,
+			size:    <span style="color:#099">11463</span>,
+		},
+		{
+			name:    <span style="color:#b84">&#34;PDFWithoutContent&#34;</span>,
+			pdfPath: <span style="color:#b84">&#34;testdata/empty.pdf&#34;</span>,
+			size:    <span style="color:#099">0</span>,
+		},
+	}
+
+	<span style="font-weight:bold">for</span> _, tc <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> tt {
+		t.<span style="color:#900;font-weight:bold">Run</span>(tc.name, <span style="font-weight:bold">func</span>(t <span style="font-weight:bold">*</span>testing.T) {
+			pdfFile, r, err <span style="font-weight:bold">:=</span> pdf.<span style="color:#900;font-weight:bold">Open</span>(tc.pdfPath)
+			<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+				t.<span style="color:#900;font-weight:bold">Fatalf</span>(<span style="color:#b84">&#34;Couldn&#39;t open PDF %s, error: %s&#34;</span>, tc.pdfPath, err)
+			}
+			<span style="font-weight:bold">defer</span> pdfFile.<span style="color:#900;font-weight:bold">Close</span>()
+
+			contents <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">slurp</span>(r)
+
+			<span style="font-weight:bold">if</span> <span style="color:#999">len</span>(contents) <span style="font-weight:bold">!=</span> tc.size {
+				t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Expected contents to be %d bytes, got %d&#34;</span>, tc.size, <span style="color:#999">len</span>(contents))
+			}
+		})
+	}
+}
+</code></pre></div><p>Each of the test cases from the table-driven tests will have a <code>pdfPath</code>, which
+is an actual PDF file on disk. For each of the test cases, a subtest will be
+run, which will open the PDF using the <code>ledongthuc/pdf</code> library. We will then
+pass the reference to the PDF file to the slurp function, expecting the
+<code>contents</code> to be returned by <code>slurp</code>.</p>
+<p>Once it returns the <code>content</code>, we simply compare the <code>size</code> - the number of
+bytes that are expected (<code>tc.size</code>), comparing it against the <code>len(contents)</code>,
+which is the size of the bytes returned. If the sizes match, we assume that the
+content is correct, and the test will pass.</p>
+<p>Here's the test in action:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#999">test</span> -v -run <span style="color:#008080">TestSlurp</span>
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   <span style="color:#008080">TestSlurp</span>
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestSlurp/PDFWithContent
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestSlurp/PDFWithoutContent
+--- PASS: TestSlurp <span style="font-weight:bold">(</span>0.03s<span style="font-weight:bold">)</span>
+    --- PASS: TestSlurp/PDFWithContent <span style="font-weight:bold">(</span>0.03s<span style="font-weight:bold">)</span>
+    --- PASS: TestSlurp/PDFWithoutContent <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+PASS
+ok  	github.com/fteem/go-playground/testing-in-go-leak-test-files	0.253s
+</code></pre></div><h2 id="testing-run">Testing <code>run</code></h2>
+<p>The <code>run</code> function is what glues everything together. It validates the
+arguments, then opens the PDF for reading, slurps all of the contents using
+<code>slurp</code>, and lastly saves all of the text content to the TXT file using
+<code>persist</code>.</p>
+<p>Here's the test:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestRun</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	tt <span style="font-weight:bold">:=</span> []<span style="font-weight:bold">struct</span> { name   <span style="color:#458;font-weight:bold">string</span> input  <span style="color:#458;font-weight:bold">string</span> output <span style="color:#458;font-weight:bold">string</span>
+	}{
+		{
+			name:   <span style="color:#b84">&#34;WithValidArguments&#34;</span>,
+			input:  <span style="color:#b84">&#34;testdata/input.pdf&#34;</span>,
+			output: <span style="color:#b84">&#34;testdata/output.txt&#34;</span>,
+		},
+		{
+			name:   <span style="color:#b84">&#34;WithEmptyInput&#34;</span>,
+			input:  <span style="color:#b84">&#34;testdata/empty.pdf&#34;</span>,
+			output: <span style="color:#b84">&#34;testdata/output.txt&#34;</span>,
+		},
+	}
+
+	<span style="font-weight:bold">for</span> _, tc <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> tt {
+		t.<span style="color:#900;font-weight:bold">Run</span>(tc.name, <span style="font-weight:bold">func</span>(t <span style="font-weight:bold">*</span>testing.T) {
+			err <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">run</span>([]<span style="color:#458;font-weight:bold">string</span>{<span style="color:#b84">&#34;foo&#34;</span>, tc.input, tc.output}, os.Stdout)
+			<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
+				t.<span style="color:#900;font-weight:bold">Fatalf</span>(<span style="color:#b84">&#34;Expected no error, got:  %s&#34;</span>, err)
+			}
+
+			<span style="font-weight:bold">if</span> _, err <span style="font-weight:bold">:=</span> os.<span style="color:#900;font-weight:bold">Stat</span>(tc.output); os.<span style="color:#900;font-weight:bold">IsNotExist</span>(err) {
+				t.<span style="color:#900;font-weight:bold">Errorf</span>(<span style="color:#b84">&#34;Expected persisted file at %s, did not find it: %s&#34;</span>, tc.output, err)
+			}
+		})
+	}
+}
+</code></pre></div><p>In <code>TestRun</code>, we check if, for each of the test PDFs we provide, the <code>run</code>
+function crates the corresponding TXT file. In <code>TestRun</code>, we do not care about
+the actual contents – we can assume that the rest of the unit tests covers that
+part of the functionality.</p>
+<p>Then, for each test case, we use <code>os.Stat</code>, which will return an error if the
+file does not exist. If the file does exist, we consider the <code>run</code> function as
+properly functioning and mark the test as passed.</p>
+<p>Here's the test in action:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#999">test</span> -v -run <span style="color:#008080">TestRun</span>
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   <span style="color:#008080">TestRun</span>
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestRun/WithValidArguments
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestRun/WithEmptyInput
+--- PASS: TestRun <span style="font-weight:bold">(</span>0.03s<span style="font-weight:bold">)</span>
+    --- PASS: TestRun/WithValidArguments <span style="font-weight:bold">(</span>0.03s<span style="font-weight:bold">)</span>
+    --- PASS: TestRun/WithEmptyInput <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+PASS
+ok  	github.com/fteem/go-playground/testing-in-go-leak-test-files	0.106s
+</code></pre></div><p>Another test we can also run is to test the returned errors. We will create
+another function called <code>TestRunErrors</code>, which will cover the potential errors
+returned by <code>run</code>. Here's the test function:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestRunErrors</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	tt <span style="font-weight:bold">:=</span> []<span style="font-weight:bold">struct</span> {
+		name   <span style="color:#458;font-weight:bold">string</span>
+		input  <span style="color:#458;font-weight:bold">string</span>
+		output <span style="color:#458;font-weight:bold">string</span>
+	}{
+		{
+			name:   <span style="color:#b84">&#34;WithoutArguments&#34;</span>,
+			input:  <span style="color:#b84">&#34;&#34;</span>,
+			output: <span style="color:#b84">&#34;&#34;</span>,
+		},
+		{
+			name:   <span style="color:#b84">&#34;WithoutOneArgument&#34;</span>,
+			input:  <span style="color:#b84">&#34;testdata/input.pdf&#34;</span>,
+			output: <span style="color:#b84">&#34;&#34;</span>,
+		},
+		{
+			name:   <span style="color:#b84">&#34;WithNonexistentInput&#34;</span>,
+			input:  <span style="color:#b84">&#34;testdata/nonexistent.pdf&#34;</span>,
+			output: <span style="color:#b84">&#34;testdata/output.txt&#34;</span>,
+		},
+	}
+
+	<span style="font-weight:bold">for</span> _, tc <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> tt {
+		t.<span style="color:#900;font-weight:bold">Run</span>(tc.name, <span style="font-weight:bold">func</span>(t <span style="font-weight:bold">*</span>testing.T) {
+			err <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">run</span>([]<span style="color:#458;font-weight:bold">string</span>{<span style="color:#b84">&#34;foo&#34;</span>, tc.input, tc.output}, os.Stdout)
+
+			<span style="font-weight:bold">if</span> err <span style="font-weight:bold">==</span> <span style="font-weight:bold">nil</span> {
+				t.<span style="color:#900;font-weight:bold">Fatalf</span>(<span style="color:#b84">&#34;Expected an error, did not get one.&#34;</span>)
+			}
+		})
+	}
+}
+</code></pre></div><p>The <code>TestRunErrors</code> is similar to <code>TestRun</code>, with having the focus on the
+returned errors. It checks that for each of the bad inputs the <code>run</code> function
+receives, that it returns an error. We could take this a step further by
+implementing <a href="https://dave.cheney.net/2019/06/10/constant-time">sentinel
+errors</a> and asserting on
+them, but this will do just fine this article.</p>
+<p>Here's the <code>TestRunErrors</code> function in action:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-fallback" data-lang="fallback">$ go test -v -run TestRunErrors
+=== RUN   TestRunErrors
+=== RUN   TestRunErrors/WithoutArguments
+=== RUN   TestRunErrors/WithoutOneArgument
+=== RUN   TestRunErrors/WithNonexistentInput
+--- PASS: TestRunErrors (0.02s)
+    --- PASS: TestRunErrors/WithoutArguments (0.00s)
+    --- PASS: TestRunErrors/WithoutOneArgument (0.02s)
+    --- PASS: TestRunErrors/WithNonexistentInput (0.00s)
+PASS
+ok  	github.com/fteem/go-playground/testing-in-go-leak-test-files	0.140sbash
+</code></pre></div><h2 id="cleaning-up-after-our-test">Cleaning up after our test</h2>
+<p>If you were following along, you should notice that test files are created in
+your project's directory. The files stay there because we never clean up the
+output files that our program creates when the tests run.</p>
+<p>Starting from Go v1.15, there will be a nice way to do this: <code>TB.TempDir()</code>.
+To clean up the test files, we can use <code>TB.TempDir</code> as a parent directory
+wherever we are passing the output file path. Once the tests pass, Go will
+automatically get rid of this directory, without us having to do any clean-up.</p>
+<p>First, let's see how we can change the <code>TestPersist</code> function to clean up the
+<code>empty.txt</code> and <code>non-empty.txt</code> files it creates:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestPersist</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	tt <span style="font-weight:bold">:=</span> []<span style="font-weight:bold">struct</span> {
+		name    <span style="color:#458;font-weight:bold">string</span>
+		content []<span style="color:#458;font-weight:bold">byte</span>
+		out     <span style="font-weight:bold">func</span>() (io.ReadWriter, <span style="color:#458;font-weight:bold">error</span>)
+	}{
+		{
+			name:    <span style="color:#b84">&#34;WithNoContent&#34;</span>,
+			content: []<span style="color:#458;font-weight:bold">byte</span>{},
+			out: <span style="font-weight:bold">func</span>() (io.ReadWriter, <span style="color:#458;font-weight:bold">error</span>) {
+				<span style="font-weight:bold">return</span> os.<span style="color:#900;font-weight:bold">Create</span>(filepath.<span style="color:#900;font-weight:bold">Join</span>(t.<span style="color:#900;font-weight:bold">TempDir</span>(), <span style="color:#b84">&#34;empty.txt&#34;</span>))
+			},
+		},
+		{
+			name:    <span style="color:#b84">&#34;WithContent&#34;</span>,
+			content: []<span style="color:#458;font-weight:bold">byte</span>{},
+			out: <span style="font-weight:bold">func</span>() (io.ReadWriter, <span style="color:#458;font-weight:bold">error</span>) {
+				<span style="font-weight:bold">return</span> os.<span style="color:#900;font-weight:bold">Create</span>(filepath.<span style="color:#900;font-weight:bold">Join</span>(t.<span style="color:#900;font-weight:bold">TempDir</span>(), <span style="color:#b84">&#34;not-empty.txt&#34;</span>))
+			},
+		},
+	}
+
+	<span style="font-weight:bold">for</span> _, tc <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> tt {
+		<span style="color:#998;font-style:italic">// Snipped...
+</span><span style="color:#998;font-style:italic"></span>	}
+}
+</code></pre></div><p>The only notable change is to use <code>filepath.Join</code> with <code>t.TempDir()</code> and the
+file name as arguments. This combo will compose a valid temporary path, that Go
+will remove once the tests finish. Given that at the time of writing this, Go
+1.15 is still not out, we can use the <code>gotip</code> tool to run Go's latest <code>master</code>
+version:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ gotip <span style="color:#999">test</span> -v -run <span style="color:#008080">TestPersist</span>
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   <span style="color:#008080">TestPersist</span>
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestPersist/WithNoContent
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestPersist/WithContent
+--- PASS: TestPersist <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+    --- PASS: TestPersist/WithNoContent <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+    --- PASS: TestPersist/WithContent <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+PASS
+ok  	github.com/fteem/go-playground/testing-in-go-leak-test-files	0.048s
+</code></pre></div><p>If we inspect the project root, we will see that no new files are being
+created. The output files are cleaned up after the tests have finished running.</p>
+<style type="text/css">
+.notice{
+    padding:18px;
+    line-height:24px;
+    margin-bottom:24px;
+    border-radius:4px;
+    color:#444;
+    background:#e7f2fa
+}
+.notice p:last-child{
+    margin-bottom:0
+}
+.notice-title{
+    margin:-18px -18px 12px;
+    padding:4px 18px;
+    border-radius:4px 4px 0 0;
+    font-weight:700;
+    color:#fff;
+    background:#6ab0de
+}
+.notice-title:before{
+    margin-right:8px;
+    font-family:"Font Awesome 5 Free",FontAwesome;
+    font-weight:400
+}
+.notice.warning .notice-title{
+    background:rgba(217,83,79,.9)
+}
+.notice.warning{
+    background:#fae2e2
+}
+.notice.info .notice-title{
+    background:#f0b37e
+}
+.notice.info{
+    background:#fff2db
+}
+.notice.note .notice-title{
+    background:#6ab0de
+}
+.notice.note{
+    background:#e7f2fA
+}
+.notice.tip .notice-title{
+    background:rgba(92,184,92,.8)
+}
+.notice.tip{
+    background:#e6f9e6
+}
+</style><div class="notice note" >
+<p class="first notice-title">Note</p><p>The <code>gotip</code> tool compiles and runs the <code>go</code> command from the development tree.
+Using the <code>gotip</code> command, instead of the normal <code>go</code> command, will run the
+latest version of the language, as seen in the main Git trunk.</p>
+<p>You can see <a href="https://pkg.go.dev/golang.org/dl/gotip?tab=doc">its documentation</a>
+for more details.</p></div>
+
+<p>Next, we can do the same change to the <code>TestRun</code> function:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">TestRun</span>(t <span style="font-weight:bold">*</span>testing.T) {
+	tt <span style="font-weight:bold">:=</span> []<span style="font-weight:bold">struct</span> {
+		name   <span style="color:#458;font-weight:bold">string</span>
+		input  <span style="color:#458;font-weight:bold">string</span>
+		output <span style="color:#458;font-weight:bold">string</span>
+	}{
+		{
+			name:   <span style="color:#b84">&#34;WithValidArguments&#34;</span>,
+			input:  <span style="color:#b84">&#34;testdata/input.pdf&#34;</span>,
+			output: filepath.<span style="color:#900;font-weight:bold">Join</span>(t.<span style="color:#900;font-weight:bold">TempDir</span>(), <span style="color:#b84">&#34;output.txt&#34;</span>),
+		},
+		{
+			name:   <span style="color:#b84">&#34;WithEmptyInput&#34;</span>,
+			input:  <span style="color:#b84">&#34;testdata/empty.pdf&#34;</span>,
+			output: filepath.<span style="color:#900;font-weight:bold">Join</span>(t.<span style="color:#900;font-weight:bold">TempDir</span>(), <span style="color:#b84">&#34;output.txt&#34;</span>),
+		},
+	}
+
+	<span style="font-weight:bold">for</span> _, tc <span style="font-weight:bold">:=</span> <span style="font-weight:bold">range</span> tt {
+		<span style="color:#998;font-style:italic">// Same as before...
+</span><span style="color:#998;font-style:italic"></span>	}
+}
+</code></pre></div><p>In the <code>TestRun</code> function, we use the same trick - we use the <code>T.TempDir</code>
+function to concatenate the path of the <code>output</code> file. Running the test the
+same way, we can see <code>T.TempDir</code> once more in action:</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ gotip <span style="color:#999">test</span> -v -run <span style="color:#008080">TestRun</span>
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   <span style="color:#008080">TestRun</span>
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestRun/WithValidArguments
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestRun/WithEmptyInput
+--- PASS: TestRun <span style="font-weight:bold">(</span>0.03s<span style="font-weight:bold">)</span>
+    --- PASS: TestRun/WithValidArguments <span style="font-weight:bold">(</span>0.03s<span style="font-weight:bold">)</span>
+    --- PASS: TestRun/WithEmptyInput <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   <span style="color:#008080">TestRunErrors</span>
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestRunErrors/WithoutArguments
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestRunErrors/WithoutOneArgument
+<span style="font-weight:bold">=</span><span style="font-weight:bold">=</span><span style="font-weight:bold">=</span> RUN   TestRunErrors/WithNonexistentInput
+--- PASS: TestRunErrors <span style="font-weight:bold">(</span>0.02s<span style="font-weight:bold">)</span>
+    --- PASS: TestRunErrors/WithoutArguments <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+    --- PASS: TestRunErrors/WithoutOneArgument <span style="font-weight:bold">(</span>0.02s<span style="font-weight:bold">)</span>
+    --- PASS: TestRunErrors/WithNonexistentInput <span style="font-weight:bold">(</span>0.00s<span style="font-weight:bold">)</span>
+PASS
+ok  	github.com/fteem/go-playground/testing-in-go-leak-test-files	0.265s
+</code></pre></div><p>If you want to check out the motivation and the discussion around this addition
+to the new Go version 1.15, you can head over to the <a href="https://github.com/golang/go/issues/35998">original
+proposal</a>.</p>
+<script src="https://f.convertkit.com/ckjs/ck.5.js"></script>
+      <form action="https://app.convertkit.com/forms/1215893/subscriptions" class="seva-form formkit-form" method="post" data-sv-form="1215893" data-uid="f786e71c27" data-format="inline" data-version="5" data-options="{&quot;settings&quot;:{&quot;after_subscribe&quot;:{&quot;action&quot;:&quot;message&quot;,&quot;success_message&quot;:&quot;Success! Now check your email to confirm your subscription.&quot;,&quot;redirect_url&quot;:&quot;&quot;},&quot;analytics&quot;:{&quot;google&quot;:null,&quot;facebook&quot;:null,&quot;segment&quot;:null,&quot;pinterest&quot;:null},&quot;modal&quot;:{&quot;trigger&quot;:&quot;timer&quot;,&quot;scroll_percentage&quot;:null,&quot;timer&quot;:5,&quot;devices&quot;:&quot;all&quot;,&quot;show_once_every&quot;:15},&quot;powered_by&quot;:{&quot;show&quot;:false,&quot;url&quot;:&quot;https://convertkit.com?utm_source=dynamic&amp;utm_medium=referral&amp;utm_campaign=poweredby&amp;utm_content=form&quot;},&quot;recaptcha&quot;:{&quot;enabled&quot;:false},&quot;return_visitor&quot;:{&quot;action&quot;:&quot;show&quot;,&quot;custom_content&quot;:&quot;&quot;},&quot;slide_in&quot;:{&quot;display_in&quot;:&quot;bottom_right&quot;,&quot;trigger&quot;:&quot;timer&quot;,&quot;scroll_percentage&quot;:null,&quot;timer&quot;:5,&quot;devices&quot;:&quot;all&quot;,&quot;show_once_every&quot;:15},&quot;sticky_bar&quot;:{&quot;display_in&quot;:&quot;top&quot;,&quot;trigger&quot;:&quot;timer&quot;,&quot;scroll_percentage&quot;:null,&quot;timer&quot;:5,&quot;devices&quot;:&quot;all&quot;,&quot;show_once_every&quot;:15}},&quot;version&quot;:&quot;5&quot;}" min-width="400 500 600 700 800" style="background-color: rgb(249, 250, 251); border-radius: 4px;"><div class="formkit-background" style="opacity: 0.2;"></div><div data-style="minimal"><div class="formkit-header" data-element="header" style="color: rgb(77, 77, 77); font-size: 27px; font-weight: 700;"><h1>Join the Newsletter</h1></div><div class="formkit-subheader" data-element="subheader" style="color: rgb(104, 104, 104); font-size: 18px;"><p>I write about backend technologies, programming and cloud architectures. Join hundreds of other developers that get my newsletter, once a month.</p></div><ul class="formkit-alert formkit-alert-error" data-element="errors" data-group="alert"></ul><div data-element="fields" data-stacked="false" class="seva-fields formkit-fields"><div class="formkit-field"><input class="formkit-input" name="email_address" placeholder="Your email address" required="" type="email" style="color: rgb(0, 0, 0); border-color: rgb(227, 227, 227); border-radius: 4px; font-weight: 400;"></div><button data-element="submit" class="formkit-submit formkit-submit" style="color: rgb(255, 255, 255); background-color: rgb(22, 119, 190); border-radius: 4px; font-weight: 400;"><div class="formkit-spinner"><div></div><div></div><div></div></div><span>Subscribe</span></button></div><div class="formkit-guarantee" data-element="guarantee" style="color: rgb(77, 77, 77); font-size: 13px; font-weight: 400;">
+
+      <p>I respect your privacy. Never spam. Unsubscribe at any time.</p>
+      <p>You can also subscribe <a href="/index.xml">via RSS</a> or <a href="https://t.me/ieftimovcom">to my Telegram channel</a>.</p>
+
+      </div></div><style>.formkit-form[data-uid="f786e71c27"] *{box-sizing:border-box;}.formkit-form[data-uid="f786e71c27"]{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}.formkit-form[data-uid="f786e71c27"] legend{border:none;font-size:inherit;margin-bottom:10px;padding:0;position:relative;display:table;}.formkit-form[data-uid="f786e71c27"] fieldset{border:0;padding:0.01em 0 0 0;margin:0;min-width:0;}.formkit-form[data-uid="f786e71c27"] body:not(:-moz-handler-blocked) fieldset{display:table-cell;}.formkit-form[data-uid="f786e71c27"] h1,.formkit-form[data-uid="f786e71c27"] h2,.formkit-form[data-uid="f786e71c27"] h3,.formkit-form[data-uid="f786e71c27"] h4,.formkit-form[data-uid="f786e71c27"] h5,.formkit-form[data-uid="f786e71c27"] h6{color:inherit;font-size:inherit;font-weight:inherit;}.formkit-form[data-uid="f786e71c27"] p{color:inherit;font-size:inherit;font-weight:inherit;}.formkit-form[data-uid="f786e71c27"] ol:not([template-default]),.formkit-form[data-uid="f786e71c27"] ul:not([template-default]),.formkit-form[data-uid="f786e71c27"] blockquote:not([template-default]){text-align:left;}.formkit-form[data-uid="f786e71c27"] p:not([template-default]),.formkit-form[data-uid="f786e71c27"] hr:not([template-default]),.formkit-form[data-uid="f786e71c27"] blockquote:not([template-default]),.formkit-form[data-uid="f786e71c27"] ol:not([template-default]),.formkit-form[data-uid="f786e71c27"] ul:not([template-default]){color:inherit;font-style:initial;}.formkit-form[data-uid="f786e71c27"][data-format="modal"]{display:none;}.formkit-form[data-uid="f786e71c27"][data-format="slide in"]{display:none;}.formkit-form[data-uid="f786e71c27"] .formkit-input,.formkit-form[data-uid="f786e71c27"] .formkit-select,.formkit-form[data-uid="f786e71c27"] .formkit-checkboxes{width:100%;}.formkit-form[data-uid="f786e71c27"] .formkit-button,.formkit-form[data-uid="f786e71c27"] .formkit-submit{border:0;border-radius:5px;color:#ffffff;cursor:pointer;display:inline-block;text-align:center;font-size:15px;font-weight:500;cursor:pointer;margin-bottom:15px;overflow:hidden;padding:0;position:relative;vertical-align:middle;line-height:1.5;}.formkit-form[data-uid="f786e71c27"] .formkit-button:hover,.formkit-form[data-uid="f786e71c27"] .formkit-submit:hover,.formkit-form[data-uid="f786e71c27"] .formkit-button:focus,.formkit-form[data-uid="f786e71c27"] .formkit-submit:focus{outline:none;}.formkit-form[data-uid="f786e71c27"] .formkit-button:hover > span,.formkit-form[data-uid="f786e71c27"] .formkit-submit:hover > span,.formkit-form[data-uid="f786e71c27"] .formkit-button:focus > span,.formkit-form[data-uid="f786e71c27"] .formkit-submit:focus > span{background-color:rgba(0,0,0,0.1);}.formkit-form[data-uid="f786e71c27"] .formkit-button > span,.formkit-form[data-uid="f786e71c27"] .formkit-submit > span{display:block;-webkit-transition:all 300ms ease-in-out;transition:all 300ms ease-in-out;padding:12px 24px;}.formkit-form[data-uid="f786e71c27"] .formkit-input{background:#ffffff;font-size:15px;padding:12px;border:1px solid #e3e3e3;-webkit-flex:1 0 auto;-ms-flex:1 0 auto;flex:1 0 auto;line-height:1.4;margin:0;-webkit-transition:border-color ease-out 300ms;transition:border-color ease-out 300ms;}.formkit-form[data-uid="f786e71c27"] .formkit-input:focus{outline:none;border-color:#1677be;-webkit-transition:border-color ease 300ms;transition:border-color ease 300ms;}.formkit-form[data-uid="f786e71c27"] .formkit-input::-webkit-input-placeholder{color:inherit;opacity:0.8;}.formkit-form[data-uid="f786e71c27"] .formkit-input::-moz-placeholder{color:inherit;opacity:0.8;}.formkit-form[data-uid="f786e71c27"] .formkit-input:-ms-input-placeholder{color:inherit;opacity:0.8;}.formkit-form[data-uid="f786e71c27"] .formkit-input::placeholder{color:inherit;opacity:0.8;}.formkit-form[data-uid="f786e71c27"] [data-group="dropdown"]{position:relative;display:inline-block;width:100%;}.formkit-form[data-uid="f786e71c27"] [data-group="dropdown"]::before{content:"";top:calc(50% - 2.5px);right:10px;position:absolute;pointer-events:none;border-color:#4f4f4f transparent transparent transparent;border-style:solid;border-width:6px 6px 0 6px;height:0;width:0;z-index:999;}.formkit-form[data-uid="f786e71c27"] [data-group="dropdown"] select{height:auto;width:100%;cursor:pointer;color:#333333;line-height:1.4;margin-bottom:0;padding:0 6px;-webkit-appearance:none;-moz-appearance:none;appearance:none;font-size:15px;padding:12px;padding-right:25px;border:1px solid #e3e3e3;background:#ffffff;}.formkit-form[data-uid="f786e71c27"] [data-group="dropdown"] select:focus{outline:none;}.formkit-form[data-uid="f786e71c27"] [data-group="checkboxes"]{text-align:left;margin:0;}.formkit-form[data-uid="f786e71c27"] [data-group="checkboxes"] [data-group="checkbox"]{margin-bottom:10px;}.formkit-form[data-uid="f786e71c27"] [data-group="checkboxes"] [data-group="checkbox"] *{cursor:pointer;}.formkit-form[data-uid="f786e71c27"] [data-group="checkboxes"] [data-group="checkbox"]:last-of-type{margin-bottom:0;}.formkit-form[data-uid="f786e71c27"] [data-group="checkboxes"] [data-group="checkbox"] input[type="checkbox"]{display:none;}.formkit-form[data-uid="f786e71c27"] [data-group="checkboxes"] [data-group="checkbox"] input[type="checkbox"] + label::after{content:none;}.formkit-form[data-uid="f786e71c27"] [data-group="checkboxes"] [data-group="checkbox"] input[type="checkbox"]:checked + label::after{border-color:#ffffff;content:"";}.formkit-form[data-uid="f786e71c27"] [data-group="checkboxes"] [data-group="checkbox"] input[type="checkbox"]:checked + label::before{background:#10bf7a;border-color:#10bf7a;}.formkit-form[data-uid="f786e71c27"] [data-group="checkboxes"] [data-group="checkbox"] label{position:relative;display:inline-block;padding-left:28px;}.formkit-form[data-uid="f786e71c27"] [data-group="checkboxes"] [data-group="checkbox"] label::before,.formkit-form[data-uid="f786e71c27"] [data-group="checkboxes"] [data-group="checkbox"] label::after{position:absolute;content:"";display:inline-block;}.formkit-form[data-uid="f786e71c27"] [data-group="checkboxes"] [data-group="checkbox"] label::before{height:16px;width:16px;border:1px solid #e3e3e3;background:#ffffff;left:0px;top:3px;}.formkit-form[data-uid="f786e71c27"] [data-group="checkboxes"] [data-group="checkbox"] label::after{height:4px;width:8px;border-left:2px solid #4d4d4d;border-bottom:2px solid #4d4d4d;-webkit-transform:rotate(-45deg);-ms-transform:rotate(-45deg);transform:rotate(-45deg);left:4px;top:8px;}.formkit-form[data-uid="f786e71c27"] .formkit-alert{background:#f9fafb;border:1px solid #e3e3e3;border-radius:5px;-webkit-flex:1 0 auto;-ms-flex:1 0 auto;flex:1 0 auto;list-style:none;margin:25px auto;padding:12px;text-align:center;width:100%;}.formkit-form[data-uid="f786e71c27"] .formkit-alert:empty{display:none;}.formkit-form[data-uid="f786e71c27"] .formkit-alert-success{background:#d3fbeb;border-color:#10bf7a;color:#0c905c;}.formkit-form[data-uid="f786e71c27"] .formkit-alert-error{background:#fde8e2;border-color:#f2643b;color:#ea4110;}.formkit-form[data-uid="f786e71c27"] .formkit-spinner{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;height:0px;width:0px;margin:0 auto;position:absolute;top:0;left:0;right:0;width:0px;overflow:hidden;text-align:center;-webkit-transition:all 300ms ease-in-out;transition:all 300ms ease-in-out;}.formkit-form[data-uid="f786e71c27"] .formkit-spinner > div{margin:auto;width:12px;height:12px;background-color:#fff;opacity:0.3;border-radius:100%;display:inline-block;-webkit-animation:formkit-bouncedelay-formkit-form-data-uid-f786e71c27- 1.4s infinite ease-in-out both;animation:formkit-bouncedelay-formkit-form-data-uid-f786e71c27- 1.4s infinite ease-in-out both;}.formkit-form[data-uid="f786e71c27"] .formkit-spinner > div:nth-child(1){-webkit-animation-delay:-0.32s;animation-delay:-0.32s;}.formkit-form[data-uid="f786e71c27"] .formkit-spinner > div:nth-child(2){-webkit-animation-delay:-0.16s;animation-delay:-0.16s;}.formkit-form[data-uid="f786e71c27"] .formkit-submit[data-active] .formkit-spinner{opacity:1;height:100%;width:50px;}.formkit-form[data-uid="f786e71c27"] .formkit-submit[data-active] .formkit-spinner ~ span{opacity:0;}.formkit-form[data-uid="f786e71c27"] .formkit-powered-by[data-active="false"]{opacity:0.35;}@-webkit-keyframes formkit-bouncedelay-formkit-form-data-uid-f786e71c27-{0%,80%,100%{-webkit-transform:scale(0);-ms-transform:scale(0);transform:scale(0);}40%{-webkit-transform:scale(1);-ms-transform:scale(1);transform:scale(1);}}@keyframes formkit-bouncedelay-formkit-form-data-uid-f786e71c27-{0%,80%,100%{-webkit-transform:scale(0);-ms-transform:scale(0);transform:scale(0);}40%{-webkit-transform:scale(1);-ms-transform:scale(1);transform:scale(1);}}.formkit-form[data-uid="f786e71c27"] blockquote{padding:10px 20px;margin:0 0 20px;border-left:5px solid #e1e1e1;} .formkit-form[data-uid="f786e71c27"]{border:1px solid #e3e3e3;max-width:700px;position:relative;overflow:hidden;margin:0 auto;}.formkit-form[data-uid="f786e71c27"] .formkit-background{width:100%;height:100%;position:absolute;top:0;left:0;background-size:cover;background-position:center;opacity:0.3;z-index:1;}.formkit-form[data-uid="f786e71c27"] [data-style="minimal"]{padding:20px;width:100%;z-index:2;position:relative;}.formkit-form[data-uid="f786e71c27"] .formkit-header{margin:0 0 27px 0;text-align:center;}.formkit-form[data-uid="f786e71c27"] .formkit-subheader{margin:18px 0;text-align:center;}.formkit-form[data-uid="f786e71c27"] .formkit-guarantee{font-size:13px;margin:10px 0 15px 0;text-align:center;}.formkit-form[data-uid="f786e71c27"] .formkit-guarantee > p{margin:0;}.formkit-form[data-uid="f786e71c27"] .formkit-powered-by{color:#7d7d7d;display:block;font-size:12px;margin:10px 0 0 0;text-align:center;}.formkit-form[data-uid="f786e71c27"] .formkit-fields{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;margin:25px auto 0 auto;}.formkit-form[data-uid="f786e71c27"] .formkit-field{min-width:220px;}.formkit-form[data-uid="f786e71c27"] .formkit-field,.formkit-form[data-uid="f786e71c27"] .formkit-submit{margin:0 0 15px 0;-webkit-flex:1 0 100%;-ms-flex:1 0 100%;flex:1 0 100%;}.formkit-form[data-uid="f786e71c27"][min-width~="600"] [data-style="minimal"]{}.formkit-form[data-uid="f786e71c27"][min-width~="600"] .formkit-fields[data-stacked="false"]{margin-left:-5px;margin-right:-5px;}.formkit-form[data-uid="f786e71c27"][min-width~="600"] .formkit-fields[data-stacked="false"] .formkit-field,.formkit-form[data-uid="f786e71c27"][min-width~="600"] .formkit-fields[data-stacked="false"] .formkit-submit{margin:0 5px 15px 5px;}.formkit-form[data-uid="f786e71c27"][min-width~="600"] .formkit-fields[data-stacked="false"] .formkit-field{-webkit-flex:100 1 auto;-ms-flex:100 1 auto;flex:100 1 auto;}.formkit-form[data-uid="f786e71c27"][min-width~="600"] .formkit-fields[data-stacked="false"] .formkit-submit{-webkit-flex:1 1 auto;-ms-flex:1 1 auto;flex:1 1 auto;} </style></form>
+
+
+			</div>
+
+			<div class="tags">
+				
+					
+				
+			</div><div id="disqus_thread"></div>
+<script type="text/javascript">
+	(function () {
+		
+		
+		if (window.location.hostname == "localhost")
+			return;
+
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		var disqus_shortname = 'eftimov';
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the </a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+	</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div>2020  Copyright © Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-11264459-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script>feather.replace()</script>
+</body>
+</html>
