@@ -1,486 +1,449 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<meta charset="utf-8" />
-	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Tell your team you are running late using Google Home, Google Cloud Functions, Golang and Twilio - Ilija Eftimov</title><meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta itemprop="name" content="Tell your team you are running late using Google Home, Google Cloud Functions, Golang and Twilio">
-<meta itemprop="description" content="In this age of cloud platforms, Internet of Things and SaaS products that are easy to integrate with, the effort of automating parts of your life is shrinking down substantially with every year that goes by. Additionally, these services have very generous free plans (or are quite affordable), you won&#39;t have to pay a fortune for this automation. In this article I&#39;ll show you how you can create your own commands for your Google Home.">
-<meta itemprop="datePublished" content="2019-03-25T16:02:16&#43;01:00" />
-<meta itemprop="dateModified" content="2019-03-25T16:02:16&#43;01:00" />
-<meta itemprop="wordCount" content="4418">
-<meta itemprop="image" content="https://ieftimov.com/cards/tell-team-running-late-google-home-google-functions-golang-twilio.png">
-
-
-
-<meta itemprop="keywords" content="google home,dialogflow,actions,golang,twilio," /><meta property="og:title" content="Tell your team you are running late using Google Home, Google Cloud Functions, Golang and Twilio" />
-<meta property="og:description" content="In this age of cloud platforms, Internet of Things and SaaS products that are easy to integrate with, the effort of automating parts of your life is shrinking down substantially with every year that goes by. Additionally, these services have very generous free plans (or are quite affordable), you won&#39;t have to pay a fortune for this automation. In this article I&#39;ll show you how you can create your own commands for your Google Home." />
-<meta property="og:type" content="article" />
-<meta property="og:url" content="https://ieftimov.com/post/tell-team-running-late-google-home-google-functions-golang-twilio/" />
-<meta property="og:image" content="https://ieftimov.com/cards/tell-team-running-late-google-home-google-functions-golang-twilio.png" />
-<meta property="article:published_time" content="2019-03-25T16:02:16+01:00" />
-<meta property="article:modified_time" content="2019-03-25T16:02:16+01:00" />
-<meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:image" content="https://ieftimov.com/cards/tell-team-running-late-google-home-google-functions-golang-twilio.png"/>
-
-<meta name="twitter:title" content="Tell your team you are running late using Google Home, Google Cloud Functions, Golang and Twilio"/>
-<meta name="twitter:description" content="In this age of cloud platforms, Internet of Things and SaaS products that are easy to integrate with, the effort of automating parts of your life is shrinking down substantially with every year that goes by. Additionally, these services have very generous free plans (or are quite affordable), you won&#39;t have to pay a fortune for this automation. In this article I&#39;ll show you how you can create your own commands for your Google Home."/>
-<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
-	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/normalize.css" />
-	<link rel="stylesheet" type="text/css" media="screen" href="https://ieftimov.com/css/main.css" />
-		<link rel="stylesheet" type="text/css" href="https://ieftimov.com/css/overrides.css" />
-	
-
-        <link id="dark-scheme" rel="stylesheet" type="text/css" href="https://ieftimov.com/css/dark.css" />
-
-	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-		<script src="https://ieftimov.com/js/main.js"></script>
-</head>
-
-<body>
-	<div class="container wrapper">
-		<div class="header">
-	
-		<div class="avatar">
-			<a href="https://ieftimov.com/">
-				<img src="/avatar.png" alt="Ilija Eftimov" />
-			</a>
-		</div>
-	
-	<h1 class="site-title"><a href="https://ieftimov.com/">Ilija Eftimov</a></h1>
-	<div class="site-description"><p>Thoughts on simple software engineering</p><nav class="nav social">
-			<ul class="flat"><li><a href="https://github.com/fteem" title="Github"><i data-feather="github"></i></a></li><li><a href="https://twitter.com/itsilija" title="Twitter"><i data-feather="twitter"></i></a></li><li><a href="https://www.linkedin.com/in/ieftimov" title="Linkedin"><i data-feather="linkedin"></i></a></li><li><a href="mailto:blog@ieftimov.com" title="Email"><i data-feather="mail"></i></a></li><li><a href="https://t.me/ieftimovcom" title="Telegram Channel"><i data-feather="send"></i></a></li><li><a href="/index.xml" title="RSS"><i data-feather="rss"></i></a></li><li><a href="#" class="scheme-toggle" id="scheme-toggle"></a></li></ul>
-		</nav>
-	</div>
-
-	<nav class="nav">
-		<ul class="flat">
-			
-			<li>
-				<a href="/categories/testing-in-go">Testing in Go</a>
-			</li>
-			
-			<li>
-				<a href="/posts">Archive</a>
-			</li>
-			
-			<li>
-				<a href="/about">About</a>
-			</li>
-			
-			<li>
-				<a href="https://forms.gle/orfXK5jh1LRaiFzo8">Suggest a topic</a>
-			</li>
-			
-		</ul>
-	</nav>
-</div>
-
-
-		<div class="post">
-			<div class="post-header">
-				
-					<div class="meta">
-						<div class="date">
-							<span class="day">26</span>
-							<span class="rest">Mar 2019</span>
-						</div>
-					</div>
-				
-				<div class="matter">
-					<h1 class="title">Tell your team you are running late using Google Home, Google Cloud Functions, Golang and Twilio</h1>
-				</div>
-			</div>
-					
-			<div class="markdown">
-				<p>In this age of cloud platforms, Internet of Things and SaaS products that are
+<!doctype html><html lang=en dir=auto><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><meta name=robots content="index, follow"><title>Tell your team you are running late using Google Home, Google Cloud Functions, Golang and Twilio | Ilija Eftimov ⚡️</title><meta name=keywords content="google home,dialogflow,actions,golang,twilio"><meta name=description content="In this age of cloud platforms, Internet of Things and SaaS products that are easy to integrate with, the effort of automating parts of your life is shrinking down substantially with every year that goes by. Additionally, these services have very generous free plans (or are quite affordable), you won&rsquo;t have to pay a fortune for this automation. In this article I&rsquo;ll show you how you can create your own commands for your Google Home."><meta name=author content="Ilija"><link rel=canonical href=https://ieftimov.com/post/tell-team-running-late-google-home-google-functions-golang-twilio/><link href=/assets/css/stylesheet.min.0c016bf8df20af25fb1fecc0f0fe602e81ea9fd3d9f96c8995b7d48ec2a0b8a3.css integrity="sha256-DAFr+N8gryX7H+zA8P5gLoHqn9PZ+WyJlbfUjsKguKM=" rel="preload stylesheet" as=style><link rel=icon href=https://ieftimov.com/favicon.ico><link rel=icon type=image/png sizes=16x16 href=https://ieftimov.com/favicon-16x16.png><link rel=icon type=image/png sizes=32x32 href=https://ieftimov.com/favicon-32x32.png><link rel=apple-touch-icon href=https://ieftimov.com/apple-touch-icon.png><link rel=mask-icon href=https://ieftimov.com/safari-pinned-tab.svg><meta name=theme-color content="#2e2e33"><meta name=msapplication-TileColor content="#2e2e33"><meta name=generator content="Hugo 0.81.0"><script async defer data-domain=ieftimov.com src=https://plausible.io/js/plausible.js></script><meta property="og:title" content="Tell your team you are running late using Google Home, Google Cloud Functions, Golang and Twilio"><meta property="og:description" content="In this age of cloud platforms, Internet of Things and SaaS products that are easy to integrate with, the effort of automating parts of your life is shrinking down substantially with every year that goes by. Additionally, these services have very generous free plans (or are quite affordable), you won&rsquo;t have to pay a fortune for this automation. In this article I&rsquo;ll show you how you can create your own commands for your Google Home."><meta property="og:type" content="article"><meta property="og:url" content="https://ieftimov.com/post/tell-team-running-late-google-home-google-functions-golang-twilio/"><meta property="og:image" content="https://ieftimov.com/cards/tell-team-running-late-google-home-google-functions-golang-twilio.png"><meta property="article:published_time" content="2019-03-25T16:02:16+01:00"><meta property="article:modified_time" content="2019-03-25T16:02:16+01:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://ieftimov.com/cards/tell-team-running-late-google-home-google-functions-golang-twilio.png"><meta name=twitter:title content="Tell your team you are running late using Google Home, Google Cloud Functions, Golang and Twilio"><meta name=twitter:description content="In this age of cloud platforms, Internet of Things and SaaS products that are easy to integrate with, the effort of automating parts of your life is shrinking down substantially with every year that goes by. Additionally, these services have very generous free plans (or are quite affordable), you won&rsquo;t have to pay a fortune for this automation. In this article I&rsquo;ll show you how you can create your own commands for your Google Home."><script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://ieftimov.com/posts/"},{"@type":"ListItem","position":2,"name":"Tell your team you are running late using Google Home, Google Cloud Functions, Golang and Twilio","item":"https://ieftimov.com/post/tell-team-running-late-google-home-google-functions-golang-twilio/"}]}</script><script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"Tell your team you are running late using Google Home, Google Cloud Functions, Golang and Twilio","name":"Tell your team you are running late using Google Home, Google Cloud Functions, Golang and Twilio","description":"In this age of cloud platforms, Internet of Things and SaaS products that are easy to integrate with, the effort of automating parts of your life is shrinking down substantially …","keywords":["google home","dialogflow","actions","golang","twilio"],"articleBody":"In this age of cloud platforms, Internet of Things and SaaS products that are easy to integrate with, the effort of automating parts of your life is shrinking down substantially with every year that goes by. Additionally, these services have very generous free plans (or are quite affordable), you won’t have to pay a fortune for this automation. In this article I’ll show you how you can create your own commands for your Google Home. We will use Golang to glue together Google Cloud Functions, Google Actions, Google Dialogflow and Twilio.\nI am not an early bird Waking up is hard for me. I prefer to stick around hacking (or watching useless videos on YouTube) in the evening until past midnight, so waking up at 8AM is… challenging. On the flip side, my team has a standup/daily SCRUM every morning at 10 o’clock. Being the “early bird” that I am, this usually means that I barely make the standup, or I end up being 10 minutes late. Missing the standups often completely misses the point of the standup. But that’s for another discussion.\nNow, since that has been going on lately quite a bit, I decided that I need to automate my life a little bit. I wanted to SMS my team lead every time I am running late, by telling my Google Home that I am late for work. This would effectively tell my team to delay the standup for a bit, so I don’t miss the standup.\nGenius? I know, right!?\nI decided to glue together multiple platforms and services to achieve this. Sending SMSes - Twilio Messaging API. Running the code in the cloud - Google Cloud Function. Integrating with Google Home - Google Dialog Flow. The glue - Golang.\nBefore we begin… Before we begin with the cool things and start building, I want to get something out of the way. This article makes some assumptions when it comes to platform and services availability. This means that if you want to follow along, you need the following things:\n You need a functioning Google Cloud Platform account. This is not free, but Google gives some free credit ($300 I believe) for the first year. Also, I recommend creating a new project on Google Cloud Platform. This will allow you to have an easier time managing the resources used by this exercise. Install the Google Cloud SDK, also known as the gcloud command line tool. This is essential for easier management of your GCP projects and resources via the command line. You need a Twilio account - at least for a proof of concept you can get some free SMSes. If you would like to take this further, you’ll be charged for it. You also need to make sure you have a verified phone number on Twilio. This phone number will be the source of the SMSes that you will be sending via their API. You need a Google Dialogflow account. We will use this to create the agent and action, which we’ll integrate with Google Assistant. (Optionally) You need a Google Home device, for an extra coolness effect. This will work with any Google Assistant-enabled device, including your laptop which can run a simulator in the browser.  Hooking up to Twilio’s Messaging API The great part about Twilio is that their blog has helpful resources on how to send SMSes using Golang. While you can read the step by step tutorial on their blog, I’ll cover most of the required steps here as well.\nBe able to send an SMS we first need to find the Account SID and Auth Key in our Twilio account’s dashboard:\n  Save those two and the verified phone number, because we’ll need to add them to our Golang program. The endpoint that our Golang program will call to send an SMS via Twilio is:\n1  https://api.twilio.com/2010-04-01/Accounts/ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/Messages.json   You can see its docs here. The request body will take three parameters:\n From - the phone number that we send the SMS from To - the recipient number of the SMS Body - the content of the SMS  Additionally, the endpoint uses basic authentication. This means that we will need to provide the Account SID and the Auth Token as a user and pass to it.\nLet’s start sketching out the program. First, let’s create the URL encoded form that we will send to the API:\n1 2 3 4 5 6  smsResponse := SendSMSResponse{} msgData := url.Values{} msgData.Set(\"To\", to) msgData.Set(\"From\", from) msgData.Set(\"Body\", body) msgDataReader := *strings.NewReader(msgData.Encode())    This uses the url package, which allows us to create a url.Values struct that will contain the data we want to send to the endpoint.\n1 2 3  client := http.Client{ Timeout: time.Duration(5 * time.Second), }    We create an http.Client struct, from the net/http package, which we will use to issue HTTP calls. We also configure it slightly, so it’s default timeout is set to 5 seconds.\n1  var endpointURL = \"https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json\"    We’ll define the endpoint as a variable - we’ll also put a %s at the place of where the Account SID should be placed so we can use fmt.Sprintf to replace it when we issue the HTTP request.\n1 2 3 4 5 6 7 8  req, newReqErr := http.NewRequest( \"POST\", fmt.Sprintf(endpointURL, accountSid), \u0026msgDataReader, ) if newReqErr != nil { return smsResponse, newReqErr }    We create a new net/http Request, using the http.NewRequest constructor function. It takes three arguments:\n The HTTP verb (GET, POST, PUT, PATCH or DELETE) The URL to be called The body of the request  1  req.Header.Add(\"Content-Type\", \"application/x-www-form-urlencoded\")    We will specify the Content-Type header to x-www-form-urlencoded, so Twilio’s API understands what kind of content we are sending to it. In this case, we will be sending a URL encoded form.\n1  req.SetBasicAuth(accountSid, authToken)    Before we send the request, we will also have to set the basic authentication using the Account SID and the Auth Token.\n1  resp, requestErr := client.Do(req)    Now that we have all of the things in place, we can issue the request - by using the client.Do function. This function will take the request and execute it, while returning a response. In case something goes bad, it will return an error as well.\nIf we look at the documentation of the endpoint that we’re calling, we can see an example of the response. In Golang, to convert the response JSON to a meaningful struct, we have to create a struct that our program can decode from a JSON. There’s a very nice tool for this purpose - called “JSON-to-Go”. By pasting the example on the left hand side, this website will automatically generate a struct that we can use in our program.\n  This is what the actual struct will look like:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24  type SendSMSResponse struct { Sid string `json:\"sid\"` DateCreated string `json:\"date_created\"` DateUpdated string `json:\"date_updated\"` DateSent interface{} `json:\"date_sent\"` AccountSid string `json:\"account_sid\"` To string `json:\"to\"` From string `json:\"from\"` MessagingServiceSid interface{} `json:\"messaging_service_sid\"` Body string `json:\"body\"` Status string `json:\"status\"` NumSegments string `json:\"num_segments\"` NumMedia string `json:\"num_media\"` Direction string `json:\"direction\"` APIVersion string `json:\"api_version\"` Price interface{} `json:\"price\"` PriceUnit string `json:\"price_unit\"` ErrorCode interface{} `json:\"error_code\"` ErrorMessage interface{} `json:\"error_message\"` URI string `json:\"uri\"` SubresourceUris struct { Media string `json:\"media\"` } `json:\"subresource_uris\"` }    Having this in place, will allow us to take the body of the response from the call to Twilio, decode it to a SendSMSResponse struct using the encode/json package:\n1 2  smsResponse := SendSMSResponse{} unmarshalErr := json.NewDecoder(resp.Body).Decode(\u0026smsResponse)    That’s about it when it comes to calling Twilio’s API. We made a function that builds the payload send to the API, executes the call and parses the JSON in the response to a struct that we can use in our Go program.\nDefining the function to call Before we deploy our function to Google Cloud Platform, we need to finish up defining it and hooking it up to the code that calls the Twilio API.\nThe name of our function will be SendSMS. Since the function will be invoked via HTTP call, it will have to take a request and response as arguments. For now, it will return a simple JSON as a response.\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27  package app import ( \"encoding/json\" \"fmt\" \"net/http\" ) type Response struct { Body string `json:\"body\"` } func SendSMS(w http.ResponseWriter, r *http.Request) { twilioResponse, err := sendRequest( \"PUT YOUR NUMBER HERE\", \"Hey Alex, I am running late today, can we please postpone the standup a bit? Thanks! Ilija\", ) if err != nil { json.NewEncoder(w).Encode(Response{ Body: \"Something bad happened, please try again.\", }) return } json.NewEncoder(w).Encode(Response{ Body: fmt.Sprintf(\"Message %s\", twilioResponse.Status), }) }    To make this work, we are also missing the Twilio API part. Before we go into that, let’s see what this function does:\n Uses the sendRequest function from our Twilio API integration. This function takes the body of the SMS and the receiver’s number as arguments. The sendRequest function might return an error. If it does, we return an error message in the response JSON. If the function returns no errors, we will send a JSON representing a successful scheduling of an SMS on Twilio’s side.  Let’s see the full integration with Twilio’s API:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79  package app import ( \"encoding/json\" \"fmt\" \"net/http\" \"net/url\" \"os\" \"strings\" \"time\" ) type SendSMSResponse struct { Sid string `json:\"sid\"` DateCreated string `json:\"date_created\"` DateUpdated string `json:\"date_updated\"` DateSent interface{} `json:\"date_sent\"` AccountSid string `json:\"account_sid\"` To string `json:\"to\"` From string `json:\"from\"` MessagingServiceSid interface{} `json:\"messaging_service_sid\"` Body string `json:\"body\"` Status string `json:\"status\"` NumSegments string `json:\"num_segments\"` NumMedia string `json:\"num_media\"` Direction string `json:\"direction\"` APIVersion string `json:\"api_version\"` Price interface{} `json:\"price\"` PriceUnit string `json:\"price_unit\"` ErrorCode interface{} `json:\"error_code\"` ErrorMessage interface{} `json:\"error_message\"` URI string `json:\"uri\"` SubresourceUris struct { Media string `json:\"media\"` } `json:\"subresource_uris\"` } var ( endpointURL = \"https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json\" accountSid = os.Getenv(\"TWILIO_ACCOUNT_SID\") authToken = os.Getenv(\"TWILIO_AUTH_TOKEN\") from = os.Getenv(\"TWILIO_FROM_PHONE\") ) func sendRequest(to string, body string) (SendSMSResponse, error) { msgData := url.Values{} msgData.Set(\"To\", to) msgData.Set(\"From\", from) msgData.Set(\"Body\", body) msgDataReader := *strings.NewReader(msgData.Encode()) client := http.Client{ Timeout: time.Duration(5 * time.Second), } req, newReqErr := http.NewRequest( \"POST\", fmt.Sprintf(endpointURL, accountSid), \u0026msgDataReader, ) if newReqErr != nil { return smsResponse, newReqErr } req.Header.Add(\"Content-Type\", \"application/x-www-form-urlencoded\") req.SetBasicAuth(accountSid, authToken) resp, requestErr := client.Do(req) defer req.Body.Close() if requestErr != nil { return smsResponse, requestErr } smsResponse := SendSMSResponse{} decodeErr := json.NewDecoder(resp.Body).Decode(\u0026smsResponse) if decodeErr != nil { return smsResponse, decodeErr } return smsResponse, nil }    The differences from the code in this snippet and the code from the previous section are:\n We define the Account SID, the Auth Token and the source phone number by taking them from the environment variables. In Golang, one can do this using os.Getenv('NAME_OF_VARIABLE'). We take care of any errors that might occur before and during sending the HTTP request to Twilio  Take note that both of the files are part of the same package - app. This is mandatory, so the function SendSMS can invoke the sendRequest function.\nNow that we have both the Twilio API integration and the SendSMS functions, let’s see how we can deploy them to GCP.\nRunning our code on Google Cloud Platform Before we go on to deploy the function, there are some basics about Cloud Functions that are good to know. If you have used Cloud Function or AWS Lambda, you might know most of the things I am about to explain. If this is the case, you can skip this and go to the section on deploying the function.\nIf you look at the main page of the documentation for the Cloud Functions, this is the explanation you’ll find:\n Google Cloud Functions is a lightweight compute solution for developers to create single-purpose, stand-alone functions that respond to Cloud events without the need to manage a server or runtime environment.\n Let’s break this apart, so we get a better understanding of what Google Cloud Functions are.\nFunctions are lightweight and single purpose. As you already saw in the code above, a Google Cloud Function is really just a function. Being this simple, they do not need any complex setup or configurations.\nFunctions are stand-alone and respond to Cloud events. When Google Cloud receives a certain event (or a trigger), it will invoke the function.\nGoogle Cloud Platform supports two types of functions:\n HTTP functions - functions invoked when an HTTP trigger is received Background functions - functions invoked when an event is received. The type of events and their source can vary.  The last part of the definition of GC Functions is the lack of need to manage a server or runtime environment. In other words, this explains that functions are serverless. This is a side-effect of the nature of Cloud Functions. The runtime is made opaque by the vendor (Google). The only thing we need to configure is the name of the function. Google Cloud Platform takes care of the rest.\nNow, serverless doesn’t literally mean an absence of servers. In fact, there are servers that create the cloud. And since Cloud Functions run in the cloud, they run on Google’s servers. In this context, serverless means that we, as developers, don’t need to care about the infrastructure where our code is being run on.\nWe will not delve any more into serverless or Google Cloud Functions basics. If you want to read more, I recommend the documentation - it’s concise and helpful.\nDeploying the Google Cloud Function Assuming that you have your gcloud CLI tool installed, to deploy the function it’s just one simple command:\n1 2 3 4  gcloud functions deploy SendSMS \\  --runtime go111 \\  --trigger-http \\  --region=europe-west1   Before we continue, let’s understand the deploy command that we’ll run. After the deploy keyword, we supply the function name (in our example it’s SendSMS). After that, with the --runtime flag we tell GCP that our function will run in Go 1.11 (that’s the go111 part). Then, we tell GCP that we want our function to be an HTTP function – meaning it will get triggered via a HTTP request. Lastly, in our example I set the --region, which is the Cloud region where our function will be deployed to. Because my physical location is in western Europe, I prefer the europe-west1 region.\nOnce we run it, the output will be something like this:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16  › gcloud functions deploy SendSMS --runtime go111 --trigger-http --region=europe-west1 Deploying function (may take a while - up to 2 minutes)...done. availableMemoryMb: 256 entryPoint: SendSMS httpsTrigger: url: https://europe-west1-hip-courier-234516.cloudfunctions.net/SendSMS labels: deployment-tool: cli-gcloud name: projects/hip-courier-234516/locations/europe-west1/functions/SendSMS runtime: go111 serviceAccountEmail: hip-courier-234516@appspot.gserviceaccount.com sourceUploadUrl: https://storage.googleapis.com/gcf-upload-europe-west1-... status: ACTIVE timeout: 60s updateTime: '2019-03-17T22:54:03Z' versionId: '2'   Now, the output is quite detailed here. We can see the various settings the function has, from the available memory, the HTTPS trigger URL, the name of the function and so on.\nBut, what’s most important for us is to try and trigger the function. There are two ways to do this: via a cURL request to the httpsTrigger endpoint, or by using a gcloud command. The gcloud command to trigger the function is:\n1  gcloud functions call NAME OPTS   Let’s run it:\n1 2 3 4  › gcloud functions call SendSMS --region=europe-west1 executionId: uqkmybjc9xab result: | {\"body\": \"Something bad hapenned, please try again.\"}   .notice{ padding:18px; line-height:24px; margin-bottom:24px; border-radius:4px; color:#444; background:#e7f2fa } .notice p:last-child{ margin-bottom:0 } .notice-title{ margin:-18px -18px 12px; padding:4px 18px; border-radius:4px 4px 0 0; font-weight:700; color:#fff; background:#6ab0de } .notice-title:before{ margin-right:8px; font-family:\"Font Awesome 5 Free\",FontAwesome; font-weight:400 } .notice.warning .notice-title{ background:rgba(217,83,79,.9) } .notice.warning{ background:#fae2e2 } .notice.info .notice-title{ background:#f0b37e } .notice.info{ background:#fff2db } .notice.note .notice-title{ background:#6ab0de } .notice.note{ background:#e7f2fA } .notice.tip .notice-title{ background:rgba(92,184,92,.8) } .notice.tip{ background:#e6f9e6 } Info\nSupplying the --region flag every time you run any command for your Cloud Function can be annoying. You can set your default region using:\ngcloud config set compute/region europe-west1\n Wait, what? Well, it seems like something went wrong. In fact, the function worked fine. But it seems that something went wrong when sending the SMS via Twilio.\nIf we go back to the Twilio integration, we will notice the following lines:\n1 2 3  accountSid = os.Getenv(\"TWILIO_ACCOUNT_SID\") authToken = os.Getenv(\"TWILIO_AUTH_TOKEN\") from = os.Getenv(\"TWILIO_FROM_PHONE\")    These lines expect that the following values will be present as environment variables. This means that we need to set the environment variables for our function, so it can authenticate with Twilio and send SMS.\nAgain we can do this via the web UI or via the command line. Let’s use the gcloud CLI tool again:\n1 2 3 4 5 6 7  gcloud functions deploy SendSMS \\ --set-env-vars \\ TWILIO_ACCOUNT_SID=ACc83f0d68d72e2340ef318fdbcbc7de48,\\ TWILIO_AUTH_TOKEN=e405742cdf254da46eff98c61065bb5e,\\ TWILIO_FROM_PHONE=+3197014200568 \\ --trigger-http \\ --region=europe-west1   What’s cool about serverless functions is that they’re immutable. This means that every change, regardless if it’s configuration, or an actual code change, requires a deploy. As you can notice in the command above, with the flag --set--env-vars we can set multiple environment variables separated by a comma. Of course, we have to supply the trigger flag (--trigger-http) and (optionally) the region flag (--region).\nThe output of the deploy will look like:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19  Deploying function (may take a while - up to 2 minutes)...done. availableMemoryMb: 256 entryPoint: SendSMS environmentVariables: TWILIO_ACCOUNT_SID: ACc83f0d68d72e183bbdf318fdbcbc7de48 TWILIO_AUTH_TOKEN: e405742cdf254duy23n98c61065bb5e TWILIO_FROM_PHONE: '+3197014200568' httpsTrigger: url: https://europe-west1-hip-courier-234516.cloudfunctions.net/SendSMS labels: deployment-tool: cli-gcloud name: projects/hip-courier-234516/locations/europe-west1/functions/SendSMS runtime: go111 serviceAccountEmail: hip-courier-234516@appspot.gserviceaccount.com sourceUploadUrl: https://storage.googleapis.com/gcf-upload-europe-west1-b6b2622d-98cf-4a73-a9e3-13427706c715/2c6ce340-bd1f-48ea-b696-23a59ce579eb.zip?GoogleAccessId=service-43664983000@gcf-admin-robot.iam.gserviceaccount.com\u0026Expires=1552926106\u0026Signature=HvRVFFVpEyWoknznuHYUIbiFD53gx4sihWJWtK8Wxuua9E4BJhjdjIUUa7RBWH0UNWlQX%2FpsUm6ub9S%2FjCQYw70JxMW4fTa4fLMJ%2FdcQQGpRRHYlEPLwPjU8aH68NUjYM1zXoWev%2Fl3jAlOTTt2P0lH3ugYwx%2FtHBop4Dbjl8K87bZmf9JUnyjk2FVGlVi7ino8S3ieRJ1tXGf0qXQAQo0DS%2B99Zuy4IsY2S3RS%2BxxKWcRBLKvibWZfZZYAW5g%2Fv%2B47RV9QE4QWRMdZOM0hK2f3URCxqetPi4rB8S5%2B%2FVZVwdyKqUJ45rNaIhTOcJ3j2t%2Fy8A%2BQ45GcNKiM5BPbz5g%3D%3D status: ACTIVE timeout: 60s updateTime: '2019-03-18T15:52:21Z' versionId: '4'   If we trigger the cloud function now, we should see it working:\n1 2 3 4  › gcloud functions call SendSMS --region=europe-west1 executionId: jglb9o1mb5w9 result: | {\"body\": \"Message queued\"}   As the message from Twilio states, the SMS was queued and will be sent to your phone soon. I got my SMS in less than 10 seconds, but YMMV. This is what it looked like:\n  This is awesome. It means that our Google Cloud Function is deployed and the Twilio integration is working as expected.\nNext, let’s see how we can plug this into Google Assistant, so it can be used by Google Home.\nGoogle Home Integration Now that we have the Cloud Function operational, let’s open Google Dialog Flow and create our first agent:\n  In my case, I named the agent running-late-sms, but you can choose your own name here - it doesn’t matter.\nThe new agent will have two intents: “Default Fallback Intent” and “Default Welcome Intent”. Before we continue modifying these intents, let’s get the Dialog Flow basics out of the way.\nVery simply put, an intent is the mapping between the user’s command and the agent executing the command. For example, when a user asks “Hey Google, what’s the weather like outside?”, the intent will understand that the user is asking for the weather. Then, the agent can request the data from an API to get the forecast and report it back to the user.\nIntents have four main components:\n A name Training phrases - examples of what a user can say to match a particular intent Action and parameters - defining how data can be extracted from the user’s statements/input Response - the response statement to the user  These are the very basics on Dialog Flow Intents. You can read more about them in the documentation.\nDefining our first intent Let’s open the “Default Welcome intent” and change it a bit. First, we can rename it to “Start”. This is because our dialog will have only a single command: “Hey Google, I am running late for standup!“. Once that happens, the agent should match the intent with our statement. Then, a Google Action will invoke the Cloud Function over HTTP.\nNext, we can remove all the training phrases and add a couple of variants that mean “I am late for standup/work”. For example:\n “I will miss the standup today” “I will be late for standup” “Running late for standup” “I will be late for work” “Running late for work”  Google Dialog Flow will apply machine learning on these inputs. This means that your intent will match also statements that are not exactly the same as the training phrases, but statements that have the same intent.\n  Next, we scroll to the bottom of the “Fulfillment” section where we need to enable the “Enable webhook call for this intent” option. After that, we can save the intent. The next step we need to take is in the “Fulfillment” section in sidebar.\nIn the “Fulfillment” page we will enable the webhook by checking the checkbox. In the form, we need to add the information for our webhook. Now, to get the URL of our Google Cloud Function, we can run:\n1  gcloud functions describe SendSMS   This will return the metadata for our function, where we can find the httpsTrigger section with a url:\n1 2  httpsTrigger: url: https://europe-west1-hip-courier-234516.cloudfunctions.net/SendSMS   The httpsTrigger URL is the HTTP trigger where our function will be executed. All we need to do here is copy this URL and paste it as the webhook URL in Dialog Flow:\n  That’s all. Once we save this when our agent matches the intent, the webhook will be triggered and the Cloud Function will be executed. This will end with a call to Twilio’s API which will send an SMS to our phone number.\nSpeaking Google Assistant’s lingo Although Dialog Flow’s options are quite diverse, setting up a simple intent was straightforward. The intents are backed by Google Actions, which will receive the response from the webhook (our Cloud Function). This means that before we go on to use the intent, we have to make sure our Cloud Function returns a response which Google Actions can understand.\nNow, if we look at the dialog webhook documentation, we will see that there are some rules on the format of the response.\nFor example, the Content-Type in the header of HTTP posts from the Cloud Function have to be application/json. Also, there are other limitations when it comes to the formatting of the JSON.\nFor our purpose, we can return the most simple JSON that Google Assistant can understand:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16  { \"payload\": { \"google\": { \"expectUserResponse\": true, \"richResponse\": { \"items\": [ { \"simpleResponse\": { \"textToSpeech\": \"RESPONSE_FROM_TWILIO_HERE\" } } ] } } } }   While the responses can get very complicated, for our simple use case the response above is all we need. Again, we can use the nice JSON-to-Go tool and convert the JSON to Go structs:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19  type DialogFlowResponse struct { Payload Payload `json:\"payload\"` } type SimpleResponse struct { TextToSpeech string `json:\"textToSpeech\"` } type Items struct { SimpleResponse SimpleResponse `json:\"simpleResponse\"` } type RichResponse struct { Items []Items `json:\"items\"` } type Google struct { ExpectUserResponse string `json:\"expectUserResponse\"` RichResponse RichResponse `json:\"richResponse\"` } type Payload struct { Google Google `json:\"google\"` }    To make our life easier, we will also create a simple constructor function. It will take a string (the response from Twilio) as an argument:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18  func NewDialogFlowResponse(message string) DialogFlowResponse { return DialogFlowResponse{ Payload: Payload{ Google: Google{ ExpectUserResponse: \"false\", RichResponse: RichResponse{ Items: []Items{ Items{ SimpleResponse: SimpleResponse{ TextToSpeech: message, }, }, }, }, }, }, } }    The constructor will build the nested structs that, when serialized, will result in the JSON that Google Assistant is expecting.\nNow that we have the constructor and the necessary types, we can plug them in the SendSMS function:\n1 2 3 4 5 6 7 8 9 10 11 12 13  func SendSMS(w http.ResponseWriter, r *http.Request) { twilioResponse, err := sendRequest( \"PUT YOUR NUMBER HERE\", \"Hey Alex, I am running late today, can we please postpone the standup a bit? Thanks! Ilija\", ) if err != nil { errResponse := NewDialogFlowResponse(\"Something bad hapenned, please try again.\") json.NewEncoder(w).Encode(errResponse) return } response := NewDialogFlowResponse(fmt.Sprintf(\"Message %s\", twilioResponse.Status)) json.NewEncoder(w).Encode(response) }    All we had to do here is instead of building the JSON ourselves, we use the new DialogFlowResponse struct to take care of this problem. If we deploy the function to GCP and run it we will see the new output:\n1 2 3 4  › gcloud functions call SendSMS executionId: 4xo1v0ex57jw result: | {\"payload\":{\"google\":{\"expectUserResponse\":\"false\",\"richResponse\":{\"items\":[{\"simpleResponse\":{\"textToSpeech\":\"Message queued\"}}]}}}}   This means that once our Google Action invokes the Google Cloud Function, the response can be understood by Google Assistant. And when I say “understood”, I mean that you will hear your Google Assistant saying out loud “Message queued”.\nYou don’t believe me? Let’s see that in action!\nTesting our agent There are two ways to test our new agent - via a Google Home device, or via the simulator.\nIf you’re in possession of a Google Home device and if you’re logged in with the same account as the one you use on Google Dialogflow or Actions, all you need to do is tell your Google Home “OK Google, talk to my test app!”. This should do the trick.\nIn this article, we’ll use the simulator. On the right hand side you can click on the “See how it works in Google Assistant” link. This will take you to the Google Actions simulator.\nGoogle Actions is a platform that allows extension of Google Assistant’s capabilities. In our case, this means that the Google Dialog Flow agent will invoke a Google Action, which will be the triggered by the Google Assistant. I know it sounds a bit complicated, but in reality these platforms are well connected so the integration is quite simple.\nOnce the simulator opens, you can click on the suggested input “Talk to my test app” in the bottom of the screen. That will trigger the Dialog Flow agent which will execute the webhook right away:\n  You can notice that the response from the Google Assistant contains “Message queued”, which is Twilio’s response. After you see the response, an incoming SMS should pop on your phone’s screen.\nIn closing While we have gone through quite the distance in this article, our application is still not shipped to the Play Store for mass-consumption. There are couple of more simple steps that you need to take to release this action to the world.\nNow, before you go on to do this, you have to first think about some of the very rough edges of our action. Basically, at the moment the Google Action that we have created will work only for our use case. If you would like to publish this to the Play Store, you need to make adjustments:\n The user has to be able to configure the content of the message sent and the phone number of their team lead, using their Google Home We have to have a backend where we would store this configuration and every time someone invokes the Google Action (via their Google Home), we would have to process this using our Cloud Function You have to be ready to bear the cost of this. The Twilio API + the Google Cloud Function are not free to use for production, so you will be charged for the usage  I’ll leave this up to you. Nevertheless, we still went through the whole process of creating this action. It took many steps:\n Created a Google Dialogflow intent Hooked it up to a Google Action We integrated with Twilio’s API using Golang We deployed our Golang program as a Google Cloud Function  And we actually tested our whole integration and we received an SMS to our phones.\nBefore we wrap it up, I am curious: what other kind of such Google Home integrations would your create to automate simple tasks in your life? Let me know in the comments!\nLiked this article? Subscribe to my newsletter and get my fresh posts in your inbox. It's short and sweet, going out monthly to over 1,000 subscribers.  ","wordCount":"4729","inLanguage":"en","datePublished":"2019-03-25T16:02:16+01:00","dateModified":"2019-03-25T16:02:16+01:00","author":{"@type":"Person","name":"Ilija"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://ieftimov.com/post/tell-team-running-late-google-home-google-functions-golang-twilio/"},"publisher":{"@type":"Organization","name":"Ilija Eftimov ⚡️","logo":{"@type":"ImageObject","url":"https://ieftimov.com/favicon.ico"}}}</script></head><body id=top><script>localStorage.getItem("pref-theme")==="dark"?document.body.classList.add('dark'):localStorage.getItem("pref-theme")==="light"?document.body.classList.remove('dark'):window.matchMedia('(prefers-color-scheme: dark)').matches&&document.body.classList.add('dark')</script><noscript><style type=text/css>#theme-toggle,.top-link{display:none}</style></noscript><header class=header><nav class=nav><div class=logo><a href=https://ieftimov.com/ accesskey=h title="Ilija Eftimov ⚡️ (Alt + H)">Ilija Eftimov ⚡️</a>
+<span class=logo-switches><button id=theme-toggle accesskey=t title="(Alt + T)"><svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg><svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></span></div><ul id=menu onscroll=menu_on_scroll()><li><a href=https://ieftimov.com/posts title=Archive><span>Archive</span></a></li><li><a href=https://ieftimov.com/about title=About><span>About</span></a></li><li><a href=https://ieftimov.com/newsletter title=Newsletter><span>Newsletter</span></a></li><li><a href=https://forms.gle/orfXK5jh1LRaiFzo8 title="Suggest a topic"><span>Suggest a topic</span></a></li></ul></nav></header><main class=main><article class=post-single><header class=post-header><h1 class=post-title>Tell your team you are running late using Google Home, Google Cloud Functions, Golang and Twilio</h1><div class=post-meta>March 26, 2019&nbsp;·&nbsp;23 min&nbsp;·&nbsp;Ilija</div></header><div class=toc><details><summary accesskey=c title="(Alt + C)"><div class=details>Table of Contents</div></summary><div class=inner><ul><li><a href=#i-am-not-an-early-bird aria-label="I am not an early bird">I am not an early bird</a></li><li><a href=#before-we-begin aria-label="Before we begin&amp;hellip;">Before we begin&mldr;</a></li><li><a href=#hooking-up-to-twilios-messaging-api aria-label="Hooking up to Twilio&amp;rsquo;s Messaging API">Hooking up to Twilio&rsquo;s Messaging API</a></li><li><a href=#defining-the-function-to-call aria-label="Defining the function to call">Defining the function to call</a></li><li><a href=#running-our-code-on-google-cloud-platform aria-label="Running our code on Google Cloud Platform">Running our code on Google Cloud Platform</a><ul><li><a href=#deploying-the-google-cloud-function aria-label="Deploying the Google Cloud Function">Deploying the Google Cloud Function</a></li></ul></li><li><a href=#google-home-integration aria-label="Google Home Integration">Google Home Integration</a><ul><li><a href=#defining-our-first-intent aria-label="Defining our first intent">Defining our first intent</a></li><li><a href=#speaking-google-assistants-lingo aria-label="Speaking Google Assistant&amp;rsquo;s lingo">Speaking Google Assistant&rsquo;s lingo</a></li><li><a href=#testing-our-agent aria-label="Testing our agent">Testing our agent</a></li></ul></li><li><a href=#in-closing aria-label="In closing">In closing</a></li></ul></div></details></div><div class=post-content><p>In this age of cloud platforms, Internet of Things and SaaS products that are
 easy to integrate with, the effort of automating parts of your life is
 shrinking down substantially with every year that goes by. Additionally, these
-services have very generous free plans (or are quite affordable), you won't
-have to pay a fortune for this automation. In this article I'll show you how
+services have very generous free plans (or are quite affordable), you won&rsquo;t
+have to pay a fortune for this automation. In this article I&rsquo;ll show you how
 you can create your own commands for your Google Home. We will use Golang to
 glue together Google Cloud Functions, Google Actions, Google Dialogflow and
-Twilio.</p>
-<p><img src="/tell-team-running-late-google-home-google-functions-golang-twilio/sleep_analysis.png" alt=""></p>
-<h2 id="i-am-not-an-early-bird">I am not an early bird</h2>
-<p>Waking up is hard for me. I prefer to stick around hacking (or watching useless
+Twilio.</p><p><img src=/tell-team-running-late-google-home-google-functions-golang-twilio/sleep_analysis.png alt></p><h2 id=i-am-not-an-early-bird>I am not an early bird<a hidden class=anchor aria-hidden=true href=#i-am-not-an-early-bird>#</a></h2><p>Waking up is hard for me. I prefer to stick around hacking (or watching useless
 videos on YouTube) in the evening until past midnight, so waking up at 8AM
-is&hellip; challenging. On the flip side, my team has a standup/daily SCRUM every
-morning at 10 o'clock. Being the &ldquo;early bird&rdquo; that I am, this usually means
+is&mldr; challenging. On the flip side, my team has a standup/daily SCRUM every
+morning at 10 o&rsquo;clock. Being the &ldquo;early bird&rdquo; that I am, this usually means
 that I barely make the standup, or I end up being 10 minutes late. Missing the
 standups often completely misses the point of the standup. But that’s for
-another discussion.</p>
-<p>Now, since that has been going on lately quite a bit, I decided that I need to
+another discussion.</p><p>Now, since that has been going on lately quite a bit, I decided that I need to
 automate my life a little bit. I wanted to SMS my team lead every time I am
 running late, by telling my Google Home that I am late for work. This would
-effectively tell my team to delay the standup for a bit, so I don't miss the
-standup.</p>
-<p>Genius? I know, right!?</p>
-<p>I decided to glue together multiple platforms and services to achieve this.
+effectively tell my team to delay the standup for a bit, so I don&rsquo;t miss the
+standup.</p><p>Genius? I know, right!?</p><p>I decided to glue together multiple platforms and services to achieve this.
 Sending SMSes - Twilio Messaging API. Running the code in the cloud - Google
-Cloud Function.  Integrating with Google Home - Google Dialog Flow. The glue -
-Golang.</p>
-<h2 id="before-we-begin">Before we begin&hellip;</h2>
-<p>Before we begin with the cool things and start building, I want to get
+Cloud Function. Integrating with Google Home - Google Dialog Flow. The glue -
+Golang.</p><h2 id=before-we-begin>Before we begin&mldr;<a hidden class=anchor aria-hidden=true href=#before-we-begin>#</a></h2><p>Before we begin with the cool things and start building, I want to get
 something out of the way. This article makes some assumptions when it comes to
 platform and services availability. This means that if you want to follow
-along, you need the following things:</p>
-<ol>
-<li>You need a functioning <a href="https://cloud.google.com/">Google Cloud Platform</a>
+along, you need the following things:</p><ol><li>You need a functioning <a href=https://cloud.google.com/>Google Cloud Platform</a>
 account. This is not free, but Google gives some free credit ($300 I
 believe) for the first year. Also, I recommend creating a new project on
 Google Cloud Platform. This will allow you to have an easier time managing
-the resources used by this exercise.</li>
-<li>Install <a href="https://cloud.google.com/sdk/">the Google Cloud SDK</a>, also known as
+the resources used by this exercise.</li><li>Install <a href=https://cloud.google.com/sdk/>the Google Cloud SDK</a>, also known as
 the <code>gcloud</code> command line tool. This is essential for easier management of
-your GCP projects and resources via the command line.</li>
-<li>You need a <a href="https://www.twilio.com/">Twilio account</a> - at least for a proof
+your GCP projects and resources via the command line.</li><li>You need a <a href=https://www.twilio.com/>Twilio account</a> - at least for a proof
 of concept you can get some free SMSes. If you would like to take this
-further, you'll be charged for it. You also need to make sure you have a
-<a href="https://support.twilio.com/hc/en-us/articles/223180048-Adding-a-Verified-Phone-Number-or-Caller-ID-with-Twilio">verified phone number</a>
+further, you&rsquo;ll be charged for it. You also need to make sure you have a
+<a href=https://support.twilio.com/hc/en-us/articles/223180048-Adding-a-Verified-Phone-Number-or-Caller-ID-with-Twilio>verified phone number</a>
 on Twilio. This phone number will be the source of the SMSes that you will
-be sending via their API.</li>
-<li>You need a <a href="dialogflow.com">Google Dialogflow</a> account. We will use this to
-create the agent and action, which we'll integrate with Google Assistant.</li>
-<li>(Optionally) You need a Google Home device, for an extra coolness effect.
+be sending via their API.</li><li>You need a <a href=dialogflow.com>Google Dialogflow</a> account. We will use this to
+create the agent and action, which we&rsquo;ll integrate with Google Assistant.</li><li>(Optionally) You need a Google Home device, for an extra coolness effect.
 This will work with any Google Assistant-enabled device, including your
-laptop which can run a simulator in the browser.</li>
-</ol>
-<h2 id="hooking-up-to-twilios-messaging-api">Hooking up to Twilio's Messaging API</h2>
-<p>The great part about Twilio is that their blog has
-<a href="https://www.twilio.com/blog/2017/09/send-text-messages-golang.html">helpful resources</a>
+laptop which can run a simulator in the browser.</li></ol><h2 id=hooking-up-to-twilios-messaging-api>Hooking up to Twilio&rsquo;s Messaging API<a hidden class=anchor aria-hidden=true href=#hooking-up-to-twilios-messaging-api>#</a></h2><p>The great part about Twilio is that their blog has
+<a href=https://www.twilio.com/blog/2017/09/send-text-messages-golang.html>helpful resources</a>
 on how to send SMSes using Golang. While you can read the step by step tutorial
-on their blog, I'll cover most of the required steps here as well.</p>
-<p>Be able to send an SMS we first need to find the Account SID and Auth Key in
-our Twilio account's dashboard:</p>
-
-
-
-
-
-
-
-
-
-
-
-
-<figure class="imagecaption">
-  <img class="caption" src="/running-late-sms-twilio-google-functions-golang/twilio-dashboard.png" title="" alt="">
-  <span class="caption-text"></span>
-</figure>
-
-<p>Save those two and the verified phone number, because we'll need to add them to
+on their blog, I&rsquo;ll cover most of the required steps here as well.</p><p>Be able to send an SMS we first need to find the Account SID and Auth Key in
+our Twilio account&rsquo;s dashboard:</p><figure class=imagecaption><img class=caption src=/running-late-sms-twilio-google-functions-golang/twilio-dashboard.png title alt>
+<span class=caption-text></span></figure><p>Save those two and the verified phone number, because we&rsquo;ll need to add them to
 our Golang program. The endpoint that our Golang program will call to send
-an SMS via Twilio is:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">https://api.twilio.com/2010-04-01/Accounts/ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/Messages.json</code></pre></div>
-<p>You can see its docs <a href="https://www.twilio.com/docs/sms/api/message-resource?code-sample=code-create-a-message&amp;code-language=curl&amp;code-sdk-version=json">here</a>. The
-request body will take three parameters:</p>
-<ol>
-<li><code>From</code> - the phone number that we send the SMS from</li>
-<li><code>To</code> - the recipient number of the SMS</li>
-<li><code>Body</code> - the content of the SMS</li>
-</ol>
-<p>Additionally, the endpoint uses basic authentication. This means that we will
-need to provide the Account SID and the Auth Token as a user and pass to it.</p>
-<p>Let's start sketching out the program. First, let's create the URL encoded form
-that we will send to the API:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">smsResponse <span style="font-weight:bold">:=</span> SendSMSResponse{}
-msgData <span style="font-weight:bold">:=</span> url.Values{}
-msgData.<span style="color:#900;font-weight:bold">Set</span>(<span style="color:#b84">&#34;To&#34;</span>, to)
-msgData.<span style="color:#900;font-weight:bold">Set</span>(<span style="color:#b84">&#34;From&#34;</span>, from)
-msgData.<span style="color:#900;font-weight:bold">Set</span>(<span style="color:#b84">&#34;Body&#34;</span>, body)
-msgDataReader <span style="font-weight:bold">:=</span> <span style="font-weight:bold">*</span>strings.<span style="color:#900;font-weight:bold">NewReader</span>(msgData.<span style="color:#900;font-weight:bold">Encode</span>())</code></pre></div>
-<p>This uses the <code>url</code> package, which allows us to create a <code>url.Values</code> struct that
-will contain the data we want to send to the endpoint.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">client <span style="font-weight:bold">:=</span> http.Client{
-        Timeout: time.<span style="color:#900;font-weight:bold">Duration</span>(<span style="color:#099">5</span> <span style="font-weight:bold">*</span> time.Second),
-}</code></pre></div>
-<p>We create an <code>http.Client</code> struct, from the <code>net/http</code> package, which we will
-use to issue HTTP calls. We also configure it slightly, so it's default timeout
-is set to 5 seconds.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">var</span> endpointURL = <span style="color:#b84">&#34;https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json&#34;</span></code></pre></div>
-<p>We'll define the endpoint as a variable - we'll also put a <code>%s</code> at the place of
+an SMS via Twilio is:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>https://api.twilio.com/2010-04-01/Accounts/ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/Messages.json</code></pre></td></tr></table></div></div><p>You can see its docs <a href="https://www.twilio.com/docs/sms/api/message-resource?code-sample=code-create-a-message&code-language=curl&code-sdk-version=json">here</a>. The
+request body will take three parameters:</p><ol><li><code>From</code> - the phone number that we send the SMS from</li><li><code>To</code> - the recipient number of the SMS</li><li><code>Body</code> - the content of the SMS</li></ol><p>Additionally, the endpoint uses basic authentication. This means that we will
+need to provide the Account SID and the Auth Token as a user and pass to it.</p><p>Let&rsquo;s start sketching out the program. First, let&rsquo;s create the URL encoded form
+that we will send to the API:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">3
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">4
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">5
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">6
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go>smsResponse := SendSMSResponse{}
+msgData := url.Values{}
+msgData.<span style=color:#0087ff>Set</span>(<span style=color:#00afaf>&#34;To&#34;</span>, to)
+msgData.<span style=color:#0087ff>Set</span>(<span style=color:#00afaf>&#34;From&#34;</span>, from)
+msgData.<span style=color:#0087ff>Set</span>(<span style=color:#00afaf>&#34;Body&#34;</span>, body)
+msgDataReader := *strings.<span style=color:#0087ff>NewReader</span>(msgData.<span style=color:#0087ff>Encode</span>())
+</code></pre></td></tr></table></div></div><p>This uses the <code>url</code> package, which allows us to create a <code>url.Values</code> struct that
+will contain the data we want to send to the endpoint.</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">3
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go>client := http.Client{
+        Timeout: time.<span style=color:#0087ff>Duration</span>(<span style=color:#00afaf>5</span> * time.Second),
+}
+</code></pre></td></tr></table></div></div><p>We create an <code>http.Client</code> struct, from the <code>net/http</code> package, which we will
+use to issue HTTP calls. We also configure it slightly, so it&rsquo;s default timeout
+is set to 5 seconds.</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#0087ff>var</span> endpointURL = <span style=color:#00afaf>&#34;https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json&#34;</span>
+</code></pre></td></tr></table></div></div><p>We&rsquo;ll define the endpoint as a variable - we&rsquo;ll also put a <code>%s</code> at the place of
 where the Account SID should be placed so we can use <code>fmt.Sprintf</code> to replace
-it when we issue the HTTP request.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">req, newReqErr <span style="font-weight:bold">:=</span> http.<span style="color:#900;font-weight:bold">NewRequest</span>(
-        <span style="color:#b84">&#34;POST&#34;</span>,
-        fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(endpointURL, accountSid),
-        <span style="font-weight:bold">&amp;</span>msgDataReader,
+it when we issue the HTTP request.</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">3
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">4
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">5
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">6
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">7
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">8
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go>req, newReqErr := http.<span style=color:#0087ff>NewRequest</span>(
+        <span style=color:#00afaf>&#34;POST&#34;</span>,
+        fmt.<span style=color:#0087ff>Sprintf</span>(endpointURL, accountSid),
+        &amp;msgDataReader,
 )
-<span style="font-weight:bold">if</span> newReqErr <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
-        <span style="font-weight:bold">return</span> smsResponse, newReqErr
-}</code></pre></div>
-<p>We create a new <code>net/http</code> <code>Request</code>, using the <code>http.NewRequest</code> constructor
-function. It takes three arguments:</p>
-<ol>
-<li>The HTTP verb (<code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>PATCH</code> or <code>DELETE</code>)</li>
-<li>The URL to be called</li>
-<li>The body of the request</li>
-</ol>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">req.Header.<span style="color:#900;font-weight:bold">Add</span>(<span style="color:#b84">&#34;Content-Type&#34;</span>, <span style="color:#b84">&#34;application/x-www-form-urlencoded&#34;</span>)</code></pre></div>
-<p>We will specify the <code>Content-Type</code> header to <code>x-www-form-urlencoded</code>, so
-Twilio's API understands what kind of content we are sending to it. In this
-case, we will be sending a URL encoded form.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">req.<span style="color:#900;font-weight:bold">SetBasicAuth</span>(accountSid, authToken)</code></pre></div>
-<p>Before we send the request, we will also have to set the basic authentication
-using the Account SID and the Auth Token.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">resp, requestErr <span style="font-weight:bold">:=</span> client.<span style="color:#900;font-weight:bold">Do</span>(req)</code></pre></div>
-<p>Now that we have all of the things in place, we can issue the request - by
+<span style=color:#5f8700>if</span> newReqErr != <span style=color:#d75f00>nil</span> {
+        <span style=color:#5f8700>return</span> smsResponse, newReqErr
+}
+</code></pre></td></tr></table></div></div><p>We create a new <code>net/http</code> <code>Request</code>, using the <code>http.NewRequest</code> constructor
+function. It takes three arguments:</p><ol><li>The HTTP verb (<code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>PATCH</code> or <code>DELETE</code>)</li><li>The URL to be called</li><li>The body of the request</li></ol><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go>req.Header.<span style=color:#0087ff>Add</span>(<span style=color:#00afaf>&#34;Content-Type&#34;</span>, <span style=color:#00afaf>&#34;application/x-www-form-urlencoded&#34;</span>)
+</code></pre></td></tr></table></div></div><p>We will specify the <code>Content-Type</code> header to <code>x-www-form-urlencoded</code>, so
+Twilio&rsquo;s API understands what kind of content we are sending to it. In this
+case, we will be sending a URL encoded form.</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go>req.<span style=color:#0087ff>SetBasicAuth</span>(accountSid, authToken)
+</code></pre></td></tr></table></div></div><p>Before we send the request, we will also have to set the basic authentication
+using the Account SID and the Auth Token.</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go>resp, requestErr := client.<span style=color:#0087ff>Do</span>(req)
+</code></pre></td></tr></table></div></div><p>Now that we have all of the things in place, we can issue the request - by
 using the <code>client.Do</code> function. This function will take the request and
 execute it, while returning a response. In case something goes bad, it will
-return an error as well.</p>
-<p>If we look at <a href="https://www.twilio.com/docs/sms/api/message-resource?code-sample=code-create-a-message&amp;code-language=curl&amp;code-sdk-version=json">the documentation of the
+return an error as well.</p><p>If we look at <a href="https://www.twilio.com/docs/sms/api/message-resource?code-sample=code-create-a-message&code-language=curl&code-sdk-version=json">the documentation of the
 endpoint</a>
-that we're calling, we can see an example of the response. In Golang, to
+that we&rsquo;re calling, we can see an example of the response. In Golang, to
 convert the response JSON to a meaningful <code>struct</code>, we have to create a
-<code>struct</code> that our program can decode from a JSON. There's a very nice tool for
-this purpose - called <a href="https://mholt.github.io/json-to-go/">&ldquo;JSON-to-Go&rdquo;</a>. By
+<code>struct</code> that our program can decode from a JSON. There&rsquo;s a very nice tool for
+this purpose - called <a href=https://mholt.github.io/json-to-go/>&ldquo;JSON-to-Go&rdquo;</a>. By
 pasting the example on the left hand side, this website will automatically
-generate a <code>struct</code> that we can use in our program.</p>
-
-
-
-
-
-
-
-
-
-
-
-
-<figure class="imagecaption">
-  <img class="caption" src="/running-late-sms-twilio-google-functions-golang/json-to-go-example.png" title="" alt="">
-  <span class="caption-text"></span>
-</figure>
-
-<p>This is what the actual <code>struct</code> will look like:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> SendSMSResponse <span style="font-weight:bold">struct</span> {
-	Sid                 <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;sid&#34;</span><span style="color:#b84">`</span>
-	DateCreated         <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;date_created&#34;</span><span style="color:#b84">`</span>
-	DateUpdated         <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;date_updated&#34;</span><span style="color:#b84">`</span>
-	DateSent            <span style="font-weight:bold">interface</span>{} <span style="color:#b84">`</span><span style="color:#b84">json:&#34;date_sent&#34;</span><span style="color:#b84">`</span>
-	AccountSid          <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;account_sid&#34;</span><span style="color:#b84">`</span>
-	To                  <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;to&#34;</span><span style="color:#b84">`</span>
-	From                <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;from&#34;</span><span style="color:#b84">`</span>
-	MessagingServiceSid <span style="font-weight:bold">interface</span>{} <span style="color:#b84">`</span><span style="color:#b84">json:&#34;messaging_service_sid&#34;</span><span style="color:#b84">`</span>
-	Body                <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;body&#34;</span><span style="color:#b84">`</span>
-	Status              <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;status&#34;</span><span style="color:#b84">`</span>
-	NumSegments         <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;num_segments&#34;</span><span style="color:#b84">`</span>
-	NumMedia            <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;num_media&#34;</span><span style="color:#b84">`</span>
-	Direction           <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;direction&#34;</span><span style="color:#b84">`</span>
-	APIVersion          <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;api_version&#34;</span><span style="color:#b84">`</span>
-	Price               <span style="font-weight:bold">interface</span>{} <span style="color:#b84">`</span><span style="color:#b84">json:&#34;price&#34;</span><span style="color:#b84">`</span>
-	PriceUnit           <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;price_unit&#34;</span><span style="color:#b84">`</span>
-	ErrorCode           <span style="font-weight:bold">interface</span>{} <span style="color:#b84">`</span><span style="color:#b84">json:&#34;error_code&#34;</span><span style="color:#b84">`</span>
-	ErrorMessage        <span style="font-weight:bold">interface</span>{} <span style="color:#b84">`</span><span style="color:#b84">json:&#34;error_message&#34;</span><span style="color:#b84">`</span>
-	URI                 <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;uri&#34;</span><span style="color:#b84">`</span>
-	SubresourceUris     <span style="font-weight:bold">struct</span> {
-		Media <span style="color:#458;font-weight:bold">string</span> <span style="color:#b84">`</span><span style="color:#b84">json:&#34;media&#34;</span><span style="color:#b84">`</span>
-	} <span style="color:#b84">`</span><span style="color:#b84">json:&#34;subresource_uris&#34;</span><span style="color:#b84">`</span>
-}</code></pre></div>
-<p>Having this in place, will allow us to take the body of the response from the
+generate a <code>struct</code> that we can use in our program.</p><figure class=imagecaption><img class=caption src=/running-late-sms-twilio-google-functions-golang/json-to-go-example.png title alt>
+<span class=caption-text></span></figure><p>This is what the actual <code>struct</code> will look like:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">15
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">16
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">17
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">18
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">19
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">20
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">21
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">22
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">23
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">24
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#0087ff>type</span> SendSMSResponse <span style=color:#0087ff>struct</span> {
+	Sid                 <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;sid&#34;`</span>
+	DateCreated         <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;date_created&#34;`</span>
+	DateUpdated         <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;date_updated&#34;`</span>
+	DateSent            <span style=color:#0087ff>interface</span>{} <span style=color:#00afaf>`json:&#34;date_sent&#34;`</span>
+	AccountSid          <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;account_sid&#34;`</span>
+	To                  <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;to&#34;`</span>
+	From                <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;from&#34;`</span>
+	MessagingServiceSid <span style=color:#0087ff>interface</span>{} <span style=color:#00afaf>`json:&#34;messaging_service_sid&#34;`</span>
+	Body                <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;body&#34;`</span>
+	Status              <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;status&#34;`</span>
+	NumSegments         <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;num_segments&#34;`</span>
+	NumMedia            <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;num_media&#34;`</span>
+	Direction           <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;direction&#34;`</span>
+	APIVersion          <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;api_version&#34;`</span>
+	Price               <span style=color:#0087ff>interface</span>{} <span style=color:#00afaf>`json:&#34;price&#34;`</span>
+	PriceUnit           <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;price_unit&#34;`</span>
+	ErrorCode           <span style=color:#0087ff>interface</span>{} <span style=color:#00afaf>`json:&#34;error_code&#34;`</span>
+	ErrorMessage        <span style=color:#0087ff>interface</span>{} <span style=color:#00afaf>`json:&#34;error_message&#34;`</span>
+	URI                 <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;uri&#34;`</span>
+	SubresourceUris     <span style=color:#0087ff>struct</span> {
+		Media <span style=color:#af0000>string</span> <span style=color:#00afaf>`json:&#34;media&#34;`</span>
+	} <span style=color:#00afaf>`json:&#34;subresource_uris&#34;`</span>
+}
+</code></pre></td></tr></table></div></div><p>Having this in place, will allow us to take the body of the response from the
 call to Twilio, decode it to a <code>SendSMSResponse</code> struct using the <code>encode/json</code>
-package:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">smsResponse <span style="font-weight:bold">:=</span> SendSMSResponse{}
-unmarshalErr <span style="font-weight:bold">:=</span> json.<span style="color:#900;font-weight:bold">NewDecoder</span>(resp.Body).<span style="color:#900;font-weight:bold">Decode</span>(<span style="font-weight:bold">&amp;</span>smsResponse)</code></pre></div>
-<p>That's about it when it comes to calling Twilio's API. We made a function that
+package:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go>smsResponse := SendSMSResponse{}
+unmarshalErr := json.<span style=color:#0087ff>NewDecoder</span>(resp.Body).<span style=color:#0087ff>Decode</span>(&amp;smsResponse)
+</code></pre></td></tr></table></div></div><p>That&rsquo;s about it when it comes to calling Twilio&rsquo;s API. We made a function that
 builds the payload send to the API, executes the call and parses the JSON in
-the response to a <code>struct</code> that we can use in our Go program.</p>
-<p><img src="/tell-team-running-late-google-home-google-functions-golang-twilio/developer_activity.png" alt=""></p>
-<h2 id="defining-the-function-to-call">Defining the function to call</h2>
-<p>Before we deploy our function to Google Cloud Platform, we need to finish up
-defining it and hooking it up to the code that calls the Twilio API.</p>
-<p>The name of our function will be <code>SendSMS</code>. Since the function will be invoked
+the response to a <code>struct</code> that we can use in our Go program.</p><p><img src=/tell-team-running-late-google-home-google-functions-golang-twilio/developer_activity.png alt></p><h2 id=defining-the-function-to-call>Defining the function to call<a hidden class=anchor aria-hidden=true href=#defining-the-function-to-call>#</a></h2><p>Before we deploy our function to Google Cloud Platform, we need to finish up
+defining it and hooking it up to the code that calls the Twilio API.</p><p>The name of our function will be <code>SendSMS</code>. Since the function will be invoked
 via HTTP call, it will have to take a request and response as arguments. For
-now, it will return a simple JSON as a response.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> app
+now, it will return a simple JSON as a response.</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">15
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">16
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">17
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">18
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">19
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">20
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">21
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">22
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">23
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">24
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">25
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">26
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">27
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#d75f00>package</span> app
 
-<span style="font-weight:bold">import</span> (
-	<span style="color:#b84">&#34;encoding/json&#34;</span>
-	<span style="color:#b84">&#34;fmt&#34;</span>
-	<span style="color:#b84">&#34;net/http&#34;</span>
+<span style=color:#d75f00>import</span> (
+	<span style=color:#00afaf>&#34;encoding/json&#34;</span>
+	<span style=color:#00afaf>&#34;fmt&#34;</span>
+	<span style=color:#00afaf>&#34;net/http&#34;</span>
 )
 
-<span style="font-weight:bold">type</span> Response <span style="font-weight:bold">struct</span> {
-	Body <span style="color:#458;font-weight:bold">string</span> <span style="color:#b84">`</span><span style="color:#b84">json:&#34;body&#34;</span><span style="color:#b84">`</span>
+<span style=color:#0087ff>type</span> Response <span style=color:#0087ff>struct</span> {
+	Body <span style=color:#af0000>string</span> <span style=color:#00afaf>`json:&#34;body&#34;`</span>
 }
 
-<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">SendSMS</span>(w http.ResponseWriter, r <span style="font-weight:bold">*</span>http.Request) {
-	twilioResponse, err <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">sendRequest</span>(
-		<span style="color:#b84">&#34;PUT YOUR NUMBER HERE&#34;</span>,
-		<span style="color:#b84">&#34;Hey Alex, I am running late today, can we please postpone the standup a bit? Thanks! Ilija&#34;</span>,
+<span style=color:#0087ff>func</span> <span style=color:#0087ff>SendSMS</span>(w http.ResponseWriter, r *http.Request) {
+	twilioResponse, err := <span style=color:#0087ff>sendRequest</span>(
+		<span style=color:#00afaf>&#34;PUT YOUR NUMBER HERE&#34;</span>,
+		<span style=color:#00afaf>&#34;Hey Alex, I am running late today, can we please postpone the standup a bit? Thanks! Ilija&#34;</span>,
 	)
-	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
-		json.<span style="color:#900;font-weight:bold">NewEncoder</span>(w).<span style="color:#900;font-weight:bold">Encode</span>(Response{
-			Body: <span style="color:#b84">&#34;Something bad happened, please try again.&#34;</span>,
+	<span style=color:#5f8700>if</span> err != <span style=color:#d75f00>nil</span> {
+		json.<span style=color:#0087ff>NewEncoder</span>(w).<span style=color:#0087ff>Encode</span>(Response{
+			Body: <span style=color:#00afaf>&#34;Something bad happened, please try again.&#34;</span>,
 		})
-		<span style="font-weight:bold">return</span>
+		<span style=color:#5f8700>return</span>
 	}
-	json.<span style="color:#900;font-weight:bold">NewEncoder</span>(w).<span style="color:#900;font-weight:bold">Encode</span>(Response{
-		Body: fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Message %s&#34;</span>, twilioResponse.Status),
+	json.<span style=color:#0087ff>NewEncoder</span>(w).<span style=color:#0087ff>Encode</span>(Response{
+		Body: fmt.<span style=color:#0087ff>Sprintf</span>(<span style=color:#00afaf>&#34;Message %s&#34;</span>, twilioResponse.Status),
 	})
-}</code></pre></div>
-<p>To make this work, we are also missing the Twilio API part. Before we go into
-that, let's see what this function does:</p>
-<ol>
-<li>Uses the <code>sendRequest</code> function from our Twilio API integration. This
-function takes the body of the SMS and the receiver's number as arguments.</li>
-<li>The <code>sendRequest</code> function might return an error. If it does, we return an
-error message in the response JSON.</li>
-<li>If the function returns no errors, we will send a JSON representing a
-successful scheduling of an SMS on Twilio's side.</li>
-</ol>
-<p>Let's see the full integration with Twilio's API:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">package</span> app
+}
+</code></pre></td></tr></table></div></div><p>To make this work, we are also missing the Twilio API part. Before we go into
+that, let&rsquo;s see what this function does:</p><ol><li>Uses the <code>sendRequest</code> function from our Twilio API integration. This
+function takes the body of the SMS and the receiver&rsquo;s number as arguments.</li><li>The <code>sendRequest</code> function might return an error. If it does, we return an
+error message in the response JSON.</li><li>If the function returns no errors, we will send a JSON representing a
+successful scheduling of an SMS on Twilio&rsquo;s side.</li></ol><p>Let&rsquo;s see the full integration with Twilio&rsquo;s API:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">15
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">16
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">17
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">18
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">19
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">20
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">21
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">22
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">23
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">24
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">25
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">26
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">27
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">28
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">29
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">30
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">31
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">32
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">33
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">34
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">35
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">36
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">37
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">38
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">39
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">40
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">41
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">42
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">43
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">44
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">45
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">46
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">47
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">48
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">49
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">50
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">51
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">52
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">53
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">54
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">55
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">56
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">57
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">58
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">59
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">60
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">61
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">62
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">63
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">64
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">65
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">66
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">67
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">68
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">69
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">70
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">71
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">72
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">73
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">74
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">75
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">76
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">77
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">78
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">79
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#d75f00>package</span> app
 
-<span style="font-weight:bold">import</span> (
-	<span style="color:#b84">&#34;encoding/json&#34;</span>
-	<span style="color:#b84">&#34;fmt&#34;</span>
-	<span style="color:#b84">&#34;net/http&#34;</span>
-	<span style="color:#b84">&#34;net/url&#34;</span>
-	<span style="color:#b84">&#34;os&#34;</span>
-	<span style="color:#b84">&#34;strings&#34;</span>
-	<span style="color:#b84">&#34;time&#34;</span>
+<span style=color:#d75f00>import</span> (
+	<span style=color:#00afaf>&#34;encoding/json&#34;</span>
+	<span style=color:#00afaf>&#34;fmt&#34;</span>
+	<span style=color:#00afaf>&#34;net/http&#34;</span>
+	<span style=color:#00afaf>&#34;net/url&#34;</span>
+	<span style=color:#00afaf>&#34;os&#34;</span>
+	<span style=color:#00afaf>&#34;strings&#34;</span>
+	<span style=color:#00afaf>&#34;time&#34;</span>
 )
 
-<span style="font-weight:bold">type</span> SendSMSResponse <span style="font-weight:bold">struct</span> {
-	Sid                 <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;sid&#34;</span><span style="color:#b84">`</span>
-	DateCreated         <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;date_created&#34;</span><span style="color:#b84">`</span>
-	DateUpdated         <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;date_updated&#34;</span><span style="color:#b84">`</span>
-	DateSent            <span style="font-weight:bold">interface</span>{} <span style="color:#b84">`</span><span style="color:#b84">json:&#34;date_sent&#34;</span><span style="color:#b84">`</span>
-	AccountSid          <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;account_sid&#34;</span><span style="color:#b84">`</span>
-	To                  <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;to&#34;</span><span style="color:#b84">`</span>
-	From                <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;from&#34;</span><span style="color:#b84">`</span>
-	MessagingServiceSid <span style="font-weight:bold">interface</span>{} <span style="color:#b84">`</span><span style="color:#b84">json:&#34;messaging_service_sid&#34;</span><span style="color:#b84">`</span>
-	Body                <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;body&#34;</span><span style="color:#b84">`</span>
-	Status              <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;status&#34;</span><span style="color:#b84">`</span>
-	NumSegments         <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;num_segments&#34;</span><span style="color:#b84">`</span>
-	NumMedia            <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;num_media&#34;</span><span style="color:#b84">`</span>
-	Direction           <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;direction&#34;</span><span style="color:#b84">`</span>
-	APIVersion          <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;api_version&#34;</span><span style="color:#b84">`</span>
-	Price               <span style="font-weight:bold">interface</span>{} <span style="color:#b84">`</span><span style="color:#b84">json:&#34;price&#34;</span><span style="color:#b84">`</span>
-	PriceUnit           <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;price_unit&#34;</span><span style="color:#b84">`</span>
-	ErrorCode           <span style="font-weight:bold">interface</span>{} <span style="color:#b84">`</span><span style="color:#b84">json:&#34;error_code&#34;</span><span style="color:#b84">`</span>
-	ErrorMessage        <span style="font-weight:bold">interface</span>{} <span style="color:#b84">`</span><span style="color:#b84">json:&#34;error_message&#34;</span><span style="color:#b84">`</span>
-	URI                 <span style="color:#458;font-weight:bold">string</span>      <span style="color:#b84">`</span><span style="color:#b84">json:&#34;uri&#34;</span><span style="color:#b84">`</span>
-	SubresourceUris     <span style="font-weight:bold">struct</span> {
-		Media <span style="color:#458;font-weight:bold">string</span> <span style="color:#b84">`</span><span style="color:#b84">json:&#34;media&#34;</span><span style="color:#b84">`</span>
-	} <span style="color:#b84">`</span><span style="color:#b84">json:&#34;subresource_uris&#34;</span><span style="color:#b84">`</span>
+<span style=color:#0087ff>type</span> SendSMSResponse <span style=color:#0087ff>struct</span> {
+	Sid                 <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;sid&#34;`</span>
+	DateCreated         <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;date_created&#34;`</span>
+	DateUpdated         <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;date_updated&#34;`</span>
+	DateSent            <span style=color:#0087ff>interface</span>{} <span style=color:#00afaf>`json:&#34;date_sent&#34;`</span>
+	AccountSid          <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;account_sid&#34;`</span>
+	To                  <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;to&#34;`</span>
+	From                <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;from&#34;`</span>
+	MessagingServiceSid <span style=color:#0087ff>interface</span>{} <span style=color:#00afaf>`json:&#34;messaging_service_sid&#34;`</span>
+	Body                <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;body&#34;`</span>
+	Status              <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;status&#34;`</span>
+	NumSegments         <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;num_segments&#34;`</span>
+	NumMedia            <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;num_media&#34;`</span>
+	Direction           <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;direction&#34;`</span>
+	APIVersion          <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;api_version&#34;`</span>
+	Price               <span style=color:#0087ff>interface</span>{} <span style=color:#00afaf>`json:&#34;price&#34;`</span>
+	PriceUnit           <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;price_unit&#34;`</span>
+	ErrorCode           <span style=color:#0087ff>interface</span>{} <span style=color:#00afaf>`json:&#34;error_code&#34;`</span>
+	ErrorMessage        <span style=color:#0087ff>interface</span>{} <span style=color:#00afaf>`json:&#34;error_message&#34;`</span>
+	URI                 <span style=color:#af0000>string</span>      <span style=color:#00afaf>`json:&#34;uri&#34;`</span>
+	SubresourceUris     <span style=color:#0087ff>struct</span> {
+		Media <span style=color:#af0000>string</span> <span style=color:#00afaf>`json:&#34;media&#34;`</span>
+	} <span style=color:#00afaf>`json:&#34;subresource_uris&#34;`</span>
 }
 
-<span style="font-weight:bold">var</span> (
-	endpointURL = <span style="color:#b84">&#34;https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json&#34;</span>
-	accountSid  = os.<span style="color:#900;font-weight:bold">Getenv</span>(<span style="color:#b84">&#34;TWILIO_ACCOUNT_SID&#34;</span>)
-	authToken   = os.<span style="color:#900;font-weight:bold">Getenv</span>(<span style="color:#b84">&#34;TWILIO_AUTH_TOKEN&#34;</span>)
-	from        = os.<span style="color:#900;font-weight:bold">Getenv</span>(<span style="color:#b84">&#34;TWILIO_FROM_PHONE&#34;</span>)
+<span style=color:#0087ff>var</span> (
+	endpointURL = <span style=color:#00afaf>&#34;https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json&#34;</span>
+	accountSid  = os.<span style=color:#0087ff>Getenv</span>(<span style=color:#00afaf>&#34;TWILIO_ACCOUNT_SID&#34;</span>)
+	authToken   = os.<span style=color:#0087ff>Getenv</span>(<span style=color:#00afaf>&#34;TWILIO_AUTH_TOKEN&#34;</span>)
+	from        = os.<span style=color:#0087ff>Getenv</span>(<span style=color:#00afaf>&#34;TWILIO_FROM_PHONE&#34;</span>)
 )
 
-<span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">sendRequest</span>(to <span style="color:#458;font-weight:bold">string</span>, body <span style="color:#458;font-weight:bold">string</span>) (SendSMSResponse, <span style="color:#458;font-weight:bold">error</span>) {
-	msgData <span style="font-weight:bold">:=</span> url.Values{}
-	msgData.<span style="color:#900;font-weight:bold">Set</span>(<span style="color:#b84">&#34;To&#34;</span>, to)
-	msgData.<span style="color:#900;font-weight:bold">Set</span>(<span style="color:#b84">&#34;From&#34;</span>, from)
-	msgData.<span style="color:#900;font-weight:bold">Set</span>(<span style="color:#b84">&#34;Body&#34;</span>, body)
-	msgDataReader <span style="font-weight:bold">:=</span> <span style="font-weight:bold">*</span>strings.<span style="color:#900;font-weight:bold">NewReader</span>(msgData.<span style="color:#900;font-weight:bold">Encode</span>())
+<span style=color:#0087ff>func</span> <span style=color:#0087ff>sendRequest</span>(to <span style=color:#af0000>string</span>, body <span style=color:#af0000>string</span>) (SendSMSResponse, <span style=color:#af0000>error</span>) {
+	msgData := url.Values{}
+	msgData.<span style=color:#0087ff>Set</span>(<span style=color:#00afaf>&#34;To&#34;</span>, to)
+	msgData.<span style=color:#0087ff>Set</span>(<span style=color:#00afaf>&#34;From&#34;</span>, from)
+	msgData.<span style=color:#0087ff>Set</span>(<span style=color:#00afaf>&#34;Body&#34;</span>, body)
+	msgDataReader := *strings.<span style=color:#0087ff>NewReader</span>(msgData.<span style=color:#0087ff>Encode</span>())
 
-	client <span style="font-weight:bold">:=</span> http.Client{
-		Timeout: time.<span style="color:#900;font-weight:bold">Duration</span>(<span style="color:#099">5</span> <span style="font-weight:bold">*</span> time.Second),
+	client := http.Client{
+		Timeout: time.<span style=color:#0087ff>Duration</span>(<span style=color:#00afaf>5</span> * time.Second),
 	}
-	req, newReqErr <span style="font-weight:bold">:=</span> http.<span style="color:#900;font-weight:bold">NewRequest</span>(
-		<span style="color:#b84">&#34;POST&#34;</span>,
-		fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(endpointURL, accountSid),
-		<span style="font-weight:bold">&amp;</span>msgDataReader,
+	req, newReqErr := http.<span style=color:#0087ff>NewRequest</span>(
+		<span style=color:#00afaf>&#34;POST&#34;</span>,
+		fmt.<span style=color:#0087ff>Sprintf</span>(endpointURL, accountSid),
+		&amp;msgDataReader,
 	)
-	<span style="font-weight:bold">if</span> newReqErr <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
-		<span style="font-weight:bold">return</span> smsResponse, newReqErr
+	<span style=color:#5f8700>if</span> newReqErr != <span style=color:#d75f00>nil</span> {
+		<span style=color:#5f8700>return</span> smsResponse, newReqErr
 	}
-	req.Header.<span style="color:#900;font-weight:bold">Add</span>(<span style="color:#b84">&#34;Content-Type&#34;</span>, <span style="color:#b84">&#34;application/x-www-form-urlencoded&#34;</span>)
-	req.<span style="color:#900;font-weight:bold">SetBasicAuth</span>(accountSid, authToken)
+	req.Header.<span style=color:#0087ff>Add</span>(<span style=color:#00afaf>&#34;Content-Type&#34;</span>, <span style=color:#00afaf>&#34;application/x-www-form-urlencoded&#34;</span>)
+	req.<span style=color:#0087ff>SetBasicAuth</span>(accountSid, authToken)
 
-	resp, requestErr <span style="font-weight:bold">:=</span> client.<span style="color:#900;font-weight:bold">Do</span>(req)
-	<span style="font-weight:bold">defer</span> req.Body.<span style="color:#900;font-weight:bold">Close</span>()
-	<span style="font-weight:bold">if</span> requestErr <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
-		<span style="font-weight:bold">return</span> smsResponse, requestErr
-	}
-
-	smsResponse <span style="font-weight:bold">:=</span> SendSMSResponse{}
-	decodeErr <span style="font-weight:bold">:=</span> json.<span style="color:#900;font-weight:bold">NewDecoder</span>(resp.Body).<span style="color:#900;font-weight:bold">Decode</span>(<span style="font-weight:bold">&amp;</span>smsResponse)
-	<span style="font-weight:bold">if</span> decodeErr <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
-		<span style="font-weight:bold">return</span> smsResponse, decodeErr
+	resp, requestErr := client.<span style=color:#0087ff>Do</span>(req)
+	<span style=color:#5f8700>defer</span> req.Body.<span style=color:#0087ff>Close</span>()
+	<span style=color:#5f8700>if</span> requestErr != <span style=color:#d75f00>nil</span> {
+		<span style=color:#5f8700>return</span> smsResponse, requestErr
 	}
 
-	<span style="font-weight:bold">return</span> smsResponse, <span style="font-weight:bold">nil</span>
-}</code></pre></div>
-<p>The differences from the code in this snippet and the code from the previous
-section are:</p>
-<ol>
-<li>We define the Account SID, the Auth Token and the source phone number by
+	smsResponse := SendSMSResponse{}
+	decodeErr := json.<span style=color:#0087ff>NewDecoder</span>(resp.Body).<span style=color:#0087ff>Decode</span>(&amp;smsResponse)
+	<span style=color:#5f8700>if</span> decodeErr != <span style=color:#d75f00>nil</span> {
+		<span style=color:#5f8700>return</span> smsResponse, decodeErr
+	}
+
+	<span style=color:#5f8700>return</span> smsResponse, <span style=color:#d75f00>nil</span>
+}
+</code></pre></td></tr></table></div></div><p>The differences from the code in this snippet and the code from the previous
+section are:</p><ol><li>We define the Account SID, the Auth Token and the source phone number by
 taking them from the environment variables. In Golang, one can do this using
-<code>os.Getenv('NAME_OF_VARIABLE')</code>.</li>
-<li>We take care of any errors that might occur before and during sending the
-HTTP request to Twilio</li>
-</ol>
-<p>Take note that both of the files are part of the same package - <code>app</code>. This is
-mandatory, so the function <code>SendSMS</code> can invoke the <code>sendRequest</code> function.</p>
-<p>Now that we have both the Twilio API integration and the <code>SendSMS</code> functions,
-let's see how we can deploy them to GCP.</p>
-<p><img src="/tell-team-running-late-google-home-google-functions-golang-twilio/going_up.png" alt=""></p>
-<h2 id="running-our-code-on-google-cloud-platform">Running our code on Google Cloud Platform</h2>
-<p>Before we go on to deploy the function, there are some basics about Cloud
+<code>os.Getenv('NAME_OF_VARIABLE')</code>.</li><li>We take care of any errors that might occur before and during sending the
+HTTP request to Twilio</li></ol><p>Take note that both of the files are part of the same package - <code>app</code>. This is
+mandatory, so the function <code>SendSMS</code> can invoke the <code>sendRequest</code> function.</p><p>Now that we have both the Twilio API integration and the <code>SendSMS</code> functions,
+let&rsquo;s see how we can deploy them to GCP.</p><p><img src=/tell-team-running-late-google-home-google-functions-golang-twilio/going_up.png alt></p><h2 id=running-our-code-on-google-cloud-platform>Running our code on Google Cloud Platform<a hidden class=anchor aria-hidden=true href=#running-our-code-on-google-cloud-platform>#</a></h2><p>Before we go on to deploy the function, there are some basics about Cloud
 Functions that are good to know. If you have used Cloud Function or AWS Lambda,
 you might know most of the things I am about to explain. If this is the case,
-you can skip this and go to the section on deploying the function.</p>
-<p>If you look at the main page of the documentation for the Cloud Functions, this
-is the explanation you'll find:</p>
-<blockquote>
-<p>Google Cloud Functions is a lightweight compute solution for developers to
+you can skip this and go to the section on deploying the function.</p><p>If you look at the main page of the documentation for the Cloud Functions, this
+is the explanation you&rsquo;ll find:</p><blockquote><p>Google Cloud Functions is a lightweight compute solution for developers to
 create single-purpose, stand-alone functions that respond to Cloud events
-without the need to manage a server or runtime environment.</p>
-</blockquote>
-<p>Let's break this apart, so we get a better understanding of what Google Cloud
-Functions are.</p>
-<p>Functions are lightweight and single purpose. As you already saw in the code
-above, a Google Cloud Function is really just a function.  Being this simple,
-they do not need any complex setup or configurations.</p>
-<p>Functions are stand-alone and respond to Cloud events. When Google Cloud
-receives a certain event (or a trigger), it will invoke the function.</p>
-<p>Google Cloud Platform supports two types of functions:</p>
-<ol>
-<li>HTTP functions - functions invoked when an HTTP trigger is received</li>
-<li>Background functions - functions invoked when an event is received. The
-type of events and their source can vary.</li>
-</ol>
-<p>The last part of the definition of GC Functions is the lack of need to manage a
+without the need to manage a server or runtime environment.</p></blockquote><p>Let&rsquo;s break this apart, so we get a better understanding of what Google Cloud
+Functions are.</p><p>Functions are lightweight and single purpose. As you already saw in the code
+above, a Google Cloud Function is really just a function. Being this simple,
+they do not need any complex setup or configurations.</p><p>Functions are stand-alone and respond to Cloud events. When Google Cloud
+receives a certain event (or a trigger), it will invoke the function.</p><p>Google Cloud Platform supports two types of functions:</p><ol><li>HTTP functions - functions invoked when an HTTP trigger is received</li><li>Background functions - functions invoked when an event is received. The
+type of events and their source can vary.</li></ol><p>The last part of the definition of GC Functions is the lack of need to manage a
 server or runtime environment. In other words, this explains that functions are
 serverless. This is a side-effect of the nature of Cloud Functions. The runtime
 is made opaque by the vendor (Google). The only thing we need to configure is
-the name of the function. Google Cloud Platform takes care of the rest.</p>
-<p>Now, serverless doesn't literally mean an absence of servers. In fact, there
+the name of the function. Google Cloud Platform takes care of the rest.</p><p>Now, serverless doesn&rsquo;t literally mean an absence of servers. In fact, there
 are servers that create the cloud. And since Cloud Functions run in the cloud,
-they run on Google's servers. In this context, serverless means that we, as
-developers, don't need to care about the infrastructure where our code is being
-run on.</p>
-<p>We will not delve any more into serverless or Google Cloud Functions basics. If
-you want to read more, I recommend <a href="https://cloud.google.com/functions/docs">the
-documentation</a> - it's concise and
-helpful.</p>
-<h3 id="deploying-the-google-cloud-function">Deploying the Google Cloud Function</h3>
-<p>Assuming that you have your <code>gcloud</code> CLI tool installed, to deploy the function
-it's just one simple command:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">gcloud functions deploy SendSMS <span style="color:#b84">\
-</span><span style="color:#b84"></span>  --runtime go111 <span style="color:#b84">\
-</span><span style="color:#b84"></span>  --trigger-http <span style="color:#b84">\
-</span><span style="color:#b84"></span>  --region<span style="font-weight:bold">=</span>europe-west1</code></pre></div>
-<p>Before we continue, let's understand the <code>deploy</code> command that we'll run. After
-the <code>deploy</code> keyword, we supply the function name (in our example it's
+they run on Google&rsquo;s servers. In this context, serverless means that we, as
+developers, don&rsquo;t need to care about the infrastructure where our code is being
+run on.</p><p>We will not delve any more into serverless or Google Cloud Functions basics. If
+you want to read more, I recommend <a href=https://cloud.google.com/functions/docs>the
+documentation</a> - it&rsquo;s concise and
+helpful.</p><h3 id=deploying-the-google-cloud-function>Deploying the Google Cloud Function<a hidden class=anchor aria-hidden=true href=#deploying-the-google-cloud-function>#</a></h3><p>Assuming that you have your <code>gcloud</code> CLI tool installed, to deploy the function
+it&rsquo;s just one simple command:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">3
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">4
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>gcloud functions deploy SendSMS <span style=color:#af0000>\
+</span><span style=color:#af0000></span>  --runtime go111 <span style=color:#af0000>\
+</span><span style=color:#af0000></span>  --trigger-http <span style=color:#af0000>\
+</span><span style=color:#af0000></span>  --region=europe-west1</code></pre></td></tr></table></div></div><p>Before we continue, let&rsquo;s understand the <code>deploy</code> command that we&rsquo;ll run. After
+the <code>deploy</code> keyword, we supply the function name (in our example it&rsquo;s
 <code>SendSMS</code>). After that, with the <code>--runtime</code> flag we tell GCP that our function
-will run in Go 1.11 (that's the <code>go111</code> part). Then, we tell GCP that we want
+will run in Go 1.11 (that&rsquo;s the <code>go111</code> part). Then, we tell GCP that we want
 our function to be an HTTP function – meaning it will get triggered via a HTTP
 request. Lastly, in our example I set the <code>--region</code>, which is the Cloud region
 where our function will be deployed to. Because my physical location is in
-western Europe, I prefer the <code>europe-west1</code> region.</p>
-<p>Once we run it, the output will be something like this:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">› gcloud functions deploy SendSMS --runtime go111 --trigger-http --region=europe-west1
+western Europe, I prefer the <code>europe-west1</code> region.</p><p>Once we run it, the output will be something like this:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">15
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">16
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>› gcloud functions deploy SendSMS --runtime go111 --trigger-http --region=europe-west1
 Deploying function (may take a while - up to 2 minutes)...done.
 availableMemoryMb: 256
 entryPoint: SendSMS
@@ -495,106 +458,74 @@ sourceUploadUrl: https://storage.googleapis.com/gcf-upload-europe-west1-...
 status: ACTIVE
 timeout: 60s
 updateTime: &#39;2019-03-17T22:54:03Z&#39;
-versionId: &#39;2&#39;</code></pre></div>
-<p>Now, the output is quite detailed here. We can see the various settings the
+versionId: &#39;2&#39;</code></pre></td></tr></table></div></div><p>Now, the output is quite detailed here. We can see the various settings the
 function has, from the available memory, the HTTPS trigger URL, the name of the
-function and so on.</p>
-<p>But, what's most important for us is to try and trigger the function. There are
+function and so on.</p><p>But, what&rsquo;s most important for us is to try and trigger the function. There are
 two ways to do this: via a <code>cURL</code> request to the <code>httpsTrigger</code> endpoint, or by
-using a <code>gcloud</code> command. The <code>gcloud</code> command to trigger the function is:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">gcloud functions call NAME OPTS</code></pre></div>
-<p>Let's run it:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">› gcloud functions call SendSMS --region<span style="font-weight:bold">=</span>europe-west1
+using a <code>gcloud</code> command. The <code>gcloud</code> command to trigger the function is:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>gcloud functions call NAME OPTS</code></pre></td></tr></table></div></div><p>Let&rsquo;s run it:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">3
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">4
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>› gcloud functions call SendSMS --region=europe-west1
 executionId: uqkmybjc9xab
 result: |
-  <span style="font-weight:bold">{</span><span style="color:#b84">&#34;body&#34;</span>: <span style="color:#b84">&#34;Something bad hapenned, please try again.&#34;</span><span style="font-weight:bold">}</span></code></pre></div>
-<style type="text/css">
-.notice{
-    padding:18px;
-    line-height:24px;
-    margin-bottom:24px;
-    border-radius:4px;
-    color:#444;
-    background:#e7f2fa
-}
-.notice p:last-child{
-    margin-bottom:0
-}
-.notice-title{
-    margin:-18px -18px 12px;
-    padding:4px 18px;
-    border-radius:4px 4px 0 0;
-    font-weight:700;
-    color:#fff;
-    background:#6ab0de
-}
-.notice-title:before{
-    margin-right:8px;
-    font-family:"Font Awesome 5 Free",FontAwesome;
-    font-weight:400
-}
-.notice.warning .notice-title{
-    background:rgba(217,83,79,.9)
-}
-.notice.warning{
-    background:#fae2e2
-}
-.notice.info .notice-title{
-    background:#f0b37e
-}
-.notice.info{
-    background:#fff2db
-}
-.notice.note .notice-title{
-    background:#6ab0de
-}
-.notice.note{
-    background:#e7f2fA
-}
-.notice.tip .notice-title{
-    background:rgba(92,184,92,.8)
-}
-.notice.tip{
-    background:#e6f9e6
-}
-</style><div class="notice info"  id="Default region" >
-<p class="first notice-title">Info</p><p>Supplying the <code>--region</code> flag every time you run any command for your Cloud
-Function can be annoying. You can set your default region using:</p>
-<p><code>gcloud config set compute/region europe-west1</code></p></div>
-
-<p>Wait, what? Well, it seems like something went wrong. In fact, the function
+  {<span style=color:#00afaf>&#34;body&#34;</span>: <span style=color:#00afaf>&#34;Something bad hapenned, please try again.&#34;</span>}</code></pre></td></tr></table></div></div><style type=text/css>.notice{padding:18px;line-height:24px;margin-bottom:24px;border-radius:4px;color:#444;background:#e7f2fa}.notice p:last-child{margin-bottom:0}.notice-title{margin:-18px -18px 12px;padding:4px 18px;border-radius:4px 4px 0 0;font-weight:700;color:#fff;background:#6ab0de}.notice-title:before{margin-right:8px;font-family:"font awesome 5 free",FontAwesome;font-weight:400}.notice.warning .notice-title{background:rgba(217,83,79,.9)}.notice.warning{background:#fae2e2}.notice.info .notice-title{background:#f0b37e}.notice.info{background:#fff2db}.notice.note .notice-title{background:#6ab0de}.notice.note{background:#e7f2fa}.notice.tip .notice-title{background:rgba(92,184,92,.8)}.notice.tip{background:#e6f9e6}</style><div class="notice info" id="Default region"><p class="first notice-title">Info</p><p>Supplying the <code>--region</code> flag every time you run any command for your Cloud
+Function can be annoying. You can set your default region using:</p><p><code>gcloud config set compute/region europe-west1</code></p></div><p>Wait, what? Well, it seems like something went wrong. In fact, the function
 worked fine. But it seems that something went wrong when sending the SMS via
-Twilio.</p>
-<p>If we go back to the Twilio integration, we will notice the following lines:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">accountSid  = os.<span style="color:#900;font-weight:bold">Getenv</span>(<span style="color:#b84">&#34;TWILIO_ACCOUNT_SID&#34;</span>)
-authToken   = os.<span style="color:#900;font-weight:bold">Getenv</span>(<span style="color:#b84">&#34;TWILIO_AUTH_TOKEN&#34;</span>)
-from        = os.<span style="color:#900;font-weight:bold">Getenv</span>(<span style="color:#b84">&#34;TWILIO_FROM_PHONE&#34;</span>)</code></pre></div>
-<p>These lines expect that the following values will be present as environment
+Twilio.</p><p>If we go back to the Twilio integration, we will notice the following lines:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">3
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go>accountSid  = os.<span style=color:#0087ff>Getenv</span>(<span style=color:#00afaf>&#34;TWILIO_ACCOUNT_SID&#34;</span>)
+authToken   = os.<span style=color:#0087ff>Getenv</span>(<span style=color:#00afaf>&#34;TWILIO_AUTH_TOKEN&#34;</span>)
+from        = os.<span style=color:#0087ff>Getenv</span>(<span style=color:#00afaf>&#34;TWILIO_FROM_PHONE&#34;</span>)
+</code></pre></td></tr></table></div></div><p>These lines expect that the following values will be present as environment
 variables. This means that we need to set the environment variables for our
-function, so it can authenticate with Twilio and send SMS.</p>
-<p>Again we can do this via the web UI or via the command line. Let's use the
-<code>gcloud</code> CLI tool again:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">gcloud functions deploy SendSMS <span style="color:#b84">\
-</span><span style="color:#b84"></span>--set-env-vars <span style="color:#b84">\
-</span><span style="color:#b84"></span><span style="color:#008080">TWILIO_ACCOUNT_SID</span><span style="font-weight:bold">=</span>ACc83f0d68d72e2340ef318fdbcbc7de48,<span style="color:#b84">\
-</span><span style="color:#b84"></span><span style="color:#008080">TWILIO_AUTH_TOKEN</span><span style="font-weight:bold">=</span>e405742cdf254da46eff98c61065bb5e,<span style="color:#b84">\
-</span><span style="color:#b84"></span><span style="color:#008080">TWILIO_FROM_PHONE</span><span style="font-weight:bold">=</span>+3197014200568 <span style="color:#b84">\
-</span><span style="color:#b84"></span>--trigger-http <span style="color:#b84">\
-</span><span style="color:#b84"></span>--region<span style="font-weight:bold">=</span>europe-west1</code></pre></div>
-<p>What's cool about serverless functions is that they're immutable. This means
-that every change, regardless if it's configuration, or an actual code change,
+function, so it can authenticate with Twilio and send SMS.</p><p>Again we can do this via the web UI or via the command line. Let&rsquo;s use the
+<code>gcloud</code> CLI tool again:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">3
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">4
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">5
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">6
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">7
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>gcloud functions deploy SendSMS <span style=color:#af0000>\
+</span><span style=color:#af0000></span>--set-env-vars <span style=color:#af0000>\
+</span><span style=color:#af0000></span><span style=color:#0087ff>TWILIO_ACCOUNT_SID</span>=ACc83f0d68d72e2340ef318fdbcbc7de48,<span style=color:#af0000>\
+</span><span style=color:#af0000></span><span style=color:#0087ff>TWILIO_AUTH_TOKEN</span>=e405742cdf254da46eff98c61065bb5e,<span style=color:#af0000>\
+</span><span style=color:#af0000></span><span style=color:#0087ff>TWILIO_FROM_PHONE</span>=+3197014200568 <span style=color:#af0000>\
+</span><span style=color:#af0000></span>--trigger-http <span style=color:#af0000>\
+</span><span style=color:#af0000></span>--region=europe-west1</code></pre></td></tr></table></div></div><p>What&rsquo;s cool about serverless functions is that they&rsquo;re immutable. This means
+that every change, regardless if it&rsquo;s configuration, or an actual code change,
 requires a deploy. As you can notice in the command above, with the flag
 <code>--set--env-vars</code> we can set multiple environment variables separated by a
 comma. Of course, we have to supply the trigger flag (<code>--trigger-http</code>) and
-(optionally) the region flag (<code>--region</code>).</p>
-<p>The output of the deploy will look like:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">Deploying <span style="font-weight:bold">function</span> <span style="font-weight:bold">(</span>may take a <span style="font-weight:bold">while</span> - up to <span style="color:#099">2</span> minutes<span style="font-weight:bold">)</span>...done.
-availableMemoryMb: <span style="color:#099">256</span>
+(optionally) the region flag (<code>--region</code>).</p><p>The output of the deploy will look like:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">15
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">16
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">17
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">18
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">19
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>Deploying <span style=color:#5f8700>function</span> (may take a <span style=color:#5f8700>while</span> - up to <span style=color:#00afaf>2</span> minutes)...done.
+availableMemoryMb: <span style=color:#00afaf>256</span>
 entryPoint: SendSMS
 environmentVariables:
   TWILIO_ACCOUNT_SID: ACc83f0d68d72e183bbdf318fdbcbc7de48
   TWILIO_AUTH_TOKEN: e405742cdf254duy23n98c61065bb5e
-  TWILIO_FROM_PHONE: <span style="color:#b84">&#39;+3197014200568&#39;</span>
+  TWILIO_FROM_PHONE: <span style=color:#00afaf>&#39;+3197014200568&#39;</span>
 httpsTrigger:
   url: https://europe-west1-hip-courier-234516.cloudfunctions.net/SendSMS
 labels:
@@ -602,209 +533,159 @@ labels:
 name: projects/hip-courier-234516/locations/europe-west1/functions/SendSMS
 runtime: go111
 serviceAccountEmail: hip-courier-234516@appspot.gserviceaccount.com
-sourceUploadUrl: https://storage.googleapis.com/gcf-upload-europe-west1-b6b2622d-98cf-4a73-a9e3-13427706c715/2c6ce340-bd1f-48ea-b696-23a59ce579eb.zip?GoogleAccessId<span style="font-weight:bold">=</span>service-43664983000@gcf-admin-robot.iam.gserviceaccount.com&amp;<span style="color:#008080">Expires</span><span style="font-weight:bold">=</span>1552926106&amp;<span style="color:#008080">Signature</span><span style="font-weight:bold">=</span>HvRVFFVpEyWoknznuHYUIbiFD53gx4sihWJWtK8Wxuua9E4BJhjdjIUUa7RBWH0UNWlQX%2FpsUm6ub9S%2FjCQYw70JxMW4fTa4fLMJ%2FdcQQGpRRHYlEPLwPjU8aH68NUjYM1zXoWev%2Fl3jAlOTTt2P0lH3ugYwx%2FtHBop4Dbjl8K87bZmf9JUnyjk2FVGlVi7ino8S3ieRJ1tXGf0qXQAQo0DS%2B99Zuy4IsY2S3RS%2BxxKWcRBLKvibWZfZZYAW5g%2Fv%2B47RV9QE4QWRMdZOM0hK2f3URCxqetPi4rB8S5%2B%2FVZVwdyKqUJ45rNaIhTOcJ3j2t%2Fy8A%2BQ45GcNKiM5BPbz5g%3D%3D
+sourceUploadUrl: https://storage.googleapis.com/gcf-upload-europe-west1-b6b2622d-98cf-4a73-a9e3-13427706c715/2c6ce340-bd1f-48ea-b696-23a59ce579eb.zip?GoogleAccessId=service-43664983000@gcf-admin-robot.iam.gserviceaccount.com&amp;<span style=color:#0087ff>Expires</span>=1552926106&amp;<span style=color:#0087ff>Signature</span>=HvRVFFVpEyWoknznuHYUIbiFD53gx4sihWJWtK8Wxuua9E4BJhjdjIUUa7RBWH0UNWlQX%2FpsUm6ub9S%2FjCQYw70JxMW4fTa4fLMJ%2FdcQQGpRRHYlEPLwPjU8aH68NUjYM1zXoWev%2Fl3jAlOTTt2P0lH3ugYwx%2FtHBop4Dbjl8K87bZmf9JUnyjk2FVGlVi7ino8S3ieRJ1tXGf0qXQAQo0DS%2B99Zuy4IsY2S3RS%2BxxKWcRBLKvibWZfZZYAW5g%2Fv%2B47RV9QE4QWRMdZOM0hK2f3URCxqetPi4rB8S5%2B%2FVZVwdyKqUJ45rNaIhTOcJ3j2t%2Fy8A%2BQ45GcNKiM5BPbz5g%3D%3D
 status: ACTIVE
 timeout: 60s
-updateTime: <span style="color:#b84">&#39;2019-03-18T15:52:21Z&#39;</span>
-versionId: <span style="color:#b84">&#39;4&#39;</span></code></pre></div>
-<p>If we trigger the cloud function now, we should see it working:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">› gcloud functions call SendSMS --region<span style="font-weight:bold">=</span>europe-west1
+updateTime: <span style=color:#00afaf>&#39;2019-03-18T15:52:21Z&#39;</span>
+versionId: <span style=color:#00afaf>&#39;4&#39;</span></code></pre></td></tr></table></div></div><p>If we trigger the cloud function now, we should see it working:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">3
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">4
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>› gcloud functions call SendSMS --region=europe-west1
 executionId: jglb9o1mb5w9
 result: |
-  <span style="font-weight:bold">{</span><span style="color:#b84">&#34;body&#34;</span>: <span style="color:#b84">&#34;Message queued&#34;</span><span style="font-weight:bold">}</span></code></pre></div>
-<p>As the message from Twilio states, the SMS was queued and will be sent to your
+  {<span style=color:#00afaf>&#34;body&#34;</span>: <span style=color:#00afaf>&#34;Message queued&#34;</span>}</code></pre></td></tr></table></div></div><p>As the message from Twilio states, the SMS was queued and will be sent to your
 phone soon. I got my SMS in less than 10 seconds, but YMMV. This is what it
-looked like:</p>
-
-
-
-
-
-
-
-
-
-
-
-
-<figure class="imagecaption">
-  <img class="caption" src="/running-late-sms-twilio-google-functions-golang/sms-phone-preview.jpg" title="" alt="">
-  <span class="caption-text"></span>
-</figure>
-
-<p>This is awesome. It means that our Google Cloud Function is deployed and the
-Twilio integration is working as expected.</p>
-<p>Next, let's see how we can plug this into Google Assistant, so it can be used
-by Google Home.</p>
-<h2 id="google-home-integration">Google Home Integration</h2>
-<p>Now that we have the Cloud Function operational, let's open
-<a href="https://dialogflow.com">Google Dialog Flow</a> and create our first agent:</p>
-
-
-
-
-
-
-
-
-
-
-
-
-<figure class="imagecaption">
-  <img class="caption" src="/running-late-sms-twilio-google-functions-golang/dialogflow-new-project.png" title="" alt="">
-  <span class="caption-text"></span>
-</figure>
-
-<p>In my case, I named the agent <code>running-late-sms</code>, but you can choose your own
-name here - it doesn't matter.</p>
-<p>The new agent will have two intents: “Default Fallback Intent” and “Default
-Welcome Intent”. Before we continue modifying these intents, let's get the
-Dialog Flow basics out of the way.</p>
-<p>Very simply put, an intent is the mapping between the user's command and the
-agent executing the command. For example, when a user asks &ldquo;Hey Google, what's
-the weather like outside?&quot;, the intent will understand that the user is asking
+looked like:</p><figure class=imagecaption><img class=caption src=/running-late-sms-twilio-google-functions-golang/sms-phone-preview.jpg title alt>
+<span class=caption-text></span></figure><p>This is awesome. It means that our Google Cloud Function is deployed and the
+Twilio integration is working as expected.</p><p>Next, let&rsquo;s see how we can plug this into Google Assistant, so it can be used
+by Google Home.</p><h2 id=google-home-integration>Google Home Integration<a hidden class=anchor aria-hidden=true href=#google-home-integration>#</a></h2><p>Now that we have the Cloud Function operational, let&rsquo;s open
+<a href=https://dialogflow.com>Google Dialog Flow</a> and create our first agent:</p><figure class=imagecaption><img class=caption src=/running-late-sms-twilio-google-functions-golang/dialogflow-new-project.png title alt>
+<span class=caption-text></span></figure><p>In my case, I named the agent <code>running-late-sms</code>, but you can choose your own
+name here - it doesn&rsquo;t matter.</p><p>The new agent will have two intents: “Default Fallback Intent” and “Default
+Welcome Intent”. Before we continue modifying these intents, let&rsquo;s get the
+Dialog Flow basics out of the way.</p><p>Very simply put, an intent is the mapping between the user&rsquo;s command and the
+agent executing the command. For example, when a user asks &ldquo;Hey Google, what&rsquo;s
+the weather like outside?&rdquo;, the intent will understand that the user is asking
 for the weather. Then, the agent can request the data from an API to get the
-forecast and report it back to the user.</p>
-<p>Intents have four main components:</p>
-<ol>
-<li>A name</li>
-<li>Training phrases - examples of what a user can say to match a particular
-intent</li>
-<li>Action and parameters - defining how data can be extracted from the user's
-statements/input</li>
-<li>Response - the response statement to the user</li>
-</ol>
-<p>These are the very basics on Dialog Flow Intents. You can read more about them
-<a href="https://dialogflow.com/docs/intents">in the documentation</a>.</p>
-<h3 id="defining-our-first-intent">Defining our first intent</h3>
-<p>Let’s open the “Default Welcome intent” and change it a bit. First, we can
+forecast and report it back to the user.</p><p>Intents have four main components:</p><ol><li>A name</li><li>Training phrases - examples of what a user can say to match a particular
+intent</li><li>Action and parameters - defining how data can be extracted from the user&rsquo;s
+statements/input</li><li>Response - the response statement to the user</li></ol><p>These are the very basics on Dialog Flow Intents. You can read more about them
+<a href=https://dialogflow.com/docs/intents>in the documentation</a>.</p><h3 id=defining-our-first-intent>Defining our first intent<a hidden class=anchor aria-hidden=true href=#defining-our-first-intent>#</a></h3><p>Let’s open the “Default Welcome intent” and change it a bit. First, we can
 rename it to “Start”. This is because our dialog will have only a single
 command: “Hey Google, I am running late for standup!“. Once that happens, the
 agent should match the intent with our statement. Then, a Google Action will
-invoke the Cloud Function over HTTP.</p>
-<p>Next, we can remove all the training phrases and add a couple of variants that
-mean &ldquo;I am late for standup/work&rdquo;. For example:</p>
-<ul>
-<li>&ldquo;I will miss the standup today&rdquo;</li>
-<li>&ldquo;I will be late for standup&rdquo;</li>
-<li>&ldquo;Running late for standup&rdquo;</li>
-<li>&ldquo;I will be late for work&rdquo;</li>
-<li>&ldquo;Running late for work&rdquo;</li>
-</ul>
-<p>Google Dialog Flow will apply machine learning on these inputs. This means that
+invoke the Cloud Function over HTTP.</p><p>Next, we can remove all the training phrases and add a couple of variants that
+mean &ldquo;I am late for standup/work&rdquo;. For example:</p><ul><li>&ldquo;I will miss the standup today&rdquo;</li><li>&ldquo;I will be late for standup&rdquo;</li><li>&ldquo;Running late for standup&rdquo;</li><li>&ldquo;I will be late for work&rdquo;</li><li>&ldquo;Running late for work&rdquo;</li></ul><p>Google Dialog Flow will apply machine learning on these inputs. This means that
 your intent will match also statements that are not exactly the same as the
-training phrases, but statements that have the same <strong>intent</strong>.</p>
-
-
-
-
-
-
-
-
-
-
-
-
-<figure class="imagecaption">
-  <img class="caption" src="/running-late-sms-twilio-google-functions-golang/intent-setup-first.png" title="" alt="">
-  <span class="caption-text"></span>
-</figure>
-
-<p>Next, we scroll to the bottom of the &ldquo;Fulfillment&rdquo; section where we need to
+training phrases, but statements that have the same <strong>intent</strong>.</p><figure class=imagecaption><img class=caption src=/running-late-sms-twilio-google-functions-golang/intent-setup-first.png title alt>
+<span class=caption-text></span></figure><p>Next, we scroll to the bottom of the &ldquo;Fulfillment&rdquo; section where we need to
 enable the &ldquo;Enable webhook call for this intent&rdquo; option. After that, we can
 save the intent. The next step we need to take is in the &ldquo;Fulfillment&rdquo; section
-in sidebar.</p>
-<p>In the “Fulfillment” page we will enable the webhook by checking the checkbox.
+in sidebar.</p><p>In the “Fulfillment” page we will enable the webhook by checking the checkbox.
 In the form, we need to add the information for our webhook. Now, to get the
-URL of our Google Cloud Function, we can run:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">gcloud functions describe SendSMS</code></pre></div>
-<p>This will return the metadata for our function, where we can find the
-<code>httpsTrigger</code> section with a url:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">httpsTrigger:
-  url: https://europe-west1-hip-courier-234516.cloudfunctions.net/SendSMS</code></pre></div>
-<p>The <code>httpsTrigger</code> URL is the HTTP trigger where our function will be executed.
+URL of our Google Cloud Function, we can run:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>gcloud functions describe SendSMS</code></pre></td></tr></table></div></div><p>This will return the metadata for our function, where we can find the
+<code>httpsTrigger</code> section with a url:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>httpsTrigger:
+  url: https://europe-west1-hip-courier-234516.cloudfunctions.net/SendSMS</code></pre></td></tr></table></div></div><p>The <code>httpsTrigger</code> URL is the HTTP trigger where our function will be executed.
 All we need to do here is copy this URL and paste it as the webhook URL in
-Dialog Flow:</p>
-
-
-
-
-
-
-
-
-
-
-
-
-<figure class="imagecaption">
-  <img class="caption" src="/running-late-sms-twilio-google-functions-golang/intent-setup-second.png" title="" alt="">
-  <span class="caption-text"></span>
-</figure>
-
-<p>That's all. Once we save this when our agent matches the intent, the webhook will
+Dialog Flow:</p><figure class=imagecaption><img class=caption src=/running-late-sms-twilio-google-functions-golang/intent-setup-second.png title alt>
+<span class=caption-text></span></figure><p>That&rsquo;s all. Once we save this when our agent matches the intent, the webhook will
 be triggered and the Cloud Function will be executed. This will end with a call
-to Twilio's API which will send an SMS to our phone number.</p>
-<p><img src="/tell-team-running-late-google-home-google-functions-golang-twilio/just_saying.png" alt=""></p>
-<h3 id="speaking-google-assistants-lingo">Speaking Google Assistant's lingo</h3>
-<p>Although Dialog Flow's options are quite diverse, setting up a simple intent
+to Twilio&rsquo;s API which will send an SMS to our phone number.</p><p><img src=/tell-team-running-late-google-home-google-functions-golang-twilio/just_saying.png alt></p><h3 id=speaking-google-assistants-lingo>Speaking Google Assistant&rsquo;s lingo<a hidden class=anchor aria-hidden=true href=#speaking-google-assistants-lingo>#</a></h3><p>Although Dialog Flow&rsquo;s options are quite diverse, setting up a simple intent
 was straightforward. The intents are backed by Google Actions, which will
 receive the response from the webhook (our Cloud Function). This means that
 before we go on to use the intent, we have to make sure our Cloud Function
-returns a response which Google Actions can understand.</p>
-<p>Now, if we look at the <a href="https://developers.google.com/actions/build/json/dialogflow-webhook-json">dialog webhook documentation</a>, we will see that there are some
-rules on the format of the response.</p>
-<p>For example, the <code>Content-Type</code> in the header of HTTP posts from the Cloud
+returns a response which Google Actions can understand.</p><p>Now, if we look at the <a href=https://developers.google.com/actions/build/json/dialogflow-webhook-json>dialog webhook documentation</a>, we will see that there are some
+rules on the format of the response.</p><p>For example, the <code>Content-Type</code> in the header of HTTP posts from the Cloud
 Function have to be <code>application/json</code>. Also, there are other limitations when
-it comes to the formatting of the JSON.</p>
-<p>For our purpose, we can return the most simple JSON that Google Assistant can
-understand:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
-  <span style="color:#000080">&#34;payload&#34;</span>: {
-    <span style="color:#000080">&#34;google&#34;</span>: {
-      <span style="color:#000080">&#34;expectUserResponse&#34;</span>: <span style="font-weight:bold">true</span>,
-      <span style="color:#000080">&#34;richResponse&#34;</span>: {
-        <span style="color:#000080">&#34;items&#34;</span>: [
+it comes to the formatting of the JSON.</p><p>For our purpose, we can return the most simple JSON that Google Assistant can
+understand:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">15
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">16
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json>{
+  <span style=color:#0087ff>&#34;payload&#34;</span>: {
+    <span style=color:#0087ff>&#34;google&#34;</span>: {
+      <span style=color:#0087ff>&#34;expectUserResponse&#34;</span>: <span style=color:#d75f00>true</span>,
+      <span style=color:#0087ff>&#34;richResponse&#34;</span>: {
+        <span style=color:#0087ff>&#34;items&#34;</span>: [
           {
-            <span style="color:#000080">&#34;simpleResponse&#34;</span>: {
-              <span style="color:#000080">&#34;textToSpeech&#34;</span>: <span style="color:#b84">&#34;RESPONSE_FROM_TWILIO_HERE&#34;</span>
+            <span style=color:#0087ff>&#34;simpleResponse&#34;</span>: {
+              <span style=color:#0087ff>&#34;textToSpeech&#34;</span>: <span style=color:#00afaf>&#34;RESPONSE_FROM_TWILIO_HERE&#34;</span>
             }
           }
         ]
       }
     }
   }
-}</code></pre></div>
-<p>While the responses can get very complicated, for our simple use case the
-response above is all we need. Again, we can use the nice <a href="https://mholt.github.io/json-to-go/">JSON-to-Go</a> tool and convert the JSON to Go structs:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">type</span> DialogFlowResponse <span style="font-weight:bold">struct</span> {
-	Payload Payload <span style="color:#b84">`</span><span style="color:#b84">json:&#34;payload&#34;</span><span style="color:#b84">`</span>
+}</code></pre></td></tr></table></div></div><p>While the responses can get very complicated, for our simple use case the
+response above is all we need. Again, we can use the nice <a href=https://mholt.github.io/json-to-go/>JSON-to-Go</a> tool and convert the JSON to Go structs:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">15
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">16
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">17
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">18
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">19
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#0087ff>type</span> DialogFlowResponse <span style=color:#0087ff>struct</span> {
+	Payload Payload <span style=color:#00afaf>`json:&#34;payload&#34;`</span>
 }
-<span style="font-weight:bold">type</span> SimpleResponse <span style="font-weight:bold">struct</span> {
-	TextToSpeech <span style="color:#458;font-weight:bold">string</span> <span style="color:#b84">`</span><span style="color:#b84">json:&#34;textToSpeech&#34;</span><span style="color:#b84">`</span>
+<span style=color:#0087ff>type</span> SimpleResponse <span style=color:#0087ff>struct</span> {
+	TextToSpeech <span style=color:#af0000>string</span> <span style=color:#00afaf>`json:&#34;textToSpeech&#34;`</span>
 }
-<span style="font-weight:bold">type</span> Items <span style="font-weight:bold">struct</span> {
-	SimpleResponse SimpleResponse <span style="color:#b84">`</span><span style="color:#b84">json:&#34;simpleResponse&#34;</span><span style="color:#b84">`</span>
+<span style=color:#0087ff>type</span> Items <span style=color:#0087ff>struct</span> {
+	SimpleResponse SimpleResponse <span style=color:#00afaf>`json:&#34;simpleResponse&#34;`</span>
 }
-<span style="font-weight:bold">type</span> RichResponse <span style="font-weight:bold">struct</span> {
-	Items []Items <span style="color:#b84">`</span><span style="color:#b84">json:&#34;items&#34;</span><span style="color:#b84">`</span>
+<span style=color:#0087ff>type</span> RichResponse <span style=color:#0087ff>struct</span> {
+	Items []Items <span style=color:#00afaf>`json:&#34;items&#34;`</span>
 }
-<span style="font-weight:bold">type</span> Google <span style="font-weight:bold">struct</span> {
-	ExpectUserResponse <span style="color:#458;font-weight:bold">string</span>       <span style="color:#b84">`</span><span style="color:#b84">json:&#34;expectUserResponse&#34;</span><span style="color:#b84">`</span>
-	RichResponse       RichResponse <span style="color:#b84">`</span><span style="color:#b84">json:&#34;richResponse&#34;</span><span style="color:#b84">`</span>
+<span style=color:#0087ff>type</span> Google <span style=color:#0087ff>struct</span> {
+	ExpectUserResponse <span style=color:#af0000>string</span>       <span style=color:#00afaf>`json:&#34;expectUserResponse&#34;`</span>
+	RichResponse       RichResponse <span style=color:#00afaf>`json:&#34;richResponse&#34;`</span>
 }
-<span style="font-weight:bold">type</span> Payload <span style="font-weight:bold">struct</span> {
-	Google Google <span style="color:#b84">`</span><span style="color:#b84">json:&#34;google&#34;</span><span style="color:#b84">`</span>
-}</code></pre></div>
-<p>To make our life easier, we will also create a simple constructor function. It
-will take a string (the response from Twilio) as an argument:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">NewDialogFlowResponse</span>(message <span style="color:#458;font-weight:bold">string</span>) DialogFlowResponse {
-	<span style="font-weight:bold">return</span> DialogFlowResponse{
+<span style=color:#0087ff>type</span> Payload <span style=color:#0087ff>struct</span> {
+	Google Google <span style=color:#00afaf>`json:&#34;google&#34;`</span>
+}
+</code></pre></td></tr></table></div></div><p>To make our life easier, we will also create a simple constructor function. It
+will take a string (the response from Twilio) as an argument:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">15
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">16
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">17
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">18
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#0087ff>func</span> <span style=color:#0087ff>NewDialogFlowResponse</span>(message <span style=color:#af0000>string</span>) DialogFlowResponse {
+	<span style=color:#5f8700>return</span> DialogFlowResponse{
 		Payload: Payload{
 			Google: Google{
-				ExpectUserResponse: <span style="color:#b84">&#34;false&#34;</span>,
+				ExpectUserResponse: <span style=color:#00afaf>&#34;false&#34;</span>,
 				RichResponse: RichResponse{
 					Items: []Items{
 						Items{
@@ -817,160 +698,80 @@ will take a string (the response from Twilio) as an argument:</p>
 			},
 		},
 	}
-}</code></pre></div>
-<p>The constructor will build the nested structs that, when serialized, will result
-in the JSON that Google Assistant is expecting.</p>
-<p>Now that we have the constructor and the necessary types, we can plug them in
-the <code>SendSMS</code> function:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="font-weight:bold">func</span> <span style="color:#900;font-weight:bold">SendSMS</span>(w http.ResponseWriter, r <span style="font-weight:bold">*</span>http.Request) {
-	twilioResponse, err <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">sendRequest</span>(
-		<span style="color:#b84">&#34;PUT YOUR NUMBER HERE&#34;</span>,
-		<span style="color:#b84">&#34;Hey Alex, I am running late today, can we please postpone the standup a bit? Thanks! Ilija&#34;</span>,
+}
+</code></pre></td></tr></table></div></div><p>The constructor will build the nested structs that, when serialized, will result
+in the JSON that Google Assistant is expecting.</p><p>Now that we have the constructor and the necessary types, we can plug them in
+the <code>SendSMS</code> function:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#0087ff>func</span> <span style=color:#0087ff>SendSMS</span>(w http.ResponseWriter, r *http.Request) {
+	twilioResponse, err := <span style=color:#0087ff>sendRequest</span>(
+		<span style=color:#00afaf>&#34;PUT YOUR NUMBER HERE&#34;</span>,
+		<span style=color:#00afaf>&#34;Hey Alex, I am running late today, can we please postpone the standup a bit? Thanks! Ilija&#34;</span>,
 	)
-	<span style="font-weight:bold">if</span> err <span style="font-weight:bold">!=</span> <span style="font-weight:bold">nil</span> {
-		errResponse <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">NewDialogFlowResponse</span>(<span style="color:#b84">&#34;Something bad hapenned, please try again.&#34;</span>)
-		json.<span style="color:#900;font-weight:bold">NewEncoder</span>(w).<span style="color:#900;font-weight:bold">Encode</span>(errResponse)
-		<span style="font-weight:bold">return</span>
+	<span style=color:#5f8700>if</span> err != <span style=color:#d75f00>nil</span> {
+		errResponse := <span style=color:#0087ff>NewDialogFlowResponse</span>(<span style=color:#00afaf>&#34;Something bad hapenned, please try again.&#34;</span>)
+		json.<span style=color:#0087ff>NewEncoder</span>(w).<span style=color:#0087ff>Encode</span>(errResponse)
+		<span style=color:#5f8700>return</span>
 	}
-	response <span style="font-weight:bold">:=</span> <span style="color:#900;font-weight:bold">NewDialogFlowResponse</span>(fmt.<span style="color:#900;font-weight:bold">Sprintf</span>(<span style="color:#b84">&#34;Message %s&#34;</span>, twilioResponse.Status))
-	json.<span style="color:#900;font-weight:bold">NewEncoder</span>(w).<span style="color:#900;font-weight:bold">Encode</span>(response)
-}</code></pre></div>
-<p>All we had to do here is instead of building the JSON ourselves, we use the new
+	response := <span style=color:#0087ff>NewDialogFlowResponse</span>(fmt.<span style=color:#0087ff>Sprintf</span>(<span style=color:#00afaf>&#34;Message %s&#34;</span>, twilioResponse.Status))
+	json.<span style=color:#0087ff>NewEncoder</span>(w).<span style=color:#0087ff>Encode</span>(response)
+}
+</code></pre></td></tr></table></div></div><p>All we had to do here is instead of building the JSON ourselves, we use the new
 <code>DialogFlowResponse</code> struct to take care of this problem. If we deploy the
-function to GCP and run it we will see the new output:</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">› gcloud functions call SendSMS
+function to GCP and run it we will see the new output:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">3
+</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">4
+</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>› gcloud functions call SendSMS
 executionId: 4xo1v0ex57jw
 result: |
-  <span style="font-weight:bold">{</span><span style="color:#b84">&#34;payload&#34;</span>:<span style="font-weight:bold">{</span><span style="color:#b84">&#34;google&#34;</span>:<span style="font-weight:bold">{</span><span style="color:#b84">&#34;expectUserResponse&#34;</span>:<span style="color:#b84">&#34;false&#34;</span>,<span style="color:#b84">&#34;richResponse&#34;</span>:<span style="font-weight:bold">{</span><span style="color:#b84">&#34;items&#34;</span>:<span style="font-weight:bold">[</span><span style="font-weight:bold">{</span><span style="color:#b84">&#34;simpleResponse&#34;</span>:<span style="font-weight:bold">{</span><span style="color:#b84">&#34;textToSpeech&#34;</span>:<span style="color:#b84">&#34;Message queued&#34;</span><span style="font-weight:bold">}</span><span style="font-weight:bold">}</span><span style="font-weight:bold">]</span><span style="font-weight:bold">}</span><span style="font-weight:bold">}</span><span style="font-weight:bold">}</span><span style="font-weight:bold">}</span></code></pre></div>
-<p>This means that once our Google Action invokes the Google Cloud Function, the
+  {<span style=color:#00afaf>&#34;payload&#34;</span>:{<span style=color:#00afaf>&#34;google&#34;</span>:{<span style=color:#00afaf>&#34;expectUserResponse&#34;</span>:<span style=color:#00afaf>&#34;false&#34;</span>,<span style=color:#00afaf>&#34;richResponse&#34;</span>:{<span style=color:#00afaf>&#34;items&#34;</span>:[{<span style=color:#00afaf>&#34;simpleResponse&#34;</span>:{<span style=color:#00afaf>&#34;textToSpeech&#34;</span>:<span style=color:#00afaf>&#34;Message queued&#34;</span>}}]}}}}</code></pre></td></tr></table></div></div><p>This means that once our Google Action invokes the Google Cloud Function, the
 response can be understood by Google Assistant. And when I say &ldquo;understood&rdquo;,
-I mean that you will hear your Google Assistant saying out loud &ldquo;Message queued&rdquo;.</p>
-<p>You don't believe me? Let's see that in action!</p>
-<h3 id="testing-our-agent">Testing our agent</h3>
-<p>There are two ways to test our new agent - via a Google Home device, or via the
-simulator.</p>
-<p>If you're in possession of a Google Home device and if you're logged in with
+I mean that you will hear your Google Assistant saying out loud &ldquo;Message queued&rdquo;.</p><p>You don&rsquo;t believe me? Let&rsquo;s see that in action!</p><h3 id=testing-our-agent>Testing our agent<a hidden class=anchor aria-hidden=true href=#testing-our-agent>#</a></h3><p>There are two ways to test our new agent - via a Google Home device, or via the
+simulator.</p><p>If you&rsquo;re in possession of a Google Home device and if you&rsquo;re logged in with
 the same account as the one you use on Google Dialogflow or Actions, all you
-need to do is tell your Google Home &ldquo;OK Google, talk to my test app!&quot;. This
-should do the trick.</p>
-<p>In this article, we’ll use the simulator. On the right hand side you can click
+need to do is tell your Google Home &ldquo;OK Google, talk to my test app!&rdquo;. This
+should do the trick.</p><p>In this article, we’ll use the simulator. On the right hand side you can click
 on the “See how it works in Google Assistant” link. This will take you to the
-Google Actions simulator.</p>
-<p>Google Actions is a platform that allows extension of Google Assistant's
+Google Actions simulator.</p><p>Google Actions is a platform that allows extension of Google Assistant&rsquo;s
 capabilities. In our case, this means that the Google Dialog Flow agent will
 invoke a Google Action, which will be the triggered by the Google Assistant. I
 know it sounds a bit complicated, but in reality these platforms are well
-connected so the integration is quite simple.</p>
-<p>Once the simulator opens, you can click on the suggested input &ldquo;Talk to
+connected so the integration is quite simple.</p><p>Once the simulator opens, you can click on the suggested input &ldquo;Talk to
 my test app&rdquo; in the bottom of the screen. That will trigger the Dialog Flow
-agent which will execute the webhook right away:</p>
-
-
-
-
-
-
-
-
-
-
-
-
-<figure class="imagecaption">
-  <img class="caption" src="/running-late-sms-twilio-google-functions-golang/google-actions-simulator.png" title="" alt="">
-  <span class="caption-text"></span>
-</figure>
-
-<p>You can notice that the response from the Google Assistant contains &ldquo;Message
-queued&rdquo;, which is Twilio's response. After you see the response, an incoming SMS
-should pop on your phone's screen.</p>
-<p><img src="/tell-team-running-late-google-home-google-functions-golang-twilio/mornings.png" alt=""></p>
-<h2 id="in-closing">In closing</h2>
-<p>While we have gone through quite the distance in this article, our application
+agent which will execute the webhook right away:</p><figure class=imagecaption><img class=caption src=/running-late-sms-twilio-google-functions-golang/google-actions-simulator.png title alt>
+<span class=caption-text></span></figure><p>You can notice that the response from the Google Assistant contains &ldquo;Message
+queued&rdquo;, which is Twilio&rsquo;s response. After you see the response, an incoming SMS
+should pop on your phone&rsquo;s screen.</p><p><img src=/tell-team-running-late-google-home-google-functions-golang-twilio/mornings.png alt></p><h2 id=in-closing>In closing<a hidden class=anchor aria-hidden=true href=#in-closing>#</a></h2><p>While we have gone through quite the distance in this article, our application
 is still not shipped to the Play Store for mass-consumption. There are couple of
-more simple steps that you need to take to release this action to the world.</p>
-<p>Now, before you go on to do this, you have to first think about some of the
+more simple steps that you need to take to release this action to the world.</p><p>Now, before you go on to do this, you have to first think about some of the
 very rough edges of our action. Basically, at the moment the Google Action that
 we have created will work only for our use case. If you would like to publish
-this to the Play Store, you need to make adjustments:</p>
-<ol>
-<li>The user has to be able to configure the content of the message sent and the
-phone number of their team lead, using their Google Home</li>
-<li>We have to have a backend where we would store this configuration and every
+this to the Play Store, you need to make adjustments:</p><ol><li>The user has to be able to configure the content of the message sent and the
+phone number of their team lead, using their Google Home</li><li>We have to have a backend where we would store this configuration and every
 time someone invokes the Google Action (via their Google Home), we would
-have to process this using our Cloud Function</li>
-<li>You have to be ready to bear the cost of this. The Twilio API + the Google
+have to process this using our Cloud Function</li><li>You have to be ready to bear the cost of this. The Twilio API + the Google
 Cloud Function are not free to use for production, so you will be charged
-for the usage</li>
-</ol>
-<p>I'll leave this up to you. Nevertheless, we still went through the whole
-process of creating this action. It took many steps:</p>
-<ol>
-<li>Created a Google Dialogflow intent</li>
-<li>Hooked it up to a Google Action</li>
-<li>We integrated with Twilio's API using Golang</li>
-<li>We deployed our Golang program as a Google Cloud Function</li>
-</ol>
-<p>And we actually tested our whole integration and we received an SMS to our phones.</p>
-<p>Before we wrap it up, I am curious: what other kind of such Google Home
+for the usage</li></ol><p>I&rsquo;ll leave this up to you. Nevertheless, we still went through the whole
+process of creating this action. It took many steps:</p><ol><li>Created a Google Dialogflow intent</li><li>Hooked it up to a Google Action</li><li>We integrated with Twilio&rsquo;s API using Golang</li><li>We deployed our Golang program as a Google Cloud Function</li></ol><p>And we actually tested our whole integration and we received an SMS to our phones.</p><p>Before we wrap it up, I am curious: what other kind of such Google Home
 integrations would your create to automate simple tasks in your life? Let me
-know in the comments!</p>
-
-			</div>
-
-			<div class="tags">
-				
-					
-						<ul class="flat">
-							
-							<li><a href="/tags/google-home">google home</a></li>
-							
-							<li><a href="/tags/dialogflow">dialogflow</a></li>
-							
-							<li><a href="/tags/actions">actions</a></li>
-							
-							<li><a href="/tags/golang">golang</a></li>
-							
-							<li><a href="/tags/twilio">twilio</a></li>
-							
-						</ul>
-					
-				
-			</div><div id="disqus_thread"></div>
-<script type="text/javascript">
-	(function () {
-		
-		
-		if (window.location.hostname == "localhost")
-			return;
-
-		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-		var disqus_shortname = 'eftimov';
-		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-	})();
-</script>
-<noscript>Please enable JavaScript to view the </a></noscript>
-<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-</div>
-	</div>
-	<div class="footer wrapper">
-	<nav class="nav">
-		<div>2021  Copyright © Ilija Eftimov |  <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
-	</nav>
-</div>
-
-
-<script type="application/javascript">
-var doNotTrack = false;
-if (!doNotTrack) {
-	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-	ga('create', 'UA-11264459-2', 'auto');
-	
-	ga('send', 'pageview');
-}
-</script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
-<script>feather.replace()</script>
-</body>
-</html>
+know in the comments!</p><section class=subscribe><b>Liked this article?</b> <a href=/newsletter>Subscribe to my
+newsletter</a> and get my fresh posts in your inbox. It's short and sweet,
+going out monthly to over 1,000 subscribers.</section></div><footer class=post-footer><ul class=post-tags><li><a href=https://ieftimov.com/tags/google-home/>google home</a></li><li><a href=https://ieftimov.com/tags/dialogflow/>dialogflow</a></li><li><a href=https://ieftimov.com/tags/actions/>actions</a></li><li><a href=https://ieftimov.com/tags/golang/>golang</a></li><li><a href=https://ieftimov.com/tags/twilio/>twilio</a></li></ul><nav class=paginav><a class=prev href=https://ieftimov.com/post/my-first-dotgo-conference/><span class=title>« Prev Page</span><br><span>My First dotGo Conference</span></a>
+<a class=next href=https://ieftimov.com/post/spotify-recently-played-least-recently-used-cache-golang/><span class=title>Next Page »</span><br><span>Barebones model of Spotify's 'Recently Played' screen using a Least Recently Used (LRU) cache in Golang</span></a></nav><div class=share-buttons><a target=_blank rel="noopener noreferrer" aria-label="share Tell your team you are running late using Google Home, Google Cloud Functions, Golang and Twilio on twitter" href="https://twitter.com/intent/tweet/?text=Tell%20your%20team%20you%20are%20running%20late%20using%20Google%20Home%2c%20Google%20Cloud%20Functions%2c%20Golang%20and%20Twilio&url=https%3a%2f%2fieftimov.com%2fpost%2ftell-team-running-late-google-home-google-functions-golang-twilio%2f&hashtags=googlehome%2cdialogflow%2cactions%2cgolang%2ctwilio"><svg viewBox="0 0 512 512"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H62.554c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892zM195.519 424.544c135.939.0 210.268-112.643 210.268-210.268.0-3.218.0-6.437-.153-9.502 14.406-10.421 26.973-23.448 36.935-38.314-13.18 5.824-27.433 9.809-42.452 11.648 15.326-9.196 26.973-23.602 32.49-40.92-14.252 8.429-30.038 14.56-46.896 17.931-13.487-14.406-32.644-23.295-53.946-23.295-40.767.0-73.87 33.104-73.87 73.87.0 5.824.613 11.494 1.992 16.858-61.456-3.065-115.862-32.49-152.337-77.241-6.284 10.881-9.962 23.601-9.962 37.088.0 25.594 13.027 48.276 32.95 61.456-12.107-.307-23.448-3.678-33.41-9.196v.92c0 35.862 25.441 65.594 59.311 72.49-6.13 1.686-12.72 2.606-19.464 2.606-4.751.0-9.348-.46-13.946-1.38 9.349 29.426 36.628 50.728 68.965 51.341-25.287 19.771-57.164 31.571-91.8 31.571-5.977.0-11.801-.306-17.625-1.073 32.337 21.15 71.264 33.41 112.95 33.41z"/></svg></a><a target=_blank rel="noopener noreferrer" aria-label="share Tell your team you are running late using Google Home, Google Cloud Functions, Golang and Twilio on linkedin" href="https://www.linkedin.com/shareArticle?mini=true&url=https%3a%2f%2fieftimov.com%2fpost%2ftell-team-running-late-google-home-google-functions-golang-twilio%2f&title=Tell%20your%20team%20you%20are%20running%20late%20using%20Google%20Home%2c%20Google%20Cloud%20Functions%2c%20Golang%20and%20Twilio&summary=Tell%20your%20team%20you%20are%20running%20late%20using%20Google%20Home%2c%20Google%20Cloud%20Functions%2c%20Golang%20and%20Twilio&source=https%3a%2f%2fieftimov.com%2fpost%2ftell-team-running-late-google-home-google-functions-golang-twilio%2f"><svg viewBox="0 0 512 512"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H62.554c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892zM160.461 423.278V197.561h-75.04v225.717h75.04zm270.539.0V293.839c0-69.333-37.018-101.586-86.381-101.586-39.804.0-57.634 21.891-67.617 37.266v-31.958h-75.021c.995 21.181.0 225.717.0 225.717h75.02V297.222c0-6.748.486-13.492 2.474-18.315 5.414-13.475 17.767-27.434 38.494-27.434 27.135.0 38.007 20.707 38.007 51.037v120.768H431zM123.448 88.722C97.774 88.722 81 105.601 81 127.724c0 21.658 16.264 39.002 41.455 39.002h.484c26.165.0 42.452-17.344 42.452-39.002-.485-22.092-16.241-38.954-41.943-39.002z"/></svg></a><a target=_blank rel="noopener noreferrer" aria-label="share Tell your team you are running late using Google Home, Google Cloud Functions, Golang and Twilio on reddit" href="https://reddit.com/submit?url=https%3a%2f%2fieftimov.com%2fpost%2ftell-team-running-late-google-home-google-functions-golang-twilio%2f&title=Tell%20your%20team%20you%20are%20running%20late%20using%20Google%20Home%2c%20Google%20Cloud%20Functions%2c%20Golang%20and%20Twilio"><svg viewBox="0 0 512 512"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H62.554c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892zM446 265.638c0-22.964-18.616-41.58-41.58-41.58-11.211.0-21.361 4.457-28.841 11.666-28.424-20.508-67.586-33.757-111.204-35.278l18.941-89.121 61.884 13.157c.756 15.734 13.642 28.29 29.56 28.29 16.407.0 29.706-13.299 29.706-29.701.0-16.403-13.299-29.702-29.706-29.702-11.666.0-21.657 6.792-26.515 16.578l-69.105-14.69c-1.922-.418-3.939-.042-5.585 1.036-1.658 1.073-2.811 2.761-3.224 4.686l-21.152 99.438c-44.258 1.228-84.046 14.494-112.837 35.232-7.468-7.164-17.589-11.591-28.757-11.591-22.965.0-41.585 18.616-41.585 41.58.0 16.896 10.095 31.41 24.568 37.918-.639 4.135-.99 8.328-.99 12.576.0 63.977 74.469 115.836 166.33 115.836s166.334-51.859 166.334-115.836c0-4.218-.347-8.387-.977-12.493 14.564-6.47 24.735-21.034 24.735-38.001zM326.526 373.831c-20.27 20.241-59.115 21.816-70.534 21.816-11.428.0-50.277-1.575-70.522-21.82-3.007-3.008-3.007-7.882.0-10.889 3.003-2.999 7.882-3.003 10.885.0 12.777 12.781 40.11 17.317 59.637 17.317 19.522.0 46.86-4.536 59.657-17.321 3.016-2.999 7.886-2.995 10.885.008 3.008 3.011 3.003 7.882-.008 10.889zm-5.23-48.781c-16.373.0-29.701-13.324-29.701-29.698.0-16.381 13.328-29.714 29.701-29.714 16.378.0 29.706 13.333 29.706 29.714.0 16.374-13.328 29.698-29.706 29.698zM160.91 295.348c0-16.381 13.328-29.71 29.714-29.71 16.369.0 29.689 13.329 29.689 29.71.0 16.373-13.32 29.693-29.689 29.693-16.386.0-29.714-13.32-29.714-29.693z"/></svg></a><a target=_blank rel="noopener noreferrer" aria-label="share Tell your team you are running late using Google Home, Google Cloud Functions, Golang and Twilio on facebook" href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fieftimov.com%2fpost%2ftell-team-running-late-google-home-google-functions-golang-twilio%2f"><svg viewBox="0 0 512 512"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H342.978V319.085h66.6l12.672-82.621h-79.272v-53.617c0-22.603 11.073-44.636 46.58-44.636H425.6v-70.34s-32.71-5.582-63.982-5.582c-65.288.0-107.96 39.569-107.96 111.204v62.971h-72.573v82.621h72.573V512h-191.104c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892z"/></svg></a><a target=_blank rel="noopener noreferrer" aria-label="share Tell your team you are running late using Google Home, Google Cloud Functions, Golang and Twilio on whatsapp" href="https://api.whatsapp.com/send?text=Tell%20your%20team%20you%20are%20running%20late%20using%20Google%20Home%2c%20Google%20Cloud%20Functions%2c%20Golang%20and%20Twilio%20-%20https%3a%2f%2fieftimov.com%2fpost%2ftell-team-running-late-google-home-google-functions-golang-twilio%2f"><svg viewBox="0 0 512 512"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H62.554c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892zm-58.673 127.703c-33.842-33.881-78.847-52.548-126.798-52.568-98.799.0-179.21 80.405-179.249 179.234-.013 31.593 8.241 62.428 23.927 89.612l-25.429 92.884 95.021-24.925c26.181 14.28 55.659 21.807 85.658 21.816h.074c98.789.0 179.206-80.413 179.247-179.243.018-47.895-18.61-92.93-52.451-126.81zM263.976 403.485h-.06c-26.734-.01-52.954-7.193-75.828-20.767l-5.441-3.229-56.386 14.792 15.05-54.977-3.542-5.637c-14.913-23.72-22.791-51.136-22.779-79.287.033-82.142 66.867-148.971 149.046-148.971 39.793.014 77.199 15.531 105.329 43.692 28.128 28.16 43.609 65.592 43.594 105.4-.034 82.149-66.866 148.983-148.983 148.984zm81.721-111.581c-4.479-2.242-26.499-13.075-30.604-14.571-4.105-1.495-7.091-2.241-10.077 2.241-2.986 4.483-11.569 14.572-14.182 17.562-2.612 2.988-5.225 3.364-9.703 1.12-4.479-2.241-18.91-6.97-36.017-22.23C231.8 264.15 222.81 249.484 220.198 245s-.279-6.908 1.963-9.14c2.016-2.007 4.48-5.232 6.719-7.847 2.24-2.615 2.986-4.484 4.479-7.472 1.493-2.99.747-5.604-.374-7.846-1.119-2.241-10.077-24.288-13.809-33.256-3.635-8.733-7.327-7.55-10.077-7.688-2.609-.13-5.598-.158-8.583-.158-2.986.0-7.839 1.121-11.944 5.604-4.105 4.484-15.675 15.32-15.675 37.364.0 22.046 16.048 43.342 18.287 46.332 2.24 2.99 31.582 48.227 76.511 67.627 10.685 4.615 19.028 7.371 25.533 9.434 10.728 3.41 20.492 2.929 28.209 1.775 8.605-1.285 26.499-10.833 30.231-21.295 3.732-10.464 3.732-19.431 2.612-21.298-1.119-1.869-4.105-2.99-8.583-5.232z"/></svg></a><a target=_blank rel="noopener noreferrer" aria-label="share Tell your team you are running late using Google Home, Google Cloud Functions, Golang and Twilio on telegram" href="https://telegram.me/share/url?text=Tell%20your%20team%20you%20are%20running%20late%20using%20Google%20Home%2c%20Google%20Cloud%20Functions%2c%20Golang%20and%20Twilio&url=https%3a%2f%2fieftimov.com%2fpost%2ftell-team-running-late-google-home-google-functions-golang-twilio%2f"><svg viewBox="2 2 28 28"><path d="M26.49 29.86H5.5a3.37 3.37.0 01-2.47-1 3.35 3.35.0 01-1-2.47V5.48A3.36 3.36.0 013 3 3.37 3.37.0 015.5 2h21A3.38 3.38.0 0129 3a3.36 3.36.0 011 2.46V26.37a3.35 3.35.0 01-1 2.47 3.38 3.38.0 01-2.51 1.02zm-5.38-6.71a.79.79.0 00.85-.66L24.73 9.24a.55.55.0 00-.18-.46.62.62.0 00-.41-.17q-.08.0-16.53 6.11a.59.59.0 00-.41.59.57.57.0 00.43.52l4 1.24 1.61 4.83a.62.62.0 00.63.43.56.56.0 00.4-.17L16.54 20l4.09 3A.9.9.0 0021.11 23.15zM13.8 20.71l-1.21-4q8.72-5.55 8.78-5.55c.15.0.23.0.23.16a.18.18.0 010 .06s-2.51 2.3-7.52 6.8z"/></svg></a></div></footer></article></main><footer class=footer><span>Copyright 2021 © Ilija Eftimov</span>
+<span>&#183;</span>
+<span>Powered by <a href=https://gohugo.io/ rel="noopener noreferrer" target=_blank>Hugo</a></span>
+<span>&#183;</span>
+<span>Theme <a href=https://git.io/hugopapermod rel=noopener target=_blank>PaperMod</a></span></footer><a href=#top aria-label="go to top" title="Go to Top (Alt + G)"><button class=top-link id=top-link type=button accesskey=g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentcolor"><path d="M12 6H0l6-6z"/></svg></button></a>
+<script>window.onload=function(){localStorage.getItem("menu-scroll-position")&&(document.getElementById('menu').scrollLeft=localStorage.getItem("menu-scroll-position"))},document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener("click",function(b){b.preventDefault();var a=this.getAttribute("href").substr(1);window.matchMedia('(prefers-reduced-motion: reduce)').matches?document.querySelector(`[id='${decodeURIComponent(a)}']`).scrollIntoView():document.querySelector(`[id='${decodeURIComponent(a)}']`).scrollIntoView({behavior:"smooth"}),a==="top"?history.replaceState(null,null," "):history.pushState(null,null,`#${a}`)})});var mybutton=document.getElementById("top-link");window.onscroll=function(){document.body.scrollTop>800||document.documentElement.scrollTop>800?(mybutton.style.visibility="visible",mybutton.style.opacity="1"):(mybutton.style.visibility="hidden",mybutton.style.opacity="0")};function menu_on_scroll(){localStorage.setItem("menu-scroll-position",document.getElementById('menu').scrollLeft)}</script><script>document.getElementById("theme-toggle").addEventListener("click",()=>{document.body.className.includes("dark")?(document.body.classList.remove('dark'),localStorage.setItem("pref-theme",'light')):(document.body.classList.add('dark'),localStorage.setItem("pref-theme",'dark'))})</script></body></html>
