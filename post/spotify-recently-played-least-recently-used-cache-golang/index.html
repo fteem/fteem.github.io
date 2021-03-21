@@ -7,7 +7,7 @@ use this eviction strategy will remove the least recently used item when their
 size reaches their capacity. That means that such caches have to keep a track
 of the order of access of the cached items, so it would evict the correct
 items.</p><figure class=imagecaption><img class=caption src=/spotify-recently-played-least-recently-used-cache-golang/music.png caption alt="Person looking at a report page">
-<span class=caption-text style="font-size:.75em;display:table;margin:0 auto"></span></figure><p>Before we go too much into details about the implementation of an LRU cache,
+<span class=caption-text style="font-size:.75em;display:table;margin:0 auto 1.5em"></span></figure><p>Before we go too much into details about the implementation of an LRU cache,
 let&rsquo;s first see what are the possible applications of this caching scheme.</p><h2 id=applications>Applications<a hidden class=anchor aria-hidden=true href=#applications>#</a></h2><p>LRU cache applications are diverse. The LRU cache eviction scheme is one of the
 most widespread and used scheme. Due to its nature, it often does the trick for
 conventional problems in commercial programming. For example, if one has a
@@ -15,7 +15,7 @@ fixed amount of memory, the most natural way to cache is to keep recently
 accessed items.</p><p>So, what would be one potential application of a LRU cache? Let&rsquo;s see an
 example.</p><p>Open your Spotify application (if you have one). Don&rsquo;t have one? Here&rsquo;s a
 screenshot of mine:</p><figure class=imagecaption><img class=caption src=/golang-lru-cache/spotify.png caption alt="Spotify desktop application screenshot">
-<span class=caption-text style="font-size:.75em;display:table;margin:0 auto"></span></figure><p>You can see in the screenshot above that I have chosen the &ldquo;Recently played&rdquo;
+<span class=caption-text style="font-size:.75em;display:table;margin:0 auto 1.5em"></span></figure><p>You can see in the screenshot above that I have chosen the &ldquo;Recently played&rdquo;
 view. To no one&rsquo;s surprise, it shows all my recently played media. If you’ve
 never thought about the implementation of such a screen, let me break the magic
 down for you. This view is a GUI that lives on top of some sort of an LRU
@@ -115,7 +115,7 @@ that will be stored there, while the <code>*list.Element</code> will be a pointe
 element in the doubly-linked list. By having this pointer, we can get the
 <code>Playlist</code> stored inside it (it&rsquo;s <code>Value</code>). Also, it will be easy to reposition
 it in the <code>lru</code> list when we play the Playlist.</p><figure class=imagecaption><img class=caption src=/spotify-recently-played-least-recently-used-cache-golang/media_player.png caption alt="Music player">
-<span class=caption-text style="font-size:.75em;display:table;margin:0 auto"></span></figure><h2 id=introducing-the-player>Introducing the player<a hidden class=anchor aria-hidden=true href=#introducing-the-player>#</a></h2><p>To have a &ldquo;Recently played&rdquo; list of playlists, we obviously need to put it in
+<span class=caption-text style="font-size:.75em;display:table;margin:0 auto 1.5em"></span></figure><h2 id=introducing-the-player>Introducing the player<a hidden class=anchor aria-hidden=true href=#introducing-the-player>#</a></h2><p>To have a &ldquo;Recently played&rdquo; list of playlists, we obviously need to put it in
 some sort of a player, that will have a <code>Play</code> function.</p><p>Here&rsquo;s a quick sketch of it, so we can move to the meat of our implementation:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
 </span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
 </span><span style="margin-right:.4em;padding:0 .4em;color:#454545">3
@@ -253,7 +253,7 @@ its proper type, since <code>*list.Element</code> does not know the type of its 
 (remember, it accepts any type).</p><p>After the playlist is added to the front of the <code>lru</code> list, the <code>Set</code> function
 will increment the <code>RecentlyPlayed</code>&rsquo;s <code>size</code> due to the new item added to the
 list.</p><p>Finally, the function will cache the <code>*list.Element</code> in the <code>cache</code> hash table</p><ul><li>which we will use to retrieve the playlist with a <code>O(1)</code> time complexity.</li></ul><figure class=imagecaption><img class=caption src=/spotify-recently-played-least-recently-used-cache-golang/empty_cart.png caption alt="Person with empty shopping cart">
-<span class=caption-text style="font-size:.75em;display:table;margin:0 auto"></span></figure><h2 id=eviction>Eviction<a hidden class=anchor aria-hidden=true href=#eviction>#</a></h2><p>Now that we know how the <code>Get</code> and <code>Set</code> functions work, we need to take one
+<span class=caption-text style="font-size:.75em;display:table;margin:0 auto 1.5em"></span></figure><h2 id=eviction>Eviction<a hidden class=anchor aria-hidden=true href=#eviction>#</a></h2><p>Now that we know how the <code>Get</code> and <code>Set</code> functions work, we need to take one
 more thing into consideration. That is Spotify’s limitation of the size of the
 recently played screen. It means that once the number of playlists reaches a
 threshold, it removes the least recently played playlist. This will make the

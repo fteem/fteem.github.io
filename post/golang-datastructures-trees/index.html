@@ -5,7 +5,7 @@
 <span class=logo-switches><button id=theme-toggle accesskey=t title="(Alt + T)"><svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg><svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></span></div><ul id=menu onscroll=menu_on_scroll()><li><a href=https://ieftimov.com/posts title=Archive><span>Archive</span></a></li><li><a href=https://ieftimov.com/about title=About><span>About</span></a></li><li><a href=https://ieftimov.com/newsletter title=Newsletter><span>Newsletter</span></a></li><li><a href=https://forms.gle/orfXK5jh1LRaiFzo8 title="Suggest a topic"><span>Suggest a topic</span></a></li></ul></nav></header><main class=main><article class=post-single><header class=post-header><h1 class=post-title>Golang Datastructures: Trees</h1><div class=post-meta>February 13, 2019&nbsp;·&nbsp;15 min&nbsp;·&nbsp;Ilija</div></header><div class=toc><details><summary accesskey=c title="(Alt + C)"><div class=details>Table of Contents</div></summary><div class=inner><ul><li><a href=#a-touch-of-theory aria-label="A touch of theory">A touch of theory</a></li><li><a href=#modelling-an-html-document aria-label="Modelling an HTML document">Modelling an HTML document</a></li><li><a href=#building-mydom---a-drop-in-replacement-for-the-dom- aria-label="Building MyDOM - a drop-in replacement for the DOM 😂">Building MyDOM - a drop-in replacement for the DOM 😂</a></li><li><a href=#implementing-node-lookup- aria-label="Implementing Node Lookup 🔎">Implementing Node Lookup 🔎</a><ul><li><a href=#breadth-first-search- aria-label="Breadth-first search ⬅➡">Breadth-first search ⬅➡</a></li><li><a href=#depth-first-search- aria-label="Depth-first search ⬇">Depth-first search ⬇</a></li></ul></li><li><a href=#finding-by-class-name- aria-label="Finding by class name 🔎">Finding by class name 🔎</a></li><li><a href=#deleting-nodes- aria-label="Deleting nodes 🗑">Deleting nodes 🗑</a></li><li><a href=#where-to-next aria-label="Where to next?">Where to next?</a></li></ul></div></details></div><div class=post-content><p>You can spend quite a bit of your programming career without working with trees,
 or just by simply avoiding them if you don’t understand them (which is what I
 had been doing for a while).</p><figure class=imagecaption><img class=caption src=/golang-datastructures-trees/tree_swing.png caption alt="Person sitting on a swing on a tree">
-<span class=caption-text style="font-size:.75em;display:table;margin:0 auto"></span></figure><p>Now, don&rsquo;t get me wrong - arrays, lists, stacks and queues are quite powerful
+<span class=caption-text style="font-size:.75em;display:table;margin:0 auto 1.5em"></span></figure><p>Now, don&rsquo;t get me wrong - arrays, lists, stacks and queues are quite powerful
 data structures and can take you pretty far, but there is a limit to their
 capabilities, how you can use them and how efficient that usage can be. When you
 throw in hash tables to that mix, you can solve quite some problems, but for
@@ -18,12 +18,12 @@ having any cycle. The tree with no nodes is called the null or empty tree. A
 tree that is not empty consists of a root node and potentially many levels of
 additional nodes that form a hierarchy.</p></blockquote><p>What the definition states are that a tree is just a combination of nodes (or
 vertices) and edges (or links between the nodes) without having a cycle.</p><figure class=imagecaption><img class=caption src=/golang-datastructures-trees/invalid-tree.png caption alt="Graph data structure graphic">
-<span class=caption-text style="font-size:.75em;display:table;margin:0 auto"></span></figure><p>For example, the data structure represented on the diagram is a combination of
+<span class=caption-text style="font-size:.75em;display:table;margin:0 auto 1.5em"></span></figure><p>For example, the data structure represented on the diagram is a combination of
 nodes, named from A to F, with six edges. Although all of its elements look
 like they construct a tree, the nodes A, D, E and F have a cycle, therefore
 this structure is not a tree.</p><p>If we would break the edge between nodes F and E and add a new node called G
 with an edge between F and G, we would end up with something like this:</p><figure class=imagecaption><img class=caption src=/golang-datastructures-trees/valid-tree.png caption alt="Tree data structure graphic">
-<span class=caption-text style="font-size:.75em;display:table;margin:0 auto"></span></figure><p>Now, since we eliminated the cycle in this graph, we can say that we have a
+<span class=caption-text style="font-size:.75em;display:table;margin:0 auto 1.5em"></span></figure><p>Now, since we eliminated the cycle in this graph, we can say that we have a
 valid tree. It has a <strong>root</strong> with the name A, with a total of 7 <strong>nodes</strong>.
 Node A has 3 <strong>children</strong> (B, D & F) and those have 3 children (C, E & G
 respectively). Therefore, node A has 6 <strong>descendants</strong>. Also, this tree has 3
@@ -33,7 +33,7 @@ of them to the root we need to take only one step. For example, node G has
 level 2, because the <strong>path</strong> from G to A is: G -> F -> A, hence we need to
 follow two edges to get to A.</p><p>Now that we know a bit of theory about trees, let’s see how we can solve some
 problems.</p><figure class=imagecaption><img class=caption src=/golang-datastructures-trees/web_development.png caption alt="Web developer">
-<span class=caption-text style="font-size:.75em;display:table;margin:0 auto"></span></figure><h2 id=modelling-an-html-document>Modelling an HTML document<a hidden class=anchor aria-hidden=true href=#modelling-an-html-document>#</a></h2><p>If you are a software developer that has never written any HTML, I will just
+<span class=caption-text style="font-size:.75em;display:table;margin:0 auto 1.5em"></span></figure><h2 id=modelling-an-html-document>Modelling an HTML document<a hidden class=anchor aria-hidden=true href=#modelling-an-html-document>#</a></h2><p>If you are a software developer that has never written any HTML, I will just
 assume that you have seen (or have an idea) what HTML looks like. If you have
 not, then I encourage you to right click on the page that you are reading this
 and click on &lsquo;View Source&rsquo;.</p><p>Seriously, go for it, I&rsquo;ll wait&mldr;</p><p>Browsers have this thing baked in, called the DOM - a cross-platform and
@@ -51,7 +51,7 @@ easier, let’s see a tiny HTML document:</p><div class=highlight><div style=col
   &lt;<span style=color:#0087ff>p</span>&gt;This is a simple HTML document.&lt;/<span style=color:#0087ff>p</span>&gt;
 &lt;/<span style=color:#0087ff>html</span>&gt;</code></pre></td></tr></table></div></div><p>So, if we would model this document as a tree, it would look something like
 this:</p><figure class=imagecaption><img class=caption src=/golang-datastructures-trees/html-document-tree.png caption alt="DOM node tree">
-<span class=caption-text style="font-size:.75em;display:table;margin:0 auto"></span></figure><p>Now, we could treat the text nodes as separate <code>Node</code>s, but we can make our
+<span class=caption-text style="font-size:.75em;display:table;margin:0 auto 1.5em"></span></figure><p>Now, we could treat the text nodes as separate <code>Node</code>s, but we can make our
 lives simpler by assuming that any HTML element can have text in it.</p><p>The <code>html</code> node will have two children, <code>h1</code> and <code>p</code>, which will have <code>tag</code>,
 <code>text</code> and <code>children</code> as fields. Let’s put this into code:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
 </span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
@@ -228,7 +228,7 @@ html := Node{
 </code></pre></td></tr></table></div></div><p>We start building this tree bottom - up. That means we create structs from the
 most deeply nested structs and working up towards <code>body</code> and <code>html</code>. Let&rsquo;s look
 at a graphic of our tree:</p><figure class=imagecaption><img class=caption src=/golang-datastructures-trees/mydom-tree.png caption alt="DOM node tree">
-<span class=caption-text style="font-size:.75em;display:table;margin:0 auto"></span></figure><h2 id=implementing-node-lookup->Implementing Node Lookup 🔎<a hidden class=anchor aria-hidden=true href=#implementing-node-lookup->#</a></h2><p>So, let&rsquo;s continue with what we were up to - allow JavaScript to call
+<span class=caption-text style="font-size:.75em;display:table;margin:0 auto 1.5em"></span></figure><h2 id=implementing-node-lookup->Implementing Node Lookup 🔎<a hidden class=anchor aria-hidden=true href=#implementing-node-lookup->#</a></h2><p>So, let&rsquo;s continue with what we were up to - allow JavaScript to call
 <code>getElementById</code> on our <code>document</code> and find the <code>Node</code> that it&rsquo;s looking for.</p><p>To do this, we have to implement a tree searching algorithm. The most popular
 approaches to searching (or traversal) of graphs and trees are Breadth First
 Search (BFS) and Depth First Search (DFS).</p><h3 id=breadth-first-search->Breadth-first search ⬅➡<a hidden class=anchor aria-hidden=true href=#breadth-first-search->#</a></h3><p>BFS, as its name suggests, takes an approach to traversal where it explores
@@ -313,7 +313,7 @@ implementation of the algorithm:</p><div class=highlight><div style=color:#8a8a8
         <span style=color:#5f8700>return</span> <span style=color:#d75f00>nil</span>
 }
 </code></pre></td></tr></table></div></div><figure class=imagecaption><img class=caption src=/golang-datastructures-trees/people_search.png caption alt="People search graphic">
-<span class=caption-text style="font-size:.75em;display:table;margin:0 auto"></span></figure><h2 id=finding-by-class-name->Finding by class name 🔎<a hidden class=anchor aria-hidden=true href=#finding-by-class-name->#</a></h2><p>Another functionality MyDOM (TM) should have is the ability to find
+<span class=caption-text style="font-size:.75em;display:table;margin:0 auto 1.5em"></span></figure><h2 id=finding-by-class-name->Finding by class name 🔎<a hidden class=anchor aria-hidden=true href=#finding-by-class-name->#</a></h2><p>Another functionality MyDOM (TM) should have is the ability to find
 nodes by a class name. Essentially, when a JavaScript script executes
 <code>getElementsByClassName</code>, MyDOM should know how to collect all nodes with a
 certain class.</p><p>As you can imagine, this is also an algorithm that would have to explore the
@@ -460,7 +460,7 @@ matches, they will be returned as part of the <code>result</code> slice.</p><p>L
 Breadth-first approach here - the algorithm uses a queue for each of the
 <code>Node</code>s and loops over them while appending to the <code>result</code> slice if a match is
 found.</p><figure class=imagecaption><img class=caption src=/golang-datastructures-trees/cancel.png caption alt="Delete graphic">
-<span class=caption-text style="font-size:.75em;display:table;margin:0 auto"></span></figure><h2 id=deleting-nodes->Deleting nodes 🗑<a hidden class=anchor aria-hidden=true href=#deleting-nodes->#</a></h2><p>Another functionality that is often used in the DOM is the ability to remove
+<span class=caption-text style="font-size:.75em;display:table;margin:0 auto 1.5em"></span></figure><h2 id=deleting-nodes->Deleting nodes 🗑<a hidden class=anchor aria-hidden=true href=#deleting-nodes->#</a></h2><p>Another functionality that is often used in the DOM is the ability to remove
 nodes. Just like the DOM can do it, also our MyDOM (TM) should be
 able to handle such operations.</p><p>The simplest way to do this operation in JavaScript is:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
 </span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
