@@ -1,4 +1,4 @@
-<!doctype html><html lang=en dir=auto><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><meta name=robots content="index, follow"><title>Implementing "the lovely" Singleton Pattern | Ilija Eftimov ⚡️</title><meta name=keywords content="singleton"><meta name=description content="In every software, there are some things that have to be unique. For example, a Rails app has only one logger. Also, applications must have configurations, like environment, various API keys and etc. Take the configuration example - we need only one configuration for a runtime of an application. If all of the configuration data is stored into a class, then the whole app will need to use an object of that class."><meta name=author content="Ilija"><link rel=canonical href=https://ieftimov.com/post/singleton-pattern/><link crossorigin=anonymous href=/assets/css/stylesheet.min.css rel="preload stylesheet" as=style><link rel=icon href=https://ieftimov.com/favicon.ico><link rel=icon type=image/png sizes=16x16 href=https://ieftimov.com/favicon-16x16.png><link rel=icon type=image/png sizes=32x32 href=https://ieftimov.com/favicon-32x32.png><link rel=apple-touch-icon href=https://ieftimov.com/apple-touch-icon.png><link rel=mask-icon href=https://ieftimov.com/safari-pinned-tab.svg><meta name=theme-color content="#2e2e33"><meta name=msapplication-TileColor content="#2e2e33"><meta name=generator content="Hugo 0.83.1"><script async defer data-domain=ieftimov.com src=https://plausible.io/js/plausible.js></script><link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel=stylesheet><meta property="og:title" content="Implementing &#34;the lovely&#34; Singleton Pattern"><meta property="og:description" content="In every software, there are some things that have to be unique. For example, a Rails app has only one logger. Also, applications must have configurations, like environment, various API keys and etc. Take the configuration example - we need only one configuration for a runtime of an application. If all of the configuration data is stored into a class, then the whole app will need to use an object of that class."><meta property="og:type" content="article"><meta property="og:url" content="https://ieftimov.com/post/singleton-pattern/"><meta property="article:section" content="posts"><meta name=twitter:card content="summary"><meta name=twitter:title content="Implementing &#34;the lovely&#34; Singleton Pattern"><meta name=twitter:description content="In every software, there are some things that have to be unique. For example, a Rails app has only one logger. Also, applications must have configurations, like environment, various API keys and etc. Take the configuration example - we need only one configuration for a runtime of an application. If all of the configuration data is stored into a class, then the whole app will need to use an object of that class."><script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://ieftimov.com/posts/"},{"@type":"ListItem","position":2,"name":"Implementing \"the lovely\" Singleton Pattern","item":"https://ieftimov.com/post/singleton-pattern/"}]}</script><script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"Implementing \"the lovely\" Singleton Pattern","name":"Implementing \u0022the lovely\u0022 Singleton Pattern","description":"In every software, there are some things that have to be unique. For example, a Rails app has only one logger. Also, applications must have configurations, like environment, various API keys and etc. Take the configuration example - we need only one configuration for a runtime of an application. If all of the configuration data is stored into a class, then the whole app will need to use an object of that class.","keywords":["singleton"],"articleBody":"In every software, there are some things that have to be unique. For example, a Rails app has only one logger. Also, applications must have configurations, like environment, various API keys and etc. Take the configuration example - we need only one configuration for a runtime of an application. If all of the configuration data is stored into a class, then the whole app will need to use an object of that class. Hence, we use singletons - classes that can only have one object instantiated from them.\nBasically, singleton classes prevent instantiation of more than one object of that class. Some people say that singletons are bad, some don’t. But I am pretty sure there are fine use-cases that we need to be aware of.\nThere are couple of ways to implement this pattern in Ruby:\nRuby Singleton Module Ruby’s Standard Library has a module that allows the creation of Singleton pattern. Using it is really easy.\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19  require 'singleton' class Configuration include Singleton attr_accessor :data def initialize @data = {} end def add key, value @data[key] = value end def version '0.0.1' end end   Here, we create a Configuration class - a class that has a hash called ‘data’ that will contain all the configration data. We added the add method that accepts a key and a value pair as arguments. This method will add the key-value pair to the data hash.\n1 2 3 4   c = Configuration.new NoMethodError: private method `new' called for Configuration:Class from (irb):27 from /Users/ie/.rbenv/versions/2.0.0-p576/bin/irb:12:in `'   As you can see, instantiating a new object of this class is prohibited. Accessing the singleton is done using the instance class method.\n1 2 3 4 5   Configuration.instance = #  Configuration.instance.data = {}   Also, using the add method is done by calling it on the instance: 1 2 3 4 5   Configuration.instance.add \"environment\", \"development\" = \"development\"  Configuration.instance.data = {\"environment\"=\"development\"}  \nInstantiating a single object of a class So, how can we reproduce the same class as a Singleton without mixing in the Singleton module?\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19  class Configuration attr_accessor :data def initialize @data = {} end def self.instance @@instance end def add key, value @data[key] = value end @@instance = Configuration.new private_class_method :new end   So, where’s the magic? The initialize and add methods look pretty usual. We create a class variable @@instance that is an object of the Configuration class. The key thing here is that we ‘protect’ the Configuration.new method by making it a private class method. Then, Configuration.instance method will just return the @@instance. The use case is very much the same.\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16   Configuration.new NoMethodError: private method `new' called for Configuration:Class from (irb):20 from /Users/ie/.rbenv/versions/2.0.0-p576/bin/irb:12:in `'  Configuration.instance = # Configuration.instance.add 'env', 'dev' = \"dev\"  Configuration.instance.data['env'] = \"dev\"  Configuration.instance = #\"dev\"}   Constants and global variables The key feature of a Singleton, beside the only-one-available-object is that the Singleton has to be globally acessible. That’s why constants and global variables can play well here.\n1 2  CONFIGURATION = Configuration.new CONFIGURATION.add 'environment', 'development'   1 2  $configuration = Configuration.new $configuration.add 'environment', 'development'   One problem that global variables have is that it can get changed in runtime, without you noticing.\nClass Singleton pattern can also be implemented by using class methods and variables. By using class methods we have are sure that we will have a single instance of the class.\n1 2 3 4 5 6 7 8 9 10  class Configuration def self.add key, value @@data ||= {} @@data[key] = value end def self.data @@data ||= {} end end   Using it is, again, simple:\n1 2 3 4 5 6 7 8   Configuration.data = {}  Configuration.add 'environment', 'production' = \"production\"  Configuration.data = {\"environment\"=\"production\"}   Module Simillar to the class implementation, a module can be a Singleton. Also, by default, instantiating an object from a module is impossible, which is a nice thing when it comes to the Singleton pattern.\n1 2 3 4 5 6 7 8 9 10  module Configuration def self.add key, value @@data ||= {} @@data[key] = value end def self.data @@data ||= {} end end   Using the module is the same as using the class:\n1 2 3 4 5 6 7 8   Configuration.data = {}  Configuration.add 'environment', 'production' = \"production\"  Configuration.data = {\"environment\"=\"production\"}   The good, the bad and the Singleton Pattern There is quite a debate going on the internet about the Singleton pattern. Some are in love with it, others consider it an anti-pattern and despise it. What’s very crucial that you must understand is that every pattern has it’s use cases. Yes, each and every one of them!\nIn my opinion, the problem with the Singleton pattern is that if you fall “in love” with it, you might overuse it and then the coupling and the global state might hunt you for years. On the other hand, the best examples where you should use Singletons that come to mind are application Configuration and Loggers. So, like I said, it has it’s use cases but you should really think hard about it before using it.\nWhen and where have you used Singletons? Is it that bad, or is it much better? What’s your opinion on using the Singleton pattern?\n Liked this article? Subscribe to my newsletter and get future articles in your inbox. It's a short and sweet read, going out to +1000 of other engineers.  I care about your privacy, and will never send you spam. You can unsubscribe at any time.\n ","wordCount":"969","inLanguage":"en","datePublished":"0001-01-01T00:00:00Z","dateModified":"0001-01-01T00:00:00Z","author":{"@type":"Person","name":"Ilija"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://ieftimov.com/post/singleton-pattern/"},"publisher":{"@type":"Organization","name":"Ilija Eftimov ⚡️","logo":{"@type":"ImageObject","url":"https://ieftimov.com/favicon.ico"}}}</script></head><body id=top><script>localStorage.getItem("pref-theme")==="dark"?document.body.classList.add('dark'):localStorage.getItem("pref-theme")==="light"?document.body.classList.remove('dark'):window.matchMedia('(prefers-color-scheme: dark)').matches&&document.body.classList.add('dark')</script><noscript><style type=text/css>#theme-toggle,.top-link{display:none}</style><style>@media(prefers-color-scheme:dark){:root{--theme:#1d1e20;--entry:#2e2e33;--primary:rgba(255, 255, 255, 0.84);--secondary:rgba(255, 255, 255, 0.56);--tertiary:rgba(255, 255, 255, 0.16);--content:rgba(255, 255, 255, 0.74);--hljs-bg:#2e2e33;--code-bg:#37383e;--border:#333}.list{background:var(--theme)}.list:not(.dark)::-webkit-scrollbar-track{background:0 0}.list:not(.dark)::-webkit-scrollbar-thumb{border-color:var(--theme)}}</style></noscript><header class=header><nav class=nav><div class=logo><a href=https://ieftimov.com/ accesskey=h title="Ilija Eftimov ⚡️ (Alt + H)">Ilija Eftimov ⚡️</a>
+<!doctype html><html lang=en dir=auto><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><meta name=robots content="index, follow"><title>Implementing "the lovely" Singleton Pattern | Ilija Eftimov ⚡️</title><meta name=keywords content="singleton"><meta name=description content="In every software, there are some things that have to be unique. For example, a Rails app has only one logger. Also, applications must have configurations, like environment, various API keys and etc. Take the configuration example - we need only one configuration for a runtime of an application. If all of the configuration data is stored into a class, then the whole app will need to use an object of that class."><meta name=author content="Ilija"><link rel=canonical href=https://ieftimov.com/post/singleton-pattern/><link crossorigin=anonymous href=/assets/css/stylesheet.min.css rel="preload stylesheet" as=style><link rel=icon href=https://ieftimov.com/favicon.ico><link rel=icon type=image/png sizes=16x16 href=https://ieftimov.com/favicon-16x16.png><link rel=icon type=image/png sizes=32x32 href=https://ieftimov.com/favicon-32x32.png><link rel=apple-touch-icon href=https://ieftimov.com/apple-touch-icon.png><link rel=mask-icon href=https://ieftimov.com/safari-pinned-tab.svg><meta name=theme-color content="#2e2e33"><meta name=msapplication-TileColor content="#2e2e33"><meta name=generator content="Hugo 0.83.1"><script async defer data-domain=ieftimov.com src=https://plausible.io/js/plausible.js></script><link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel=stylesheet><meta property="og:title" content="Implementing &#34;the lovely&#34; Singleton Pattern"><meta property="og:description" content="In every software, there are some things that have to be unique. For example, a Rails app has only one logger. Also, applications must have configurations, like environment, various API keys and etc. Take the configuration example - we need only one configuration for a runtime of an application. If all of the configuration data is stored into a class, then the whole app will need to use an object of that class."><meta property="og:type" content="article"><meta property="og:url" content="https://ieftimov.com/post/singleton-pattern/"><meta property="article:section" content="posts"><meta name=twitter:card content="summary"><meta name=twitter:title content="Implementing &#34;the lovely&#34; Singleton Pattern"><meta name=twitter:description content="In every software, there are some things that have to be unique. For example, a Rails app has only one logger. Also, applications must have configurations, like environment, various API keys and etc. Take the configuration example - we need only one configuration for a runtime of an application. If all of the configuration data is stored into a class, then the whole app will need to use an object of that class."><script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://ieftimov.com/posts/"},{"@type":"ListItem","position":2,"name":"Implementing \"the lovely\" Singleton Pattern","item":"https://ieftimov.com/post/singleton-pattern/"}]}</script><script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"Implementing \"the lovely\" Singleton Pattern","name":"Implementing \u0022the lovely\u0022 Singleton Pattern","description":"In every software, there are some things that have to be unique. For example, a Rails app has only one logger. Also, applications must have configurations, like environment, various API keys and etc. Take the configuration example - we need only one configuration for a runtime of an application. If all of the configuration data is stored into a class, then the whole app will need to use an object of that class.","keywords":["singleton"],"articleBody":"In every software, there are some things that have to be unique. For example, a Rails app has only one logger. Also, applications must have configurations, like environment, various API keys and etc. Take the configuration example - we need only one configuration for a runtime of an application. If all of the configuration data is stored into a class, then the whole app will need to use an object of that class. Hence, we use singletons - classes that can only have one object instantiated from them.\nBasically, singleton classes prevent instantiation of more than one object of that class. Some people say that singletons are bad, some don’t. But I am pretty sure there are fine use-cases that we need to be aware of.\nThere are couple of ways to implement this pattern in Ruby:\nRuby Singleton Module Ruby’s Standard Library has a module that allows the creation of Singleton pattern. Using it is really easy.\nrequire 'singleton' class Configuration include Singleton attr_accessor :data def initialize @data = {} end def add key, value @data[key] = value end def version '0.0.1' end end Here, we create a Configuration class - a class that has a hash called ‘data’ that will contain all the configration data. We added the add method that accepts a key and a value pair as arguments. This method will add the key-value pair to the data hash.\n c = Configuration.new NoMethodError: private method `new' called for Configuration:Class from (irb):27 from /Users/ie/.rbenv/versions/2.0.0-p576/bin/irb:12:in `main' As you can see, instantiating a new object of this class is prohibited. Accessing the singleton is done using the instance class method.\n Configuration.instance = #  Configuration.instance.data = {} Also, using the add method is done by calling it on the instance:  Configuration.instance.add \"environment\", \"development\" = \"development\"  Configuration.instance.data = {\"environment\"=\"development\"}\nInstantiating a single object of a class So, how can we reproduce the same class as a Singleton without mixing in the Singleton module?\nclass Configuration attr_accessor :data def initialize @data = {} end def self.instance @@instance end def add key, value @data[key] = value end @@instance = Configuration.new private_class_method :new end So, where’s the magic? The initialize and add methods look pretty usual. We create a class variable @@instance that is an object of the Configuration class. The key thing here is that we ‘protect’ the Configuration.new method by making it a private class method. Then, Configuration.instance method will just return the @@instance. The use case is very much the same.\n Configuration.new NoMethodError: private method `new' called for Configuration:Class from (irb):20 from /Users/ie/.rbenv/versions/2.0.0-p576/bin/irb:12:in `main'  Configuration.instance = # Configuration.instance.add 'env', 'dev' = \"dev\"  Configuration.instance.data['env'] = \"dev\"  Configuration.instance = #\"dev\"} Constants and global variables The key feature of a Singleton, beside the only-one-available-object is that the Singleton has to be globally acessible. That’s why constants and global variables can play well here.\nCONFIGURATION = Configuration.new CONFIGURATION.add 'environment', 'development' $configuration = Configuration.new $configuration.add 'environment', 'development' One problem that global variables have is that it can get changed in runtime, without you noticing.\nClass Singleton pattern can also be implemented by using class methods and variables. By using class methods we have are sure that we will have a single instance of the class.\nclass Configuration def self.add key, value @@data ||= {} @@data[key] = value end def self.data @@data ||= {} end end Using it is, again, simple:\n Configuration.data = {}  Configuration.add 'environment', 'production' = \"production\"  Configuration.data = {\"environment\"=\"production\"} Module Simillar to the class implementation, a module can be a Singleton. Also, by default, instantiating an object from a module is impossible, which is a nice thing when it comes to the Singleton pattern.\nmodule Configuration def self.add key, value @@data ||= {} @@data[key] = value end def self.data @@data ||= {} end end Using the module is the same as using the class:\n Configuration.data = {}  Configuration.add 'environment', 'production' = \"production\"  Configuration.data = {\"environment\"=\"production\"} The good, the bad and the Singleton Pattern There is quite a debate going on the internet about the Singleton pattern. Some are in love with it, others consider it an anti-pattern and despise it. What’s very crucial that you must understand is that every pattern has it’s use cases. Yes, each and every one of them!\nIn my opinion, the problem with the Singleton pattern is that if you fall “in love” with it, you might overuse it and then the coupling and the global state might hunt you for years. On the other hand, the best examples where you should use Singletons that come to mind are application Configuration and Loggers. So, like I said, it has it’s use cases but you should really think hard about it before using it.\nWhen and where have you used Singletons? Is it that bad, or is it much better? What’s your opinion on using the Singleton pattern?\n Liked this article? Subscribe to my newsletter and get future articles in your inbox. It's a short and sweet read, going out to +1000 of other engineers.  I care about your privacy, and will never send you spam. You can unsubscribe at any time.\n ","wordCount":"861","inLanguage":"en","datePublished":"0001-01-01T00:00:00Z","dateModified":"0001-01-01T00:00:00Z","author":{"@type":"Person","name":"Ilija"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://ieftimov.com/post/singleton-pattern/"},"publisher":{"@type":"Organization","name":"Ilija Eftimov ⚡️","logo":{"@type":"ImageObject","url":"https://ieftimov.com/favicon.ico"}}}</script></head><body id=top><script>localStorage.getItem("pref-theme")==="dark"?document.body.classList.add('dark'):localStorage.getItem("pref-theme")==="light"?document.body.classList.remove('dark'):window.matchMedia('(prefers-color-scheme: dark)').matches&&document.body.classList.add('dark')</script><noscript><style type=text/css>#theme-toggle,.top-link{display:none}</style><style>@media(prefers-color-scheme:dark){:root{--theme:#1d1e20;--entry:#2e2e33;--primary:rgba(255, 255, 255, 0.84);--secondary:rgba(255, 255, 255, 0.56);--tertiary:rgba(255, 255, 255, 0.16);--content:rgba(255, 255, 255, 0.74);--hljs-bg:#2e2e33;--code-bg:#37383e;--border:#333}.list{background:var(--theme)}.list:not(.dark)::-webkit-scrollbar-track{background:0 0}.list:not(.dark)::-webkit-scrollbar-thumb{border-color:var(--theme)}}</style></noscript><header class=header><nav class=nav><div class=logo><a href=https://ieftimov.com/ accesskey=h title="Ilija Eftimov ⚡️ (Alt + H)">Ilija Eftimov ⚡️</a>
 <span class=logo-switches><button id=theme-toggle accesskey=t title="(Alt + T)"><svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg><svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></span></div><ul id=menu><li><a href=https://ieftimov.com/ title=About><span>About</span></a></li><li><a href=https://ieftimov.com/posts title=Writing><span>Writing</span></a></li><li><a href=https://ieftimov.com/newsletter title=Newsletter><span>Newsletter</span></a></li><li><a href=https://forms.gle/orfXK5jh1LRaiFzo8 title="Suggest a topic"><span>Suggest a topic</span></a></li><li><a href=https://www.buymeacoffee.com/ieftimov title="Buy me a ☕"><span>Buy me a ☕</span></a></li></ul></nav></header><main class=main><article class=post-single><header class=post-header><h1 class=post-title>Implementing "the lovely" Singleton Pattern</h1><div class=post-meta>May 26, 2015&nbsp;·&nbsp;5 min&nbsp;·&nbsp;Ilija</div></header><div class=toc><details><summary accesskey=c title="(Alt + C)"><div class=details>Table of Contents</div></summary><div class=inner><ul><li><a href=#ruby-singleton-module aria-label="Ruby Singleton Module">Ruby Singleton Module</a></li><li><a href=#instantiating-a-single-object-of-a-class aria-label="Instantiating a single object of a class">Instantiating a single object of a class</a></li><li><a href=#constants-and-global-variables aria-label="Constants and global variables">Constants and global variables</a></li><li><a href=#class aria-label=Class>Class</a></li><li><a href=#module aria-label=Module>Module</a></li><li><a href=#the-good-the-bad-and-the-singleton-pattern aria-label="The good, the bad and the Singleton Pattern">The good, the bad and the Singleton Pattern</a></li></ul></div></details></div><div class=post-content><p>In every software, there are some things that have to be unique. For example, a
 Rails app has only one logger. Also, applications must have configurations, like
 environment, various API keys and etc. Take the configuration example - we need
@@ -10,228 +10,120 @@ that class. Some people say that
 <a href=http://blogs.msdn.com/b/scottdensmore/archive/2004/05/25/140827.aspx>singletons are bad</a>,
 some don&rsquo;t. But I am pretty sure there are fine use-cases that we need to be
 aware of.</p><p>There are couple of ways to implement this pattern in Ruby:</p><h2 id=ruby-singleton-module>Ruby Singleton Module<a hidden class=anchor aria-hidden=true href=#ruby-singleton-module>#</a></h2><p>Ruby&rsquo;s Standard Library has a module that allows the creation of Singleton
-pattern. Using it is really easy.</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">15
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">16
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">17
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">18
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">19
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=color:#0087ff>require</span> <span style=color:#00afaf>&#39;singleton&#39;</span>
+pattern. Using it is really easy.</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=color:#b58900>require</span> <span style=color:#2aa198>&#39;singleton&#39;</span>
 
-<span style=color:#5f8700>class</span> <span style=color:#0087ff>Configuration</span>
-  <span style=color:#5f8700>include</span> <span style=color:#d75f00>Singleton</span>
+<span style=color:#719e07>class</span> <span style=color:#268bd2>Configuration</span>
+  <span style=color:#719e07>include</span> <span style=color:#cb4b16>Singleton</span>
 
-  <span style=color:#5f8700>attr_accessor</span> <span style=color:#00afaf>:data</span>
+  <span style=color:#719e07>attr_accessor</span> <span style=color:#2aa198>:data</span>
 
-  <span style=color:#5f8700>def</span> <span style=color:#0087ff>initialize</span>
-    @data = {}
-  <span style=color:#5f8700>end</span>
+  <span style=color:#719e07>def</span> <span style=color:#268bd2>initialize</span>
+    @data <span style=color:#719e07>=</span> {}
+  <span style=color:#719e07>end</span>
 
-  <span style=color:#5f8700>def</span> <span style=color:#0087ff>add</span> key, value
-    @data[key] = value
-  <span style=color:#5f8700>end</span>
+  <span style=color:#719e07>def</span> <span style=color:#268bd2>add</span> key, value
+    @data<span style=color:#719e07>[</span>key<span style=color:#719e07>]</span> <span style=color:#719e07>=</span> value
+  <span style=color:#719e07>end</span>
 
-  <span style=color:#5f8700>def</span> <span style=color:#0087ff>version</span>
-    <span style=color:#00afaf>&#39;0.0.1&#39;</span>
-  <span style=color:#5f8700>end</span>
-<span style=color:#5f8700>end</span></code></pre></td></tr></table></div></div><p>Here, we create a Configuration class - a class that has a hash called &lsquo;data&rsquo;
+  <span style=color:#719e07>def</span> <span style=color:#268bd2>version</span>
+    <span style=color:#2aa198>&#39;0.0.1&#39;</span>
+  <span style=color:#719e07>end</span>
+<span style=color:#719e07>end</span></code></pre></div><p>Here, we create a Configuration class - a class that has a hash called &lsquo;data&rsquo;
 that will contain all the configration data. We added the <code>add</code> method that
 accepts a key and a value pair as arguments. This method will add the key-value
-pair to the data hash.</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">4
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby>&gt;&gt; c = <span style=color:#d75f00>Configuration</span>.new
-<span style=color:#00afaf>NoMethodError</span>: <span style=color:#5f8700>private</span> <span style=color:#0087ff>method</span> <span style=color:#4e4e4e>`new&#39; called for Configuration:Class
-</span><span style=color:#4e4e4e>  from (irb):27
-</span><span style=color:#4e4e4e>  from /Users/ie/.rbenv/versions/2.0.0-p576/bin/irb:12:in `</span>&lt;main&gt;&#39;</code></pre></td></tr></table></div></div><p>As you can see, instantiating a new object of this class is prohibited.
-Accessing the singleton is done using the <code>instance</code> class method.</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">4
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">5
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby>&gt;&gt; <span style=color:#d75f00>Configuration</span>.instance
-=&gt; <span style=color:#4e4e4e>#&lt;Configuration:0x007fc2799e1568 @data={}&gt;</span>
+pair to the data hash.</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=color:#719e07>&gt;&gt;</span> c <span style=color:#719e07>=</span> <span style=color:#cb4b16>Configuration</span><span style=color:#719e07>.</span>new
+<span style=color:#2aa198>NoMethodError</span>: <span style=color:#719e07>private</span> <span style=color:#b58900>method</span> <span style=color:#586e75>`new&#39; called for Configuration:Class
+</span><span style=color:#586e75>  from (irb):27
+</span><span style=color:#586e75>  from /Users/ie/.rbenv/versions/2.0.0-p576/bin/irb:12:in `</span><span style=color:#719e07>&lt;</span>main<span style=color:#719e07>&gt;</span>&#39;</code></pre></div><p>As you can see, instantiating a new object of this class is prohibited.
+Accessing the singleton is done using the <code>instance</code> class method.</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=color:#719e07>&gt;&gt;</span> <span style=color:#cb4b16>Configuration</span><span style=color:#719e07>.</span>instance
+<span style=color:#719e07>=&gt;</span> <span style=color:#586e75>#&lt;Configuration:0x007fc2799e1568 @data={}&gt;</span>
 
-&gt;&gt; <span style=color:#d75f00>Configuration</span>.instance.data
-=&gt; {}</code></pre></td></tr></table></div></div><p>Also, using the <code>add</code> method is done by calling it on the <code>instance</code>:<div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">4
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">5
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby>&gt;&gt; <span style=color:#d75f00>Configuration</span>.instance.add <span style=color:#00afaf>&#34;environment&#34;</span>, <span style=color:#00afaf>&#34;development&#34;</span>
-=&gt; <span style=color:#00afaf>&#34;development&#34;</span>
+<span style=color:#719e07>&gt;&gt;</span> <span style=color:#cb4b16>Configuration</span><span style=color:#719e07>.</span>instance<span style=color:#719e07>.</span>data
+<span style=color:#719e07>=&gt;</span> {}</code></pre></div><p>Also, using the <code>add</code> method is done by calling it on the <code>instance</code>:<div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=color:#719e07>&gt;&gt;</span> <span style=color:#cb4b16>Configuration</span><span style=color:#719e07>.</span>instance<span style=color:#719e07>.</span>add <span style=color:#2aa198>&#34;environment&#34;</span>, <span style=color:#2aa198>&#34;development&#34;</span>
+<span style=color:#719e07>=&gt;</span> <span style=color:#2aa198>&#34;development&#34;</span>
 
-&gt;&gt; <span style=color:#d75f00>Configuration</span>.instance.data
-=&gt; {<span style=color:#00afaf>&#34;environment&#34;</span>=&gt;<span style=color:#00afaf>&#34;development&#34;</span>}</code></pre></td></tr></table></div></div></p><h2 id=instantiating-a-single-object-of-a-class>Instantiating a single object of a class<a hidden class=anchor aria-hidden=true href=#instantiating-a-single-object-of-a-class>#</a></h2><p>So, how can we reproduce the same class as a Singleton without mixing in the
-Singleton module?</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">15
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">16
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">17
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">18
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">19
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=color:#5f8700>class</span> <span style=color:#0087ff>Configuration</span>
-  <span style=color:#5f8700>attr_accessor</span> <span style=color:#00afaf>:data</span>
+<span style=color:#719e07>&gt;&gt;</span> <span style=color:#cb4b16>Configuration</span><span style=color:#719e07>.</span>instance<span style=color:#719e07>.</span>data
+<span style=color:#719e07>=&gt;</span> {<span style=color:#2aa198>&#34;environment&#34;</span><span style=color:#719e07>=&gt;</span><span style=color:#2aa198>&#34;development&#34;</span>}</code></pre></div></p><h2 id=instantiating-a-single-object-of-a-class>Instantiating a single object of a class<a hidden class=anchor aria-hidden=true href=#instantiating-a-single-object-of-a-class>#</a></h2><p>So, how can we reproduce the same class as a Singleton without mixing in the
+Singleton module?</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=color:#719e07>class</span> <span style=color:#268bd2>Configuration</span>
+  <span style=color:#719e07>attr_accessor</span> <span style=color:#2aa198>:data</span>
 
-  <span style=color:#5f8700>def</span> <span style=color:#0087ff>initialize</span>
-    @data = {}
-  <span style=color:#5f8700>end</span>
+  <span style=color:#719e07>def</span> <span style=color:#268bd2>initialize</span>
+    @data <span style=color:#719e07>=</span> {}
+  <span style=color:#719e07>end</span>
 
-  <span style=color:#5f8700>def</span> <span style=color:#0087ff>self</span>.<span style=color:#0087ff>instance</span>
+  <span style=color:#719e07>def</span> <span style=color:#268bd2>self</span><span style=color:#719e07>.</span><span style=color:#268bd2>instance</span>
     @@instance
-  <span style=color:#5f8700>end</span>
+  <span style=color:#719e07>end</span>
 
-  <span style=color:#5f8700>def</span> <span style=color:#0087ff>add</span> key, value
-    @data[key] = value
-  <span style=color:#5f8700>end</span>
+  <span style=color:#719e07>def</span> <span style=color:#268bd2>add</span> key, value
+    @data<span style=color:#719e07>[</span>key<span style=color:#719e07>]</span> <span style=color:#719e07>=</span> value
+  <span style=color:#719e07>end</span>
 
-  @@instance = <span style=color:#d75f00>Configuration</span>.new
+  @@instance <span style=color:#719e07>=</span> <span style=color:#cb4b16>Configuration</span><span style=color:#719e07>.</span>new
 
-  <span style=color:#0087ff>private_class_method</span> <span style=color:#00afaf>:new</span>
-<span style=color:#5f8700>end</span></code></pre></td></tr></table></div></div><p>So, where&rsquo;s the magic? The <code>initialize</code> and <code>add</code> methods look pretty
+  <span style=color:#b58900>private_class_method</span> <span style=color:#2aa198>:new</span>
+<span style=color:#719e07>end</span></code></pre></div><p>So, where&rsquo;s the magic? The <code>initialize</code> and <code>add</code> methods look pretty
 usual. We create a class variable <code>@@instance</code> that is an object of the
 Configuration class. The key thing here is that we &lsquo;protect&rsquo; the
 <code>Configuration.new</code> method by making it a private class method. Then,
 <code>Configuration.instance</code> method will just return the <code>@@instance</code>. The
-use case is very much the same.</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">15
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">16
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby>&gt;&gt; <span style=color:#d75f00>Configuration</span>.new
-<span style=color:#00afaf>NoMethodError</span>: <span style=color:#5f8700>private</span> <span style=color:#0087ff>method</span> <span style=color:#4e4e4e>`new&#39; called for Configuration:Class
-</span><span style=color:#4e4e4e>  from (irb):20
-</span><span style=color:#4e4e4e>  from /Users/ie/.rbenv/versions/2.0.0-p576/bin/irb:12:in `</span>&lt;main&gt;<span style=color:#00afaf>&#39;
-</span><span style=color:#00afaf>
-</span><span style=color:#00afaf>&gt;&gt; Configuration.instance
-</span><span style=color:#00afaf>=&gt; #&lt;Configuration:0x007fd76419ebf8 @data={}&gt;
-</span><span style=color:#00afaf>
-</span><span style=color:#00afaf>&gt;&gt; Configuration.instance.add &#39;</span>env<span style=color:#00afaf>&#39;, &#39;</span>dev<span style=color:#00afaf>&#39;
-</span><span style=color:#00afaf>=&gt; &#34;dev&#34;
-</span><span style=color:#00afaf>
-</span><span style=color:#00afaf>&gt;&gt; Configuration.instance.data[&#39;</span>env&#39;]
-=&gt; <span style=color:#00afaf>&#34;dev&#34;</span>
+use case is very much the same.</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=color:#719e07>&gt;&gt;</span> <span style=color:#cb4b16>Configuration</span><span style=color:#719e07>.</span>new
+<span style=color:#2aa198>NoMethodError</span>: <span style=color:#719e07>private</span> <span style=color:#b58900>method</span> <span style=color:#586e75>`new&#39; called for Configuration:Class
+</span><span style=color:#586e75>  from (irb):20
+</span><span style=color:#586e75>  from /Users/ie/.rbenv/versions/2.0.0-p576/bin/irb:12:in `</span><span style=color:#719e07>&lt;</span>main<span style=color:#719e07>&gt;</span><span style=color:#2aa198>&#39;
+</span><span style=color:#2aa198>
+</span><span style=color:#2aa198>&gt;&gt; Configuration.instance
+</span><span style=color:#2aa198>=&gt; #&lt;Configuration:0x007fd76419ebf8 @data={}&gt;
+</span><span style=color:#2aa198>
+</span><span style=color:#2aa198>&gt;&gt; Configuration.instance.add &#39;</span>env<span style=color:#2aa198>&#39;, &#39;</span>dev<span style=color:#2aa198>&#39;
+</span><span style=color:#2aa198>=&gt; &#34;dev&#34;
+</span><span style=color:#2aa198>
+</span><span style=color:#2aa198>&gt;&gt; Configuration.instance.data[&#39;</span>env&#39;<span style=color:#719e07>]</span>
+<span style=color:#719e07>=&gt;</span> <span style=color:#2aa198>&#34;dev&#34;</span>
 
-&gt;&gt; <span style=color:#d75f00>Configuration</span>.instance
-=&gt; <span style=color:#4e4e4e>#&lt;Configuration:0x007fd76419ebf8 @data={&#34;env&#34;=&gt;&#34;dev&#34;}&gt;</span></code></pre></td></tr></table></div></div><h2 id=constants-and-global-variables>Constants and global variables<a hidden class=anchor aria-hidden=true href=#constants-and-global-variables>#</a></h2><p>The key feature of a Singleton, beside the only-one-available-object is that the
+<span style=color:#719e07>&gt;&gt;</span> <span style=color:#cb4b16>Configuration</span><span style=color:#719e07>.</span>instance
+<span style=color:#719e07>=&gt;</span> <span style=color:#586e75>#&lt;Configuration:0x007fd76419ebf8 @data={&#34;env&#34;=&gt;&#34;dev&#34;}&gt;</span></code></pre></div><h2 id=constants-and-global-variables>Constants and global variables<a hidden class=anchor aria-hidden=true href=#constants-and-global-variables>#</a></h2><p>The key feature of a Singleton, beside the only-one-available-object is that the
 Singleton has to be globally acessible. That&rsquo;s why constants and global
-variables can play well here.</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=color:#d75f00>CONFIGURATION</span> = <span style=color:#d75f00>Configuration</span>.new
-<span style=color:#d75f00>CONFIGURATION</span>.add <span style=color:#00afaf>&#39;environment&#39;</span>, <span style=color:#00afaf>&#39;development&#39;</span></code></pre></td></tr></table></div></div><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby>$configuration = <span style=color:#d75f00>Configuration</span>.new
-$configuration.add <span style=color:#00afaf>&#39;environment&#39;</span>, <span style=color:#00afaf>&#39;development&#39;</span></code></pre></td></tr></table></div></div><p>One problem that global variables have is that it can get changed in runtime,
+variables can play well here.</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=color:#cb4b16>CONFIGURATION</span> <span style=color:#719e07>=</span> <span style=color:#cb4b16>Configuration</span><span style=color:#719e07>.</span>new
+<span style=color:#cb4b16>CONFIGURATION</span><span style=color:#719e07>.</span>add <span style=color:#2aa198>&#39;environment&#39;</span>, <span style=color:#2aa198>&#39;development&#39;</span></code></pre></div><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby>$configuration <span style=color:#719e07>=</span> <span style=color:#cb4b16>Configuration</span><span style=color:#719e07>.</span>new
+$configuration<span style=color:#719e07>.</span>add <span style=color:#2aa198>&#39;environment&#39;</span>, <span style=color:#2aa198>&#39;development&#39;</span></code></pre></div><p>One problem that global variables have is that it can get changed in runtime,
 without you noticing.</p><h2 id=class>Class<a hidden class=anchor aria-hidden=true href=#class>#</a></h2><p>Singleton pattern can also be implemented by using class methods and variables.
 By using class methods we have are sure that we will have a single instance of
-the class.</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=color:#5f8700>class</span> <span style=color:#0087ff>Configuration</span>
-  <span style=color:#5f8700>def</span> <span style=color:#0087ff>self</span>.<span style=color:#0087ff>add</span> key, value
-    @@data ||= {}
-    @@data[key] = value
-  <span style=color:#5f8700>end</span>
+the class.</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=color:#719e07>class</span> <span style=color:#268bd2>Configuration</span>
+  <span style=color:#719e07>def</span> <span style=color:#268bd2>self</span><span style=color:#719e07>.</span><span style=color:#268bd2>add</span> key, value
+    @@data <span style=color:#719e07>||=</span> {}
+    @@data<span style=color:#719e07>[</span>key<span style=color:#719e07>]</span> <span style=color:#719e07>=</span> value
+  <span style=color:#719e07>end</span>
 
-  <span style=color:#5f8700>def</span> <span style=color:#0087ff>self</span>.<span style=color:#0087ff>data</span>
-    @@data ||= {}
-  <span style=color:#5f8700>end</span>
-<span style=color:#5f8700>end</span></code></pre></td></tr></table></div></div><p>Using it is, again, simple:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">4
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">5
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">6
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">7
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">8
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby>&gt;&gt; <span style=color:#d75f00>Configuration</span>.data
-=&gt; {}
+  <span style=color:#719e07>def</span> <span style=color:#268bd2>self</span><span style=color:#719e07>.</span><span style=color:#268bd2>data</span>
+    @@data <span style=color:#719e07>||=</span> {}
+  <span style=color:#719e07>end</span>
+<span style=color:#719e07>end</span></code></pre></div><p>Using it is, again, simple:</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=color:#719e07>&gt;&gt;</span> <span style=color:#cb4b16>Configuration</span><span style=color:#719e07>.</span>data
+<span style=color:#719e07>=&gt;</span> {}
 
-&gt;&gt; <span style=color:#d75f00>Configuration</span>.add <span style=color:#00afaf>&#39;environment&#39;</span>, <span style=color:#00afaf>&#39;production&#39;</span>
-=&gt; <span style=color:#00afaf>&#34;production&#34;</span>
+<span style=color:#719e07>&gt;&gt;</span> <span style=color:#cb4b16>Configuration</span><span style=color:#719e07>.</span>add <span style=color:#2aa198>&#39;environment&#39;</span>, <span style=color:#2aa198>&#39;production&#39;</span>
+<span style=color:#719e07>=&gt;</span> <span style=color:#2aa198>&#34;production&#34;</span>
 
-&gt;&gt; <span style=color:#d75f00>Configuration</span>.data
-=&gt; {<span style=color:#00afaf>&#34;environment&#34;</span>=&gt;<span style=color:#00afaf>&#34;production&#34;</span>}</code></pre></td></tr></table></div></div><h2 id=module>Module<a hidden class=anchor aria-hidden=true href=#module>#</a></h2><p>Simillar to the class implementation, a module can be a Singleton. Also, by
+<span style=color:#719e07>&gt;&gt;</span> <span style=color:#cb4b16>Configuration</span><span style=color:#719e07>.</span>data
+<span style=color:#719e07>=&gt;</span> {<span style=color:#2aa198>&#34;environment&#34;</span><span style=color:#719e07>=&gt;</span><span style=color:#2aa198>&#34;production&#34;</span>}</code></pre></div><h2 id=module>Module<a hidden class=anchor aria-hidden=true href=#module>#</a></h2><p>Simillar to the class implementation, a module can be a Singleton. Also, by
 default, instantiating an object from a module is impossible, which is a nice
-thing when it comes to the Singleton pattern.</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=color:#5f8700>module</span> Configuration
-  <span style=color:#5f8700>def</span> <span style=color:#0087ff>self</span>.<span style=color:#0087ff>add</span> key, value
-    @@data ||= {}
-    @@data[key] = value
-  <span style=color:#5f8700>end</span>
+thing when it comes to the Singleton pattern.</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=color:#719e07>module</span> Configuration
+  <span style=color:#719e07>def</span> <span style=color:#268bd2>self</span><span style=color:#719e07>.</span><span style=color:#268bd2>add</span> key, value
+    @@data <span style=color:#719e07>||=</span> {}
+    @@data<span style=color:#719e07>[</span>key<span style=color:#719e07>]</span> <span style=color:#719e07>=</span> value
+  <span style=color:#719e07>end</span>
 
-  <span style=color:#5f8700>def</span> <span style=color:#0087ff>self</span>.<span style=color:#0087ff>data</span>
-    @@data ||= {}
-  <span style=color:#5f8700>end</span>
-<span style=color:#5f8700>end</span></code></pre></td></tr></table></div></div><p>Using the module is the same as using the class:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">4
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">5
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">6
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">7
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">8
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby>&gt;&gt; <span style=color:#d75f00>Configuration</span>.data
-=&gt; {}
+  <span style=color:#719e07>def</span> <span style=color:#268bd2>self</span><span style=color:#719e07>.</span><span style=color:#268bd2>data</span>
+    @@data <span style=color:#719e07>||=</span> {}
+  <span style=color:#719e07>end</span>
+<span style=color:#719e07>end</span></code></pre></div><p>Using the module is the same as using the class:</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=color:#719e07>&gt;&gt;</span> <span style=color:#cb4b16>Configuration</span><span style=color:#719e07>.</span>data
+<span style=color:#719e07>=&gt;</span> {}
 
-&gt;&gt; <span style=color:#d75f00>Configuration</span>.add <span style=color:#00afaf>&#39;environment&#39;</span>, <span style=color:#00afaf>&#39;production&#39;</span>
-=&gt; <span style=color:#00afaf>&#34;production&#34;</span>
+<span style=color:#719e07>&gt;&gt;</span> <span style=color:#cb4b16>Configuration</span><span style=color:#719e07>.</span>add <span style=color:#2aa198>&#39;environment&#39;</span>, <span style=color:#2aa198>&#39;production&#39;</span>
+<span style=color:#719e07>=&gt;</span> <span style=color:#2aa198>&#34;production&#34;</span>
 
-&gt;&gt; <span style=color:#d75f00>Configuration</span>.data
-=&gt; {<span style=color:#00afaf>&#34;environment&#34;</span>=&gt;<span style=color:#00afaf>&#34;production&#34;</span>}</code></pre></td></tr></table></div></div><h2 id=the-good-the-bad-and-the-singleton-pattern>The good, the bad and the Singleton Pattern<a hidden class=anchor aria-hidden=true href=#the-good-the-bad-and-the-singleton-pattern>#</a></h2><p>There is <a href=http://stackoverflow.com/questions/137975/what-is-so-bad-about-singletons>quite a debate</a>
+<span style=color:#719e07>&gt;&gt;</span> <span style=color:#cb4b16>Configuration</span><span style=color:#719e07>.</span>data
+<span style=color:#719e07>=&gt;</span> {<span style=color:#2aa198>&#34;environment&#34;</span><span style=color:#719e07>=&gt;</span><span style=color:#2aa198>&#34;production&#34;</span>}</code></pre></div><h2 id=the-good-the-bad-and-the-singleton-pattern>The good, the bad and the Singleton Pattern<a hidden class=anchor aria-hidden=true href=#the-good-the-bad-and-the-singleton-pattern>#</a></h2><p>There is <a href=http://stackoverflow.com/questions/137975/what-is-so-bad-about-singletons>quite a debate</a>
 <a href=https://practicingruby.com/articles/ruby-and-the-singleton-pattern-dont-get-along>going on</a>
 <a href=http://jalf.dk/blog/2010/03/singletons-solving-problems-you-didnt-know-you-never-had-since-1995/>the internet</a>
 <a href=https://jorudolph.wordpress.com/2009/11/22/singleton-considerations/>about the</a> Singleton pattern. Some are in love with

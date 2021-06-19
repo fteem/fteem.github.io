@@ -4,8 +4,8 @@ In Golang, like in other languages, we use it to simplify our code and make it m
 Such a long-standing technique is dependency injection. It is a concept and a programming technique where a construct is passed (injected) to another construct that depends on it.
 In Golang, like in other languages, we use it to simplify our code and make it more testable."><meta property="og:type" content="article"><meta property="og:url" content="https://ieftimov.com/post/testing-in-go-dependency-injection/"><meta property="og:image" content="https://ieftimov.com/cards/testing-in-go-dependency-injection.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2019-12-01T00:00:00+00:00"><meta property="article:modified_time" content="2019-12-01T00:00:00+00:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://ieftimov.com/cards/testing-in-go-dependency-injection.png"><meta name=twitter:title content="Testing in Go: Dependency Injection"><meta name=twitter:description content="In software engineering, over the years folks have developed many patterns, techniques and refactoring maneuvers. Some have been long forgotten, while others have stood the test of times.
 Such a long-standing technique is dependency injection. It is a concept and a programming technique where a construct is passed (injected) to another construct that depends on it.
-In Golang, like in other languages, we use it to simplify our code and make it more testable."><script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://ieftimov.com/posts/"},{"@type":"ListItem","position":2,"name":"Testing in Go: Dependency Injection","item":"https://ieftimov.com/post/testing-in-go-dependency-injection/"}]}</script><script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"Testing in Go: Dependency Injection","name":"Testing in Go: Dependency Injection","description":"In software engineering, over the years folks have developed many patterns, techniques and refactoring maneuvers. Some have been long forgotten, while others have stood the test of times.\nSuch a long-standing technique is dependency injection. It is a concept and a programming technique where a construct is passed (injected) to another construct that depends on it.\nIn Golang, like in other languages, we use it to simplify our code and make it more testable.","keywords":[],"articleBody":"In software engineering, over the years folks have developed many patterns, techniques and refactoring maneuvers. Some have been long forgotten, while others have stood the test of times.\nSuch a long-standing technique is dependency injection. It is a concept and a programming technique where a construct is passed (injected) to another construct that depends on it.\nIn Golang, like in other languages, we use it to simplify our code and make it more testable. But, how much more? Let’s code through an example and see how dependency injection can help us out.\nSending notifications Imagine we are building an e-commerce website where people buy goods and we ship them the goods. When their order ships, we want to inform them through a notification.\nLet’s look at a very simple simulation of sending an SMS notification over an API:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19  package notifications import ( \"fmt\" \"github.com/fteem/order-notifications/sms\" \"github.com/fteem/order-notifications/user\" ) func InformOrderShipped(receiver user.User, orderID string) bool { message := fmt.Sprintf(\"Your order #%s is shipped!\", orderID) err := sms.Send(receiver, message) if err != nil { return false } return true }   For the sake of the example, we’ll simulate a network call in the sms.Send with arbitrary sleep time, so the function takes a few seconds to execute:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14  package sms import ( \"time\" \"github.com/fteem/order-notifications/user\" ) func Send(receiver user.User, message string) error { // Simulating API call... \ttime.Sleep(3 * time.Second) return nil }   Let us see a simple test for the InformOrderShipped function and what kind of challenges it brings:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18  package notifications import \"testing\" func TestInformOrderShipped(t *testing.T) { user := User{ Name: \"Peggy\", Phone: \"+12 345 678 999\", } orderID := \"12345\" got := InformOrderShipped(user, orderID) want := true if want != got { t.Errorf(\"Want '%t', got '%t'\", want, got) } }   While these tests do test the functionality of InformOrderShipped, it already has two issues:\n It lasts three seconds because of invoking sms.Send sleeps for three seconds. There’s no way to easily test what would happen if sms.Send actually returns an error.  Issue number one is something we can ignore for now, as it’s only a side-effect of the implementation of sms.Send. Issue number two, the lack of an easy way to mock sms.Send, is larger so we will address it first.\nInjecting the ability to send SMSes The simplest maneuver we can do in InformOrderShipped, instead of depending on the sms package, is to pass in the Send function as a function closure argument:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18  package notifications import ( \"fmt\" \"github.com/fteem/order-notifications/user\" ) func InformOrderShipped(receiver user.User, orderID string, sendSMS func(user.User, string) error) bool { message := fmt.Sprintf(\"Your order #%s is shipped!\", orderID) err := sendSMS(receiver, message) if err != nil { return false } return true }   Because Go allows us to provide the function as an argument, all we need to do is to specify its arguments and return types and invoke it in the main function. Just by having this in place, we achieve:\n Injecting the dependency on the sms.Send function, using a type rather then importing the actual function. We remove the explicit dependency on the sms package. We make our code easy to mock and test.  To prove these points, we will modify the test to include the two scenarios, when the SMS is successfully sent and when it returns an error:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47  package notifications import ( \"errors\" \"testing\" \"github.com/fteem/order-notifications/user\" ) func TestInformOrderShipped(t *testing.T) { cases := []struct { user user.User orderID string sendingError error name string want bool }{ { user: user.User{\"Peggy\", \"+12 345 678 999\"}, orderID: \"12345\", sendingError: nil, want: true, name: \"Successful send\", }, { user: user.User{\"Peggy\", \"+12 345 678 999\"}, orderID: \"12345\", sendingError: errors.New(\"Sending failed\"), want: false, name: \"Unsuccessful send\", }, } for _, tc := range cases { t.Run(tc.name, func(t *testing.T) { mockSend := func(user.User, string) error { return tc.sendingError } got := InformOrderShipped(tc.user, tc.orderID, mockSend) if tc.want != got { t.Errorf(\"Want '%t', got '%t'\", tc.want, got) } }) } }   In the test we use the table-driven approach, where we define two different test cases: when the SMS sending fails and when it does not.\nBecause our InformOrderShipped function expects a function as a third argument, in our test we create a function mock that has no functionality but returning an error value.\nThis allows us to pass in the mocked function, easily control its return value and avoid waiting for three seconds for the test to finish. We decouple our code, we make it more testable and, on top of that, it executes instantly.\nBut, can we take this further?\nNotifications are more than SMS SMSes are a bit outdated. Nowadays we very often rely on our cellular internet connections, native apps and push notifications to get real-time information about our orders. Also, as much as we dislike it, email is still the online communication king.\nBut you know what’s the best of the three? All of them. People want to be kept in the know, especially when the items that they spend their hard-earned monies on have been dispatched.\nSo, how can we make our code even more flexible, while keeping it easy to test and maintain?\nInterfaces to the rescue!\nGolang interfaces are a powerful construct. They are simple, named collections of method signatures. Interfaces are implicitly implemented, meaning a type implements an interface by implementing the functions specified in the interface. No need for explicit implements statements. (Yes, like yours Java.)\nLet’s introduce an interface called Sender, which defines a Send function:\n1 2 3  type Sender interface { Send(user.User, string) error }   Those of you that are very attentive will notice that the Send function in Sender has the same signature as the sms.Send function from the earlier example. That’s intentional - we want any implementor of the Sender interface to be able to send a notification to a User.\nLet’s make a sms.Dispatcher type which will implement the Sender interface and use it in our code:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16  package sms import ( \"time\" \"github.com/fteem/order-notifications/user\" ) type Dispatcher struct{} func (d Dispatcher) Send(receiver user.User, message string) error { // Simulating API call... \ttime.Sleep(3 * time.Second) return nil }   Now, we can pass an instance of the Dispatcher type in the InformOrderShipped function, which will invoke its Send function. Given that we already have the Sender interface defined, we can use it as an argument:\n1 2 3 4 5 6 7 8 9 10  func InformOrderShipped(receiver user.User, orderID string, sender Sender) bool { message := fmt.Sprintf(\"Your order #%s is shipped!\", orderID) err := sender.Send(receiver, message) if err != nil { return false } return true }   Why? Well, Dispatcher already implements the Sender function, which means that we can pass an instance and it will work. Here’s an example:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14  package main import ( \"github.com/fteem/order-notifications/orders\" \"github.com/fteem/order-notifications/sms\" \"github.com/fteem/order-notifications/user\" ) func main() { u := user.User{\"Peggy\", \"+123 456 789\"} orderID := \"123\" dispatcher := sms.Dispatcher{} orders.InformOrderShipped(u, orderID, dispatcher) }   How does such a change influence our tests? Interestingly, it doesn’t. While we lose the ability to pass in a function closure as an argument, we can still create a mock type that implements the Sender interface and use it as argument to the InformOrderShipped function:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52  package orders import ( \"errors\" \"testing\" \"github.com/fteem/order-notifications/user\" ) type mockSender struct { sendingError error } func (ms mockSender) Send(u user.User, m string) error { return ms.sendingError } func TestInformOrderShipped(t *testing.T) { cases := []struct { user user.User orderID string sendingError error name string want bool }{ { user: user.User{\"Peggy\", \"+12 345 678 999\"}, orderID: \"12345\", sendingError: nil, want: true, name: \"Successful send\", }, { user: user.User{\"Peggy\", \"+12 345 678 999\"}, orderID: \"12345\", sendingError: errors.New(\"Sending failed\"), want: false, name: \"Unsuccessful send\", }, } for _, tc := range cases { t.Run(tc.name, func(t *testing.T) { ms := mockSender{tc.sendingError} got := InformOrderShipped(tc.user, tc.orderID, ms) if tc.want != got { t.Errorf(\"Want '%t', got '%t'\", tc.want, got) } }) } }   Just a simple mockSender type does the trick. Because it implements the Send function and due to Go’s implicitly implementing interfaces mockSender is also a Sender. That means we can use it as an argument to the InformOrderShipped function.\nThe flexibility that the Sender interface provides us cannot be overstated. Although the example is small and trivial, introducing another type of notification for the InformOrderShipped is simple:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16  package push import ( \"time\" \"github.com/fteem/order-notifications/user\" ) type Notifier struct{} func (n Notifier) Send(receiver user.User, message string) error { // Simulating API call... \ttime.Sleep(1 * time.Second) return nil }   This would result in no changes in the InformOrderShipped function, while the Notifier’s Send method can be used as the one of the Dispatcher:\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19  package main import ( \"github.com/fteem/order-notifications/orders\" \"github.com/fteem/order-notifications/push\" \"github.com/fteem/order-notifications/sms\" \"github.com/fteem/order-notifications/user\" ) func main() { dispatcher := sms.Dispatcher{} notifier := push.Notifier{} u := user.User{\"Peggy\", \"+123 456 789\"} orderID := \"123\" orders.InformOrderShipped(u, orderID, dispatcher) orders.InformOrderShipped(u, orderID, notifier) }   With dependency injection in action, we were able not only to decouple our InformOrderShipped function from the sms package, but also by using an interface for dependency injection we got to use polymorphism. Simply put, polymorphism through interfaces allowed us to send SMSes and push notifications in the same InformOrderShipped function.\n Liked this article? Subscribe to my newsletter and get future articles in your inbox. It's a short and sweet read, going out to +1000 of other engineers.  I care about your privacy, and will never send you spam. You can unsubscribe at any time.\n ","wordCount":"1776","inLanguage":"en","datePublished":"2019-12-01T00:00:00Z","dateModified":"2019-12-01T00:00:00Z","author":{"@type":"Person","name":"Ilija"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://ieftimov.com/post/testing-in-go-dependency-injection/"},"publisher":{"@type":"Organization","name":"Ilija Eftimov ⚡️","logo":{"@type":"ImageObject","url":"https://ieftimov.com/favicon.ico"}}}</script></head><body id=top><script>localStorage.getItem("pref-theme")==="dark"?document.body.classList.add('dark'):localStorage.getItem("pref-theme")==="light"?document.body.classList.remove('dark'):window.matchMedia('(prefers-color-scheme: dark)').matches&&document.body.classList.add('dark')</script><noscript><style type=text/css>#theme-toggle,.top-link{display:none}</style><style>@media(prefers-color-scheme:dark){:root{--theme:#1d1e20;--entry:#2e2e33;--primary:rgba(255, 255, 255, 0.84);--secondary:rgba(255, 255, 255, 0.56);--tertiary:rgba(255, 255, 255, 0.16);--content:rgba(255, 255, 255, 0.74);--hljs-bg:#2e2e33;--code-bg:#37383e;--border:#333}.list{background:var(--theme)}.list:not(.dark)::-webkit-scrollbar-track{background:0 0}.list:not(.dark)::-webkit-scrollbar-thumb{border-color:var(--theme)}}</style></noscript><header class=header><nav class=nav><div class=logo><a href=https://ieftimov.com/ accesskey=h title="Ilija Eftimov ⚡️ (Alt + H)">Ilija Eftimov ⚡️</a>
-<span class=logo-switches><button id=theme-toggle accesskey=t title="(Alt + T)"><svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg><svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></span></div><ul id=menu><li><a href=https://ieftimov.com/ title=About><span>About</span></a></li><li><a href=https://ieftimov.com/posts title=Writing><span>Writing</span></a></li><li><a href=https://ieftimov.com/newsletter title=Newsletter><span>Newsletter</span></a></li><li><a href=https://forms.gle/orfXK5jh1LRaiFzo8 title="Suggest a topic"><span>Suggest a topic</span></a></li><li><a href=https://www.buymeacoffee.com/ieftimov title="Buy me a ☕"><span>Buy me a ☕</span></a></li></ul></nav></header><main class=main><article class=post-single><header class=post-header><h1 class=post-title>Testing in Go: Dependency Injection</h1><div class=post-meta>December 1, 2019&nbsp;·&nbsp;9 min&nbsp;·&nbsp;Ilija</div></header><div class=toc><details><summary accesskey=c title="(Alt + C)"><div class=details>Table of Contents</div></summary><div class=inner><ul><li><a href=#sending-notifications aria-label="Sending notifications">Sending notifications</a></li><li><a href=#injecting-the-ability-to-send-smses aria-label="Injecting the ability to send SMSes">Injecting the ability to send SMSes</a></li><li><a href=#notifications-are-more-than-sms aria-label="Notifications are more than SMS">Notifications are more than SMS</a></li></ul></div></details></div><div class=post-content><p>In software engineering, over the years folks have developed many patterns,
+In Golang, like in other languages, we use it to simplify our code and make it more testable."><script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://ieftimov.com/posts/"},{"@type":"ListItem","position":2,"name":"Testing in Go: Dependency Injection","item":"https://ieftimov.com/post/testing-in-go-dependency-injection/"}]}</script><script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"Testing in Go: Dependency Injection","name":"Testing in Go: Dependency Injection","description":"In software engineering, over the years folks have developed many patterns, techniques and refactoring maneuvers. Some have been long forgotten, while others have stood the test of times.\nSuch a long-standing technique is dependency injection. It is a concept and a programming technique where a construct is passed (injected) to another construct that depends on it.\nIn Golang, like in other languages, we use it to simplify our code and make it more testable.","keywords":[],"articleBody":"In software engineering, over the years folks have developed many patterns, techniques and refactoring maneuvers. Some have been long forgotten, while others have stood the test of times.\nSuch a long-standing technique is dependency injection. It is a concept and a programming technique where a construct is passed (injected) to another construct that depends on it.\nIn Golang, like in other languages, we use it to simplify our code and make it more testable. But, how much more? Let’s code through an example and see how dependency injection can help us out.\nSending notifications Imagine we are building an e-commerce website where people buy goods and we ship them the goods. When their order ships, we want to inform them through a notification.\nLet’s look at a very simple simulation of sending an SMS notification over an API:\npackage notifications import ( \"fmt\" \"github.com/fteem/order-notifications/sms\" \"github.com/fteem/order-notifications/user\" ) func InformOrderShipped(receiver user.User, orderID string) bool { message := fmt.Sprintf(\"Your order #%s is shipped!\", orderID) err := sms.Send(receiver, message) if err != nil { return false } return true } For the sake of the example, we’ll simulate a network call in the sms.Send with arbitrary sleep time, so the function takes a few seconds to execute:\npackage sms import ( \"time\" \"github.com/fteem/order-notifications/user\" ) func Send(receiver user.User, message string) error { // Simulating API call... \ttime.Sleep(3 * time.Second) return nil } Let us see a simple test for the InformOrderShipped function and what kind of challenges it brings:\npackage notifications import \"testing\" func TestInformOrderShipped(t *testing.T) { user := User{ Name: \"Peggy\", Phone: \"+12 345 678 999\", } orderID := \"12345\" got := InformOrderShipped(user, orderID) want := true if want != got { t.Errorf(\"Want '%t', got '%t'\", want, got) } } While these tests do test the functionality of InformOrderShipped, it already has two issues:\n It lasts three seconds because of invoking sms.Send sleeps for three seconds. There’s no way to easily test what would happen if sms.Send actually returns an error.  Issue number one is something we can ignore for now, as it’s only a side-effect of the implementation of sms.Send. Issue number two, the lack of an easy way to mock sms.Send, is larger so we will address it first.\nInjecting the ability to send SMSes The simplest maneuver we can do in InformOrderShipped, instead of depending on the sms package, is to pass in the Send function as a function closure argument:\npackage notifications import ( \"fmt\" \"github.com/fteem/order-notifications/user\" ) func InformOrderShipped(receiver user.User, orderID string, sendSMS func(user.User, string) error) bool { message := fmt.Sprintf(\"Your order #%s is shipped!\", orderID) err := sendSMS(receiver, message) if err != nil { return false } return true } Because Go allows us to provide the function as an argument, all we need to do is to specify its arguments and return types and invoke it in the main function. Just by having this in place, we achieve:\n Injecting the dependency on the sms.Send function, using a type rather then importing the actual function. We remove the explicit dependency on the sms package. We make our code easy to mock and test.  To prove these points, we will modify the test to include the two scenarios, when the SMS is successfully sent and when it returns an error:\npackage notifications import ( \"errors\" \"testing\" \"github.com/fteem/order-notifications/user\" ) func TestInformOrderShipped(t *testing.T) { cases := []struct { user user.User orderID string sendingError error name string want bool }{ { user: user.User{\"Peggy\", \"+12 345 678 999\"}, orderID: \"12345\", sendingError: nil, want: true, name: \"Successful send\", }, { user: user.User{\"Peggy\", \"+12 345 678 999\"}, orderID: \"12345\", sendingError: errors.New(\"Sending failed\"), want: false, name: \"Unsuccessful send\", }, } for _, tc := range cases { t.Run(tc.name, func(t *testing.T) { mockSend := func(user.User, string) error { return tc.sendingError } got := InformOrderShipped(tc.user, tc.orderID, mockSend) if tc.want != got { t.Errorf(\"Want '%t', got '%t'\", tc.want, got) } }) } } In the test we use the table-driven approach, where we define two different test cases: when the SMS sending fails and when it does not.\nBecause our InformOrderShipped function expects a function as a third argument, in our test we create a function mock that has no functionality but returning an error value.\nThis allows us to pass in the mocked function, easily control its return value and avoid waiting for three seconds for the test to finish. We decouple our code, we make it more testable and, on top of that, it executes instantly.\nBut, can we take this further?\nNotifications are more than SMS SMSes are a bit outdated. Nowadays we very often rely on our cellular internet connections, native apps and push notifications to get real-time information about our orders. Also, as much as we dislike it, email is still the online communication king.\nBut you know what’s the best of the three? All of them. People want to be kept in the know, especially when the items that they spend their hard-earned monies on have been dispatched.\nSo, how can we make our code even more flexible, while keeping it easy to test and maintain?\nInterfaces to the rescue!\nGolang interfaces are a powerful construct. They are simple, named collections of method signatures. Interfaces are implicitly implemented, meaning a type implements an interface by implementing the functions specified in the interface. No need for explicit implements statements. (Yes, like yours Java.)\nLet’s introduce an interface called Sender, which defines a Send function:\ntype Sender interface { Send(user.User, string) error } Those of you that are very attentive will notice that the Send function in Sender has the same signature as the sms.Send function from the earlier example. That’s intentional - we want any implementor of the Sender interface to be able to send a notification to a User.\nLet’s make a sms.Dispatcher type which will implement the Sender interface and use it in our code:\npackage sms import ( \"time\" \"github.com/fteem/order-notifications/user\" ) type Dispatcher struct{} func (d Dispatcher) Send(receiver user.User, message string) error { // Simulating API call... \ttime.Sleep(3 * time.Second) return nil } Now, we can pass an instance of the Dispatcher type in the InformOrderShipped function, which will invoke its Send function. Given that we already have the Sender interface defined, we can use it as an argument:\nfunc InformOrderShipped(receiver user.User, orderID string, sender Sender) bool { message := fmt.Sprintf(\"Your order #%s is shipped!\", orderID) err := sender.Send(receiver, message) if err != nil { return false } return true } Why? Well, Dispatcher already implements the Sender function, which means that we can pass an instance and it will work. Here’s an example:\npackage main import ( \"github.com/fteem/order-notifications/orders\" \"github.com/fteem/order-notifications/sms\" \"github.com/fteem/order-notifications/user\" ) func main() { u := user.User{\"Peggy\", \"+123 456 789\"} orderID := \"123\" dispatcher := sms.Dispatcher{} orders.InformOrderShipped(u, orderID, dispatcher) } How does such a change influence our tests? Interestingly, it doesn’t. While we lose the ability to pass in a function closure as an argument, we can still create a mock type that implements the Sender interface and use it as argument to the InformOrderShipped function:\npackage orders import ( \"errors\" \"testing\" \"github.com/fteem/order-notifications/user\" ) type mockSender struct { sendingError error } func (ms mockSender) Send(u user.User, m string) error { return ms.sendingError } func TestInformOrderShipped(t *testing.T) { cases := []struct { user user.User orderID string sendingError error name string want bool }{ { user: user.User{\"Peggy\", \"+12 345 678 999\"}, orderID: \"12345\", sendingError: nil, want: true, name: \"Successful send\", }, { user: user.User{\"Peggy\", \"+12 345 678 999\"}, orderID: \"12345\", sendingError: errors.New(\"Sending failed\"), want: false, name: \"Unsuccessful send\", }, } for _, tc := range cases { t.Run(tc.name, func(t *testing.T) { ms := mockSender{tc.sendingError} got := InformOrderShipped(tc.user, tc.orderID, ms) if tc.want != got { t.Errorf(\"Want '%t', got '%t'\", tc.want, got) } }) } } Just a simple mockSender type does the trick. Because it implements the Send function and due to Go’s implicitly implementing interfaces mockSender is also a Sender. That means we can use it as an argument to the InformOrderShipped function.\nThe flexibility that the Sender interface provides us cannot be overstated. Although the example is small and trivial, introducing another type of notification for the InformOrderShipped is simple:\npackage push import ( \"time\" \"github.com/fteem/order-notifications/user\" ) type Notifier struct{} func (n Notifier) Send(receiver user.User, message string) error { // Simulating API call... \ttime.Sleep(1 * time.Second) return nil } This would result in no changes in the InformOrderShipped function, while the Notifier’s Send method can be used as the one of the Dispatcher:\npackage main import ( \"github.com/fteem/order-notifications/orders\" \"github.com/fteem/order-notifications/push\" \"github.com/fteem/order-notifications/sms\" \"github.com/fteem/order-notifications/user\" ) func main() { dispatcher := sms.Dispatcher{} notifier := push.Notifier{} u := user.User{\"Peggy\", \"+123 456 789\"} orderID := \"123\" orders.InformOrderShipped(u, orderID, dispatcher) orders.InformOrderShipped(u, orderID, notifier) } With dependency injection in action, we were able not only to decouple our InformOrderShipped function from the sms package, but also by using an interface for dependency injection we got to use polymorphism. Simply put, polymorphism through interfaces allowed us to send SMSes and push notifications in the same InformOrderShipped function.\n Liked this article? Subscribe to my newsletter and get future articles in your inbox. It's a short and sweet read, going out to +1000 of other engineers.  I care about your privacy, and will never send you spam. You can unsubscribe at any time.\n ","wordCount":"1530","inLanguage":"en","datePublished":"2019-12-01T00:00:00Z","dateModified":"2019-12-01T00:00:00Z","author":{"@type":"Person","name":"Ilija"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://ieftimov.com/post/testing-in-go-dependency-injection/"},"publisher":{"@type":"Organization","name":"Ilija Eftimov ⚡️","logo":{"@type":"ImageObject","url":"https://ieftimov.com/favicon.ico"}}}</script></head><body id=top><script>localStorage.getItem("pref-theme")==="dark"?document.body.classList.add('dark'):localStorage.getItem("pref-theme")==="light"?document.body.classList.remove('dark'):window.matchMedia('(prefers-color-scheme: dark)').matches&&document.body.classList.add('dark')</script><noscript><style type=text/css>#theme-toggle,.top-link{display:none}</style><style>@media(prefers-color-scheme:dark){:root{--theme:#1d1e20;--entry:#2e2e33;--primary:rgba(255, 255, 255, 0.84);--secondary:rgba(255, 255, 255, 0.56);--tertiary:rgba(255, 255, 255, 0.16);--content:rgba(255, 255, 255, 0.74);--hljs-bg:#2e2e33;--code-bg:#37383e;--border:#333}.list{background:var(--theme)}.list:not(.dark)::-webkit-scrollbar-track{background:0 0}.list:not(.dark)::-webkit-scrollbar-thumb{border-color:var(--theme)}}</style></noscript><header class=header><nav class=nav><div class=logo><a href=https://ieftimov.com/ accesskey=h title="Ilija Eftimov ⚡️ (Alt + H)">Ilija Eftimov ⚡️</a>
+<span class=logo-switches><button id=theme-toggle accesskey=t title="(Alt + T)"><svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg><svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></span></div><ul id=menu><li><a href=https://ieftimov.com/ title=About><span>About</span></a></li><li><a href=https://ieftimov.com/posts title=Writing><span>Writing</span></a></li><li><a href=https://ieftimov.com/newsletter title=Newsletter><span>Newsletter</span></a></li><li><a href=https://forms.gle/orfXK5jh1LRaiFzo8 title="Suggest a topic"><span>Suggest a topic</span></a></li><li><a href=https://www.buymeacoffee.com/ieftimov title="Buy me a ☕"><span>Buy me a ☕</span></a></li></ul></nav></header><main class=main><article class=post-single><header class=post-header><h1 class=post-title>Testing in Go: Dependency Injection</h1><div class=post-meta>December 1, 2019&nbsp;·&nbsp;8 min&nbsp;·&nbsp;Ilija</div></header><div class=toc><details><summary accesskey=c title="(Alt + C)"><div class=details>Table of Contents</div></summary><div class=inner><ul><li><a href=#sending-notifications aria-label="Sending notifications">Sending notifications</a></li><li><a href=#injecting-the-ability-to-send-smses aria-label="Injecting the ability to send SMSes">Injecting the ability to send SMSes</a></li><li><a href=#notifications-are-more-than-sms aria-label="Notifications are more than SMS">Notifications are more than SMS</a></li></ul></div></details></div><div class=post-content><p>In software engineering, over the years folks have developed many patterns,
 techniques and refactoring maneuvers. Some have been long forgotten, while
 others have stood the test of times.</p><p>Such a long-standing technique is dependency injection. It is a concept and a
 programming technique where a construct is passed (injected) to another
@@ -14,248 +14,132 @@ more testable. But, how much more? Let&rsquo;s code through an example and see h
 dependency injection can help us out.</p><p><img loading=lazy src=/testing-in-go-dependency-injection/notify.png alt></p><h2 id=sending-notifications>Sending notifications<a hidden class=anchor aria-hidden=true href=#sending-notifications>#</a></h2><p>Imagine we are building an e-commerce website where people buy goods and we
 ship them the goods. When their order ships, we want to inform them through a
 notification.</p><p>Let&rsquo;s look at a very simple simulation of sending an SMS notification over an
-API:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">15
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">16
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">17
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">18
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">19
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#d75f00>package</span> notifications
+API:</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#719e07>package</span> notifications
 
-<span style=color:#d75f00>import</span> (
-	<span style=color:#00afaf>&#34;fmt&#34;</span>
+<span style=color:#719e07>import</span> (
+	<span style=color:#2aa198>&#34;fmt&#34;</span>
 
-	<span style=color:#00afaf>&#34;github.com/fteem/order-notifications/sms&#34;</span>
-	<span style=color:#00afaf>&#34;github.com/fteem/order-notifications/user&#34;</span>
+	<span style=color:#2aa198>&#34;github.com/fteem/order-notifications/sms&#34;</span>
+	<span style=color:#2aa198>&#34;github.com/fteem/order-notifications/user&#34;</span>
 )
 
-<span style=color:#0087ff>func</span> <span style=color:#0087ff>InformOrderShipped</span>(receiver user.User, orderID <span style=color:#af0000>string</span>) <span style=color:#af0000>bool</span> {
-	message := fmt.<span style=color:#0087ff>Sprintf</span>(<span style=color:#00afaf>&#34;Your order #%s is shipped!&#34;</span>, orderID)
-	err := sms.<span style=color:#0087ff>Send</span>(receiver, message)
+<span style=color:#268bd2>func</span> <span style=color:#268bd2>InformOrderShipped</span>(receiver user.User, orderID <span style=color:#dc322f>string</span>) <span style=color:#dc322f>bool</span> {
+	message <span style=color:#719e07>:=</span> fmt.<span style=color:#268bd2>Sprintf</span>(<span style=color:#2aa198>&#34;Your order #%s is shipped!&#34;</span>, orderID)
+	err <span style=color:#719e07>:=</span> sms.<span style=color:#268bd2>Send</span>(receiver, message)
 
-	<span style=color:#5f8700>if</span> err != <span style=color:#d75f00>nil</span> {
-		<span style=color:#5f8700>return</span> <span style=color:#d75f00>false</span>
+	<span style=color:#719e07>if</span> err <span style=color:#719e07>!=</span> <span style=color:#cb4b16>nil</span> {
+		<span style=color:#719e07>return</span> <span style=color:#cb4b16>false</span>
 	}
 
-	<span style=color:#5f8700>return</span> <span style=color:#d75f00>true</span>
-}</code></pre></td></tr></table></div></div><p>For the sake of the example, we&rsquo;ll simulate a network call in the <code>sms.Send</code>
-with arbitrary sleep time, so the function takes a few seconds to execute:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#d75f00>package</span> sms
+	<span style=color:#719e07>return</span> <span style=color:#cb4b16>true</span>
+}</code></pre></div><p>For the sake of the example, we&rsquo;ll simulate a network call in the <code>sms.Send</code>
+with arbitrary sleep time, so the function takes a few seconds to execute:</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#719e07>package</span> sms
 
-<span style=color:#d75f00>import</span> (
-	<span style=color:#00afaf>&#34;time&#34;</span>
+<span style=color:#719e07>import</span> (
+	<span style=color:#2aa198>&#34;time&#34;</span>
 
-	<span style=color:#00afaf>&#34;github.com/fteem/order-notifications/user&#34;</span>
+	<span style=color:#2aa198>&#34;github.com/fteem/order-notifications/user&#34;</span>
 )
 
-<span style=color:#0087ff>func</span> <span style=color:#0087ff>Send</span>(receiver user.User, message <span style=color:#af0000>string</span>) <span style=color:#af0000>error</span> {
-	<span style=color:#4e4e4e>// Simulating API call...
-</span><span style=color:#4e4e4e></span>	time.<span style=color:#0087ff>Sleep</span>(<span style=color:#00afaf>3</span> * time.Second)
+<span style=color:#268bd2>func</span> <span style=color:#268bd2>Send</span>(receiver user.User, message <span style=color:#dc322f>string</span>) <span style=color:#dc322f>error</span> {
+	<span style=color:#586e75>// Simulating API call...
+</span><span style=color:#586e75></span>	time.<span style=color:#268bd2>Sleep</span>(<span style=color:#2aa198>3</span> <span style=color:#719e07>*</span> time.Second)
 
-	<span style=color:#5f8700>return</span> <span style=color:#d75f00>nil</span>
-}</code></pre></td></tr></table></div></div><p>Let us see a simple test for the <code>InformOrderShipped</code> function and what kind of
-challenges it brings:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">15
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">16
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">17
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">18
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#d75f00>package</span> notifications
+	<span style=color:#719e07>return</span> <span style=color:#cb4b16>nil</span>
+}</code></pre></div><p>Let us see a simple test for the <code>InformOrderShipped</code> function and what kind of
+challenges it brings:</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#719e07>package</span> notifications
 
-<span style=color:#d75f00>import</span> <span style=color:#00afaf>&#34;testing&#34;</span>
+<span style=color:#719e07>import</span> <span style=color:#2aa198>&#34;testing&#34;</span>
 
-<span style=color:#0087ff>func</span> <span style=color:#0087ff>TestInformOrderShipped</span>(t *testing.T) {
-	user := User{
-		Name:  <span style=color:#00afaf>&#34;Peggy&#34;</span>,
-		Phone: <span style=color:#00afaf>&#34;+12 345 678 999&#34;</span>,
+<span style=color:#268bd2>func</span> <span style=color:#268bd2>TestInformOrderShipped</span>(t <span style=color:#719e07>*</span>testing.T) {
+	user <span style=color:#719e07>:=</span> User{
+		Name:  <span style=color:#2aa198>&#34;Peggy&#34;</span>,
+		Phone: <span style=color:#2aa198>&#34;+12 345 678 999&#34;</span>,
 	}
-	orderID := <span style=color:#00afaf>&#34;12345&#34;</span>
+	orderID <span style=color:#719e07>:=</span> <span style=color:#2aa198>&#34;12345&#34;</span>
 
-	got := <span style=color:#0087ff>InformOrderShipped</span>(user, orderID)
-	want := <span style=color:#d75f00>true</span>
+	got <span style=color:#719e07>:=</span> <span style=color:#268bd2>InformOrderShipped</span>(user, orderID)
+	want <span style=color:#719e07>:=</span> <span style=color:#cb4b16>true</span>
 
-	<span style=color:#5f8700>if</span> want != got {
-		t.<span style=color:#0087ff>Errorf</span>(<span style=color:#00afaf>&#34;Want &#39;%t&#39;, got &#39;%t&#39;&#34;</span>, want, got)
+	<span style=color:#719e07>if</span> want <span style=color:#719e07>!=</span> got {
+		t.<span style=color:#268bd2>Errorf</span>(<span style=color:#2aa198>&#34;Want &#39;%t&#39;, got &#39;%t&#39;&#34;</span>, want, got)
 	}
-}</code></pre></td></tr></table></div></div><p>While these tests do test the functionality of <code>InformOrderShipped</code>, it already
+}</code></pre></div><p>While these tests do test the functionality of <code>InformOrderShipped</code>, it already
 has two issues:</p><ol><li>It lasts three seconds because of invoking <code>sms.Send</code> sleeps for three
 seconds.</li><li>There&rsquo;s no way to <strong>easily</strong> test what would happen if <code>sms.Send</code> actually
 returns an error.</li></ol><p>Issue number one is something we can ignore for now, as it&rsquo;s only a side-effect
 of the implementation of <code>sms.Send</code>. Issue number two, the lack of an easy way
 to mock <code>sms.Send</code>, is larger so we will address it first.</p><h2 id=injecting-the-ability-to-send-smses>Injecting the ability to send SMSes<a hidden class=anchor aria-hidden=true href=#injecting-the-ability-to-send-smses>#</a></h2><p>The simplest maneuver we can do in <code>InformOrderShipped</code>, instead of depending
 on the <code>sms</code> package, is to pass in the <code>Send</code> function as a function closure
-argument:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">15
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">16
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">17
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">18
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#d75f00>package</span> notifications
+argument:</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#719e07>package</span> notifications
 
-<span style=color:#d75f00>import</span> (
-	<span style=color:#00afaf>&#34;fmt&#34;</span>
+<span style=color:#719e07>import</span> (
+	<span style=color:#2aa198>&#34;fmt&#34;</span>
 
-	<span style=color:#00afaf>&#34;github.com/fteem/order-notifications/user&#34;</span>
+	<span style=color:#2aa198>&#34;github.com/fteem/order-notifications/user&#34;</span>
 )
 
-<span style=color:#0087ff>func</span> <span style=color:#0087ff>InformOrderShipped</span>(receiver user.User, orderID <span style=color:#af0000>string</span>, sendSMS <span style=color:#0087ff>func</span>(user.User, <span style=color:#af0000>string</span>) <span style=color:#af0000>error</span>) <span style=color:#af0000>bool</span> {
-	message := fmt.<span style=color:#0087ff>Sprintf</span>(<span style=color:#00afaf>&#34;Your order #%s is shipped!&#34;</span>, orderID)
-	err := <span style=color:#0087ff>sendSMS</span>(receiver, message)
+<span style=color:#268bd2>func</span> <span style=color:#268bd2>InformOrderShipped</span>(receiver user.User, orderID <span style=color:#dc322f>string</span>, sendSMS <span style=color:#268bd2>func</span>(user.User, <span style=color:#dc322f>string</span>) <span style=color:#dc322f>error</span>) <span style=color:#dc322f>bool</span> {
+	message <span style=color:#719e07>:=</span> fmt.<span style=color:#268bd2>Sprintf</span>(<span style=color:#2aa198>&#34;Your order #%s is shipped!&#34;</span>, orderID)
+	err <span style=color:#719e07>:=</span> <span style=color:#268bd2>sendSMS</span>(receiver, message)
 
-	<span style=color:#5f8700>if</span> err != <span style=color:#d75f00>nil</span> {
-		<span style=color:#5f8700>return</span> <span style=color:#d75f00>false</span>
+	<span style=color:#719e07>if</span> err <span style=color:#719e07>!=</span> <span style=color:#cb4b16>nil</span> {
+		<span style=color:#719e07>return</span> <span style=color:#cb4b16>false</span>
 	}
 
-	<span style=color:#5f8700>return</span> <span style=color:#d75f00>true</span>
-}</code></pre></td></tr></table></div></div><p>Because Go allows us to provide the function as an argument, all we need to do
+	<span style=color:#719e07>return</span> <span style=color:#cb4b16>true</span>
+}</code></pre></div><p>Because Go allows us to provide the function as an argument, all we need to do
 is to specify its arguments and return types and invoke it in the main
 function.
 Just by having this in place, we achieve:</p><ol><li>Injecting the dependency on the <code>sms.Send</code> function, using a type rather
 then importing the actual function.</li><li>We remove the explicit dependency on the <code>sms</code> package.</li><li>We make our code easy to mock and test.</li></ol><p>To prove these points, we will modify the test to include the two scenarios,
-when the SMS is successfully sent and when it returns an error:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">15
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">16
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">17
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">18
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">19
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">20
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">21
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">22
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">23
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">24
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">25
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">26
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">27
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">28
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">29
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">30
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">31
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">32
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">33
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">34
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">35
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">36
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">37
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">38
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">39
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">40
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">41
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">42
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">43
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">44
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">45
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">46
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">47
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#d75f00>package</span> notifications
+when the SMS is successfully sent and when it returns an error:</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#719e07>package</span> notifications
 
-<span style=color:#d75f00>import</span> (
-	<span style=color:#00afaf>&#34;errors&#34;</span>
-	<span style=color:#00afaf>&#34;testing&#34;</span>
+<span style=color:#719e07>import</span> (
+	<span style=color:#2aa198>&#34;errors&#34;</span>
+	<span style=color:#2aa198>&#34;testing&#34;</span>
 
-	<span style=color:#00afaf>&#34;github.com/fteem/order-notifications/user&#34;</span>
+	<span style=color:#2aa198>&#34;github.com/fteem/order-notifications/user&#34;</span>
 )
 
-<span style=color:#0087ff>func</span> <span style=color:#0087ff>TestInformOrderShipped</span>(t *testing.T) {
-	cases := []<span style=color:#0087ff>struct</span> {
+<span style=color:#268bd2>func</span> <span style=color:#268bd2>TestInformOrderShipped</span>(t <span style=color:#719e07>*</span>testing.T) {
+	cases <span style=color:#719e07>:=</span> []<span style=color:#268bd2>struct</span> {
 		user         user.User
-		orderID      <span style=color:#af0000>string</span>
-		sendingError <span style=color:#af0000>error</span>
-		name         <span style=color:#af0000>string</span>
-		want         <span style=color:#af0000>bool</span>
+		orderID      <span style=color:#dc322f>string</span>
+		sendingError <span style=color:#dc322f>error</span>
+		name         <span style=color:#dc322f>string</span>
+		want         <span style=color:#dc322f>bool</span>
 	}{
 		{
-			user:         user.User{<span style=color:#00afaf>&#34;Peggy&#34;</span>, <span style=color:#00afaf>&#34;+12 345 678 999&#34;</span>},
-			orderID:      <span style=color:#00afaf>&#34;12345&#34;</span>,
-			sendingError: <span style=color:#d75f00>nil</span>,
-			want:         <span style=color:#d75f00>true</span>,
-			name:         <span style=color:#00afaf>&#34;Successful send&#34;</span>,
+			user:         user.User{<span style=color:#2aa198>&#34;Peggy&#34;</span>, <span style=color:#2aa198>&#34;+12 345 678 999&#34;</span>},
+			orderID:      <span style=color:#2aa198>&#34;12345&#34;</span>,
+			sendingError: <span style=color:#cb4b16>nil</span>,
+			want:         <span style=color:#cb4b16>true</span>,
+			name:         <span style=color:#2aa198>&#34;Successful send&#34;</span>,
 		},
 		{
-			user:         user.User{<span style=color:#00afaf>&#34;Peggy&#34;</span>, <span style=color:#00afaf>&#34;+12 345 678 999&#34;</span>},
-			orderID:      <span style=color:#00afaf>&#34;12345&#34;</span>,
-			sendingError: errors.<span style=color:#0087ff>New</span>(<span style=color:#00afaf>&#34;Sending failed&#34;</span>),
-			want:         <span style=color:#d75f00>false</span>,
-			name:         <span style=color:#00afaf>&#34;Unsuccessful send&#34;</span>,
+			user:         user.User{<span style=color:#2aa198>&#34;Peggy&#34;</span>, <span style=color:#2aa198>&#34;+12 345 678 999&#34;</span>},
+			orderID:      <span style=color:#2aa198>&#34;12345&#34;</span>,
+			sendingError: errors.<span style=color:#268bd2>New</span>(<span style=color:#2aa198>&#34;Sending failed&#34;</span>),
+			want:         <span style=color:#cb4b16>false</span>,
+			name:         <span style=color:#2aa198>&#34;Unsuccessful send&#34;</span>,
 		},
 	}
 
-	<span style=color:#5f8700>for</span> _, tc := <span style=color:#5f8700>range</span> cases {
-		t.<span style=color:#0087ff>Run</span>(tc.name, <span style=color:#0087ff>func</span>(t *testing.T) {
-			mockSend := <span style=color:#0087ff>func</span>(user.User, <span style=color:#af0000>string</span>) <span style=color:#af0000>error</span> {
-				<span style=color:#5f8700>return</span> tc.sendingError
+	<span style=color:#719e07>for</span> _, tc <span style=color:#719e07>:=</span> <span style=color:#719e07>range</span> cases {
+		t.<span style=color:#268bd2>Run</span>(tc.name, <span style=color:#268bd2>func</span>(t <span style=color:#719e07>*</span>testing.T) {
+			mockSend <span style=color:#719e07>:=</span> <span style=color:#268bd2>func</span>(user.User, <span style=color:#dc322f>string</span>) <span style=color:#dc322f>error</span> {
+				<span style=color:#719e07>return</span> tc.sendingError
 			}
 
-			got := <span style=color:#0087ff>InformOrderShipped</span>(tc.user, tc.orderID, mockSend)
+			got <span style=color:#719e07>:=</span> <span style=color:#268bd2>InformOrderShipped</span>(tc.user, tc.orderID, mockSend)
 
-			<span style=color:#5f8700>if</span> tc.want != got {
-				t.<span style=color:#0087ff>Errorf</span>(<span style=color:#00afaf>&#34;Want &#39;%t&#39;, got &#39;%t&#39;&#34;</span>, tc.want, got)
+			<span style=color:#719e07>if</span> tc.want <span style=color:#719e07>!=</span> got {
+				t.<span style=color:#268bd2>Errorf</span>(<span style=color:#2aa198>&#34;Want &#39;%t&#39;, got &#39;%t&#39;&#34;</span>, tc.want, got)
 			}
 		})
 	}
-}</code></pre></td></tr></table></div></div><p>In the test we use the <a href=/testing-in-go-table-driven-tests>table-driven
+}</code></pre></div><p>In the test we use the <a href=/testing-in-go-table-driven-tests>table-driven
 approach</a>, where we define two different
 test cases: when the SMS sending fails and when it does not.</p><p>Because our <code>InformOrderShipped</code> function expects a function as a third
 argument, in our test we create a function mock that has no functionality but
@@ -271,276 +155,146 @@ and maintain?</p><p>Interfaces to the rescue!</p><p>Golang interfaces are a powe
 of method signatures. Interfaces are implicitly implemented, meaning a type
 implements an interface by implementing the functions specified in the
 interface. No need for explicit <code>implements</code> statements. (Yes, like yours
-Java.)</p><p>Let&rsquo;s introduce an interface called <code>Sender</code>, which defines a <code>Send</code> function:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545">1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">3
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#0087ff>type</span> Sender <span style=color:#0087ff>interface</span> {
-	<span style=color:#0087ff>Send</span>(user.User, <span style=color:#af0000>string</span>) <span style=color:#af0000>error</span>
-}</code></pre></td></tr></table></div></div><p>Those of you that are very attentive will notice that the <code>Send</code> function in
+Java.)</p><p>Let&rsquo;s introduce an interface called <code>Sender</code>, which defines a <code>Send</code> function:</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#268bd2>type</span> Sender <span style=color:#268bd2>interface</span> {
+	<span style=color:#268bd2>Send</span>(user.User, <span style=color:#dc322f>string</span>) <span style=color:#dc322f>error</span>
+}</code></pre></div><p>Those of you that are very attentive will notice that the <code>Send</code> function in
 <code>Sender</code> has the same signature as the <code>sms.Send</code> function from the earlier
 example. That&rsquo;s intentional - we want any implementor of the <code>Sender</code> interface
 to be able to send a notification to a <code>User</code>.</p><p>Let&rsquo;s make a <code>sms.Dispatcher</code> type which will implement the <code>Sender</code> interface
-and use it in our code:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">15
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">16
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#d75f00>package</span> sms
+and use it in our code:</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#719e07>package</span> sms
 
-<span style=color:#d75f00>import</span> (
-	<span style=color:#00afaf>&#34;time&#34;</span>
+<span style=color:#719e07>import</span> (
+	<span style=color:#2aa198>&#34;time&#34;</span>
 
-	<span style=color:#00afaf>&#34;github.com/fteem/order-notifications/user&#34;</span>
+	<span style=color:#2aa198>&#34;github.com/fteem/order-notifications/user&#34;</span>
 )
 
-<span style=color:#0087ff>type</span> Dispatcher <span style=color:#0087ff>struct</span>{}
+<span style=color:#268bd2>type</span> Dispatcher <span style=color:#268bd2>struct</span>{}
 
-<span style=color:#0087ff>func</span> (d Dispatcher) <span style=color:#0087ff>Send</span>(receiver user.User, message <span style=color:#af0000>string</span>) <span style=color:#af0000>error</span> {
-	<span style=color:#4e4e4e>// Simulating API call...
-</span><span style=color:#4e4e4e></span>	time.<span style=color:#0087ff>Sleep</span>(<span style=color:#00afaf>3</span> * time.Second)
+<span style=color:#268bd2>func</span> (d Dispatcher) <span style=color:#268bd2>Send</span>(receiver user.User, message <span style=color:#dc322f>string</span>) <span style=color:#dc322f>error</span> {
+	<span style=color:#586e75>// Simulating API call...
+</span><span style=color:#586e75></span>	time.<span style=color:#268bd2>Sleep</span>(<span style=color:#2aa198>3</span> <span style=color:#719e07>*</span> time.Second)
 
-	<span style=color:#5f8700>return</span> <span style=color:#d75f00>nil</span>
-}</code></pre></td></tr></table></div></div><p>Now, we can pass an instance of the <code>Dispatcher</code> type in the
+	<span style=color:#719e07>return</span> <span style=color:#cb4b16>nil</span>
+}</code></pre></div><p>Now, we can pass an instance of the <code>Dispatcher</code> type in the
 <code>InformOrderShipped</code> function, which will invoke its <code>Send</code> function. Given that
-we already have the <code>Sender</code> interface defined, we can use it as an argument:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#0087ff>func</span> <span style=color:#0087ff>InformOrderShipped</span>(receiver user.User, orderID <span style=color:#af0000>string</span>, sender Sender) <span style=color:#af0000>bool</span> {
-	message := fmt.<span style=color:#0087ff>Sprintf</span>(<span style=color:#00afaf>&#34;Your order #%s is shipped!&#34;</span>, orderID)
-	err := sender.<span style=color:#0087ff>Send</span>(receiver, message)
+we already have the <code>Sender</code> interface defined, we can use it as an argument:</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#268bd2>func</span> <span style=color:#268bd2>InformOrderShipped</span>(receiver user.User, orderID <span style=color:#dc322f>string</span>, sender Sender) <span style=color:#dc322f>bool</span> {
+	message <span style=color:#719e07>:=</span> fmt.<span style=color:#268bd2>Sprintf</span>(<span style=color:#2aa198>&#34;Your order #%s is shipped!&#34;</span>, orderID)
+	err <span style=color:#719e07>:=</span> sender.<span style=color:#268bd2>Send</span>(receiver, message)
 
-	<span style=color:#5f8700>if</span> err != <span style=color:#d75f00>nil</span> {
-		<span style=color:#5f8700>return</span> <span style=color:#d75f00>false</span>
+	<span style=color:#719e07>if</span> err <span style=color:#719e07>!=</span> <span style=color:#cb4b16>nil</span> {
+		<span style=color:#719e07>return</span> <span style=color:#cb4b16>false</span>
 	}
 
-	<span style=color:#5f8700>return</span> <span style=color:#d75f00>true</span>
-}</code></pre></td></tr></table></div></div><p>Why? Well, <code>Dispatcher</code> already implements the <code>Sender</code> function, which means
-that we can pass an instance and it will work. Here&rsquo;s an example:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#d75f00>package</span> main
+	<span style=color:#719e07>return</span> <span style=color:#cb4b16>true</span>
+}</code></pre></div><p>Why? Well, <code>Dispatcher</code> already implements the <code>Sender</code> function, which means
+that we can pass an instance and it will work. Here&rsquo;s an example:</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#719e07>package</span> main
 
-<span style=color:#d75f00>import</span> (
-	<span style=color:#00afaf>&#34;github.com/fteem/order-notifications/orders&#34;</span>
-	<span style=color:#00afaf>&#34;github.com/fteem/order-notifications/sms&#34;</span>
-	<span style=color:#00afaf>&#34;github.com/fteem/order-notifications/user&#34;</span>
+<span style=color:#719e07>import</span> (
+	<span style=color:#2aa198>&#34;github.com/fteem/order-notifications/orders&#34;</span>
+	<span style=color:#2aa198>&#34;github.com/fteem/order-notifications/sms&#34;</span>
+	<span style=color:#2aa198>&#34;github.com/fteem/order-notifications/user&#34;</span>
 )
 
-<span style=color:#0087ff>func</span> <span style=color:#0087ff>main</span>() {
-	u := user.User{<span style=color:#00afaf>&#34;Peggy&#34;</span>, <span style=color:#00afaf>&#34;+123 456 789&#34;</span>}
-	orderID := <span style=color:#00afaf>&#34;123&#34;</span>
-	dispatcher := sms.Dispatcher{}
-	orders.<span style=color:#0087ff>InformOrderShipped</span>(u, orderID, dispatcher)
-}</code></pre></td></tr></table></div></div><p>How does such a change influence our tests? Interestingly, it doesn&rsquo;t. While we
+<span style=color:#268bd2>func</span> <span style=color:#268bd2>main</span>() {
+	u <span style=color:#719e07>:=</span> user.User{<span style=color:#2aa198>&#34;Peggy&#34;</span>, <span style=color:#2aa198>&#34;+123 456 789&#34;</span>}
+	orderID <span style=color:#719e07>:=</span> <span style=color:#2aa198>&#34;123&#34;</span>
+	dispatcher <span style=color:#719e07>:=</span> sms.Dispatcher{}
+	orders.<span style=color:#268bd2>InformOrderShipped</span>(u, orderID, dispatcher)
+}</code></pre></div><p>How does such a change influence our tests? Interestingly, it doesn&rsquo;t. While we
 lose the ability to pass in a function closure as an argument, we can still
 create a mock type that implements the <code>Sender</code> interface and use it as
-argument to the <code>InformOrderShipped</code> function:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">15
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">16
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">17
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">18
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">19
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">20
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">21
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">22
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">23
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">24
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">25
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">26
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">27
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">28
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">29
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">30
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">31
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">32
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">33
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">34
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">35
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">36
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">37
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">38
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">39
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">40
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">41
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">42
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">43
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">44
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">45
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">46
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">47
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">48
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">49
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">50
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">51
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">52
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#d75f00>package</span> orders
+argument to the <code>InformOrderShipped</code> function:</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#719e07>package</span> orders
 
-<span style=color:#d75f00>import</span> (
-	<span style=color:#00afaf>&#34;errors&#34;</span>
-	<span style=color:#00afaf>&#34;testing&#34;</span>
+<span style=color:#719e07>import</span> (
+	<span style=color:#2aa198>&#34;errors&#34;</span>
+	<span style=color:#2aa198>&#34;testing&#34;</span>
 
-	<span style=color:#00afaf>&#34;github.com/fteem/order-notifications/user&#34;</span>
+	<span style=color:#2aa198>&#34;github.com/fteem/order-notifications/user&#34;</span>
 )
 
-<span style=color:#0087ff>type</span> mockSender <span style=color:#0087ff>struct</span> {
-	sendingError <span style=color:#af0000>error</span>
+<span style=color:#268bd2>type</span> mockSender <span style=color:#268bd2>struct</span> {
+	sendingError <span style=color:#dc322f>error</span>
 }
 
-<span style=color:#0087ff>func</span> (ms mockSender) <span style=color:#0087ff>Send</span>(u user.User, m <span style=color:#af0000>string</span>) <span style=color:#af0000>error</span> {
-	<span style=color:#5f8700>return</span> ms.sendingError
+<span style=color:#268bd2>func</span> (ms mockSender) <span style=color:#268bd2>Send</span>(u user.User, m <span style=color:#dc322f>string</span>) <span style=color:#dc322f>error</span> {
+	<span style=color:#719e07>return</span> ms.sendingError
 }
 
-<span style=color:#0087ff>func</span> <span style=color:#0087ff>TestInformOrderShipped</span>(t *testing.T) {
-	cases := []<span style=color:#0087ff>struct</span> {
+<span style=color:#268bd2>func</span> <span style=color:#268bd2>TestInformOrderShipped</span>(t <span style=color:#719e07>*</span>testing.T) {
+	cases <span style=color:#719e07>:=</span> []<span style=color:#268bd2>struct</span> {
 		user         user.User
-		orderID      <span style=color:#af0000>string</span>
-		sendingError <span style=color:#af0000>error</span>
-		name         <span style=color:#af0000>string</span>
-		want         <span style=color:#af0000>bool</span>
+		orderID      <span style=color:#dc322f>string</span>
+		sendingError <span style=color:#dc322f>error</span>
+		name         <span style=color:#dc322f>string</span>
+		want         <span style=color:#dc322f>bool</span>
 	}{
 		{
-			user:         user.User{<span style=color:#00afaf>&#34;Peggy&#34;</span>, <span style=color:#00afaf>&#34;+12 345 678 999&#34;</span>},
-			orderID:      <span style=color:#00afaf>&#34;12345&#34;</span>,
-			sendingError: <span style=color:#d75f00>nil</span>,
-			want:         <span style=color:#d75f00>true</span>,
-			name:         <span style=color:#00afaf>&#34;Successful send&#34;</span>,
+			user:         user.User{<span style=color:#2aa198>&#34;Peggy&#34;</span>, <span style=color:#2aa198>&#34;+12 345 678 999&#34;</span>},
+			orderID:      <span style=color:#2aa198>&#34;12345&#34;</span>,
+			sendingError: <span style=color:#cb4b16>nil</span>,
+			want:         <span style=color:#cb4b16>true</span>,
+			name:         <span style=color:#2aa198>&#34;Successful send&#34;</span>,
 		},
 		{
-			user:         user.User{<span style=color:#00afaf>&#34;Peggy&#34;</span>, <span style=color:#00afaf>&#34;+12 345 678 999&#34;</span>},
-			orderID:      <span style=color:#00afaf>&#34;12345&#34;</span>,
-			sendingError: errors.<span style=color:#0087ff>New</span>(<span style=color:#00afaf>&#34;Sending failed&#34;</span>),
-			want:         <span style=color:#d75f00>false</span>,
-			name:         <span style=color:#00afaf>&#34;Unsuccessful send&#34;</span>,
+			user:         user.User{<span style=color:#2aa198>&#34;Peggy&#34;</span>, <span style=color:#2aa198>&#34;+12 345 678 999&#34;</span>},
+			orderID:      <span style=color:#2aa198>&#34;12345&#34;</span>,
+			sendingError: errors.<span style=color:#268bd2>New</span>(<span style=color:#2aa198>&#34;Sending failed&#34;</span>),
+			want:         <span style=color:#cb4b16>false</span>,
+			name:         <span style=color:#2aa198>&#34;Unsuccessful send&#34;</span>,
 		},
 	}
 
-	<span style=color:#5f8700>for</span> _, tc := <span style=color:#5f8700>range</span> cases {
-		t.<span style=color:#0087ff>Run</span>(tc.name, <span style=color:#0087ff>func</span>(t *testing.T) {
-			ms := mockSender{tc.sendingError}
-			got := <span style=color:#0087ff>InformOrderShipped</span>(tc.user, tc.orderID, ms)
+	<span style=color:#719e07>for</span> _, tc <span style=color:#719e07>:=</span> <span style=color:#719e07>range</span> cases {
+		t.<span style=color:#268bd2>Run</span>(tc.name, <span style=color:#268bd2>func</span>(t <span style=color:#719e07>*</span>testing.T) {
+			ms <span style=color:#719e07>:=</span> mockSender{tc.sendingError}
+			got <span style=color:#719e07>:=</span> <span style=color:#268bd2>InformOrderShipped</span>(tc.user, tc.orderID, ms)
 
-			<span style=color:#5f8700>if</span> tc.want != got {
-				t.<span style=color:#0087ff>Errorf</span>(<span style=color:#00afaf>&#34;Want &#39;%t&#39;, got &#39;%t&#39;&#34;</span>, tc.want, got)
+			<span style=color:#719e07>if</span> tc.want <span style=color:#719e07>!=</span> got {
+				t.<span style=color:#268bd2>Errorf</span>(<span style=color:#2aa198>&#34;Want &#39;%t&#39;, got &#39;%t&#39;&#34;</span>, tc.want, got)
 			}
 		})
 	}
-}</code></pre></td></tr></table></div></div><p>Just a simple <code>mockSender</code> type does the trick. Because it implements the
+}</code></pre></div><p>Just a simple <code>mockSender</code> type does the trick. Because it implements the
 <code>Send</code> function and due to Go&rsquo;s implicitly implementing interfaces <code>mockSender</code>
 is also a <code>Sender</code>. That means we can use it as an argument to the
 <code>InformOrderShipped</code> function.</p><p>The flexibility that the <code>Sender</code> interface provides us cannot be overstated.
 Although the example is small and trivial, introducing another type of notification
-for the <code>InformOrderShipped</code> is simple:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">15
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">16
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#d75f00>package</span> push
+for the <code>InformOrderShipped</code> is simple:</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#719e07>package</span> push
 
-<span style=color:#d75f00>import</span> (
-	<span style=color:#00afaf>&#34;time&#34;</span>
+<span style=color:#719e07>import</span> (
+	<span style=color:#2aa198>&#34;time&#34;</span>
 
-	<span style=color:#00afaf>&#34;github.com/fteem/order-notifications/user&#34;</span>
+	<span style=color:#2aa198>&#34;github.com/fteem/order-notifications/user&#34;</span>
 )
 
-<span style=color:#0087ff>type</span> Notifier <span style=color:#0087ff>struct</span>{}
+<span style=color:#268bd2>type</span> Notifier <span style=color:#268bd2>struct</span>{}
 
-<span style=color:#0087ff>func</span> (n Notifier) <span style=color:#0087ff>Send</span>(receiver user.User, message <span style=color:#af0000>string</span>) <span style=color:#af0000>error</span> {
-	<span style=color:#4e4e4e>// Simulating API call...
-</span><span style=color:#4e4e4e></span>	time.<span style=color:#0087ff>Sleep</span>(<span style=color:#00afaf>1</span> * time.Second)
+<span style=color:#268bd2>func</span> (n Notifier) <span style=color:#268bd2>Send</span>(receiver user.User, message <span style=color:#dc322f>string</span>) <span style=color:#dc322f>error</span> {
+	<span style=color:#586e75>// Simulating API call...
+</span><span style=color:#586e75></span>	time.<span style=color:#268bd2>Sleep</span>(<span style=color:#2aa198>1</span> <span style=color:#719e07>*</span> time.Second)
 
-	<span style=color:#5f8700>return</span> <span style=color:#d75f00>nil</span>
-}</code></pre></td></tr></table></div></div><p>This would result in no changes in the <code>InformOrderShipped</code> function, while the
-<code>Notifier</code>&rsquo;s <code>Send</code> method can be used as the one of the <code>Dispatcher</code>:</p><div class=highlight><div style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 1
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 2
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 3
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 4
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 5
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 6
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 7
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 8
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545"> 9
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">10
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">11
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">12
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">13
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">14
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">15
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">16
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">17
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">18
-</span><span style="margin-right:.4em;padding:0 .4em;color:#454545">19
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre style=color:#8a8a8a;background-color:#1c1c1c;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#d75f00>package</span> main
+	<span style=color:#719e07>return</span> <span style=color:#cb4b16>nil</span>
+}</code></pre></div><p>This would result in no changes in the <code>InformOrderShipped</code> function, while the
+<code>Notifier</code>&rsquo;s <code>Send</code> method can be used as the one of the <code>Dispatcher</code>:</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#719e07>package</span> main
 
-<span style=color:#d75f00>import</span> (
-	<span style=color:#00afaf>&#34;github.com/fteem/order-notifications/orders&#34;</span>
-	<span style=color:#00afaf>&#34;github.com/fteem/order-notifications/push&#34;</span>
-	<span style=color:#00afaf>&#34;github.com/fteem/order-notifications/sms&#34;</span>
-	<span style=color:#00afaf>&#34;github.com/fteem/order-notifications/user&#34;</span>
+<span style=color:#719e07>import</span> (
+	<span style=color:#2aa198>&#34;github.com/fteem/order-notifications/orders&#34;</span>
+	<span style=color:#2aa198>&#34;github.com/fteem/order-notifications/push&#34;</span>
+	<span style=color:#2aa198>&#34;github.com/fteem/order-notifications/sms&#34;</span>
+	<span style=color:#2aa198>&#34;github.com/fteem/order-notifications/user&#34;</span>
 )
 
-<span style=color:#0087ff>func</span> <span style=color:#0087ff>main</span>() {
-	dispatcher := sms.Dispatcher{}
-	notifier := push.Notifier{}
+<span style=color:#268bd2>func</span> <span style=color:#268bd2>main</span>() {
+	dispatcher <span style=color:#719e07>:=</span> sms.Dispatcher{}
+	notifier <span style=color:#719e07>:=</span> push.Notifier{}
 
-	u := user.User{<span style=color:#00afaf>&#34;Peggy&#34;</span>, <span style=color:#00afaf>&#34;+123 456 789&#34;</span>}
-	orderID := <span style=color:#00afaf>&#34;123&#34;</span>
+	u <span style=color:#719e07>:=</span> user.User{<span style=color:#2aa198>&#34;Peggy&#34;</span>, <span style=color:#2aa198>&#34;+123 456 789&#34;</span>}
+	orderID <span style=color:#719e07>:=</span> <span style=color:#2aa198>&#34;123&#34;</span>
 
-	orders.<span style=color:#0087ff>InformOrderShipped</span>(u, orderID, dispatcher)
-	orders.<span style=color:#0087ff>InformOrderShipped</span>(u, orderID, notifier)
-}</code></pre></td></tr></table></div></div><p>With dependency injection in action, we were able not only to decouple our
+	orders.<span style=color:#268bd2>InformOrderShipped</span>(u, orderID, dispatcher)
+	orders.<span style=color:#268bd2>InformOrderShipped</span>(u, orderID, notifier)
+}</code></pre></div><p>With dependency injection in action, we were able not only to decouple our
 <code>InformOrderShipped</code> function from the <code>sms</code> package, but also by using an
 interface for dependency injection we got to use polymorphism. Simply put,
 polymorphism through interfaces allowed us to send SMSes and push notifications
