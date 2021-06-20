@@ -6,7 +6,7 @@ services have very generous free plans (or are quite affordable), you won&rsquo;
 have to pay a fortune for this automation. In this article I&rsquo;ll show you how
 you can create your own commands for your Google Home. We will use Golang to
 glue together Google Cloud Functions, Google Actions, Google Dialogflow and
-Twilio.</p><p><img loading=lazy src=/tell-team-running-late-google-home-google-functions-golang-twilio/sleep_analysis.png alt></p><h2 id=i-am-not-an-early-bird>I am not an early bird<a hidden class=anchor aria-hidden=true href=#i-am-not-an-early-bird>#</a></h2><p>Waking up is hard for me. I prefer to stick around hacking (or watching useless
+Twilio.</p><p><img src=/tell-team-running-late-google-home-google-functions-golang-twilio/sleep_analysis.png alt></p><h2 id=i-am-not-an-early-bird>I am not an early bird<a hidden class=anchor aria-hidden=true href=#i-am-not-an-early-bird>#</a></h2><p>Waking up is hard for me. I prefer to stick around hacking (or watching useless
 videos on YouTube) in the evening until past midnight, so waking up at 8AM
 is&mldr; challenging. On the flip side, my team has a standup/daily SCRUM every
 morning at 10 o&rsquo;clock. Being the &ldquo;early bird&rdquo; that I am, this usually means
@@ -108,7 +108,7 @@ call to Twilio, decode it to a <code>SendSMSResponse</code> struct using the <co
 package:</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go>smsResponse <span style=color:#719e07>:=</span> SendSMSResponse{}
 unmarshalErr <span style=color:#719e07>:=</span> json.<span style=color:#268bd2>NewDecoder</span>(resp.Body).<span style=color:#268bd2>Decode</span>(<span style=color:#719e07>&amp;</span>smsResponse)</code></pre></div><p>That&rsquo;s about it when it comes to calling Twilio&rsquo;s API. We made a function that
 builds the payload send to the API, executes the call and parses the JSON in
-the response to a <code>struct</code> that we can use in our Go program.</p><p><img loading=lazy src=/tell-team-running-late-google-home-google-functions-golang-twilio/developer_activity.png alt></p><h2 id=defining-the-function-to-call>Defining the function to call<a hidden class=anchor aria-hidden=true href=#defining-the-function-to-call>#</a></h2><p>Before we deploy our function to Google Cloud Platform, we need to finish up
+the response to a <code>struct</code> that we can use in our Go program.</p><p><img src=/tell-team-running-late-google-home-google-functions-golang-twilio/developer_activity.png alt></p><h2 id=defining-the-function-to-call>Defining the function to call<a hidden class=anchor aria-hidden=true href=#defining-the-function-to-call>#</a></h2><p>Before we deploy our function to Google Cloud Platform, we need to finish up
 defining it and hooking it up to the code that calls the Twilio API.</p><p>The name of our function will be <code>SendSMS</code>. Since the function will be invoked
 via HTTP call, it will have to take a request and response as arguments. For
 now, it will return a simple JSON as a response.</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#719e07>package</span> app
@@ -225,7 +225,7 @@ taking them from the environment variables. In Golang, one can do this using
 <code>os.Getenv('NAME_OF_VARIABLE')</code>.</li><li>We take care of any errors that might occur before and during sending the
 HTTP request to Twilio</li></ol><p>Take note that both of the files are part of the same package - <code>app</code>. This is
 mandatory, so the function <code>SendSMS</code> can invoke the <code>sendRequest</code> function.</p><p>Now that we have both the Twilio API integration and the <code>SendSMS</code> functions,
-let&rsquo;s see how we can deploy them to GCP.</p><p><img loading=lazy src=/tell-team-running-late-google-home-google-functions-golang-twilio/going_up.png alt></p><h2 id=running-our-code-on-google-cloud-platform>Running our code on Google Cloud Platform<a hidden class=anchor aria-hidden=true href=#running-our-code-on-google-cloud-platform>#</a></h2><p>Before we go on to deploy the function, there are some basics about Cloud
+let&rsquo;s see how we can deploy them to GCP.</p><p><img src=/tell-team-running-late-google-home-google-functions-golang-twilio/going_up.png alt></p><h2 id=running-our-code-on-google-cloud-platform>Running our code on Google Cloud Platform<a hidden class=anchor aria-hidden=true href=#running-our-code-on-google-cloud-platform>#</a></h2><p>Before we go on to deploy the function, there are some basics about Cloud
 Functions that are good to know. If you have used Cloud Function or AWS Lambda,
 you might know most of the things I am about to explain. If this is the case,
 you can skip this and go to the section on deploying the function.</p><p>If you look at the main page of the documentation for the Cloud Functions, this
@@ -358,7 +358,7 @@ All we need to do here is copy this URL and paste it as the webhook URL in
 Dialog Flow:</p><figure class=imagecaption><img class=caption src=/running-late-sms-twilio-google-functions-golang/intent-setup-second.png caption="Obviously adding some authentication wouldn&rsquo;t be a bad idea here" alt="Obviously adding some authentication wouldn&rsquo;t be a bad idea here">
 <span class=caption-text style="font-size:.75em;display:table;margin:0 auto 1.5em">Obviously adding some authentication wouldn&rsquo;t be a bad idea here</span></figure><p>That&rsquo;s all. Once we save this when our agent matches the intent, the webhook will
 be triggered and the Cloud Function will be executed. This will end with a call
-to Twilio&rsquo;s API which will send an SMS to our phone number.</p><p><img loading=lazy src=/tell-team-running-late-google-home-google-functions-golang-twilio/just_saying.png alt></p><h3 id=speaking-google-assistants-lingo>Speaking Google Assistant&rsquo;s lingo<a hidden class=anchor aria-hidden=true href=#speaking-google-assistants-lingo>#</a></h3><p>Although Dialog Flow&rsquo;s options are quite diverse, setting up a simple intent
+to Twilio&rsquo;s API which will send an SMS to our phone number.</p><p><img src=/tell-team-running-late-google-home-google-functions-golang-twilio/just_saying.png alt></p><h3 id=speaking-google-assistants-lingo>Speaking Google Assistant&rsquo;s lingo<a hidden class=anchor aria-hidden=true href=#speaking-google-assistants-lingo>#</a></h3><p>Although Dialog Flow&rsquo;s options are quite diverse, setting up a simple intent
 was straightforward. The intents are backed by Google Actions, which will
 receive the response from the webhook (our Cloud Function). This means that
 before we go on to use the intent, we have to make sure our Cloud Function
@@ -454,7 +454,7 @@ my test app&rdquo; in the bottom of the screen. That will trigger the Dialog Flo
 agent which will execute the webhook right away:</p><figure class=imagecaption><img class=caption src=/running-late-sms-twilio-google-functions-golang/google-actions-simulator.png caption="You should obviously click on &lsquo;View&rsquo; to see the Auth Token" alt="You should obviously click on &lsquo;View&rsquo; to see the Auth Token">
 <span class=caption-text style="font-size:.75em;display:table;margin:0 auto 1.5em">You should obviously click on &lsquo;View&rsquo; to see the Auth Token</span></figure><p>You can notice that the response from the Google Assistant contains &ldquo;Message
 queued&rdquo;, which is Twilio&rsquo;s response. After you see the response, an incoming SMS
-should pop on your phone&rsquo;s screen.</p><p><img loading=lazy src=/tell-team-running-late-google-home-google-functions-golang-twilio/mornings.png alt></p><h2 id=in-closing>In closing<a hidden class=anchor aria-hidden=true href=#in-closing>#</a></h2><p>While we have gone through quite the distance in this article, our application
+should pop on your phone&rsquo;s screen.</p><p><img src=/tell-team-running-late-google-home-google-functions-golang-twilio/mornings.png alt></p><h2 id=in-closing>In closing<a hidden class=anchor aria-hidden=true href=#in-closing>#</a></h2><p>While we have gone through quite the distance in this article, our application
 is still not shipped to the Play Store for mass-consumption. There are couple of
 more simple steps that you need to take to release this action to the world.</p><p>Now, before you go on to do this, you have to first think about some of the
 very rough edges of our action. Basically, at the moment the Google Action that

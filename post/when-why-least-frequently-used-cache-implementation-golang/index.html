@@ -53,12 +53,12 @@ look at the linked list and hash table as graphics. Before we look at the
 actual graphics, we need to understand how the hash table and linked lists will
 be used.</p><p>The hash table will store all of the items with a key that is processed through
 a hashing algorithm (for our purpose we can keep it simple) and the value will
-be the actual item:</p><p><img loading=lazy src=/golang-lfu-cache/lfu-backbone-hashtable.png alt></p><p>The linked lists are a bit more complicated. The first one will be the
+be the actual item:</p><p><img src=/golang-lfu-cache/lfu-backbone-hashtable.png alt></p><p>The linked lists are a bit more complicated. The first one will be the
 &ldquo;frequency list&rdquo;, which will have all of the frequencies of access. Each of the
 nodes in this list will have an item list, which will contain all of the items
 that have been accessed with the corresponding frequency. Additionally, each of
 the items in the item list will have a pointer to their ancestor in the
-frequency list:</p><p><img loading=lazy src=/golang-lfu-cache/lfu-backbone-linked-lists.png alt></p><p>If we look at our graphical example above, we can notice that the items <code>A</code>,
+frequency list:</p><p><img src=/golang-lfu-cache/lfu-backbone-linked-lists.png alt></p><p>If we look at our graphical example above, we can notice that the items <code>A</code>,
 <code>B</code>, <code>C</code> and <code>D</code> have been accessed 1 time. The items <code>E</code> and <code>F</code> have been
 accessed 4 times and so on. The blue lines are the pointers that each of the
 items in the item lists has to their ancestor in the frequency list.</p><p>So, what would happen if item <code>E</code> gets accessed one more time? Let&rsquo;s go through
@@ -179,15 +179,15 @@ list of <code>entries</code>.</p><p>As the final step, the <code>increment</code
 		cache.<span style=color:#268bd2>remove</span>(currentFrequency, item)
 	}
 }</code></pre></div><p>Let&rsquo;s refer back to our original diagram of the frequency and entries lists and
-walk through incrementing the <code>E</code> item.</p><p><img loading=lazy src=/golang-lfu-cache/e-cached-item.png alt></p><p>The first steps that our <code>increment</code> function will take are to allocate a
+walk through incrementing the <code>E</code> item.</p><p><img src=/golang-lfu-cache/e-cached-item.png alt></p><p>The first steps that our <code>increment</code> function will take are to allocate a
 pointer to node <code>4</code> (the <code>frequencyParent</code>) and its <code>value</code> (which is <code>4</code>).
 Since node <code>4</code> is present in the list, it will find the next node in the
 frequency list, which in our case is node <code>7</code>.</p><p>Once it figures out that the new frequency for the <code>E</code> node should be <code>5</code> and not
-<code>7</code>, it will append a new frequency node in the list, between nodes <code>4</code> and <code>7</code>:</p><p><img loading=lazy src=/golang-lfu-cache/new-frequency-insertion.png alt></p><p>Once the <code>5</code> node is added to the list, the function will set the defaults needed
+<code>7</code>, it will append a new frequency node in the list, between nodes <code>4</code> and <code>7</code>:</p><p><img src=/golang-lfu-cache/new-frequency-insertion.png alt></p><p>Once the <code>5</code> node is added to the list, the function will set the defaults needed
 for the node to function properly. Then it will set <code>E</code>&rsquo;s pointer to the new
-<code>frequencyParent</code> (the <code>5</code> node):</p><p><img loading=lazy src=/golang-lfu-cache/e-parent-frequency-pointer.png alt></p><p>As the last step it will take the <code>item</code>, which has a <code>*CacheItem</code> type, and
+<code>frequencyParent</code> (the <code>5</code> node):</p><p><img src=/golang-lfu-cache/e-parent-frequency-pointer.png alt></p><p>As the last step it will take the <code>item</code>, which has a <code>*CacheItem</code> type, and
 will add it to the <code>entries</code> list while deleting it from the <code>entries</code> list from
-the previous <code>frequencyParent</code>:</p><p><img loading=lazy src=/golang-lfu-cache/new-frequency-entry-insertion.png alt></p><p>Let&rsquo;s look at what are the steps to remove a <code>CacheItem</code> from a <code>FrequencyItem</code>&rsquo;s
+the previous <code>frequencyParent</code>:</p><p><img src=/golang-lfu-cache/new-frequency-entry-insertion.png alt></p><p>Let&rsquo;s look at what are the steps to remove a <code>CacheItem</code> from a <code>FrequencyItem</code>&rsquo;s
 <code>entries</code> list.</p><h3 id=removing-entries>Removing entries<a hidden class=anchor aria-hidden=true href=#removing-entries>#</a></h3><p>Once we know the node in the list from which we want to remove it, we can just
 remove the item from the <code>entries</code> list and also completely remove the
 <code>FrequencyItem</code> from the frequency list if the <code>entries</code> become empty:</p><div class=highlight><pre style=color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=color:#268bd2>func</span> (cache <span style=color:#719e07>*</span>Cache) <span style=color:#268bd2>Remove</span>(listItem <span style=color:#719e07>*</span>list.Element, item <span style=color:#719e07>*</span>CacheItem) {
