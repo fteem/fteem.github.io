@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html
+  lang="en"
+  dir="ltr"
+  class="scroll-smooth"
+  data-default-appearance="light"
+  data-auto-appearance="true"
+><head>
+  <meta charset="utf-8" />
+  
+    <meta http-equiv="content-language" content="en" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  
+  <title>Creating and testing gRPC server interceptors in Ruby &middot; Ilija Eftimov 👨‍🚀</title>
+    <meta name="title" content="Creating and testing gRPC server interceptors in Ruby &middot; Ilija Eftimov 👨‍🚀" />
+  
+  <meta name="description" content="Documenting my experiences and learnings, with the goal of helping other software engineers on their journey" />
+  
+  
+  
+  <link rel="canonical" href="https://ieftimov.com/posts/creating-testing-grpc-server-interceptors-ruby/" />
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <link
+    type="text/css"
+    rel="stylesheet"
+    href="/css/main.bundle.min.b4e16dd9839a706aac3e482fb2ead8a30c01f199844299a37ddc79029b6a3bae7c65ff23668804cf9b10c85a4931caa1dca1efa0395de6dc9fe0784468f41457.css"
+    integrity="sha512-tOFt2YOacGqsPkgvsurYowwB8ZmEQpmjfdx5AptqO658Zf8jZogEz5sQyFpJMcqh3KHvoDld5tyf4HhEaPQUVw=="
+  />
+  
+  
+  <script type="text/javascript" src="/js/appearance.min.dbca9e2200cf929a23b55442f2ff09361b8d5290147ff1407f89ed3839f0fea13db4e94f5ae6bf2f3de10d322b4bede74b578455e9cc7d5565314d914602c974.js" integrity="sha512-28qeIgDPkpojtVRC8v8JNhuNUpAUf/FAf4ntODnw/qE9tOlPWua/Lz3hDTIrS&#43;3nS1eEVenMfVVlMU2RRgLJdA=="></script>
+  
+    
+    
+    
+  
+  
+    
+    
+  
+  
+    
+    <script defer type="text/javascript" id="script-bundle" src="/js/main.bundle.min.238e7ce9c541b4e7abb5781ad8e736e849e74890fcb8a26e73ea1845f573b3a0cf91418b20ac4401bdbb57d9c6c009d8f6ec50dad6d44b48f3936aea0f95c391.js" integrity="sha512-I4586cVBtOertXga2Oc26EnnSJD8uKJuc&#43;oYRfVzs6DPkUGLIKxEAb27V9nGwAnY9uxQ2tbUS0jzk2rqD5XDkQ==" data-copy="Copy" data-copied="Copied"></script>
+  
+  
+  
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+  
+  
+  
+  
+  
+  
+  
+  <meta property="og:title" content="Creating and testing gRPC server interceptors in Ruby" />
+<meta property="og:description" content="If your experience is rooted in HTTP-land, then you are probably familiar with the concept of server middleware." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/posts/creating-testing-grpc-server-interceptors-ruby/" /><meta property="og:image" content="https://ieftimov.com/cards/creating-testing-grpc-server-interceptors-ruby.png" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2021-12-12T00:03:55+01:00" />
+<meta property="article:modified_time" content="2021-12-12T00:03:55+01:00" /><meta property="og:site_name" content="Ilija Eftimov 👨‍🚀" />
+
+
+  <meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/creating-testing-grpc-server-interceptors-ruby.png"/>
+
+<meta name="twitter:title" content="Creating and testing gRPC server interceptors in Ruby"/>
+<meta name="twitter:description" content="If your experience is rooted in HTTP-land, then you are probably familiar with the concept of server middleware."/>
+
+  
+  <script type="application/ld+json">
+  [{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "articleSection": "Posts",
+    "name": "Creating and testing gRPC server interceptors in Ruby",
+    "headline": "Creating and testing gRPC server interceptors in Ruby",
+    
+    "abstract": "If your experience is rooted in HTTP-land, then you are probably familiar with the concept of server middleware.",
+    "inLanguage": "en",
+    "url" : "https:\/\/ieftimov.com\/posts\/creating-testing-grpc-server-interceptors-ruby\/",
+    "author" : {
+      "@type": "Person",
+      "name": "Ilija Eftimov"
+    },
+    "copyrightYear": "2021",
+    "dateCreated": "2021-12-12T00:00:00\u002b00:00",
+    "datePublished": "2021-12-12T00:03:55\u002b01:00",
+    
+    "dateModified": "2021-12-12T00:03:55\u002b01:00",
+    
+    
+    
+    "mainEntityOfPage": "true",
+    "wordCount": "4023"
+  }]
+  </script>
+
+
+  
+  
+    <meta name="generator" content="Hugo 0.92.2" />
+  
+  
+  <meta name="author" content="Ilija Eftimov" />
+  
+    
+      <link href="https://twitter.com/itsilija" rel="me" />
+    
+      <link href="https://www.linkedin.com/in/ieftimov/" rel="me" />
+    
+      <link href="mailto:blog@ieftimov.com" rel="me" />
+    
+      <link href="https://dev.to/fteem" rel="me" />
+    
+      <link href="https://github.com/fteem" rel="me" />
+    
+      <link href="https://t.me/ieftimovcom" rel="me" />
+    
+  
+  
+  
+
+
+
+
+
+
+  
+  <script async defer data-domain="ieftimov.com" src="https://plausible.io/js/plausible.js"></script>
+
+  
+  
+</head>
+<body
+    class="flex flex-col h-screen px-6 m-auto text-lg leading-7 bg-neutral text-neutral-900 sm:px-14 md:px-24 lg:px-32 dark:bg-neutral-800 dark:text-neutral max-w-7xl"
+  >
+    <div id="the-top" class="absolute flex self-center">
+      <a
+        class="px-3 py-1 text-sm -translate-y-8 rounded-b-lg bg-primary-200 dark:bg-neutral-600 focus:translate-y-0"
+        href="#main-content"
+        ><span class="font-bold ltr:pr-2 rtl:pl-2 text-primary-600 dark:text-primary-400"
+          >&darr;</span
+        >Skip to main content</a
+      >
+    </div><header
+  class="flex justify-between py-6 font-semibold sm:items-center sm:py-10 text-neutral-900 dark:text-neutral"
+>
+  
+  <div>
+    
+      <a
+        class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+        rel="me"
+        href="/"
+        >Ilija Eftimov 👨‍🚀</a
+      >
+    
+
+  </div>
+  
+  
+    <nav>
+      <ul class="flex flex-col list-none sm:flex-row">
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/"
+              title=""
+              >Home</a
+            >
+          </li>
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/posts/"
+              title="Posts"
+              >Writing</a
+            >
+          </li>
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/work"
+              title=""
+              >Work</a
+            >
+          </li>
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="https://www.getrevue.co/profile/itsilija"
+              title=""
+              >Subscribe</a
+            >
+          </li>
+        
+        
+          <li
+            class="ltr:text-right rtl:text-left ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <button
+              id="search-button"
+              class="text-base hover:text-primary-600 dark:hover:text-primary-400"
+              title="Search (/)"
+            >
+              
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="search" class="svg-inline--fa fa-search fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>
+  </span>
+
+
+            </button>
+          </li>
+        
+      </ul>
+    </nav>
+  
+</header>
+<main id="main-content" class="relative grow">
+  <article>
+    <header class="max-w-prose">
+      
+      <h1 class="mt-0 text-4xl font-extrabold text-neutral-900 dark:text-neutral">
+        Creating and testing gRPC server interceptors in Ruby
+      </h1>
+      <div class="mt-8 mb-12 text-base text-neutral-500 dark:text-neutral-400">
+        
+
+
+
+
+
+  
+  
+
+
+
+  
+
+  
+  
+    
+  
+
+  
+
+  
+
+  
+    
+  
+
+  
+
+
+  <div class="flex flex-row flex-wrap items-center">
+    
+    
+      <time datetime="2021-12-12 00:00:00 &#43;0000 UTC">12 December 2021</time><span class="px-2 text-primary-500">&middot;</span><span title="Reading time">19 mins</span>
+    
+
+    
+    
+  </div>
+
+  
+  
+
+
+      </div>
+    </header>
+    <section class="flex flex-col max-w-full mt-0 prose lg:flex-row dark:prose-invert">
+      
+        <div class="order-first px-0 lg:max-w-xs ltr:lg:pl-8 rtl:lg:pr-8 lg:order-last">
+          <div class="ltr:pl-5 rtl:pr-5 toc lg:sticky lg:top-10">
+            <details open class="mt-0 overflow-hidden rounded-lg rtl:pr-5 ltr:pl-5 ltr:-ml-5 rtl:-mr-5 lg:mt-3">
+  <summary
+    class="block py-1 text-lg font-semibold cursor-pointer rtl:pr-5 ltr:pl-5 ltr:-ml-5 rtl:-mr-5 text-neutral-800 dark:text-neutral-100 lg:hidden bg-neutral-100 dark:bg-neutral-700"
+  >
+    Table of Contents
+  </summary>
+  <div
+    class="py-2 border-dotted ltr:border-l rtl:border-r rtl:pr-5 ltr:pl-5 ltr:-ml-5 rtl:-mr-5 border-neutral-300 dark:border-neutral-600"
+  >
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#building-the-logging-payload">Building the logging payload</a></li>
+    <li><a href="#logging-interceptor">Logging Interceptor</a></li>
+    <li><a href="#testing-interceptors">Testing interceptors</a>
+      <ul>
+        <li><a href="#unit-testing-intercetoprs">Unit testing intercetoprs</a></li>
+        <li><a href="#integration-testing-interceptors">Integration testing interceptors</a>
+          <ul>
+            <li><a href="#service--message-definitions">Service &amp; message definitions</a></li>
+            <li><a href="#service-implementation">Service implementation</a></li>
+            <li><a href="#grpc-server-implementation">gRPC Server Implementation</a></li>
+            <li><a href="#integration-test-setup">Integration test setup</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</details>
+
+          </div>
+        </div>
+      
+      <div class="min-w-0 min-h-0 max-w-prose">
+        <p>If your experience is rooted in HTTP-land, then you are probably familiar with
+the concept of server middleware. Interceptors are analogous, but in gRPC land.
+When first building gRPC interceptors, I had trouble figuring out how to do it
+in Ruby. gRPC is not that widely used in the Ruby ecosystem, and there are not
+many resources on how to properly do it.</p>
+<p>Also, my experience with writing unit and integration tests for interceptors
+were that there is even less documentation on the topic. I was able to find
+almost no how-tos and tutorials, so the best bet was reading some open source
+code and putting pieces together from different repositories to come up with a
+sane approach to it.</p>
+<p>The lack of documentation and tutorials made me document my experience and
+everything I have learned in this article.</p>
+<p>Let&rsquo;s see how we can build an interceptor in Ruby and how we can test it, too.</p>
+<h2 id="building-the-logging-payload" class="relative group">Building the logging payload <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#building-the-logging-payload" aria-label="Anchor">#</a></span></h2>
+<p>Legit logging interceptors or middleware usually allow developers to set the
+format and the logger as they wish. While this is undoubtedly the best
+approach, we will only look into building an interceptor that logs in JSON
+format for our exercise here.</p>
+<p>To get any JSON logs out, we will need to extract some information from the
+gRPC call during the execution of the interceptor. To avoid polluting the
+interceptor with code that builds the log payload, let&rsquo;s first look at a class
+that will have that responsibility:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="k">module</span> <span class="nn">Grpclog</span>
+  <span class="k">class</span> <span class="nc">Payload</span>
+    <span class="no">CODES</span> <span class="o">=</span> <span class="p">{</span>
+      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">OK</span> <span class="o">=&gt;</span> <span class="s1">&#39;OK&#39;</span><span class="p">,</span>
+      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">CANCELLED</span> <span class="o">=&gt;</span> <span class="s1">&#39;Canceled&#39;</span><span class="p">,</span>
+      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">UNKNOWN</span> <span class="o">=&gt;</span> <span class="s1">&#39;Unknown&#39;</span><span class="p">,</span>
+      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">INVALID_ARGUMENT</span> <span class="o">=&gt;</span> <span class="s1">&#39;InvalidArgument&#39;</span><span class="p">,</span>
+      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">DEADLINE_EXCEEDED</span> <span class="o">=&gt;</span> <span class="s1">&#39;DeadlineExceeded&#39;</span><span class="p">,</span>
+      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">NOT_FOUND</span> <span class="o">=&gt;</span> <span class="s1">&#39;NotFound&#39;</span><span class="p">,</span>
+      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">ALREADY_EXISTS</span> <span class="o">=&gt;</span> <span class="s1">&#39;AlreadyExists&#39;</span><span class="p">,</span>
+      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">PERMISSION_DENIED</span> <span class="o">=&gt;</span> <span class="s1">&#39;PermissionDenied&#39;</span><span class="p">,</span>
+      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">RESOURCE_EXHAUSTED</span> <span class="o">=&gt;</span> <span class="s1">&#39;ResourceExhausted&#39;</span><span class="p">,</span>
+      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">FAILED_PRECONDITION</span> <span class="o">=&gt;</span> <span class="s1">&#39;FailedPrecondition&#39;</span><span class="p">,</span>
+      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">ABORTED</span> <span class="o">=&gt;</span> <span class="s1">&#39;Aborted&#39;</span><span class="p">,</span>
+      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">OUT_OF_RANGE</span> <span class="o">=&gt;</span> <span class="s1">&#39;OutOfRange&#39;</span><span class="p">,</span>
+      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">UNIMPLEMENTED</span> <span class="o">=&gt;</span> <span class="s1">&#39;Unimplemented&#39;</span><span class="p">,</span>
+      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">INTERNAL</span> <span class="o">=&gt;</span> <span class="s1">&#39;Internal&#39;</span><span class="p">,</span>
+      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">UNAVAILABLE</span> <span class="o">=&gt;</span> <span class="s1">&#39;Unavailable&#39;</span><span class="p">,</span>
+      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">DATA_LOSS</span> <span class="o">=&gt;</span> <span class="s1">&#39;DataLoss&#39;</span><span class="p">,</span>
+      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">UNAUTHENTICATED</span> <span class="o">=&gt;</span> <span class="s1">&#39;Unauthenticated&#39;</span>
+    <span class="p">}</span><span class="o">.</span><span class="n">freeze</span>
+
+    <span class="kp">attr_accessor</span> <span class="ss">:exception</span>
+    <span class="kp">attr_reader</span> <span class="ss">:method</span><span class="p">,</span> <span class="ss">:service</span><span class="p">,</span> <span class="ss">:code</span><span class="p">,</span> <span class="ss">:start_time</span>
+
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">start_time</span><span class="p">)</span>
+      <span class="vi">@service</span> <span class="o">=</span> <span class="n">service_name</span><span class="p">(</span><span class="nb">method</span><span class="p">)</span>
+      <span class="vi">@method</span> <span class="o">=</span> <span class="n">method_name</span><span class="p">(</span><span class="nb">method</span><span class="p">)</span>
+      <span class="vi">@code</span> <span class="o">=</span> <span class="n">code</span>
+      <span class="vi">@start_time</span> <span class="o">=</span> <span class="n">start_time</span>
+    <span class="k">end</span>
+
+    <span class="k">def</span> <span class="nf">to_h</span>
+      <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;grpc.service&#39;</span> <span class="o">=&gt;</span> <span class="n">service</span><span class="p">,</span>
+        <span class="s1">&#39;grpc.method&#39;</span> <span class="o">=&gt;</span> <span class="nb">method</span><span class="p">,</span>
+        <span class="s1">&#39;grpc.code&#39;</span> <span class="o">=&gt;</span> <span class="no">CODES</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">code</span><span class="o">.</span><span class="n">to_s</span><span class="p">),</span>
+        <span class="s1">&#39;grpc.start_time&#39;</span> <span class="o">=&gt;</span> <span class="n">start_time</span><span class="o">.</span><span class="n">utc</span><span class="p">,</span>
+        <span class="s1">&#39;grpc.time_ms&#39;</span> <span class="o">=&gt;</span> <span class="n">elapsed_milliseconds</span><span class="p">,</span>
+        <span class="s1">&#39;pid&#39;</span> <span class="o">=&gt;</span> <span class="no">Process</span><span class="o">.</span><span class="n">pid</span>
+      <span class="p">}</span>
+      <span class="n">result</span><span class="o">.</span><span class="n">merge!</span><span class="p">(</span><span class="s1">&#39;exception&#39;</span> <span class="o">=&gt;</span> <span class="n">exception</span><span class="p">)</span> <span class="k">if</span> <span class="n">exception</span>
+      <span class="n">result</span>
+    <span class="k">end</span>
+
+    <span class="kp">private</span>
+
+    <span class="k">def</span> <span class="nf">elapsed_milliseconds</span>
+      <span class="p">(</span><span class="no">Time</span><span class="o">.</span><span class="n">now</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span><span class="o">.</span><span class="mi">0</span>
+    <span class="k">end</span>
+
+    <span class="k">def</span> <span class="nf">method_name</span><span class="p">(</span><span class="nb">method</span><span class="p">)</span>
+      <span class="n">owner</span> <span class="o">=</span> <span class="nb">method</span><span class="o">.</span><span class="n">owner</span>
+      <span class="n">method_name</span><span class="p">,</span> <span class="o">=</span> <span class="n">owner</span><span class="o">.</span><span class="n">rpc_descs</span><span class="o">.</span><span class="n">find</span> <span class="k">do</span> <span class="o">|</span><span class="n">k</span><span class="p">,</span> <span class="n">_</span><span class="o">|</span>
+        <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">GenericService</span><span class="o">.</span><span class="n">underscore</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">to_s</span><span class="p">)</span> <span class="o">==</span> <span class="nb">method</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">to_s</span>
+      <span class="k">end</span>
+
+      <span class="k">return</span> <span class="s1">&#39;(unknown)&#39;</span> <span class="k">if</span> <span class="n">method_name</span><span class="o">.</span><span class="n">nil?</span>
+
+      <span class="n">method_name</span><span class="o">.</span><span class="n">to_s</span>
+    <span class="k">end</span>
+
+    <span class="k">def</span> <span class="nf">service_name</span><span class="p">(</span><span class="nb">method</span><span class="p">)</span>
+      <span class="nb">method</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">service_name</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div><p><code>Payload</code> is only a wrapper around the gRPC <code>method</code> object, the start time of
+the request, and the gRPC response code. Additionally, it can take an
+<code>exception</code> if our interceptor hits an error of sorts.</p>
+<p>Lastly, in its <code>to_h</code> method, the <code>Paylaod</code> object creates a hash that we can
+use to send to our logger. Using this approach, all of the complexity related
+to extracting relevant data for logging responsibility of the <code>Payload</code> class,
+while the interceptor has to only care about logging the payload.</p>
+<p>This way, we have separation of concerns, and each entity has single
+responsibility.</p>
+<h2 id="logging-interceptor" class="relative group">Logging Interceptor <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#logging-interceptor" aria-label="Anchor">#</a></span></h2>
+<p>Say we have an application that speaks gRPC, and we want each inbound request
+to emit a logline formatted as a valid JSON. You can imagine that we can send
+the logger&rsquo;s output to STDOUT, and we can export it and index it for further
+exploration.</p>
+<p>A straightforward implementation of a server interceptor:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="c1"># lib/grpclog/server_interceptor.rb</span>
+
+<span class="k">module</span> <span class="nn">Grpclog</span>
+  <span class="k">class</span> <span class="nc">ServerInterceptor</span> <span class="o">&lt;</span> <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">ServerInterceptor</span>
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">level</span> <span class="o">=</span> <span class="ss">:info</span><span class="p">)</span>
+      <span class="vi">@logger</span> <span class="o">=</span> <span class="n">logger</span>
+      <span class="vi">@level</span> <span class="o">=</span> <span class="n">level</span>
+
+      <span class="k">super</span><span class="p">()</span>
+    <span class="k">end</span>
+
+    <span class="k">def</span> <span class="nf">request_response</span><span class="p">(</span><span class="ss">_request</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="ss">call</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+      <span class="n">log</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="n">call</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="k">end</span>
+
+    <span class="k">def</span> <span class="nf">server_streamer</span><span class="p">(</span><span class="ss">_request</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="ss">call</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+      <span class="n">log</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="n">call</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="k">end</span>
+
+    <span class="k">def</span> <span class="nf">client_streamer</span><span class="p">(</span><span class="ss">call</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+      <span class="n">log</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="n">call</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="k">end</span>
+
+    <span class="k">def</span> <span class="nf">bidi_streamer</span><span class="p">(</span><span class="ss">_request</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="ss">call</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+      <span class="n">log</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="n">call</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div><p>The interceptor will implement all four gRPC method types, where each of them
+will invoke the same method: <code>log</code>. The <code>log</code> method will take the method name
+and the <code>call</code> object as arguments, and the gRPC method will <code>yield</code> to the
+<code>log</code> method.</p>
+<p>Let&rsquo;s look quickly at the <code>log</code> method:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="n">_call</span><span class="p">)</span>
+  <span class="n">start_time</span> <span class="o">=</span> <span class="no">Time</span><span class="o">.</span><span class="n">now</span>
+  <span class="n">code</span> <span class="o">=</span> <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">OK</span>
+
+  <span class="k">yield</span>
+<span class="k">rescue</span> <span class="no">StandardError</span> <span class="o">=&gt;</span> <span class="n">e</span>
+  <span class="n">code</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">is_a?</span><span class="p">(</span><span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">BadStatus</span><span class="p">)</span> <span class="p">?</span> <span class="n">e</span><span class="o">.</span><span class="n">code</span> <span class="p">:</span> <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">UNKNOWN</span>
+
+  <span class="k">raise</span>
+<span class="k">ensure</span>
+  <span class="n">payload</span> <span class="o">=</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">Payload</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">start_time</span><span class="p">)</span>
+
+  <span class="k">if</span> <span class="n">e</span>
+    <span class="n">payload</span><span class="o">.</span><span class="n">exception</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span>
+    <span class="vi">@level</span> <span class="o">=</span> <span class="ss">:error</span>
+  <span class="k">end</span>
+
+  <span class="vi">@logger</span><span class="o">.</span><span class="n">formatter</span> <span class="o">=</span> <span class="nb">method</span><span class="p">(</span><span class="ss">:formatter</span><span class="p">)</span>
+  <span class="vi">@logger</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="vi">@level</span><span class="p">,</span> <span class="n">payload</span><span class="o">.</span><span class="n">to_h</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div><p>While the method is a bit busy, it doesn&rsquo;t do <em>much</em>:</p>
+<ul>
+<li>It records the <code>start</code> time of the request, so later we can see the time
+spent during the call, and we can log it</li>
+<li>It <code>rescue</code>s any error, to find out the error type so we can log the error
+type</li>
+<li>It <code>ensure</code>s to create a <code>Payload</code>, which is a PORO containing the data we
+want to log that packs it all in a hash, and then logging it using the
+interceptor&rsquo;s logger</li>
+</ul>
+<p>We can see here how the <code>Payload</code> class is incorporated – by adding the new
+object, we hide all of the complexity to building the log payload, and at the
+end, we invoke the <code>to_h</code> method.</p>
+<p>Testing the <code>Payload</code> class is straightforward; therefore, we will skip its
+test for brevity&rsquo;s sake.</p>
+<p>Let&rsquo;s look at how we can test our server interceptor.</p>
+<h2 id="testing-interceptors" class="relative group">Testing interceptors <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#testing-interceptors" aria-label="Anchor">#</a></span></h2>
+<p>To test our interceptor, we need to think about the various types of tests:</p>
+<ul>
+<li><strong>Unit tests</strong>, where we invoke the methods in the test using doubles for
+dependencies, having isolation from the rest of the gRPC stack</li>
+<li><strong>Integration tests</strong>, where we mount the request on a test gRPC server, and
+we send requests via the network</li>
+</ul>
+<p><strong>Before we begin</strong>, a fair warning: testing interceptors in Ruby is messy (as
+you are about to find out). If you have figured out a cleaner approach, please
+drop me a line and let me know!</p>
+<h3 id="unit-testing-intercetoprs" class="relative group">Unit testing intercetoprs <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#unit-testing-intercetoprs" aria-label="Anchor">#</a></span></h3>
+<p>When looking at the implementation of the interceptors, we can notice that to
+do any testing, we will need to mock out all gRPC-related dependencies:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="k">module</span> <span class="nn">Grpclog</span>
+  <span class="k">class</span> <span class="nc">ServerInterceptor</span> <span class="o">&lt;</span> <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">ServerInterceptor</span>
+    <span class="c1"># Snipped for brevity</span>
+
+    <span class="k">def</span> <span class="nf">request_response</span><span class="p">(</span><span class="ss">request</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="ss">call</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+      <span class="n">log</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="n">call</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="k">end</span>
+
+    <span class="c1"># Snipped for brevity</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div><p>The <code>request</code>, <code>call</code>, and <code>method</code> objects are dependencies that the
+interceptor&rsquo;s interface forces upon us during testing. Even though our <code>log</code>
+method does not use the <code>request</code> object, we will have to satisfy the interface
+of the interceptor.</p>
+<p>Additionally, if we look at the <code>log</code> method, we will see that we do not use
+the <code>_call</code> object, but the method extensively uses the <code>method</code> object and the
+<code>Payload</code> object that we will create in it:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="n">_call</span><span class="p">)</span>
+  <span class="c1"># Snipped for brevity</span>
+
+  <span class="k">yield</span>
+<span class="k">rescue</span> <span class="no">StandardError</span> <span class="o">=&gt;</span> <span class="n">e</span>
+  <span class="c1"># Snipped for brevity</span>
+<span class="k">ensure</span>
+  <span class="n">payload</span> <span class="o">=</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">Payload</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">start_time</span><span class="p">)</span>
+
+  <span class="c1"># Snipped for brevity</span>
+
+  <span class="vi">@logger</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="vi">@level</span><span class="p">,</span> <span class="n">payload</span><span class="o">.</span><span class="n">to_h</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div><p>And the <code>Payload#method_name</code> and <code>Payload#service_name</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="c1"># lib/grpclog/payload.rb</span>
+
+<span class="k">def</span> <span class="nf">method_name</span><span class="p">(</span><span class="nb">method</span><span class="p">)</span>
+  <span class="n">owner</span> <span class="o">=</span> <span class="nb">method</span><span class="o">.</span><span class="n">owner</span>
+  <span class="n">method_name</span><span class="p">,</span> <span class="o">=</span> <span class="n">owner</span><span class="o">.</span><span class="n">rpc_descs</span><span class="o">.</span><span class="n">find</span> <span class="k">do</span> <span class="o">|</span><span class="n">k</span><span class="p">,</span> <span class="n">_</span><span class="o">|</span>
+    <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">GenericService</span><span class="o">.</span><span class="n">underscore</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">to_s</span><span class="p">)</span> <span class="o">==</span> <span class="nb">method</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">to_s</span>
+  <span class="k">end</span>
+
+  <span class="k">return</span> <span class="s1">&#39;(unknown)&#39;</span> <span class="k">if</span> <span class="n">method_name</span><span class="o">.</span><span class="n">nil?</span>
+
+  <span class="n">method_name</span><span class="o">.</span><span class="n">to_s</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">service_name</span><span class="p">(</span><span class="nb">method</span><span class="p">)</span>
+  <span class="nb">method</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">service_name</span>
+<span class="k">end</span>
+</code></pre></div><p>Given the extensive use of the <code>method</code> object, it&rsquo;s clear that a simple
+<code>double</code> won&rsquo;t do the trick.</p>
+<p>Additionally, to unit test the service in isolation without extra dependencies,
+we would also have to define a gRPC service stub and implement it. That would
+allow us to have the test self-contained without the need for additional
+support files.</p>
+<p>Without kicking the can down the road, let&rsquo;s first see the setup that we
+will need for our unit tests:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="no">RSpec</span><span class="o">.</span><span class="n">describe</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">ServerInterceptor</span> <span class="k">do</span>
+  <span class="n">let</span><span class="p">(</span><span class="ss">:rpc_class</span><span class="p">)</span> <span class="p">{</span>
+    <span class="no">Class</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span>
+      <span class="kp">include</span> <span class="no">GRPC</span><span class="o">::</span><span class="no">GenericService</span>
+
+      <span class="nb">self</span><span class="o">.</span><span class="n">marshal_class_method</span> <span class="o">=</span> <span class="ss">:encode</span>
+      <span class="nb">self</span><span class="o">.</span><span class="n">unmarshal_class_method</span> <span class="o">=</span> <span class="ss">:decode</span>
+      <span class="nb">self</span><span class="o">.</span><span class="n">service_name</span> <span class="o">=</span> <span class="s1">&#39;test.Test&#39;</span>
+
+      <span class="n">rpc</span> <span class="ss">:Greet</span><span class="p">,</span> <span class="no">Google</span><span class="o">::</span><span class="no">Protobuf</span><span class="o">::</span><span class="no">StringValue</span><span class="p">,</span> <span class="no">Google</span><span class="o">::</span><span class="no">Protobuf</span><span class="o">::</span><span class="no">Empty</span>
+    <span class="k">end</span>
+  <span class="p">}</span>
+
+  <span class="n">let</span><span class="p">(</span><span class="ss">:service_class</span><span class="p">)</span> <span class="p">{</span>
+    <span class="no">Class</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">rpc_class</span><span class="p">)</span> <span class="k">do</span>
+      <span class="k">def</span> <span class="nf">greet</span><span class="p">(</span><span class="n">_msg</span><span class="p">,</span> <span class="n">_call</span><span class="p">)</span>
+        <span class="c1"># Do nothing</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="p">}</span>
+
+   <span class="c1"># Snipped for brevity</span>
+<span class="k">end</span>
+</code></pre></div><p>First, we will define the gRPC generic service class and the service class that
+implements the generic class. The service will have only one method – <code>Greet</code>
+- which will take a simple string value and return an empty value (i.e.,
+Protobuf defined as <code>Google::Protobuf::Empty</code>).</p>
+<p>The actual implementation of the <code>greet</code> method will be empty – in the spec, we
+will be testing the interceptor, not the real method, so we don&rsquo;t care about
+its implementation.</p>
+<p>Now that we have these classes in place, let&rsquo;s continue with the test setup:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="no">RSpec</span><span class="o">.</span><span class="n">describe</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">ServerInterceptor</span> <span class="k">do</span>
+  <span class="c1"># Snipped for brevity</span>
+
+  <span class="n">let</span><span class="p">(</span><span class="ss">:method</span><span class="p">)</span> <span class="p">{</span> <span class="n">service_class</span><span class="o">.</span><span class="n">new</span><span class="o">.</span><span class="n">method</span><span class="p">(</span><span class="ss">:greet</span><span class="p">)</span> <span class="p">}</span>
+  <span class="n">let</span><span class="p">(</span><span class="ss">:request</span><span class="p">)</span> <span class="p">{</span> <span class="n">double</span> <span class="p">}</span>
+  <span class="n">let</span><span class="p">(</span><span class="ss">:call</span><span class="p">)</span> <span class="p">{</span> <span class="n">double</span><span class="p">(</span><span class="ss">:call</span><span class="p">,</span> <span class="ss">peer</span><span class="p">:</span> <span class="s2">&#34;&#34;</span><span class="p">,</span> <span class="ss">metadata</span><span class="p">:</span> <span class="p">{})</span> <span class="p">}</span>
+
+  <span class="c1"># Snipped for brevity</span>
+<span class="k">end</span>
+</code></pre></div><p>We have to create a few values that we will use in the specs:</p>
+<ul>
+<li>The gRPC <code>method</code> object</li>
+<li>The gRPC <code>request</code> – a blank double</li>
+<li>The gRPC <code>call</code> – a double with <code>peer</code> and <code>metadata</code> attributes</li>
+</ul>
+<p>We do not need to set <code>peer</code> and <code>metadata</code> to any values for our specs.
+However, keep in mind that if your interceptor accesses these attributes, like
+if the interceptor extracts the <code>User-agent</code> from the call, you must set these
+attributes on the <code>call</code> object.</p>
+<p>Next, let&rsquo;s look at the remainder of the spec setup:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="no">RSpec</span><span class="o">.</span><span class="n">describe</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">ServerInterceptor</span> <span class="k">do</span>
+  <span class="c1"># Snipped for brevity</span>
+
+  <span class="n">let</span><span class="p">(</span><span class="ss">:interceptor</span><span class="p">)</span> <span class="p">{</span> <span class="n">described_class</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span> <span class="p">}</span>
+
+  <span class="n">subject</span><span class="p">(</span><span class="ss">:logger</span><span class="p">)</span> <span class="p">{</span> <span class="no">Logger</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="no">STDOUT</span><span class="p">)</span> <span class="p">}</span>
+
+  <span class="c1"># Snipped for brevity</span>
+<span class="k">end</span>
+</code></pre></div><p>Lastly, we create the <code>interceptor</code> object, and pass a <code>logger</code> to the
+constructor.  The <code>subject</code> of our specs will be the <code>logger</code> object, as we
+will be asserting whether the interceptor invokes the correct methods on the
+<code>logger</code> (as seen in the implementation of the interceptor).</p>
+<p>Let&rsquo;s finally look at the actual specs:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="no">RSpec</span><span class="o">.</span><span class="n">describe</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">ServerInterceptor</span> <span class="k">do</span>
+  <span class="c1"># Snipped for brevity</span>
+
+  <span class="n">describe</span> <span class="s1">&#39;#request_response_method&#39;</span> <span class="k">do</span>
+    <span class="n">before</span> <span class="p">{</span> <span class="n">allow</span><span class="p">(</span><span class="n">subject</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">receive</span><span class="p">(</span><span class="ss">:send</span><span class="p">)</span> <span class="p">}</span>
+
+    <span class="n">context</span> <span class="s1">&#39;when no exception occurs&#39;</span> <span class="k">do</span>
+      <span class="n">before</span> <span class="p">{</span> <span class="n">interceptor</span><span class="o">.</span><span class="n">request_response</span><span class="p">(</span><span class="ss">request</span><span class="p">:</span> <span class="n">request</span><span class="p">,</span> <span class="ss">call</span><span class="p">:</span> <span class="n">call</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="nb">method</span><span class="p">)</span> <span class="p">{</span> <span class="p">}</span> <span class="p">}</span>
+
+      <span class="n">it</span> <span class="p">{</span> <span class="n">is_expected</span><span class="o">.</span><span class="n">to</span> <span class="n">have_received</span><span class="p">(</span><span class="ss">:send</span><span class="p">)</span><span class="o">.</span><span class="n">with</span><span class="p">(</span><span class="ss">:info</span><span class="p">,</span> <span class="no">Hash</span><span class="p">)</span> <span class="p">}</span>
+    <span class="k">end</span>
+
+    <span class="n">context</span> <span class="s1">&#39;when a known exception occurs&#39;</span> <span class="k">do</span>
+      <span class="n">before</span> <span class="k">do</span>
+        <span class="n">expect</span> <span class="k">do</span>
+          <span class="n">interceptor</span><span class="o">.</span><span class="n">request_response</span><span class="p">(</span><span class="ss">request</span><span class="p">:</span> <span class="n">request</span><span class="p">,</span> <span class="ss">call</span><span class="p">:</span> <span class="n">call</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="nb">method</span><span class="p">)</span> <span class="k">do</span>
+            <span class="k">raise</span> <span class="no">GRPC</span><span class="o">::</span><span class="no">NotFound</span><span class="o">.</span><span class="n">new</span>
+          <span class="k">end</span>
+        <span class="k">end</span><span class="o">.</span><span class="n">to</span> <span class="n">raise_error</span><span class="p">(</span><span class="no">GRPC</span><span class="o">::</span><span class="no">NotFound</span><span class="p">)</span>
+      <span class="k">end</span>
+
+      <span class="n">it</span> <span class="p">{</span> <span class="n">is_expected</span><span class="o">.</span><span class="n">to</span> <span class="n">have_received</span><span class="p">(</span><span class="ss">:send</span><span class="p">)</span><span class="o">.</span><span class="n">with</span><span class="p">(</span><span class="ss">:error</span><span class="p">,</span> <span class="no">Hash</span><span class="p">)</span> <span class="p">}</span>
+    <span class="k">end</span>
+
+    <span class="n">context</span> <span class="s1">&#39;when an unknown exception occurs&#39;</span> <span class="k">do</span>
+      <span class="n">before</span> <span class="k">do</span>
+        <span class="n">expect</span> <span class="k">do</span>
+          <span class="n">interceptor</span><span class="o">.</span><span class="n">request_response</span><span class="p">(</span><span class="ss">request</span><span class="p">:</span> <span class="n">request</span><span class="p">,</span> <span class="ss">call</span><span class="p">:</span> <span class="n">call</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="nb">method</span><span class="p">)</span> <span class="p">{</span> <span class="k">raise</span> <span class="ss">:unknown</span> <span class="p">}</span>
+        <span class="k">end</span><span class="o">.</span><span class="n">to</span> <span class="n">raise_error</span><span class="p">(</span><span class="no">StandardError</span><span class="p">)</span>
+      <span class="k">end</span>
+
+      <span class="n">it</span> <span class="p">{</span> <span class="n">is_expected</span><span class="o">.</span><span class="n">to</span> <span class="n">have_received</span><span class="p">(</span><span class="ss">:send</span><span class="p">)</span><span class="o">.</span><span class="n">with</span><span class="p">(</span><span class="ss">:error</span><span class="p">,</span> <span class="no">Hash</span><span class="p">)</span> <span class="p">}</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Snipped for brevity</span>
+<span class="k">end</span>
+</code></pre></div><p>We are looking at three different tests here:</p>
+<ol>
+<li>Test the logging behavior when no errors occur</li>
+<li>Test the behavior when a known error occurs, and</li>
+<li>Test the behavior when an unknown error occurs</li>
+</ol>
+<p>The core of the test is the expectation that the interceptor will call a method
+on the <code>logger</code> object, which will effectively log a line (which is the purpose
+of the interceptor).</p>
+<p>Before we kick off the test, we set an <a href="https://relishapp.com/rspec/rspec-mocks/docs/basics/spies">RSpec
+spy</a>, which will
+watch for any invocations of the <code>send</code> method on the <code>logger</code> object (i.e.,
+the <code>subject</code>). This spy will allow us to assert later whether the code invoked
+<code>send</code> on the <code>logger</code> object, and with what arguments, too.</p>
+<p>We will invoke the <code>request_response</code> method on the interceptor, with its
+required argument within each spec. In other words, the <code>request_response</code>
+method is the unit under test here. Hence, for every spec, we call the method
+in a <code>before</code> block.</p>
+<p>In the first spec, we invoke the method with an empty body within the <code>when no exception occurs</code> context. The interceptor will take the empty block, evaluate
+it and log the request line. We set the expectation that when the interceptor
+hits no errors, the <code>logger</code> will receive <code>send</code> with the <code>:info</code> argument
+(i.e., the log level) and a <code>Hash</code>, which is the payload:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="c1"># lib/grpclog/server_interceptor.rb</span>
+
+<span class="vi">@logger</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="vi">@level</span><span class="p">,</span> <span class="n">payload</span><span class="o">.</span><span class="n">to_h</span><span class="p">)</span>
+</code></pre></div><p>In the second spec, within the <code>when a known exception occurs</code> context, we use
+the same approach as before with one key difference: the block evaluated by the
+interceptor will raise a (known) error. In such a case, we set the expectation
+that the <code>logger</code> will receive <code>send</code> with the <code>:error</code> argument (i.e., the log
+level) and the payload <code>Hash</code>.</p>
+<p>Lastly, in the third spec, within the <code>when an unknown exception occurs</code>
+context, we follow a similar approach to the second spec, but we raise an
+unknown error this time. In such a case, we set the expectation that the
+<code>logger</code> will receive <code>send</code> with the <code>:error</code> argument (i.e., the log level)
+and the payload <code>Hash</code> – identical to the one above.</p>
+<p>Given that our interceptor methods perform the same functionality for all
+request types, the other tests are similar to those above. To prove that the
+same test approach will work for the other method, here&rsquo;s the <code>bidi_streamer</code>
+spec:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="no">RSpec</span><span class="o">.</span><span class="n">describe</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">ServerInterceptor</span> <span class="k">do</span>
+  <span class="c1"># Snipped for brevity</span>
+
+  <span class="n">describe</span> <span class="s1">&#39;#bidi_streamer&#39;</span> <span class="k">do</span>
+    <span class="n">before</span> <span class="p">{</span> <span class="n">allow</span><span class="p">(</span><span class="n">subject</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">receive</span><span class="p">(</span><span class="ss">:send</span><span class="p">)</span> <span class="p">}</span>
+
+    <span class="n">context</span> <span class="s1">&#39;when no exception occurs&#39;</span> <span class="k">do</span>
+      <span class="n">before</span> <span class="p">{</span> <span class="n">interceptor</span><span class="o">.</span><span class="n">bidi_streamer</span><span class="p">(</span><span class="ss">requests</span><span class="p">:</span> <span class="o">[</span><span class="n">request</span><span class="o">]</span><span class="p">,</span> <span class="ss">call</span><span class="p">:</span> <span class="n">call</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="nb">method</span><span class="p">)</span> <span class="p">{</span> <span class="p">}</span> <span class="p">}</span>
+
+      <span class="n">it</span> <span class="p">{</span> <span class="n">is_expected</span><span class="o">.</span><span class="n">to</span> <span class="n">have_received</span><span class="p">(</span><span class="ss">:send</span><span class="p">)</span><span class="o">.</span><span class="n">with</span><span class="p">(</span><span class="ss">:info</span><span class="p">,</span> <span class="no">Hash</span><span class="p">)</span> <span class="p">}</span>
+    <span class="k">end</span>
+
+    <span class="n">context</span> <span class="s1">&#39;when a known exception occurs&#39;</span> <span class="k">do</span>
+      <span class="n">before</span> <span class="k">do</span>
+        <span class="n">expect</span> <span class="k">do</span>
+          <span class="n">interceptor</span><span class="o">.</span><span class="n">bidi_streamer</span><span class="p">(</span><span class="ss">requests</span><span class="p">:</span> <span class="o">[</span><span class="n">request</span><span class="o">]</span><span class="p">,</span> <span class="ss">call</span><span class="p">:</span> <span class="n">call</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="nb">method</span><span class="p">)</span> <span class="k">do</span>
+            <span class="k">raise</span> <span class="no">GRPC</span><span class="o">::</span><span class="no">NotFound</span><span class="o">.</span><span class="n">new</span>
+          <span class="k">end</span>
+        <span class="k">end</span><span class="o">.</span><span class="n">to</span> <span class="n">raise_error</span><span class="p">(</span><span class="no">GRPC</span><span class="o">::</span><span class="no">NotFound</span><span class="p">)</span>
+      <span class="k">end</span>
+
+      <span class="n">it</span> <span class="p">{</span> <span class="n">is_expected</span><span class="o">.</span><span class="n">to</span> <span class="n">have_received</span><span class="p">(</span><span class="ss">:send</span><span class="p">)</span><span class="o">.</span><span class="n">with</span><span class="p">(</span><span class="ss">:error</span><span class="p">,</span> <span class="no">Hash</span><span class="p">)</span> <span class="p">}</span>
+    <span class="k">end</span>
+
+    <span class="n">context</span> <span class="s1">&#39;when an unknown exception occurs&#39;</span> <span class="k">do</span>
+      <span class="n">before</span> <span class="k">do</span>
+        <span class="n">expect</span> <span class="k">do</span>
+          <span class="n">interceptor</span><span class="o">.</span><span class="n">bidi_streamer</span><span class="p">(</span><span class="ss">requests</span><span class="p">:</span> <span class="o">[</span><span class="n">request</span><span class="o">]</span><span class="p">,</span> <span class="ss">call</span><span class="p">:</span> <span class="n">call</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="nb">method</span><span class="p">)</span> <span class="p">{</span> <span class="k">raise</span> <span class="ss">:unknown</span> <span class="p">}</span>
+        <span class="k">end</span><span class="o">.</span><span class="n">to</span> <span class="n">raise_error</span><span class="p">(</span><span class="no">StandardError</span><span class="p">)</span>
+      <span class="k">end</span>
+
+      <span class="n">it</span> <span class="p">{</span> <span class="n">is_expected</span><span class="o">.</span><span class="n">to</span> <span class="n">have_received</span><span class="p">(</span><span class="ss">:send</span><span class="p">)</span><span class="o">.</span><span class="n">with</span><span class="p">(</span><span class="ss">:error</span><span class="p">,</span> <span class="no">Hash</span><span class="p">)</span> <span class="p">}</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Snipped for brevity</span>
+<span class="k">end</span>
+</code></pre></div><p>If we run the specs, this is the output we will get:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh">root@e4cdc18cf452:/app# bundle <span class="nb">exec</span> rspec --format documentation spec/grpclog/server_interceptor_spec.rb
+
+Grpclog::ServerInterceptor
+  <span class="c1">#request_response_method</span>
+    when no exception occurs
+      is expected to have received send<span class="o">(</span>:info, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+    when a known exception occurs
+      is expected to have received send<span class="o">(</span>:error, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+    when an unknown exception occurs
+      is expected to have received send<span class="o">(</span>:error, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+  <span class="c1">#server_streamer</span>
+    when no exception occurs
+      is expected to have received send<span class="o">(</span>:info, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+    when a known exception occurs
+      is expected to have received send<span class="o">(</span>:error, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+    when an unknown exception occurs
+      is expected to have received send<span class="o">(</span>:error, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+  <span class="c1">#client_streamer</span>
+    when no exception occurs
+      is expected to have received send<span class="o">(</span>:info, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+    when a known exception occurs
+      is expected to have received send<span class="o">(</span>:error, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+    when an unknown exception occurs
+      is expected to have received send<span class="o">(</span>:error, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+  <span class="c1">#bidi_streamer</span>
+    when no exception occurs
+      is expected to have received send<span class="o">(</span>:info, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+    when a known exception occurs
+      is expected to have received send<span class="o">(</span>:error, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+    when an unknown exception occurs
+      is expected to have received send<span class="o">(</span>:error, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+
+Finished in 0.02193 seconds <span class="o">(</span>files took 0.16171 seconds to load<span class="o">)</span>
+<span class="m">12</span> examples, <span class="m">0</span> failures
+</code></pre></div><p>One last note: while this approach works for my use case, remember that your
+tests can vary depending on how complicated / what kind of work your
+interceptors do.  You might have to rely on more mocking, or you might need
+more (detailed) specs. Still, knowing the above setup, you are on an excellent
+path to start unit testing your interceptors.</p>
+<h3 id="integration-testing-interceptors" class="relative group">Integration testing interceptors <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#integration-testing-interceptors" aria-label="Anchor">#</a></span></h3>
+<p>To begin integration testing the interceptor, we first need to add some
+supporting infrastructure. We first need to define a dummy gRPC service that
+will have an RPC method for each method type:</p>
+<ul>
+<li>Unary</li>
+<li>Server streaming</li>
+<li>Client streaming</li>
+<li>Bi-directional streaming</li>
+</ul>
+<p>After the service is defined, we need to implement a skeleton service to return
+a simple response to the RPC call. Once these pieces are in place, we can mount
+our interceptor to the implementation and test that the server will correctly
+invoke it.</p>
+<h4 id="service--message-definitions" class="relative group">Service &amp; message definitions <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#service--message-definitions" aria-label="Anchor">#</a></span></h4>
+<p>First, let&rsquo;s look at the Protobuf definition of the dummy service and its
+message:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-protobuf" data-lang="protobuf"><span class="c1">// spec/support/greeter.proto
+</span><span class="c1"></span><span class="err">
+</span><span class="err"></span><span class="n">syntax</span> <span class="o">=</span> <span class="s">&#34;proto3&#34;</span><span class="p">;</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="kn">package</span> <span class="nn">grpclog</span><span class="p">;</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="kd">service</span> <span class="n">Greeter</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="k">rpc</span> <span class="n">RequestResponseMethod</span><span class="p">(</span><span class="n">Hello</span><span class="p">)</span> <span class="k">returns</span> <span class="p">(</span><span class="n">Hello</span><span class="p">)</span> <span class="p">{}</span><span class="err">
+</span><span class="err"></span>  <span class="k">rpc</span> <span class="n">ServerStreamMethod</span><span class="p">(</span><span class="n">Hello</span><span class="p">)</span> <span class="k">returns</span> <span class="p">(</span><span class="n">stream</span> <span class="n">Hello</span><span class="p">)</span> <span class="p">{}</span><span class="err">
+</span><span class="err"></span>  <span class="k">rpc</span> <span class="n">ClientStreamMethod</span><span class="p">(</span><span class="n">stream</span> <span class="n">Hello</span><span class="p">)</span> <span class="k">returns</span> <span class="p">(</span><span class="n">Hello</span><span class="p">)</span> <span class="p">{}</span><span class="err">
+</span><span class="err"></span>  <span class="k">rpc</span> <span class="n">BidiStreamMethod</span><span class="p">(</span><span class="n">stream</span> <span class="n">Hello</span><span class="p">)</span> <span class="k">returns</span> <span class="p">(</span><span class="n">stream</span> <span class="n">Hello</span><span class="p">)</span> <span class="p">{}</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span><span class="err">
+</span><span class="err"></span><span class="kd">message</span> <span class="nc">Hello</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="kt">string</span> <span class="n">name</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span><span class="err">
+</span><span class="err"></span>  <span class="kt">int64</span> <span class="n">error_code</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span></code></pre></div><p>Each of the RPCs defined on the <code>Greeter</code> service will map to the respective
+method type, as supported by gRPC.</p>
+<p>Next, we can generate the server and client stubs from the Protobuf code. Let&rsquo;s
+define a small <code>rake</code> command to aid us with this, as part of the project&rsquo;s
+<code>Rakefile</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="c1"># Rakefile</span>
+
+<span class="n">namespace</span> <span class="ss">:test</span> <span class="k">do</span>
+  <span class="n">desc</span> <span class="s1">&#39;Generate test protobuf stubs&#39;</span>
+  <span class="n">task</span> <span class="ss">:generate_proto</span> <span class="k">do</span> <span class="o">|</span><span class="n">_task</span><span class="p">,</span> <span class="n">_args</span><span class="o">|</span>
+    <span class="nb">system</span> <span class="s1">&#39;bundle exec grpc_tools_ruby_protoc --ruby_out=. --grpc_out=. spec/support/greeter/greeter.proto&#39;</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div><p>Now that we have the <code>rake test:generate_proto</code> task, we can use it to generate
+the files (output shortened for brevity):</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh">root@d20bd4fd8613:/app# rake test:generate_proto
+root@d20bd4fd8613:/app# ls -la spec/support/greeter/
+-rw-r--r--  <span class="m">1</span> root root   <span class="m">353</span> Nov  <span class="m">1</span> 10:50 greeter.proto
+-rw-r--r--  <span class="m">1</span> root root   <span class="m">482</span> Nov  <span class="m">2</span> 20:54 greeter_pb.rb
+-rw-r--r--  <span class="m">1</span> root root   <span class="m">739</span> Nov  <span class="m">2</span> 20:54 greeter_services_pb.rb
+</code></pre></div><p>To be able to mount our server interceptor and test it, we will need to
+implement an actual server, using the newly created <code>Greeter</code> service. The
+server will have two parts: the service itself, with all its methods, and a
+controller piece which will be the actual gRPC over HTTP/2 server.</p>
+<h4 id="service-implementation" class="relative group">Service implementation <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#service-implementation" aria-label="Anchor">#</a></span></h4>
+<p>First, let&rsquo;s put together the service methods:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="c1"># spec/support/greeter/server.rb</span>
+
+<span class="k">module</span> <span class="nn">Grpclog</span>
+  <span class="k">module</span> <span class="nn">Greeter</span>
+    <span class="k">class</span> <span class="nc">Server</span> <span class="o">&lt;</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">Greeter</span><span class="o">::</span><span class="no">Service</span>
+      <span class="k">def</span> <span class="nf">request_response_method</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">_call</span><span class="p">)</span>
+        <span class="n">raise_exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="no">Grpclog</span><span class="o">::</span><span class="no">Hello</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="nb">name</span><span class="p">:</span> <span class="s2">&#34;Hello </span><span class="si">#{</span><span class="n">msg</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+      <span class="k">end</span>
+
+      <span class="k">def</span> <span class="nf">server_stream_method</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">_call</span><span class="p">)</span>
+        <span class="n">raise_exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="o">[</span><span class="no">Grpclog</span><span class="o">::</span><span class="no">Hello</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="nb">name</span><span class="p">:</span> <span class="s1">&#39;Hello!&#39;</span><span class="p">)</span><span class="o">]</span>
+      <span class="k">end</span>
+
+      <span class="k">def</span> <span class="nf">client_stream_method</span><span class="p">(</span><span class="n">call</span><span class="p">)</span>
+        <span class="n">call</span><span class="o">.</span><span class="n">each_remote_read</span> <span class="k">do</span> <span class="o">|</span><span class="n">msg</span><span class="o">|</span>
+          <span class="n">raise_exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">end</span>
+
+        <span class="no">Grpclog</span><span class="o">::</span><span class="no">Hello</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="nb">name</span><span class="p">:</span> <span class="s1">&#39;Hello!&#39;</span><span class="p">)</span>
+      <span class="k">end</span>
+
+      <span class="k">def</span> <span class="nf">bidi_stream_method</span><span class="p">(</span><span class="n">call</span><span class="p">,</span> <span class="n">_view</span><span class="p">)</span>
+        <span class="n">call</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">msg</span><span class="o">|</span>
+          <span class="n">raise_exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">end</span>
+
+        <span class="o">[</span><span class="no">Grpclog</span><span class="o">::</span><span class="no">Hello</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="nb">name</span><span class="p">:</span> <span class="s1">&#39;Hello!&#39;</span><span class="p">)</span><span class="o">]</span>
+      <span class="k">end</span>
+
+      <span class="k">def</span> <span class="nf">raise_exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">error_code</span>
+
+        <span class="k">raise</span> <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">BadStatus</span><span class="o">.</span><span class="n">new_status_exception</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="s1">&#39;test exception&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">code</span> <span class="o">&gt;</span> <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">OK</span>
+        <span class="k">raise</span> <span class="n">code</span><span class="o">.</span><span class="n">to_s</span> <span class="k">if</span> <span class="n">code</span> <span class="o">&lt;</span> <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">OK</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div><p>The <code>Server</code> implements the four methods, as defined in the Profobuf
+definition. We keep the implementations lightweight, where each RPC method will
+consume the request/stream and return a blank response. We leave the server as
+a &ldquo;shell&rdquo; because we will use it to mount our interceptor for testing and only
+that.</p>
+<p>The <code>raise_exception</code> method is there to help us with raising an exception
+during testing. During testing, it allows us to send an <code>error_code</code> in the
+request and make the <code>Server</code> raise the exception. While we wouldn&rsquo;t implement
+such a method in a real server, this is a neat trick for testing purposes.</p>
+<p>Now, to boot this server during testing, we will need a gRPC server
+implementation.</p>
+<h4 id="grpc-server-implementation" class="relative group">gRPC Server Implementation <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#grpc-server-implementation" aria-label="Anchor">#</a></span></h4>
+<p>Let&rsquo;s introduce a <code>Controller</code> class, which will do a few things:</p>
+<ul>
+<li>Initialize a new gRPC server object, with a host and a port</li>
+<li>Set up the gRPC server: mount the service and add the interceptors</li>
+<li>Provide an interface to start the server by kicking off a server thread</li>
+<li>Provide an interface to stop the server by terminating the server thread</li>
+</ul>
+<p>Let&rsquo;s quickly see the <code>Controller</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="c1"># spec/support/greeter/controller.rb</span>
+
+<span class="c1"># rubocop:disable Style/ClassVars</span>
+<span class="k">module</span> <span class="nn">Grpclog</span>
+  <span class="k">module</span> <span class="nn">Greeter</span>
+    <span class="k">class</span> <span class="nc">Controller</span>
+      <span class="vc">@@port</span> <span class="o">=</span> <span class="mi">0</span>
+
+      <span class="k">class</span> <span class="o">&lt;&lt;</span> <span class="nb">self</span>
+        <span class="k">def</span> <span class="nf">next_port</span>
+          <span class="vc">@@port</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+
+      <span class="kp">attr_reader</span> <span class="ss">:host</span>
+
+      <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="ss">interceptors</span><span class="p">:</span> <span class="o">[]</span><span class="p">,</span> <span class="ss">service</span><span class="p">:</span> <span class="no">Server</span><span class="p">)</span>
+        <span class="vi">@host</span> <span class="o">=</span> <span class="s2">&#34;0.0.0.0:8008</span><span class="si">#{</span><span class="nb">self</span><span class="o">.</span><span class="n">class</span><span class="o">.</span><span class="n">next_port</span><span class="si">}</span><span class="s2">&#34;</span>
+        <span class="vi">@server</span> <span class="o">=</span> <span class="no">GRPC</span><span class="o">::</span><span class="no">RpcServer</span><span class="o">.</span><span class="n">new</span><span class="p">(</span>
+          <span class="ss">poll_period</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+          <span class="ss">pool_keep_alive</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+          <span class="ss">interceptors</span><span class="p">:</span> <span class="n">interceptors</span>
+        <span class="p">)</span>
+        <span class="vi">@server</span><span class="o">.</span><span class="n">add_http2_port</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="ss">:this_port_is_insecure</span><span class="p">)</span>
+        <span class="vi">@server</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
+      <span class="k">end</span>
+
+      <span class="k">def</span> <span class="nf">start</span>
+        <span class="vi">@server_thread</span> <span class="o">=</span> <span class="no">Thread</span><span class="o">.</span><span class="n">new</span> <span class="p">{</span> <span class="vi">@server</span><span class="o">.</span><span class="n">run_till_terminated</span> <span class="p">}</span>
+      <span class="k">end</span>
+
+      <span class="k">def</span> <span class="nf">stop</span>
+        <span class="vi">@server</span><span class="o">.</span><span class="n">stop</span>
+        <span class="vi">@server_thread</span><span class="o">.</span><span class="n">join</span>
+        <span class="vi">@server_thread</span><span class="o">.</span><span class="n">terminate</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="c1"># rubocop:enable all</span>
+</code></pre></div><p>We first establish a <code>GRPC::RpcServer</code> during the initialization phase, the
+actual gRPC server implementation, as provided by the <code>grpc</code> gem. We then set
+up the gRPC server by attaching a <code>host:port</code> that it will listen to, and we
+specify that the HTTP/2 connection will be insecure by using the
+<code>:this_port_is_insecure</code> option.</p>
+<p>When setting the <code>port,</code> we use a small trick. Namely, we have a <code>next_port</code>
+class method that keeps track of the number of servers we run concurrently.
+Then, every time we launch a new <code>Controller</code>, we increment the port number by
+one. This trick allows us to spin up multiple instances of the <code>Controller</code>
+without them trying to reuse the same port, giving us the ability to run our
+tests in parallel.</p>
+<p>(The trick is blatantly borrowed (or, rather, stolen) from the
+<a href="https://github.com/iaintshine/ruby-grpc-opentracing/"><code>ruby-grpc-opentracing</code>
+gem</a>.)</p>
+<p>In the <code>start</code> method, we create a new <code>Thread</code> and run the server. In the
+<code>stop</code> method, we shut down the <code>GRPC::RpcServer</code> instance, and we also
+terminate the server <code>Thread</code> that we start in the <code>start</code> method.</p>
+<p>Next, we need the test set up to plug in our new interceptor and test it.</p>
+<h4 id="integration-test-setup" class="relative group">Integration test setup <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#integration-test-setup" aria-label="Anchor">#</a></span></h4>
+<p>We begin the test setup similarly to the unit test one, but with some crucial
+differences:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="no">RSpec</span><span class="o">.</span><span class="n">describe</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">ServerInterceptor</span> <span class="k">do</span>
+  <span class="n">let</span><span class="p">(</span><span class="ss">:log</span><span class="p">)</span> <span class="p">{</span> <span class="no">StringIO</span><span class="o">.</span><span class="n">new</span> <span class="p">}</span>
+  <span class="n">let</span><span class="p">(</span><span class="ss">:logger</span><span class="p">)</span> <span class="p">{</span> <span class="no">Logger</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">log</span><span class="p">)</span> <span class="p">}</span>
+
+  <span class="n">let</span><span class="p">(</span><span class="ss">:interceptor</span><span class="p">)</span> <span class="p">{</span> <span class="n">described_class</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span> <span class="p">}</span>
+  <span class="n">let</span><span class="p">(</span><span class="ss">:channel</span><span class="p">)</span> <span class="p">{</span>
+    <span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Channel</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="vi">@server</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="ss">:this_channel_is_insecure</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="n">let</span><span class="p">(</span><span class="ss">:client</span><span class="p">)</span> <span class="k">do</span>
+    <span class="no">Grpclog</span><span class="o">::</span><span class="no">Greeter</span><span class="o">::</span><span class="no">Stub</span><span class="o">.</span><span class="n">new</span><span class="p">(</span>
+      <span class="vi">@server</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
+      <span class="ss">:this_channel_is_insecure</span><span class="p">,</span>
+      <span class="ss">channel_override</span><span class="p">:</span> <span class="n">channel</span><span class="p">,</span>
+      <span class="ss">interceptors</span><span class="p">:</span> <span class="o">[]</span>
+    <span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="n">subject</span><span class="p">(</span><span class="ss">:message</span><span class="p">)</span> <span class="p">{</span> <span class="no">JSON</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">string</span><span class="p">)</span> <span class="p">}</span>
+
+  <span class="c1"># Snipped for brevity</span>
+<span class="k">end</span>
+</code></pre></div><p>Setting up the <code>interceptor</code> object by passing in a <code>logger</code> that takes a <code>log</code>
+which is a <code>StringIO</code>, is very similar to what we saw before. Next, we create a
+gRPC channel that connects to a gRPC server on a specified host and port.</p>
+<p>We use the new <code>channel</code> to establish a <code>client</code> object, which uses the
+generated <code>Grpclog::Greeter::Stub</code> class that we saw before. We will use the
+<code>client</code> in our specs to send actual gRPC requests to the gRPC server we
+implemented.</p>
+<p>Lastly, the <code>subject</code> is the parsed JSON from the <code>log</code> buffer. We will use it
+to set expectations that the interceptor logged our messages correctly.</p>
+<p>Let&rsquo;s continue with our spec:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="no">RSpec</span><span class="o">.</span><span class="n">describe</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">ServerInterceptor</span> <span class="k">do</span>
+  <span class="c1"># Snipped for brevity</span>
+
+  <span class="n">before</span> <span class="k">do</span>
+    <span class="vi">@server</span> <span class="o">=</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">Greeter</span><span class="o">::</span><span class="no">Controller</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="ss">interceptors</span><span class="p">:</span> <span class="o">[</span><span class="n">interceptor</span><span class="o">]</span><span class="p">)</span>
+    <span class="vi">@server</span><span class="o">.</span><span class="n">start</span>
+  <span class="k">end</span>
+
+  <span class="n">after</span> <span class="k">do</span>
+    <span class="vi">@server</span><span class="o">&amp;.</span><span class="n">stop</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Snipped for brevity</span>
+<span class="k">end</span>
+</code></pre></div><p>Here, we set the <code>before</code> and <code>after</code> blocks. In the <code>before</code> block, we
+initialize the new gRPC server by using the <code>Grpclog::Greeter::Controller</code>
+class. To it, we pass the <code>interceptor</code> object that we initialized before.</p>
+<p>In the <code>after</code> block, we make sure to shut down the gRPC server if booted. We
+want to perform this cleanup, so we do not leave gRPC server threads running
+after our specs finish.</p>
+<p>Let&rsquo;s look at a spec next:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="no">RSpec</span><span class="o">.</span><span class="n">describe</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">ServerInterceptor</span> <span class="k">do</span>
+  <span class="c1"># Snipped for brevity</span>
+
+  <span class="n">subject</span><span class="p">(</span><span class="ss">:logger</span><span class="p">)</span> <span class="p">{</span> <span class="no">Logger</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="no">STDOUT</span><span class="p">)</span> <span class="p">}</span>
+
+  <span class="n">describe</span> <span class="s1">&#39;#server_streamer_method&#39;</span> <span class="k">do</span>
+    <span class="n">context</span> <span class="s1">&#39;when no exceptions are raised&#39;</span> <span class="k">do</span>
+      <span class="n">before</span> <span class="k">do</span>
+        <span class="n">enumerator</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">server_streamer_method</span><span class="p">(</span><span class="no">Grpclog</span><span class="o">::</span><span class="no">Hello</span><span class="o">.</span><span class="n">new</span><span class="p">)</span>
+        <span class="n">enumerator</span><span class="o">.</span><span class="n">each</span> <span class="p">{}</span> <span class="c1"># Consume the stream</span>
+      <span class="k">end</span>
+
+      <span class="n">it</span> <span class="p">{</span> <span class="n">is_expected</span><span class="o">.</span><span class="n">to</span> <span class="kp">include</span><span class="p">(</span><span class="s1">&#39;grpc.code&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;OK&#39;</span><span class="p">)</span> <span class="p">}</span>
+    <span class="k">end</span>
+
+    <span class="n">context</span> <span class="s1">&#39;when an exception is raised&#39;</span> <span class="k">do</span>
+      <span class="n">before</span> <span class="k">do</span>
+        <span class="n">expect</span> <span class="k">do</span>
+          <span class="n">enumerator</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">server_streamer_method</span><span class="p">(</span>
+            <span class="no">Grpclog</span><span class="o">::</span><span class="no">Hello</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="ss">error_code</span><span class="p">:</span> <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">UNKNOWN</span><span class="p">)</span>
+          <span class="p">)</span>
+          <span class="n">enumerator</span><span class="o">.</span><span class="n">each</span> <span class="p">{}</span> <span class="c1"># Consume the stream</span>
+        <span class="k">end</span><span class="o">.</span><span class="n">to</span> <span class="n">raise_error</span><span class="p">(</span><span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Unknown</span><span class="p">)</span>
+      <span class="k">end</span>
+
+      <span class="n">it</span> <span class="p">{</span> <span class="n">is_expected</span><span class="o">.</span><span class="n">to</span> <span class="kp">include</span><span class="p">(</span><span class="s1">&#39;grpc.code&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;Unknown&#39;</span><span class="p">)</span> <span class="p">}</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Snipped for brevity</span>
+<span class="k">end</span>
+</code></pre></div><p>We are looking at two different specs here: one where no exception is raised
+and one that raises a <code>GRPC::Unknown</code>.</p>
+<p>In the first spec, we use the service <code>client</code> to invoke the
+<code>server_streamer_method</code>, passing in the argument the body of the request.
+Since its a streaming RPC, the returned value of the client call is an
+enumerator that allows us to consume the stream.</p>
+<p>We consume the stream returned by the server, just by looping through the
+enumerator without acting on the response data itself. Next, we simply assert
+on the logged line expecting the logged <code>grpc.code</code> field to be <code>OK</code>.</p>
+<p>On the next spec we use the trick allowing us to return an error from the
+server. As part of the request body, we send the <code>error_code</code> set as
+<code>GRPC::Core::StatusCodes::UNKNOWN</code>, which will make the server return the same
+error. The rest of the test setup is like the one before it: we consume the
+stream returned by the server, just by looping through the enumerator without
+acting on the response data itself.</p>
+<p>When it comes to the expectation itself, instead of asserting that the
+<code>grpc.code</code> be <code>OK</code>, we assert that the code is the error we passed as the
+<code>error_code</code> in the request - <code>Unknown</code>.</p>
+<p>If we run the specs, we will see that they pass successfully:</p>
+<pre tabindex="0"><code>root@e4cdc18cf452:/app# bundle exec rspec spec/grpclog/integration/server_interceptor_spec.rb
+
+Grpclog::ServerInterceptor
+  #server_streamer_method
+    when no exceptions are raised
+      is expected to include {&quot;grpc.code&quot; =&gt; &quot;OK&quot;}
+    when an exception is raised
+      is expected to include {&quot;grpc.code&quot; =&gt; &quot;Unknown&quot;}
+
+Finished in 0.06014 seconds (files took 0.19803 seconds to load)
+2 examples, 0 failures
+</code></pre><p>Evidently, the two types of specs are similar - this is mainly due to the
+nature of the interceptor under test. On the other hand, the setup for the two
+types of tests is different, with the integration specs being more involved and
+requiring additional support files.</p>
+<p>Still, the overhead can be worth it (depending on your case) as mounting the
+interceptor on an actual gRPC server gives us the confidence that our server
+interceptor will work correctly when mounted on a gRPC server in the wild.</p>
+<p>If you would like to inspect the code for this article, head over to <a href="https://github.com/fteem/grpclog">its
+repository</a>. You can check out the
+implementation, and inspect the full list of specs, including the project
+setup.</p>
+<div id="revue-embed">
+  <form action="https://www.getrevue.co/profile/itsilija/add_subscriber" method="post" id="revue-form" name="revue-form"  target="_blank">
+    <p><b>Liked this article?</b>
+Subscribe to my newsletter and get future articles in your inbox. It's a
+short and sweet read, going out to hundreds of other engineers.</p>
+    <div class="revue-form-group">
+      <input class="revue-form-field" placeholder="Your email address..." type="email" name="member[email]" id="member_email">
+    </div>
+    <div class="revue-form-actions">
+      <input type="submit" value="Subscribe" name="member[subscribe]" id="member_submit">
+    </div>
+  </form>
+</div>
+
+
+      </div>
+    </section>
+    <footer class="pt-8 max-w-prose">
+      
+  <div class="flex">
+    
+      
+      
+        
+        <img
+          class="w-24 h-24 !mt-0 !mb-0 ltr:mr-4 rtl:ml-4 rounded-full"
+          width="96"
+          height="96"
+          alt="Author"
+          src="/img/avatar_huae39953c6189b6aa60e47103b358d088_112612_192x192_fill_q75_box_smart1.jpg"
+        />
+      
+    
+    <div class="place-self-center">
+      
+        <div class="text-[0.6rem] leading-3 text-neutral-500 dark:text-neutral-400 uppercase">
+          Author
+        </div>
+        <div class="font-semibold leading-6 text-neutral-800 dark:text-neutral-300">
+          Ilija Eftimov
+        </div>
+      
+      
+      <div class="text-2xl sm:text-lg">
+  <div class="flex flex-wrap text-neutral-400 dark:text-neutral-500">
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://twitter.com/itsilija"
+          target="_blank"
+          aria-label="Twitter"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="twitter" class="svg-inline--fa fa-twitter fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://www.linkedin.com/in/ieftimov/"
+          target="_blank"
+          aria-label="Linkedin"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="linkedin" class="svg-inline--fa fa-linkedin fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="mailto:blog@ieftimov.com"
+          target="_blank"
+          aria-label="Email"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="at" class="svg-inline--fa fa-at fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 8C118.941 8 8 118.919 8 256c0 137.059 110.919 248 248 248 48.154 0 95.342-14.14 135.408-40.223 12.005-7.815 14.625-24.288 5.552-35.372l-10.177-12.433c-7.671-9.371-21.179-11.667-31.373-5.129C325.92 429.757 291.314 440 256 440c-101.458 0-184-82.542-184-184S154.542 72 256 72c100.139 0 184 57.619 184 160 0 38.786-21.093 79.742-58.17 83.693-17.349-.454-16.91-12.857-13.476-30.024l23.433-121.11C394.653 149.75 383.308 136 368.225 136h-44.981a13.518 13.518 0 0 0-13.432 11.993l-.01.092c-14.697-17.901-40.448-21.775-59.971-21.775-74.58 0-137.831 62.234-137.831 151.46 0 65.303 36.785 105.87 96 105.87 26.984 0 57.369-15.637 74.991-38.333 9.522 34.104 40.613 34.103 70.71 34.103C462.609 379.41 504 307.798 504 232 504 95.653 394.023 8 256 8zm-21.68 304.43c-22.249 0-36.07-15.623-36.07-40.771 0-44.993 30.779-72.729 58.63-72.729 22.292 0 35.601 15.241 35.601 40.77 0 45.061-33.875 72.73-58.161 72.73z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://dev.to/fteem"
+          target="_blank"
+          aria-label="Dev"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="dev" class="svg-inline--fa fa-dev fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M120.12 208.29c-3.88-2.9-7.77-4.35-11.65-4.35H91.03v104.47h17.45c3.88 0 7.77-1.45 11.65-4.35 3.88-2.9 5.82-7.25 5.82-13.06v-69.65c-.01-5.8-1.96-10.16-5.83-13.06zM404.1 32H43.9C19.7 32 .06 51.59 0 75.8v360.4C.06 460.41 19.7 480 43.9 480h360.2c24.21 0 43.84-19.59 43.9-43.8V75.8c-.06-24.21-19.7-43.8-43.9-43.8zM154.2 291.19c0 18.81-11.61 47.31-48.36 47.25h-46.4V172.98h47.38c35.44 0 47.36 28.46 47.37 47.28l.01 70.93zm100.68-88.66H201.6v38.42h32.57v29.57H201.6v38.41h53.29v29.57h-62.18c-11.16.29-20.44-8.53-20.72-19.69V193.7c-.27-11.15 8.56-20.41 19.71-20.69h63.19l-.01 29.52zm103.64 115.29c-13.2 30.75-36.85 24.63-47.44 0l-38.53-144.8h32.57l29.71 113.72 29.57-113.72h32.58l-38.46 144.8z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://github.com/fteem"
+          target="_blank"
+          aria-label="Github"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="github" class="svg-inline--fa fa-github fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path fill="currentColor" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://t.me/ieftimovcom"
+          target="_blank"
+          aria-label="Telegram"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="telegram-plane" class="svg-inline--fa fa-telegram-plane fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M446.7 98.6l-67.6 318.8c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-49.7 47.8c-5.5 5.5-10.1 10.1-20.7 10.1l7.4-104.9 190.9-172.5c8.3-7.4-1.8-11.5-12.9-4.1L117.8 284 16.2 252.2c-22.1-6.9-22.5-22.1 4.6-32.7L418.2 66.4c18.4-6.9 34.5 4.1 28.5 32.2z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+  </div>
+
+</div>
+    </div>
+  </div>
+
+
+      
+  
+  <section class="flex flex-row flex-wrap justify-center pt-4 text-xl">
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://www.facebook.com/sharer/sharer.php?u=https://ieftimov.com/posts/creating-testing-grpc-server-interceptors-ruby/&amp;quote=Creating%20and%20testing%20gRPC%20server%20interceptors%20in%20Ruby"
+          title="Share on Facebook"
+          aria-label="Share on Facebook"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="facebook" class="svg-inline--fa fa-facebook fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://twitter.com/intent/tweet/?url=https://ieftimov.com/posts/creating-testing-grpc-server-interceptors-ruby/&amp;text=Creating%20and%20testing%20gRPC%20server%20interceptors%20in%20Ruby"
+          title="Tweet on Twitter"
+          aria-label="Tweet on Twitter"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="twitter" class="svg-inline--fa fa-twitter fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://reddit.com/submit/?url=https://ieftimov.com/posts/creating-testing-grpc-server-interceptors-ruby/&amp;resubmit=true&amp;title=Creating%20and%20testing%20gRPC%20server%20interceptors%20in%20Ruby"
+          title="Submit to Reddit"
+          aria-label="Submit to Reddit"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="reddit" class="svg-inline--fa fa-reddit fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M201.5 305.5c-13.8 0-24.9-11.1-24.9-24.6 0-13.8 11.1-24.9 24.9-24.9 13.6 0 24.6 11.1 24.6 24.9 0 13.6-11.1 24.6-24.6 24.6zM504 256c0 137-111 248-248 248S8 393 8 256 119 8 256 8s248 111 248 248zm-132.3-41.2c-9.4 0-17.7 3.9-23.8 10-22.4-15.5-52.6-25.5-86.1-26.6l17.4-78.3 55.4 12.5c0 13.6 11.1 24.6 24.6 24.6 13.8 0 24.9-11.3 24.9-24.9s-11.1-24.9-24.9-24.9c-9.7 0-18 5.8-22.1 13.8l-61.2-13.6c-3-.8-6.1 1.4-6.9 4.4l-19.1 86.4c-33.2 1.4-63.1 11.3-85.5 26.8-6.1-6.4-14.7-10.2-24.1-10.2-34.9 0-46.3 46.9-14.4 62.8-1.1 5-1.7 10.2-1.7 15.5 0 52.6 59.2 95.2 132 95.2 73.1 0 132.3-42.6 132.3-95.2 0-5.3-.6-10.8-1.9-15.8 31.3-16 19.8-62.5-14.9-62.5zM302.8 331c-18.2 18.2-76.1 17.9-93.6 0-2.2-2.2-6.1-2.2-8.3 0-2.5 2.5-2.5 6.4 0 8.6 22.8 22.8 87.3 22.8 110.2 0 2.5-2.2 2.5-6.1 0-8.6-2.2-2.2-6.1-2.2-8.3 0zm7.7-75c-13.6 0-24.6 11.1-24.6 24.9 0 13.6 11.1 24.6 24.6 24.6 13.8 0 24.9-11.1 24.9-24.6 0-13.8-11-24.9-24.9-24.9z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https://ieftimov.com/posts/creating-testing-grpc-server-interceptors-ruby/&amp;title=Creating%20and%20testing%20gRPC%20server%20interceptors%20in%20Ruby"
+          title="Share on LinkedIn"
+          aria-label="Share on LinkedIn"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="linkedin" class="svg-inline--fa fa-linkedin fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="mailto:?body=https://ieftimov.com/posts/creating-testing-grpc-server-interceptors-ruby/&amp;subject=Creating%20and%20testing%20gRPC%20server%20interceptors%20in%20Ruby"
+          title="Send via email"
+          aria-label="Send via email"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="at" class="svg-inline--fa fa-at fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 8C118.941 8 8 118.919 8 256c0 137.059 110.919 248 248 248 48.154 0 95.342-14.14 135.408-40.223 12.005-7.815 14.625-24.288 5.552-35.372l-10.177-12.433c-7.671-9.371-21.179-11.667-31.373-5.129C325.92 429.757 291.314 440 256 440c-101.458 0-184-82.542-184-184S154.542 72 256 72c100.139 0 184 57.619 184 160 0 38.786-21.093 79.742-58.17 83.693-17.349-.454-16.91-12.857-13.476-30.024l23.433-121.11C394.653 149.75 383.308 136 368.225 136h-44.981a13.518 13.518 0 0 0-13.432 11.993l-.01.092c-14.697-17.901-40.448-21.775-59.971-21.775-74.58 0-137.831 62.234-137.831 151.46 0 65.303 36.785 105.87 96 105.87 26.984 0 57.369-15.637 74.991-38.333 9.522 34.104 40.613 34.103 70.71 34.103C462.609 379.41 504 307.798 504 232 504 95.653 394.023 8 256 8zm-21.68 304.43c-22.249 0-36.07-15.623-36.07-40.771 0-44.993 30.779-72.729 58.63-72.729 22.292 0 35.601 15.241 35.601 40.77 0 45.061-33.875 72.73-58.161 72.73z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+  </section>
+
+
+      
+  
+    
+    
+    
+    <div class="pt-8">
+      <hr class="border-dotted border-neutral-300 dark:border-neutral-600" />
+      <div class="flex justify-between pt-3">
+        <span>
+          
+            <a class="flex group" href="/posts/docker-compose-stray-pids-rails-beyond/">
+              <span
+                class="mr-3 ltr:inline rtl:hidden text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&larr;</span
+              >
+              <span
+                class="ml-3 ltr:hidden rtl:inline text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&rarr;</span
+              >
+              <span class="flex flex-col">
+                <span
+                  class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+                  >Docker Compose, stray PID files, Rails and beyond</span
+                >
+                <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+                  
+                    <time datetime="2021-10-27 00:00:00 &#43;0000 UTC">27 October 2021</time>
+                  
+                </span>
+              </span>
+            </a>
+          
+        </span>
+        <span>
+          
+            <a class="flex text-right group" href="/posts/how-to-make-the-step-up-from-intermediate-to-senior-engineer/">
+              <span class="flex flex-col">
+                <span
+                  class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+                  >How to Make the Step up From Intermediate to Senior Engineer</span
+                >
+                <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+                  
+                    <time datetime="2022-02-21 00:00:00 &#43;0000 UTC">21 February 2022</time>
+                  
+                </span>
+              </span>
+              <span
+                class="ml-3 ltr:inline rtl:hidden text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&rarr;</span
+              >
+              <span
+                class="mr-3 ltr:hidden rtl:inline text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&larr;</span
+              >
+            </a>
+          
+        </span>
+      </div>
+    </div>
+  
+
+
+    </footer>
+    
+  </article>
+
+      
+        <div
+          class="absolute top-[110vh] ltr:right-0 rtl:left-0 w-12 pointer-events-none bottom-[-5.5rem]"
+        >
+          <a
+            href="#the-top"
+            class="w-12 h-12 sticky pointer-events-auto top-[calc(100vh-5rem)] bg-neutral/50 dark:bg-neutral-800/50 backdrop-blur rounded-full text-xl flex items-center justify-center text-neutral-700 dark:text-neutral hover:text-primary-600 dark:hover:text-primary-400"
+            aria-label="Scroll to top"
+            title="Scroll to top"
+          >
+            &uarr;
+          </a>
+        </div>
+      
+    </main>
+    <div
+  id="search-wrapper"
+  class="fixed inset-0 z-50 flex flex-col p-4 sm:p-6 md:p-[10vh] lg:p-[12vh] w-screen h-screen cursor-default bg-neutral-500/50 backdrop-blur-sm dark:bg-neutral-900/50 invisible"
+  data-url="https://ieftimov.com/"
+>
+  <div
+    id="search-modal"
+    class="flex flex-col w-full max-w-3xl min-h-0 mx-auto border rounded-md shadow-lg border-neutral-200 top-20 bg-neutral dark:bg-neutral-800 dark:border-neutral-700"
+  >
+    <header class="relative z-10 flex items-center justify-between flex-none px-2">
+      <form class="flex items-center flex-auto min-w-0">
+        <div class="flex items-center justify-center w-8 h-8 text-neutral-400">
+          
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="search" class="svg-inline--fa fa-search fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>
+  </span>
+
+
+        </div>
+        <input
+          type="search"
+          id="search-query"
+          class="flex flex-auto h-12 mx-1 bg-transparent appearance-none focus:outline-dotted focus:outline-transparent focus:outline-2"
+          placeholder="Search"
+          tabindex="0"
+        />
+      </form>
+      <button
+        id="close-search-button"
+        class="flex items-center justify-center w-8 h-8 text-neutral-700 dark:text-neutral hover:text-primary-600 dark:hover:text-primary-400"
+        title="Close (Esc)"
+      >
+        
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
+  </span>
+
+
+      </button>
+    </header>
+    <section class="flex-auto px-2 overflow-auto">
+      <ul id="search-results">
+        
+      </ul>
+    </section>
+  </div>
+</div>
+<footer class="py-10">
+  
+  
+    <nav class="pb-4 text-base font-medium text-neutral-500 dark:text-neutral-400">
+      <ul class="flex flex-col list-none sm:flex-row">
+        
+          <li class="mb-1 sm:mb-0 sm:mr-7 sm:last:mr-0">
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/analytics"
+              title=""
+              >Analytics</a
+            >
+          </li>
+        
+          <li class="mb-1 sm:mb-0 sm:mr-7 sm:last:mr-0">
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/index.xml"
+              title=""
+              >RSS</a
+            >
+          </li>
+        
+          <li class="mb-1 sm:mb-0 sm:mr-7 sm:last:mr-0">
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="https://forms.gle/orfXK5jh1LRaiFzo8"
+              title=""
+              >Suggest a topic</a
+            >
+          </li>
+        
+      </ul>
+    </nav>
+  
+  <div class="flex justify-between">
+    <div>
+      
+      <p class="text-sm text-neutral-500 dark:text-neutral-400">
+          &copy;
+          2022
+          Ilija Eftimov
+      </p>
+      
+      
+        <p class="text-xs text-neutral-500 dark:text-neutral-400">
+          
+          
+          Powered by <a class="hover:underline hover:decoration-primary-400 hover:text-primary-500"
+            href="https://gohugo.io/" target="_blank" rel="noopener noreferrer">Hugo</a> &amp; <a class="hover:underline hover:decoration-primary-400 hover:text-primary-500" href="https://git.io/hugo-congo" target="_blank" rel="noopener noreferrer">Congo</a>
+        </p>
+      
+    </div>
+    
+    
+      <div
+        class="text-sm cursor-pointer text-neutral-700 dark:text-neutral hover:text-primary-600 dark:hover:text-primary-400 ltr:mr-14 rtl:ml-14"
+      >
+        <button
+          id="appearance-switcher"
+          class="w-12 h-12 "
+          type="button"
+          title="Switch to dark appearance"
+        >
+          <span class="inline dark:hidden">
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M283.211 512c78.962 0 151.079-35.925 198.857-94.792 7.068-8.708-.639-21.43-11.562-19.35-124.203 23.654-238.262-71.576-238.262-196.954 0-72.222 38.662-138.635 101.498-174.394 9.686-5.512 7.25-20.197-3.756-22.23A258.156 258.156 0 0 0 283.211 0c-141.309 0-256 114.511-256 256 0 141.309 114.511 256 256 256z"></path></svg>
+  </span>
+
+</span>
+          <span class="hidden dark:inline">
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 160c-52.9 0-96 43.1-96 96s43.1 96 96 96 96-43.1 96-96-43.1-96-96-96zm246.4 80.5l-94.7-47.3 33.5-100.4c4.5-13.6-8.4-26.5-21.9-21.9l-100.4 33.5-47.4-94.8c-6.4-12.8-24.6-12.8-31 0l-47.3 94.7L92.7 70.8c-13.6-4.5-26.5 8.4-21.9 21.9l33.5 100.4-94.7 47.4c-12.8 6.4-12.8 24.6 0 31l94.7 47.3-33.5 100.5c-4.5 13.6 8.4 26.5 21.9 21.9l100.4-33.5 47.3 94.7c6.4 12.8 24.6 12.8 31 0l47.3-94.7 100.4 33.5c13.6 4.5 26.5-8.4 21.9-21.9l-33.5-100.4 94.7-47.3c13-6.5 13-24.7.2-31.1zm-155.9 106c-49.9 49.9-131.1 49.9-181 0-49.9-49.9-49.9-131.1 0-181 49.9-49.9 131.1-49.9 181 0 49.9 49.9 49.9 131.1 0 181z"></path></svg>
+  </span>
+
+</span>
+        </button>
+      </div>
+    
+  </div>
+  
+  
+</footer>
+</body>
+</html>

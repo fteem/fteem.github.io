@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html
+  lang="en"
+  dir="ltr"
+  class="scroll-smooth"
+  data-default-appearance="light"
+  data-auto-appearance="true"
+><head>
+  <meta charset="utf-8" />
+  
+    <meta http-equiv="content-language" content="en" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  
+  <title>How to write RSpec formatters from scratch &middot; Ilija Eftimov 👨‍🚀</title>
+    <meta name="title" content="How to write RSpec formatters from scratch &middot; Ilija Eftimov 👨‍🚀" />
+  
+  <meta name="description" content="Documenting my experiences and learnings, with the goal of helping other software engineers on their journey" />
+  
+  
+  
+  <link rel="canonical" href="https://ieftimov.com/posts/how-to-write-rspec-formatters-from-scratch/" />
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <link
+    type="text/css"
+    rel="stylesheet"
+    href="/css/main.bundle.min.b4e16dd9839a706aac3e482fb2ead8a30c01f199844299a37ddc79029b6a3bae7c65ff23668804cf9b10c85a4931caa1dca1efa0395de6dc9fe0784468f41457.css"
+    integrity="sha512-tOFt2YOacGqsPkgvsurYowwB8ZmEQpmjfdx5AptqO658Zf8jZogEz5sQyFpJMcqh3KHvoDld5tyf4HhEaPQUVw=="
+  />
+  
+  
+  <script type="text/javascript" src="/js/appearance.min.dbca9e2200cf929a23b55442f2ff09361b8d5290147ff1407f89ed3839f0fea13db4e94f5ae6bf2f3de10d322b4bede74b578455e9cc7d5565314d914602c974.js" integrity="sha512-28qeIgDPkpojtVRC8v8JNhuNUpAUf/FAf4ntODnw/qE9tOlPWua/Lz3hDTIrS&#43;3nS1eEVenMfVVlMU2RRgLJdA=="></script>
+  
+    
+    
+    
+  
+  
+    
+    
+  
+  
+    
+    <script defer type="text/javascript" id="script-bundle" src="/js/main.bundle.min.238e7ce9c541b4e7abb5781ad8e736e849e74890fcb8a26e73ea1845f573b3a0cf91418b20ac4401bdbb57d9c6c009d8f6ec50dad6d44b48f3936aea0f95c391.js" integrity="sha512-I4586cVBtOertXga2Oc26EnnSJD8uKJuc&#43;oYRfVzs6DPkUGLIKxEAb27V9nGwAnY9uxQ2tbUS0jzk2rqD5XDkQ==" data-copy="Copy" data-copied="Copied"></script>
+  
+  
+  
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+  
+  
+  
+  
+  
+  
+  
+  <meta property="og:title" content="How to write RSpec formatters from scratch" />
+<meta property="og:description" content="Recently I did an experiment with RSpec&rsquo;s formatters." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/posts/how-to-write-rspec-formatters-from-scratch/" /><meta property="article:section" content="posts" />
+
+<meta property="og:site_name" content="Ilija Eftimov 👨‍🚀" />
+
+
+  <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="How to write RSpec formatters from scratch"/>
+<meta name="twitter:description" content="Recently I did an experiment with RSpec&rsquo;s formatters."/>
+
+  
+  <script type="application/ld+json">
+  [{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "articleSection": "Posts",
+    "name": "How to write RSpec formatters from scratch",
+    "headline": "How to write RSpec formatters from scratch",
+    
+    "abstract": "Recently I did an experiment with RSpec\u0026rsquo;s formatters.",
+    "inLanguage": "en",
+    "url" : "https:\/\/ieftimov.com\/posts\/how-to-write-rspec-formatters-from-scratch\/",
+    "author" : {
+      "@type": "Person",
+      "name": "Ilija Eftimov"
+    },
+    
+    "dateCreated": "2015-04-28T00:00:00\u002b00:00",
+    
+    
+    
+    
+    "keywords": ["testing","formatters"],
+    
+    "mainEntityOfPage": "true",
+    "wordCount": "2600"
+  }]
+  </script>
+
+
+  
+  
+    <meta name="generator" content="Hugo 0.92.2" />
+  
+  
+  <meta name="author" content="Ilija Eftimov" />
+  
+    
+      <link href="https://twitter.com/itsilija" rel="me" />
+    
+      <link href="https://www.linkedin.com/in/ieftimov/" rel="me" />
+    
+      <link href="mailto:blog@ieftimov.com" rel="me" />
+    
+      <link href="https://dev.to/fteem" rel="me" />
+    
+      <link href="https://github.com/fteem" rel="me" />
+    
+      <link href="https://t.me/ieftimovcom" rel="me" />
+    
+  
+  
+  
+
+
+
+
+
+
+  
+  <script async defer data-domain="ieftimov.com" src="https://plausible.io/js/plausible.js"></script>
+
+  
+  
+</head>
+<body
+    class="flex flex-col h-screen px-6 m-auto text-lg leading-7 bg-neutral text-neutral-900 sm:px-14 md:px-24 lg:px-32 dark:bg-neutral-800 dark:text-neutral max-w-7xl"
+  >
+    <div id="the-top" class="absolute flex self-center">
+      <a
+        class="px-3 py-1 text-sm -translate-y-8 rounded-b-lg bg-primary-200 dark:bg-neutral-600 focus:translate-y-0"
+        href="#main-content"
+        ><span class="font-bold ltr:pr-2 rtl:pl-2 text-primary-600 dark:text-primary-400"
+          >&darr;</span
+        >Skip to main content</a
+      >
+    </div><header
+  class="flex justify-between py-6 font-semibold sm:items-center sm:py-10 text-neutral-900 dark:text-neutral"
+>
+  
+  <div>
+    
+      <a
+        class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+        rel="me"
+        href="/"
+        >Ilija Eftimov 👨‍🚀</a
+      >
+    
+
+  </div>
+  
+  
+    <nav>
+      <ul class="flex flex-col list-none sm:flex-row">
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/"
+              title=""
+              >Home</a
+            >
+          </li>
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/posts/"
+              title="Posts"
+              >Writing</a
+            >
+          </li>
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/work"
+              title=""
+              >Work</a
+            >
+          </li>
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="https://www.getrevue.co/profile/itsilija"
+              title=""
+              >Subscribe</a
+            >
+          </li>
+        
+        
+          <li
+            class="ltr:text-right rtl:text-left ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <button
+              id="search-button"
+              class="text-base hover:text-primary-600 dark:hover:text-primary-400"
+              title="Search (/)"
+            >
+              
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="search" class="svg-inline--fa fa-search fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>
+  </span>
+
+
+            </button>
+          </li>
+        
+      </ul>
+    </nav>
+  
+</header>
+<main id="main-content" class="relative grow">
+  <article>
+    <header class="max-w-prose">
+      
+      <h1 class="mt-0 text-4xl font-extrabold text-neutral-900 dark:text-neutral">
+        How to write RSpec formatters from scratch
+      </h1>
+      <div class="mt-8 mb-12 text-base text-neutral-500 dark:text-neutral-400">
+        
+
+
+
+
+
+  
+  
+
+
+
+  
+
+  
+  
+    
+  
+
+  
+
+  
+
+  
+    
+  
+
+  
+
+
+  <div class="flex flex-row flex-wrap items-center">
+    
+    
+      <time datetime="2015-04-28 00:00:00 &#43;0000 UTC">28 April 2015</time><span class="px-2 text-primary-500">&middot;</span><span title="Reading time">13 mins</span>
+    
+
+    
+    
+  </div>
+
+  
+  
+
+
+      </div>
+    </header>
+    <section class="flex flex-col max-w-full mt-0 prose lg:flex-row dark:prose-invert">
+      
+        <div class="order-first px-0 lg:max-w-xs ltr:lg:pl-8 rtl:lg:pr-8 lg:order-last">
+          <div class="ltr:pl-5 rtl:pr-5 toc lg:sticky lg:top-10">
+            <details open class="mt-0 overflow-hidden rounded-lg rtl:pr-5 ltr:pl-5 ltr:-ml-5 rtl:-mr-5 lg:mt-3">
+  <summary
+    class="block py-1 text-lg font-semibold cursor-pointer rtl:pr-5 ltr:pl-5 ltr:-ml-5 rtl:-mr-5 text-neutral-800 dark:text-neutral-100 lg:hidden bg-neutral-100 dark:bg-neutral-700"
+  >
+    Table of Contents
+  </summary>
+  <div
+    class="py-2 border-dotted ltr:border-l rtl:border-r rtl:pr-5 ltr:pl-5 ltr:-ml-5 rtl:-mr-5 border-neutral-300 dark:border-neutral-600"
+  >
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#writing-custom-formatters">Writing custom formatters</a>
+      <ul>
+        <li><a href="#the-protocol">The Protocol</a></li>
+        <li><a href="#registering-your-formatter-class-to-rspec">Registering your formatter class to RSpec</a></li>
+        <li><a href="#creating-thethe-groupingformatter-class">Creating the the GroupingFormatter class</a></li>
+      </ul>
+    </li>
+    <li><a href="#using-your-new-groupingformatter">Using your new GroupingFormatter</a>
+      <ul>
+        <li><a href="#meet-rspec">Meet .rspec</a></li>
+        <li><a href="#using-it-in-a-rails-app">Using it in a Rails app</a></li>
+      </ul>
+    </li>
+    <li><a href="#outro">Outro</a></li>
+  </ul>
+</nav>
+  </div>
+</details>
+
+          </div>
+        </div>
+      
+      <div class="min-w-0 min-h-0 max-w-prose">
+        <p>Recently I did an experiment with RSpec&rsquo;s formatters. Turns out, the output
+that RSpec returns when you run your specs can be very customized for your own
+needs. Read on to learn how you can write custom RSpec formatters.</p>
+<h2 id="writing-custom-formatters" class="relative group">Writing custom formatters <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#writing-custom-formatters" aria-label="Anchor">#</a></span></h2>
+<p>RSpec allows customization of the output by creating your own Formatter class.
+Yep, it&rsquo;s that easy. You just need to write one class and than require it into
+RSpec&rsquo;s configuration to use it. Lets explore couple of key concepts about the
+formatters and it&rsquo;s internals.</p>
+<h3 id="the-protocol" class="relative group">The Protocol <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#the-protocol" aria-label="Anchor">#</a></span></h3>
+<p>First thing to be aware of is the protocol (the order) that RSpec uses when
+calling methods from the formatter. Keep in mind that every method receives
+one argument, which is a Notification object. This is sent by the RSpec
+reporter which notifies the formatter of the outcome of the example. On the
+beginning **Formatter#start **is called. This method takes a notification
+argument of the
+class <a href="http://www.rubydoc.info/gems/rspec-core/RSpec/Core/Notifications/StartNotification">StartNotification</a>.
+On every example group, <strong>Formatter#example_group_started</strong> is called. This
+method takes a notification argument of the class
+<a href="http://www.rubydoc.info/gems/rspec-core/RSpec/Core/Notifications/GroupNotification">GroupNotification</a>.
+When an example is ran, one of these methods is called, based on the result of
+the example:</p>
+<ul>
+<li>If the example passes, **Formatter#example_passed **is called. The
+notification argument is of class
+<a href="http://www.rubydoc.info/gems/rspec-core/RSpec/Core/Notifications/ExampleNotification">ExampleNotification</a>.</li>
+<li>If the example fails, **Formatter#example_failed **is called. The
+notification argument is of class
+ <a href="http://www.rubydoc.info/gems/rspec-core/RSpec/Core/Notifications/FailedExampleNotification">FailedExampleNotification</a>.</li>
+<li>If the example is pending, **Formatter#example_pending **is called. The
+notification argument is of
+class <a href="http://www.rubydoc.info/gems/rspec-core/RSpec/Core/Notifications/ExampleNotification">ExampleNotification</a>.</li>
+</ul>
+<p>At the end of the spec suite, these methods are called in this order:</p>
+<ul>
+<li><strong>Formatter#stop</strong>. The notification passed as argument is of
+class <a href="http://www.rubydoc.info/gems/rspec-core/RSpec/Core/Notifications/ExamplesNotification">ExamplesNotification</a>.</li>
+<li><strong>Formatter#start_dump</strong>. The notification passed as argument is of class
+<a href="http://www.rubydoc.info/gems/rspec-core/RSpec/Core/Notifications/NullNotification">NullNotification</a>.</li>
+<li><strong>Formatter#dump_pending</strong>. The notification passed as argument is of class
+<a href="http://www.rubydoc.info/gems/rspec-core/RSpec/Core/Notifications/ExamplesNotification">ExamplesNotification</a>.</li>
+<li><strong>Formatter#dump_failures</strong>. The notification passed as argument is of
+class
+<a href="http://www.rubydoc.info/gems/rspec-core/RSpec/Core/Notifications/ExamplesNotification">ExamplesNotification</a>.</li>
+<li><strong>Formatter#dump_summary</strong>. The notification passed as argument is of class
+<a href="http://www.rubydoc.info/gems/rspec-core/RSpec/Core/Notifications/SummaryNotification">SummaryNotification</a>.</li>
+<li><strong>Formatter#seed</strong>. The notification passed as argument is of class
+<a href="http://www.rubydoc.info/gems/rspec-core/RSpec/Core/Notifications/SeedNotification">SeedNotification</a>.</li>
+<li><strong>Formatter#close</strong>. The notification passed as argument is of class
+<a href="http://www.rubydoc.info/gems/rspec-core/RSpec/Core/Notifications/NullNotification">NullNotification</a>.</li>
+</ul>
+<p>I wont go into detail for every of the notification classes. You can dive in
+the details about each of them in the links that I have attached.</p>
+<h3 id="registering-your-formatter-class-to-rspec" class="relative group">Registering your formatter class to RSpec <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#registering-your-formatter-class-to-rspec" aria-label="Anchor">#</a></span></h3>
+<p>RSpec provides this neat feature of registering a class as a formatter. This is
+done by creating the class and calling:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">.</span><span class="n">register</span> <span class="o">&lt;</span><span class="n">the</span> <span class="k">class</span> <span class="nb">name</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">array</span> <span class="n">of</span> <span class="n">symbols</span> <span class="n">representing</span> <span class="n">the</span> <span class="nb">methods</span> <span class="n">that</span> <span class="n">this</span> <span class="n">formatter</span> <span class="n">will</span> <span class="n">provide</span><span class="o">&gt;</span></code></pre></div>
+<p>So, say we want a formatter that shows the progress of the suite, just like the
+built-in progress formatter, but it will group the failing and the pending
+specs in the summary of the suite.</p>
+<h3 id="creating-thethe-groupingformatter-class" class="relative group">Creating the the GroupingFormatter class <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#creating-thethe-groupingformatter-class" aria-label="Anchor">#</a></span></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">GroupingFormatter</span>
+  <span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">.</span><span class="n">register</span> <span class="nb">self</span><span class="p">,</span> <span class="ss">:dump_summary</span><span class="p">,</span> <span class="ss">:close</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">output</span>
+    <span class="vi">@output</span> <span class="o">=</span> <span class="n">output</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">dump_summary</span> <span class="n">notification</span> <span class="c1"># SummaryNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n\n</span><span class="s2">Finished in </span><span class="si">#{</span><span class="n">notification</span><span class="o">.</span><span class="n">duration</span><span class="si">}</span><span class="s2">.&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">close</span> <span class="n">notification</span> <span class="c1"># NullNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></div>
+<p>As you can see, the GroupingFormatter is just a class. In it&rsquo;s initializer
+it takes the output as an argument and sets it as an instance variable. Also,
+on line 2, you can see the aforementioned <strong>RSpec.register</strong> call. We pass
+<em>self</em> as the first argument, because we want to register this class as a
+formatter. The rest of the arguments are method names that RSpec will call when
+using this formatter. What this means is that when you define a method for
+**the protocol, **if you don&rsquo;t register it - it will not be called. Basically,
+RSpec won&rsquo;t know it exists at all. Next, the <strong>dump_summary</strong> method calls the
+duration method on the notification object, which returns a number representing
+the time of the specs' duration in seconds. So, how can we test if this is
+working? The command is:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">rspec some_file.rb --require ./grouping_formatter.rb --format GroupingFormatter</code></pre></div>
+<p>And the output is:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">Finished in 0.007552.</code></pre></div>
+<p>Now, this doesn&rsquo;t tell much. Let&rsquo;s use RSpec&rsquo;s built in helpers to format this
+number in a meaningful string.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">GroupingFormatter</span>
+  <span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">.</span><span class="n">register</span> <span class="nb">self</span><span class="p">,</span> <span class="ss">:dump_summary</span><span class="p">,</span> <span class="ss">:close</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">output</span>
+    <span class="vi">@output</span> <span class="o">=</span> <span class="n">output</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">dump_summary</span> <span class="n">notification</span> <span class="c1"># SummaryNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n\n</span><span class="s2">Finished in </span><span class="si">#{</span><span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">::</span><span class="no">Helpers</span><span class="o">.</span><span class="n">format_duration</span><span class="p">(</span><span class="n">notification</span><span class="o">.</span><span class="n">duration</span><span class="p">)</span><span class="si">}</span><span class="s2">.&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">close</span> <span class="n">notification</span> <span class="c1"># NullNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></div>
+<p>In the <strong>dump_summary</strong> method we use the
+<a href="http://www.rubydoc.info/gems/rspec-core/RSpec/Core/Formatters/Helpers">RSpec::Core::Formatters::Helpers</a>
+module which has some methods that can help us turn the duration number into a
+meaningful string. The output now looks like:</p>
+<pre>Finished in 0.00758 seconds.</pre>
+<p>Okay, great. Now, lets make this formatter mimic the reporting formatter that
+comes with RSpec. We need the formatter to show a dot for every passing
+example, F for every failing example and an asterisk for every pending example.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">GroupingFormatter</span>
+  <span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">.</span><span class="n">register</span> <span class="nb">self</span><span class="p">,</span> <span class="ss">:dump_summary</span><span class="p">,</span> <span class="ss">:close</span><span class="p">,</span> <span class="ss">:example_passed</span><span class="p">,</span> <span class="ss">:example_failed</span><span class="p">,</span> <span class="ss">:example_pending</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">output</span>
+    <span class="vi">@output</span> <span class="o">=</span> <span class="n">output</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">example_passed</span> <span class="n">notification</span> <span class="c1"># ExampleNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;.&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">example_failed</span> <span class="n">notification</span> <span class="c1"># FailedExampleNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;F&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">example_pending</span> <span class="n">notification</span> <span class="c1"># ExampleNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;*&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">dump_summary</span> <span class="n">notification</span> <span class="c1"># SummaryNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n\n</span><span class="s2">Finished in </span><span class="si">#{</span><span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">::</span><span class="no">Helpers</span><span class="o">.</span><span class="n">format_duration</span><span class="p">(</span><span class="n">notification</span><span class="o">.</span><span class="n">duration</span><span class="p">)</span><span class="si">}</span><span class="s2">.&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">close</span> <span class="n">notification</span> <span class="c1"># NullNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></div>
+<p>So, the reporter (the algorithm that follows the protocol) will call
+<strong>example_failed</strong> when an example fails, <strong>example_pending</strong> when an example
+is pending and **example_passed **when an example passes. This is really
+self-explanatory - we add the case specific character to the output for every
+example. Take note that I added the method names to
+the <strong>RSpec.register</strong> call. If I didn&rsquo;t - they&rsquo;d be ignored. The output will
+now look like:</p>
+<pre>.....FF*..
+
+Finished in 0.0207 seconds.</pre>
+<p>Looking good, things are starting to take shape! Now for the more complicated
+part. How can we group the pending/failing specs? First, lets group the pending
+specs.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">GroupingFormatter</span>
+  <span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">.</span><span class="n">register</span> <span class="nb">self</span><span class="p">,</span> <span class="ss">:dump_summary</span><span class="p">,</span> <span class="ss">:close</span><span class="p">,</span> <span class="ss">:example_passed</span><span class="p">,</span>
+    <span class="ss">:example_failed</span><span class="p">,</span> <span class="ss">:example_pending</span><span class="p">,</span> <span class="ss">:dump_pending</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">output</span>
+    <span class="vi">@output</span> <span class="o">=</span> <span class="n">output</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">example_passed</span> <span class="n">notification</span> <span class="c1"># ExampleNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;.&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">example_failed</span> <span class="n">notification</span> <span class="c1"># FailedExampleNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;F&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">example_pending</span> <span class="n">notification</span> <span class="c1"># ExampleNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;*&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">dump_pending</span> <span class="n">notification</span> <span class="c1"># ExamplesNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n\n</span><span class="s2">PENDING:</span><span class="se">\n\t</span><span class="s2">&#34;</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="n">notification</span><span class="o">.</span><span class="n">pending_examples</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span><span class="o">|</span><span class="n">example</span><span class="o">|</span> <span class="n">example</span><span class="o">.</span><span class="n">full_description</span> <span class="o">+</span> <span class="s2">&#34; - &#34;</span> <span class="o">+</span> <span class="n">example</span><span class="o">.</span><span class="n">location</span> <span class="p">}</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n\t</span><span class="s2">&#34;</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">dump_summary</span> <span class="n">notification</span> <span class="c1"># SummaryNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n\n</span><span class="s2">Finished in </span><span class="si">#{</span><span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">::</span><span class="no">Helpers</span><span class="o">.</span><span class="n">format_duration</span><span class="p">(</span><span class="n">notification</span><span class="o">.</span><span class="n">duration</span><span class="p">)</span><span class="si">}</span><span class="s2">.&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">close</span> <span class="n">notification</span> <span class="c1"># NullNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></div>
+<p>Lets look at the <strong>dump_pending</strong> method now. First, it adds &ldquo;PENDING&rdquo; to the
+output. Next, it loops through the <em>pending_examples</em> array and creates an
+array of strings for each of the pending examples. Note that I added the new
+method to the RSpec.register call, it would be ignored otherwise. Each string
+in the array will look something like this:</p>
+<pre>Something is pending - ./something_spec.rb:90</pre>
+<p>At the end, we call _join _on the array of strings to build a single formatted
+string that we append to the output. Now when we run the specs with the
+formatter, the output will look like:</p>
+<pre>.....FF*..
+
+PENDING:
+  Something is pending - ./something_spec.rb:90
+
+Finished in 0.01121 seconds.</pre>
+<p>Looking good. Now, for the trickiest part, grouping the failing specs and
+adding the error underneath every failing spec.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">GroupingFormatter</span>
+  <span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">.</span><span class="n">register</span> <span class="nb">self</span><span class="p">,</span> <span class="ss">:dump_pending</span><span class="p">,</span> <span class="ss">:dump_failures</span><span class="p">,</span> <span class="ss">:close</span><span class="p">,</span> <span class="ss">:dump_summary</span><span class="p">,</span> <span class="ss">:example_passed</span><span class="p">,</span> <span class="ss">:example_failed</span><span class="p">,</span> <span class="ss">:example_pending</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">output</span>
+    <span class="vi">@output</span> <span class="o">=</span> <span class="n">output</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">example_passed</span> <span class="n">notification</span> <span class="c1"># ExampleNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;.&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">example_failed</span> <span class="n">notification</span> <span class="c1"># FailedExampleNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;F&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">example_pending</span> <span class="n">notification</span> <span class="c1"># ExampleNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;*&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">dump_pending</span> <span class="n">notification</span> <span class="c1"># ExamplesNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n\n</span><span class="s2">PENDING:</span><span class="se">\n\t</span><span class="s2">&#34;</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="n">notification</span><span class="o">.</span><span class="n">pending_examples</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span><span class="o">|</span><span class="n">example</span><span class="o">|</span> <span class="n">example</span><span class="o">.</span><span class="n">full_description</span> <span class="o">+</span> <span class="s2">&#34; - &#34;</span> <span class="o">+</span> <span class="n">example</span><span class="o">.</span><span class="n">location</span> <span class="p">}</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n\t</span><span class="s2">&#34;</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">dump_failures</span> <span class="n">notification</span> <span class="c1"># ExamplesNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">FAILING</span><span class="se">\n\t</span><span class="s2">&#34;</span>
+    <span class="c1"># For every failed example...</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="n">notification</span><span class="o">.</span><span class="n">failed_examples</span><span class="o">.</span><span class="n">map</span> <span class="k">do</span> <span class="o">|</span><span class="n">example</span><span class="o">|</span>
+      <span class="c1"># Extract the full description of the example</span>
+      <span class="n">full_description</span> <span class="o">=</span> <span class="n">example</span><span class="o">.</span><span class="n">full_description</span>
+      <span class="c1"># Extract the example location in the file</span>
+      <span class="n">location</span> <span class="o">=</span> <span class="n">example</span><span class="o">.</span><span class="n">location</span>
+
+      <span class="s2">&#34;</span><span class="si">#{</span><span class="n">full_description</span><span class="si">}</span><span class="s2"> - </span><span class="si">#{</span><span class="n">location</span><span class="si">}</span><span class="s2">&#34;</span>
+    <span class="k">end</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n\n\t</span><span class="s2">&#34;</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">dump_summary</span> <span class="n">notification</span> <span class="c1"># SummaryNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n\n</span><span class="s2">Finished in </span><span class="si">#{</span><span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">::</span><span class="no">Helpers</span><span class="o">.</span><span class="n">format_duration</span><span class="p">(</span><span class="n">notification</span><span class="o">.</span><span class="n">duration</span><span class="p">)</span><span class="si">}</span><span class="s2">.&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">close</span> <span class="n">notification</span> <span class="c1"># NullNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></div>
+<p>In the new <strong>dump_failures</strong> method we loop through every failed example. Then,
+we extract the description and the location of the failed example and we build
+a string that we append to the output. After this change, the output will look
+like this:</p>
+<pre>.....FF*..
+
+PENDING:
+ Something - pending - ./something_spec.rb:90
+FAILING
+ Something - first that fails - ./something_spec.rb:82
+ Something - second that fails - ./something_spec.rb:86</pre>
+<p>Next thing, how do we add the error messages underneath every failing spec?
+Lets expand the **dump_failures **method just a bit.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">GroupingFormatter</span>
+  <span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">.</span><span class="n">register</span> <span class="nb">self</span><span class="p">,</span> <span class="ss">:dump_pending</span><span class="p">,</span> <span class="ss">:dump_failures</span><span class="p">,</span> <span class="ss">:close</span><span class="p">,</span> <span class="ss">:dump_summary</span><span class="p">,</span> <span class="ss">:example_passed</span><span class="p">,</span> <span class="ss">:example_failed</span><span class="p">,</span> <span class="ss">:example_pending</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">output</span>
+    <span class="vi">@output</span> <span class="o">=</span> <span class="n">output</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">example_passed</span> <span class="n">notification</span> <span class="c1"># ExampleNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;.&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">example_failed</span> <span class="n">notification</span> <span class="c1"># FailedExampleNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;F&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">example_pending</span> <span class="n">notification</span> <span class="c1"># ExampleNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;*&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">dump_pending</span> <span class="n">notification</span> <span class="c1"># ExamplesNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n\n</span><span class="s2">PENDING:</span><span class="se">\n\t</span><span class="s2">&#34;</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="n">notification</span><span class="o">.</span><span class="n">pending_examples</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span><span class="o">|</span><span class="n">example</span><span class="o">|</span> <span class="n">example</span><span class="o">.</span><span class="n">full_description</span> <span class="o">+</span> <span class="s2">&#34; - &#34;</span> <span class="o">+</span> <span class="n">example</span><span class="o">.</span><span class="n">location</span> <span class="p">}</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n\t</span><span class="s2">&#34;</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">dump_failures</span> <span class="n">notification</span> <span class="c1"># ExamplesNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">FAILING</span><span class="se">\n\t</span><span class="s2">&#34;</span>
+    <span class="c1"># For every failed example...</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="n">notification</span><span class="o">.</span><span class="n">failed_examples</span><span class="o">.</span><span class="n">map</span> <span class="k">do</span> <span class="o">|</span><span class="n">example</span><span class="o">|</span>
+      <span class="c1"># Extract the full description of the example</span>
+      <span class="n">full_description</span> <span class="o">=</span> <span class="n">example</span><span class="o">.</span><span class="n">full_description</span>
+      <span class="c1"># Extract the example location in the file</span>
+      <span class="n">location</span> <span class="o">=</span> <span class="n">example</span><span class="o">.</span><span class="n">location</span>
+      <span class="c1"># Get the Exception message</span>
+      <span class="n">message</span> <span class="o">=</span> <span class="n">example</span><span class="o">.</span><span class="n">execution_result</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">message</span>
+
+      <span class="s2">&#34;</span><span class="si">#{</span><span class="n">full_description</span><span class="si">}</span><span class="s2"> - </span><span class="si">#{</span><span class="n">location</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="s2">&#34;</span>
+    <span class="k">end</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n\n\t</span><span class="s2">&#34;</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">dump_summary</span> <span class="n">notification</span> <span class="c1"># SummaryNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n\n</span><span class="s2">Finished in </span><span class="si">#{</span><span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">::</span><span class="no">Helpers</span><span class="o">.</span><span class="n">format_duration</span><span class="p">(</span><span class="n">notification</span><span class="o">.</span><span class="n">duration</span><span class="p">)</span><span class="si">}</span><span class="s2">.&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">close</span> <span class="n">notification</span> <span class="c1"># NullNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></div>
+<p>The only addition is on line 34 - we extract the result of the execution of the
+example, then we get the message of the exception that RSpec raised when the
+example failed. Now, lets test it:</p>
+<pre>.....FF*..
+
+PENDING:
+ Boxer is pending - ./boxer_spec.rb:90
+FAILING
+ Boxer first that fails - ./boxer_spec.rb:82
+expected: false
+ got: true
+(compared using ==)
+
+ Boxer second that fails - ./boxer_spec.rb:86
+expected: false
+ got: true
+(compared using ==)
+
+Finished in 0.0203 seconds.</pre>
+<p>This is all good, but you can see that the text alignment is broken a bit. If
+you look at the picture at the beginning, you will notice that the exceptions
+should appear indented underneath the description of the failing example. Lets
+fix this.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">GroupingFormatter</span>
+  <span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">.</span><span class="n">register</span> <span class="nb">self</span><span class="p">,</span> <span class="ss">:dump_pending</span><span class="p">,</span> <span class="ss">:dump_failures</span><span class="p">,</span> <span class="ss">:close</span><span class="p">,</span>
+    <span class="ss">:dump_summary</span><span class="p">,</span> <span class="ss">:example_passed</span><span class="p">,</span> <span class="ss">:example_failed</span><span class="p">,</span> <span class="ss">:example_pending</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">output</span>
+    <span class="vi">@output</span> <span class="o">=</span> <span class="n">output</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">example_passed</span> <span class="n">notification</span> <span class="c1"># ExampleNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;.&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">example_failed</span> <span class="n">notification</span> <span class="c1"># FailedExampleNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;F&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">example_pending</span> <span class="n">notification</span> <span class="c1"># ExampleNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;*&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">dump_pending</span> <span class="n">notification</span> <span class="c1"># ExamplesNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n\n</span><span class="s2">PENDING:</span><span class="se">\n\t</span><span class="s2">&#34;</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="n">notification</span><span class="o">.</span><span class="n">pending_examples</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span><span class="o">|</span><span class="n">example</span><span class="o">|</span> <span class="n">example</span><span class="o">.</span><span class="n">full_description</span> <span class="o">+</span> <span class="s2">&#34; - &#34;</span> <span class="o">+</span> <span class="n">example</span><span class="o">.</span><span class="n">location</span> <span class="p">}</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n\t</span><span class="s2">&#34;</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">dump_failures</span> <span class="n">notification</span> <span class="c1"># ExamplesNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">FAILING</span><span class="se">\n\t</span><span class="s2">&#34;</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="n">failed_examples_output</span><span class="p">(</span><span class="n">notification</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">dump_summary</span> <span class="n">notification</span> <span class="c1"># SummaryNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n\n</span><span class="s2">Finished in </span><span class="si">#{</span><span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">::</span><span class="no">Helpers</span><span class="o">.</span><span class="n">format_duration</span><span class="p">(</span><span class="n">notification</span><span class="o">.</span><span class="n">duration</span><span class="p">)</span><span class="si">}</span><span class="s2">.&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">close</span> <span class="n">notification</span> <span class="c1"># NullNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span>
+  <span class="k">end</span>
+
+  <span class="kp">private</span>
+
+  <span class="c1"># Loops through all of the failed examples and rebuilds the exception message</span>
+  <span class="k">def</span> <span class="nf">failed_examples_output</span> <span class="n">notification</span>
+    <span class="n">failed_examples_output</span> <span class="o">=</span> <span class="n">notification</span><span class="o">.</span><span class="n">failed_examples</span><span class="o">.</span><span class="n">map</span> <span class="k">do</span> <span class="o">|</span><span class="n">example</span><span class="o">|</span>
+      <span class="n">failed_example_output</span> <span class="n">example</span>
+    <span class="k">end</span>
+    <span class="n">build_examples_output</span><span class="p">(</span><span class="n">failed_examples_output</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Joins all exception messages</span>
+  <span class="k">def</span> <span class="nf">build_examples_output</span> <span class="n">output</span>
+    <span class="n">output</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n\n\t</span><span class="s2">&#34;</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Extracts the full_description, location and formats the message of each example exception</span>
+  <span class="k">def</span> <span class="nf">failed_example_output</span> <span class="n">example</span>
+    <span class="n">full_description</span> <span class="o">=</span> <span class="n">example</span><span class="o">.</span><span class="n">full_description</span>
+    <span class="n">location</span> <span class="o">=</span> <span class="n">example</span><span class="o">.</span><span class="n">location</span>
+    <span class="n">formatted_message</span> <span class="o">=</span> <span class="n">strip_message_from_whitespace</span><span class="p">(</span><span class="n">example</span><span class="o">.</span><span class="n">execution_result</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+
+    <span class="s2">&#34;</span><span class="si">#{</span><span class="n">full_description</span><span class="si">}</span><span class="s2"> - </span><span class="si">#{</span><span class="n">location</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">  </span><span class="si">#{</span><span class="n">formatted_message</span><span class="si">}</span><span class="s2">&#34;</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Removes whitespace from each of the exception message lines and reformats it</span>
+  <span class="k">def</span> <span class="nf">strip_message_from_whitespace</span> <span class="n">msg</span>
+    <span class="n">msg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:strip</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="si">#{</span><span class="n">add_spaces</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">add_spaces</span> <span class="n">n</span>
+    <span class="s2">&#34; &#34;</span> <span class="o">*</span> <span class="n">n</span>
+  <span class="k">end</span>
+
+<span class="k">end</span></code></pre></div>
+<p>In the example above we took the extra step to format the error messages
+nicely. Basically, we split the exception message on a new-line character,
+we remove all the whitespace and we rejoin the pieces with a newline between
+them and add 10 spaces at the beginning of the message (for the indentation).
+Now, the output will look like this:</p>
+<pre>.....FF*..
+
+PENDING:
+ Boxer is pending - ./boxer_spec.rb:90
+FAILING
+  Boxer first that fails - ./boxer_spec.rb:82
+    expected: false
+     got: true
+    (compared using ==)
+
+  Boxer second that fails - ./boxer_spec.rb:86
+    expected: false
+     got: true
+    (compared using ==)
+
+Finished in 0.02068 seconds.</pre>
+<p>And voila, the formatter is working as supposed. Or, is it? :) Lets add some
+colors! Adding colors is really easy, we just need to require the
+<a href="http://www.rubydoc.info/gems/rspec-core/RSpec/Core/Formatters/ConsoleCodes">ConsoleCodes</a> module.
+The ConsoleCodes module provides helpers for formatting console output with
+ANSI codes, for example colors and bold. So, the final version of our
+GroupingFormatter is:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">&#39;rspec/core/formatters/console_codes&#39;</span>
+
+<span class="k">class</span> <span class="nc">GroupingFormatter</span>
+  <span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">.</span><span class="n">register</span> <span class="nb">self</span><span class="p">,</span> <span class="ss">:dump_pending</span><span class="p">,</span> <span class="ss">:dump_failures</span><span class="p">,</span> <span class="ss">:close</span><span class="p">,</span>
+    <span class="ss">:dump_summary</span><span class="p">,</span> <span class="ss">:example_passed</span><span class="p">,</span> <span class="ss">:example_failed</span><span class="p">,</span> <span class="ss">:example_pending</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">output</span>
+    <span class="vi">@output</span> <span class="o">=</span> <span class="n">output</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">example_passed</span> <span class="n">notification</span> <span class="c1"># ExampleNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">::</span><span class="no">ConsoleCodes</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="s2">&#34;.&#34;</span><span class="p">,</span> <span class="ss">:success</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">example_failed</span> <span class="n">notification</span> <span class="c1"># FailedExampleNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">::</span><span class="no">ConsoleCodes</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="s2">&#34;F&#34;</span><span class="p">,</span> <span class="ss">:failure</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">example_pending</span> <span class="n">notification</span> <span class="c1"># ExampleNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">::</span><span class="no">ConsoleCodes</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="s2">&#34;*&#34;</span><span class="p">,</span> <span class="ss">:pending</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">dump_pending</span> <span class="n">notification</span> <span class="c1"># ExamplesNotification</span>
+    <span class="k">if</span> <span class="n">notification</span><span class="o">.</span><span class="n">pending_examples</span><span class="o">.</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
+      <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n\n</span><span class="si">#{</span><span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">::</span><span class="no">ConsoleCodes</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="s2">&#34;PENDING:&#34;</span><span class="p">,</span> <span class="ss">:pending</span><span class="p">)</span><span class="si">}</span><span class="se">\n\t</span><span class="s2">&#34;</span>
+      <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="n">notification</span><span class="o">.</span><span class="n">pending_examples</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span><span class="o">|</span><span class="n">example</span><span class="o">|</span> <span class="n">example</span><span class="o">.</span><span class="n">full_description</span> <span class="o">+</span> <span class="s2">&#34; - &#34;</span> <span class="o">+</span> <span class="n">example</span><span class="o">.</span><span class="n">location</span> <span class="p">}</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n\t</span><span class="s2">&#34;</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">dump_failures</span> <span class="n">notification</span> <span class="c1"># ExamplesNotification</span>
+    <span class="k">if</span> <span class="n">notification</span><span class="o">.</span><span class="n">failed_examples</span><span class="o">.</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
+      <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="si">#{</span><span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">::</span><span class="no">ConsoleCodes</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="s2">&#34;FAILING:&#34;</span><span class="p">,</span> <span class="ss">:failure</span><span class="p">)</span><span class="si">}</span><span class="se">\n\t</span><span class="s2">&#34;</span>
+      <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="n">failed_examples_output</span><span class="p">(</span><span class="n">notification</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">dump_summary</span> <span class="n">notification</span> <span class="c1"># SummaryNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n\n</span><span class="s2">Finished in </span><span class="si">#{</span><span class="no">RSpec</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Formatters</span><span class="o">::</span><span class="no">Helpers</span><span class="o">.</span><span class="n">format_duration</span><span class="p">(</span><span class="n">notification</span><span class="o">.</span><span class="n">duration</span><span class="p">)</span><span class="si">}</span><span class="s2">.&#34;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">close</span> <span class="n">notification</span> <span class="c1"># NullNotification</span>
+    <span class="vi">@output</span> <span class="o">&lt;&lt;</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span>
+  <span class="k">end</span>
+
+  <span class="kp">private</span>
+
+  <span class="c1"># Loops through all of the failed examples and rebuilds the exception message</span>
+  <span class="k">def</span> <span class="nf">failed_examples_output</span> <span class="n">notification</span>
+    <span class="n">failed_examples_output</span> <span class="o">=</span> <span class="n">notification</span><span class="o">.</span><span class="n">failed_examples</span><span class="o">.</span><span class="n">map</span> <span class="k">do</span> <span class="o">|</span><span class="n">example</span><span class="o">|</span>
+      <span class="n">failed_example_output</span> <span class="n">example</span>
+    <span class="k">end</span>
+    <span class="n">build_examples_output</span><span class="p">(</span><span class="n">failed_examples_output</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Joins all exception messages</span>
+  <span class="k">def</span> <span class="nf">build_examples_output</span> <span class="n">output</span>
+    <span class="n">output</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n\n\t</span><span class="s2">&#34;</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Extracts the full_description, location and formats the message of each example exception</span>
+  <span class="k">def</span> <span class="nf">failed_example_output</span> <span class="n">example</span>
+    <span class="n">full_description</span> <span class="o">=</span> <span class="n">example</span><span class="o">.</span><span class="n">full_description</span>
+    <span class="n">location</span> <span class="o">=</span> <span class="n">example</span><span class="o">.</span><span class="n">location</span>
+    <span class="n">formatted_message</span> <span class="o">=</span> <span class="n">strip_message_from_whitespace</span><span class="p">(</span><span class="n">example</span><span class="o">.</span><span class="n">execution_result</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+
+    <span class="s2">&#34;</span><span class="si">#{</span><span class="n">full_description</span><span class="si">}</span><span class="s2"> - </span><span class="si">#{</span><span class="n">location</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">  </span><span class="si">#{</span><span class="n">formatted_message</span><span class="si">}</span><span class="s2">&#34;</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Removes whitespace from each of the exception message lines and reformats it</span>
+  <span class="k">def</span> <span class="nf">strip_message_from_whitespace</span> <span class="n">msg</span>
+    <span class="n">msg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:strip</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="si">#{</span><span class="n">add_spaces</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">add_spaces</span> <span class="n">n</span>
+    <span class="s2">&#34; &#34;</span> <span class="o">*</span> <span class="n">n</span>
+  <span class="k">end</span>
+
+<span class="k">end</span></code></pre></div>
+<p>As you can see, we are using the <em>ConsoleCodes.wrap</em> method which wraps a piece
+of text in ANSI codes with the supplied code in the arguments. You can now test
+our new colored formatter:</p>
+<pre>rspec some_file.rb --require ./grouping_formatter.rb --format GroupingFormatter</pre>
+<h2 id="using-your-new-groupingformatter" class="relative group">Using your new GroupingFormatter <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#using-your-new-groupingformatter" aria-label="Anchor">#</a></span></h2>
+<p>Our formatter is now working, but how can we put it to use? One way to use it
+is by running the specs and requiring the formatter in the RSpec command:</p>
+<pre>rspec some_spec.rb --color --require ./grouping_formatter.rb --format GroupingFormatter</pre>
+<p>This works alright. But, requiring your formatter every time you run your specs is boring.</p>
+<h3 id="meet-rspec" class="relative group">Meet .rspec <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#meet-rspec" aria-label="Anchor">#</a></span></h3>
+<p>RSpec&rsquo;s documentation says that RSpec reads command line configuration options
+from files in three different locations:</p>
+<ul>
+<li>Local: <code>./.rspec-local - </code>This file should exist in the project&rsquo;s root
+directory. It can contain some private customizations (in the scope of the
+project) of RSpec and should be ignored by git.</li>
+<li>Project: <code>./.rspec</code>  - This file should exist in the project&rsquo;s root
+directory. It usually contains public project-wide customizations of RSpec and
+is usually checked into the git repo.</li>
+<li>Global: <code>~/.rspec</code> - This file exists in the user&rsquo;s home directory. It can
+contain some personal customizations of your RSpec and is applied to every
+project where RSpec is used on your machine.</li>
+</ul>
+<p>So, we can add a <em>.rspec</em> file in our project&rsquo;s folder with the following
+contents:</p>
+<pre>--color
+--require ./grouping_formatter.rb
+--format GroupingFormatter</pre>
+<p>RSpec will read this file every time we run our specs, so this means that we
+can run our specs without specifying these options in the rspec command:</p>
+<pre>rspec some_spec.rb</pre>
+<p>This will now work with our new formatter.</p>
+<h3 id="using-it-in-a-rails-app" class="relative group">Using it in a Rails app <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#using-it-in-a-rails-app" aria-label="Anchor">#</a></span></h3>
+<p>Lets integrate our new formatter in a Rails application. Using the formatter in
+your Rails application is done in two steps:</p>
+<ol>
+<li>
+<p>The formatter class must either be in Rails' autoload path, or manually
+required in the <em>spec_helper</em>. My personal preference is to require it manually
+because it&rsquo;s more verbose.</p>
+</li>
+<li>
+<p>In the <strong>RSpec.configure</strong> block in the <em>spec_helper</em>, you need to register
+the formatter to RSpec. This is done by:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby">    <span class="n">config</span><span class="o">.</span><span class="n">formatter</span> <span class="o">=</span> <span class="no">NameOfTheClass</span>
+    </code></pre></div>
+</li>
+</ol>
+<p>or, in our case:</p>
+<pre><code><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby">    <span class="n">config</span><span class="o">.</span><span class="n">formatter</span> <span class="o">=</span> <span class="no">GroupingFormatter</span>
+    </code></pre></div>
+</code></pre>
+<p>That&rsquo;s it. Now when you run your specs the new formatter will be used by RSpec.</p>
+<h2 id="outro" class="relative group">Outro <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#outro" aria-label="Anchor">#</a></span></h2>
+<p>I hope you found this (quite long) post informative and interesting. If any of
+you wrote your own RSpec formatters, please, share them with me and the
+others in the comments - I am very curious to see what you&rsquo;ve come up with.
+Thanks for reading to the very end!</p>
+<div id="revue-embed">
+  <form action="https://www.getrevue.co/profile/itsilija/add_subscriber" method="post" id="revue-form" name="revue-form"  target="_blank">
+    <p><b>Liked this article?</b>
+Subscribe to my newsletter and get future articles in your inbox. It's a
+short and sweet read, going out to hundreds of other engineers.</p>
+    <div class="revue-form-group">
+      <input class="revue-form-field" placeholder="Your email address..." type="email" name="member[email]" id="member_email">
+    </div>
+    <div class="revue-form-actions">
+      <input type="submit" value="Subscribe" name="member[subscribe]" id="member_submit">
+    </div>
+  </form>
+</div>
+
+
+      </div>
+    </section>
+    <footer class="pt-8 max-w-prose">
+      
+  <div class="flex">
+    
+      
+      
+        
+        <img
+          class="w-24 h-24 !mt-0 !mb-0 ltr:mr-4 rtl:ml-4 rounded-full"
+          width="96"
+          height="96"
+          alt="Author"
+          src="/img/avatar_huae39953c6189b6aa60e47103b358d088_112612_192x192_fill_q75_box_smart1.jpg"
+        />
+      
+    
+    <div class="place-self-center">
+      
+        <div class="text-[0.6rem] leading-3 text-neutral-500 dark:text-neutral-400 uppercase">
+          Author
+        </div>
+        <div class="font-semibold leading-6 text-neutral-800 dark:text-neutral-300">
+          Ilija Eftimov
+        </div>
+      
+      
+      <div class="text-2xl sm:text-lg">
+  <div class="flex flex-wrap text-neutral-400 dark:text-neutral-500">
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://twitter.com/itsilija"
+          target="_blank"
+          aria-label="Twitter"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="twitter" class="svg-inline--fa fa-twitter fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://www.linkedin.com/in/ieftimov/"
+          target="_blank"
+          aria-label="Linkedin"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="linkedin" class="svg-inline--fa fa-linkedin fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="mailto:blog@ieftimov.com"
+          target="_blank"
+          aria-label="Email"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="at" class="svg-inline--fa fa-at fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 8C118.941 8 8 118.919 8 256c0 137.059 110.919 248 248 248 48.154 0 95.342-14.14 135.408-40.223 12.005-7.815 14.625-24.288 5.552-35.372l-10.177-12.433c-7.671-9.371-21.179-11.667-31.373-5.129C325.92 429.757 291.314 440 256 440c-101.458 0-184-82.542-184-184S154.542 72 256 72c100.139 0 184 57.619 184 160 0 38.786-21.093 79.742-58.17 83.693-17.349-.454-16.91-12.857-13.476-30.024l23.433-121.11C394.653 149.75 383.308 136 368.225 136h-44.981a13.518 13.518 0 0 0-13.432 11.993l-.01.092c-14.697-17.901-40.448-21.775-59.971-21.775-74.58 0-137.831 62.234-137.831 151.46 0 65.303 36.785 105.87 96 105.87 26.984 0 57.369-15.637 74.991-38.333 9.522 34.104 40.613 34.103 70.71 34.103C462.609 379.41 504 307.798 504 232 504 95.653 394.023 8 256 8zm-21.68 304.43c-22.249 0-36.07-15.623-36.07-40.771 0-44.993 30.779-72.729 58.63-72.729 22.292 0 35.601 15.241 35.601 40.77 0 45.061-33.875 72.73-58.161 72.73z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://dev.to/fteem"
+          target="_blank"
+          aria-label="Dev"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="dev" class="svg-inline--fa fa-dev fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M120.12 208.29c-3.88-2.9-7.77-4.35-11.65-4.35H91.03v104.47h17.45c3.88 0 7.77-1.45 11.65-4.35 3.88-2.9 5.82-7.25 5.82-13.06v-69.65c-.01-5.8-1.96-10.16-5.83-13.06zM404.1 32H43.9C19.7 32 .06 51.59 0 75.8v360.4C.06 460.41 19.7 480 43.9 480h360.2c24.21 0 43.84-19.59 43.9-43.8V75.8c-.06-24.21-19.7-43.8-43.9-43.8zM154.2 291.19c0 18.81-11.61 47.31-48.36 47.25h-46.4V172.98h47.38c35.44 0 47.36 28.46 47.37 47.28l.01 70.93zm100.68-88.66H201.6v38.42h32.57v29.57H201.6v38.41h53.29v29.57h-62.18c-11.16.29-20.44-8.53-20.72-19.69V193.7c-.27-11.15 8.56-20.41 19.71-20.69h63.19l-.01 29.52zm103.64 115.29c-13.2 30.75-36.85 24.63-47.44 0l-38.53-144.8h32.57l29.71 113.72 29.57-113.72h32.58l-38.46 144.8z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://github.com/fteem"
+          target="_blank"
+          aria-label="Github"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="github" class="svg-inline--fa fa-github fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path fill="currentColor" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://t.me/ieftimovcom"
+          target="_blank"
+          aria-label="Telegram"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="telegram-plane" class="svg-inline--fa fa-telegram-plane fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M446.7 98.6l-67.6 318.8c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-49.7 47.8c-5.5 5.5-10.1 10.1-20.7 10.1l7.4-104.9 190.9-172.5c8.3-7.4-1.8-11.5-12.9-4.1L117.8 284 16.2 252.2c-22.1-6.9-22.5-22.1 4.6-32.7L418.2 66.4c18.4-6.9 34.5 4.1 28.5 32.2z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+  </div>
+
+</div>
+    </div>
+  </div>
+
+
+      
+  
+  <section class="flex flex-row flex-wrap justify-center pt-4 text-xl">
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://www.facebook.com/sharer/sharer.php?u=https://ieftimov.com/posts/how-to-write-rspec-formatters-from-scratch/&amp;quote=How%20to%20write%20RSpec%20formatters%20from%20scratch"
+          title="Share on Facebook"
+          aria-label="Share on Facebook"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="facebook" class="svg-inline--fa fa-facebook fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://twitter.com/intent/tweet/?url=https://ieftimov.com/posts/how-to-write-rspec-formatters-from-scratch/&amp;text=How%20to%20write%20RSpec%20formatters%20from%20scratch"
+          title="Tweet on Twitter"
+          aria-label="Tweet on Twitter"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="twitter" class="svg-inline--fa fa-twitter fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://reddit.com/submit/?url=https://ieftimov.com/posts/how-to-write-rspec-formatters-from-scratch/&amp;resubmit=true&amp;title=How%20to%20write%20RSpec%20formatters%20from%20scratch"
+          title="Submit to Reddit"
+          aria-label="Submit to Reddit"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="reddit" class="svg-inline--fa fa-reddit fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M201.5 305.5c-13.8 0-24.9-11.1-24.9-24.6 0-13.8 11.1-24.9 24.9-24.9 13.6 0 24.6 11.1 24.6 24.9 0 13.6-11.1 24.6-24.6 24.6zM504 256c0 137-111 248-248 248S8 393 8 256 119 8 256 8s248 111 248 248zm-132.3-41.2c-9.4 0-17.7 3.9-23.8 10-22.4-15.5-52.6-25.5-86.1-26.6l17.4-78.3 55.4 12.5c0 13.6 11.1 24.6 24.6 24.6 13.8 0 24.9-11.3 24.9-24.9s-11.1-24.9-24.9-24.9c-9.7 0-18 5.8-22.1 13.8l-61.2-13.6c-3-.8-6.1 1.4-6.9 4.4l-19.1 86.4c-33.2 1.4-63.1 11.3-85.5 26.8-6.1-6.4-14.7-10.2-24.1-10.2-34.9 0-46.3 46.9-14.4 62.8-1.1 5-1.7 10.2-1.7 15.5 0 52.6 59.2 95.2 132 95.2 73.1 0 132.3-42.6 132.3-95.2 0-5.3-.6-10.8-1.9-15.8 31.3-16 19.8-62.5-14.9-62.5zM302.8 331c-18.2 18.2-76.1 17.9-93.6 0-2.2-2.2-6.1-2.2-8.3 0-2.5 2.5-2.5 6.4 0 8.6 22.8 22.8 87.3 22.8 110.2 0 2.5-2.2 2.5-6.1 0-8.6-2.2-2.2-6.1-2.2-8.3 0zm7.7-75c-13.6 0-24.6 11.1-24.6 24.9 0 13.6 11.1 24.6 24.6 24.6 13.8 0 24.9-11.1 24.9-24.6 0-13.8-11-24.9-24.9-24.9z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https://ieftimov.com/posts/how-to-write-rspec-formatters-from-scratch/&amp;title=How%20to%20write%20RSpec%20formatters%20from%20scratch"
+          title="Share on LinkedIn"
+          aria-label="Share on LinkedIn"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="linkedin" class="svg-inline--fa fa-linkedin fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="mailto:?body=https://ieftimov.com/posts/how-to-write-rspec-formatters-from-scratch/&amp;subject=How%20to%20write%20RSpec%20formatters%20from%20scratch"
+          title="Send via email"
+          aria-label="Send via email"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="at" class="svg-inline--fa fa-at fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 8C118.941 8 8 118.919 8 256c0 137.059 110.919 248 248 248 48.154 0 95.342-14.14 135.408-40.223 12.005-7.815 14.625-24.288 5.552-35.372l-10.177-12.433c-7.671-9.371-21.179-11.667-31.373-5.129C325.92 429.757 291.314 440 256 440c-101.458 0-184-82.542-184-184S154.542 72 256 72c100.139 0 184 57.619 184 160 0 38.786-21.093 79.742-58.17 83.693-17.349-.454-16.91-12.857-13.476-30.024l23.433-121.11C394.653 149.75 383.308 136 368.225 136h-44.981a13.518 13.518 0 0 0-13.432 11.993l-.01.092c-14.697-17.901-40.448-21.775-59.971-21.775-74.58 0-137.831 62.234-137.831 151.46 0 65.303 36.785 105.87 96 105.87 26.984 0 57.369-15.637 74.991-38.333 9.522 34.104 40.613 34.103 70.71 34.103C462.609 379.41 504 307.798 504 232 504 95.653 394.023 8 256 8zm-21.68 304.43c-22.249 0-36.07-15.623-36.07-40.771 0-44.993 30.779-72.729 58.63-72.729 22.292 0 35.601 15.241 35.601 40.77 0 45.061-33.875 72.73-58.161 72.73z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+  </section>
+
+
+      
+  
+    
+    
+    
+    <div class="pt-8">
+      <hr class="border-dotted border-neutral-300 dark:border-neutral-600" />
+      <div class="flex justify-between pt-3">
+        <span>
+          
+            <a class="flex group" href="/posts/pattern-to-pattern-template-method-and-strategy/">
+              <span
+                class="mr-3 ltr:inline rtl:hidden text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&larr;</span
+              >
+              <span
+                class="ml-3 ltr:hidden rtl:inline text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&rarr;</span
+              >
+              <span class="flex flex-col">
+                <span
+                  class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+                  >Pattern to pattern: Template Method & Strategy</span
+                >
+                <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+                  
+                    <time datetime="2015-04-22 00:00:00 &#43;0000 UTC">22 April 2015</time>
+                  
+                </span>
+              </span>
+            </a>
+          
+        </span>
+        <span>
+          
+            <a class="flex text-right group" href="/posts/railsconf-2015-talks-that-you-should-watch/">
+              <span class="flex flex-col">
+                <span
+                  class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+                  >RailsConf 2015 talks that you should watch</span
+                >
+                <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+                  
+                    <time datetime="2015-05-04 00:00:00 &#43;0000 UTC">4 May 2015</time>
+                  
+                </span>
+              </span>
+              <span
+                class="ml-3 ltr:inline rtl:hidden text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&rarr;</span
+              >
+              <span
+                class="mr-3 ltr:hidden rtl:inline text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&larr;</span
+              >
+            </a>
+          
+        </span>
+      </div>
+    </div>
+  
+
+
+    </footer>
+    
+  </article>
+
+      
+        <div
+          class="absolute top-[110vh] ltr:right-0 rtl:left-0 w-12 pointer-events-none bottom-[-5.5rem]"
+        >
+          <a
+            href="#the-top"
+            class="w-12 h-12 sticky pointer-events-auto top-[calc(100vh-5rem)] bg-neutral/50 dark:bg-neutral-800/50 backdrop-blur rounded-full text-xl flex items-center justify-center text-neutral-700 dark:text-neutral hover:text-primary-600 dark:hover:text-primary-400"
+            aria-label="Scroll to top"
+            title="Scroll to top"
+          >
+            &uarr;
+          </a>
+        </div>
+      
+    </main>
+    <div
+  id="search-wrapper"
+  class="fixed inset-0 z-50 flex flex-col p-4 sm:p-6 md:p-[10vh] lg:p-[12vh] w-screen h-screen cursor-default bg-neutral-500/50 backdrop-blur-sm dark:bg-neutral-900/50 invisible"
+  data-url="https://ieftimov.com/"
+>
+  <div
+    id="search-modal"
+    class="flex flex-col w-full max-w-3xl min-h-0 mx-auto border rounded-md shadow-lg border-neutral-200 top-20 bg-neutral dark:bg-neutral-800 dark:border-neutral-700"
+  >
+    <header class="relative z-10 flex items-center justify-between flex-none px-2">
+      <form class="flex items-center flex-auto min-w-0">
+        <div class="flex items-center justify-center w-8 h-8 text-neutral-400">
+          
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="search" class="svg-inline--fa fa-search fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>
+  </span>
+
+
+        </div>
+        <input
+          type="search"
+          id="search-query"
+          class="flex flex-auto h-12 mx-1 bg-transparent appearance-none focus:outline-dotted focus:outline-transparent focus:outline-2"
+          placeholder="Search"
+          tabindex="0"
+        />
+      </form>
+      <button
+        id="close-search-button"
+        class="flex items-center justify-center w-8 h-8 text-neutral-700 dark:text-neutral hover:text-primary-600 dark:hover:text-primary-400"
+        title="Close (Esc)"
+      >
+        
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
+  </span>
+
+
+      </button>
+    </header>
+    <section class="flex-auto px-2 overflow-auto">
+      <ul id="search-results">
+        
+      </ul>
+    </section>
+  </div>
+</div>
+<footer class="py-10">
+  
+  
+    <nav class="pb-4 text-base font-medium text-neutral-500 dark:text-neutral-400">
+      <ul class="flex flex-col list-none sm:flex-row">
+        
+          <li class="mb-1 sm:mb-0 sm:mr-7 sm:last:mr-0">
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/analytics"
+              title=""
+              >Analytics</a
+            >
+          </li>
+        
+          <li class="mb-1 sm:mb-0 sm:mr-7 sm:last:mr-0">
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/index.xml"
+              title=""
+              >RSS</a
+            >
+          </li>
+        
+          <li class="mb-1 sm:mb-0 sm:mr-7 sm:last:mr-0">
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="https://forms.gle/orfXK5jh1LRaiFzo8"
+              title=""
+              >Suggest a topic</a
+            >
+          </li>
+        
+      </ul>
+    </nav>
+  
+  <div class="flex justify-between">
+    <div>
+      
+      <p class="text-sm text-neutral-500 dark:text-neutral-400">
+          &copy;
+          2022
+          Ilija Eftimov
+      </p>
+      
+      
+        <p class="text-xs text-neutral-500 dark:text-neutral-400">
+          
+          
+          Powered by <a class="hover:underline hover:decoration-primary-400 hover:text-primary-500"
+            href="https://gohugo.io/" target="_blank" rel="noopener noreferrer">Hugo</a> &amp; <a class="hover:underline hover:decoration-primary-400 hover:text-primary-500" href="https://git.io/hugo-congo" target="_blank" rel="noopener noreferrer">Congo</a>
+        </p>
+      
+    </div>
+    
+    
+      <div
+        class="text-sm cursor-pointer text-neutral-700 dark:text-neutral hover:text-primary-600 dark:hover:text-primary-400 ltr:mr-14 rtl:ml-14"
+      >
+        <button
+          id="appearance-switcher"
+          class="w-12 h-12 "
+          type="button"
+          title="Switch to dark appearance"
+        >
+          <span class="inline dark:hidden">
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M283.211 512c78.962 0 151.079-35.925 198.857-94.792 7.068-8.708-.639-21.43-11.562-19.35-124.203 23.654-238.262-71.576-238.262-196.954 0-72.222 38.662-138.635 101.498-174.394 9.686-5.512 7.25-20.197-3.756-22.23A258.156 258.156 0 0 0 283.211 0c-141.309 0-256 114.511-256 256 0 141.309 114.511 256 256 256z"></path></svg>
+  </span>
+
+</span>
+          <span class="hidden dark:inline">
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 160c-52.9 0-96 43.1-96 96s43.1 96 96 96 96-43.1 96-96-43.1-96-96-96zm246.4 80.5l-94.7-47.3 33.5-100.4c4.5-13.6-8.4-26.5-21.9-21.9l-100.4 33.5-47.4-94.8c-6.4-12.8-24.6-12.8-31 0l-47.3 94.7L92.7 70.8c-13.6-4.5-26.5 8.4-21.9 21.9l33.5 100.4-94.7 47.4c-12.8 6.4-12.8 24.6 0 31l94.7 47.3-33.5 100.5c-4.5 13.6 8.4 26.5 21.9 21.9l100.4-33.5 47.3 94.7c6.4 12.8 24.6 12.8 31 0l47.3-94.7 100.4 33.5c13.6 4.5 26.5-8.4 21.9-21.9l-33.5-100.4 94.7-47.3c13-6.5 13-24.7.2-31.1zm-155.9 106c-49.9 49.9-131.1 49.9-181 0-49.9-49.9-49.9-131.1 0-181 49.9-49.9 131.1-49.9 181 0 49.9 49.9 49.9 131.1 0 181z"></path></svg>
+  </span>
+
+</span>
+        </button>
+      </div>
+    
+  </div>
+  
+  
+</footer>
+</body>
+</html>

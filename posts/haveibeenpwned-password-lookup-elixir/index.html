@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html
+  lang="en"
+  dir="ltr"
+  class="scroll-smooth"
+  data-default-appearance="light"
+  data-auto-appearance="true"
+><head>
+  <meta charset="utf-8" />
+  
+    <meta http-equiv="content-language" content="en" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  
+  <title>Validate your passwords using Elixir and haveibeenpwned.com&#39;s API &middot; Ilija Eftimov 👨‍🚀</title>
+    <meta name="title" content="Validate your passwords using Elixir and haveibeenpwned.com&#39;s API &middot; Ilija Eftimov 👨‍🚀" />
+  
+  <meta name="description" content="Documenting my experiences and learnings, with the goal of helping other software engineers on their journey" />
+  
+  
+  
+  <link rel="canonical" href="https://ieftimov.com/posts/haveibeenpwned-password-lookup-elixir/" />
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <link
+    type="text/css"
+    rel="stylesheet"
+    href="/css/main.bundle.min.b4e16dd9839a706aac3e482fb2ead8a30c01f199844299a37ddc79029b6a3bae7c65ff23668804cf9b10c85a4931caa1dca1efa0395de6dc9fe0784468f41457.css"
+    integrity="sha512-tOFt2YOacGqsPkgvsurYowwB8ZmEQpmjfdx5AptqO658Zf8jZogEz5sQyFpJMcqh3KHvoDld5tyf4HhEaPQUVw=="
+  />
+  
+  
+  <script type="text/javascript" src="/js/appearance.min.dbca9e2200cf929a23b55442f2ff09361b8d5290147ff1407f89ed3839f0fea13db4e94f5ae6bf2f3de10d322b4bede74b578455e9cc7d5565314d914602c974.js" integrity="sha512-28qeIgDPkpojtVRC8v8JNhuNUpAUf/FAf4ntODnw/qE9tOlPWua/Lz3hDTIrS&#43;3nS1eEVenMfVVlMU2RRgLJdA=="></script>
+  
+    
+    
+    
+  
+  
+    
+    
+  
+  
+    
+    <script defer type="text/javascript" id="script-bundle" src="/js/main.bundle.min.238e7ce9c541b4e7abb5781ad8e736e849e74890fcb8a26e73ea1845f573b3a0cf91418b20ac4401bdbb57d9c6c009d8f6ec50dad6d44b48f3936aea0f95c391.js" integrity="sha512-I4586cVBtOertXga2Oc26EnnSJD8uKJuc&#43;oYRfVzs6DPkUGLIKxEAb27V9nGwAnY9uxQ2tbUS0jzk2rqD5XDkQ==" data-copy="Copy" data-copied="Copied"></script>
+  
+  
+  
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+  
+  
+  
+  
+  
+  
+  
+  <meta property="og:title" content="Validate your passwords using Elixir and haveibeenpwned.com&#39;s API" />
+<meta property="og:description" content="Unless you&rsquo;ve been living under a rock for the last couple of years, you probably know what two-factor authentication (2FA) is." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/posts/haveibeenpwned-password-lookup-elixir/" /><meta property="og:image" content="https://ieftimov.com/cards/haveibeenpwned-password-lookup-elixir.png" /><meta property="article:section" content="posts" />
+
+<meta property="og:site_name" content="Ilija Eftimov 👨‍🚀" />
+
+
+  <meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/haveibeenpwned-password-lookup-elixir.png"/>
+
+<meta name="twitter:title" content="Validate your passwords using Elixir and haveibeenpwned.com&#39;s API"/>
+<meta name="twitter:description" content="Unless you&rsquo;ve been living under a rock for the last couple of years, you probably know what two-factor authentication (2FA) is."/>
+
+  
+  <script type="application/ld+json">
+  [{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "articleSection": "Posts",
+    "name": "Validate your passwords using Elixir and haveibeenpwned.com\u0027s API",
+    "headline": "Validate your passwords using Elixir and haveibeenpwned.com\u0027s API",
+    
+    "abstract": "Unless you\u0026rsquo;ve been living under a rock for the last couple of years, you probably know what two-factor authentication (2FA) is.",
+    "inLanguage": "en",
+    "url" : "https:\/\/ieftimov.com\/posts\/haveibeenpwned-password-lookup-elixir\/",
+    "author" : {
+      "@type": "Person",
+      "name": "Ilija Eftimov"
+    },
+    
+    "dateCreated": "2018-12-23T00:00:00\u002b00:00",
+    
+    
+    
+    
+    "keywords": ["haveibeenpwned","api","passwords"],
+    
+    "mainEntityOfPage": "true",
+    "wordCount": "2259"
+  }]
+  </script>
+
+
+  
+  
+    <meta name="generator" content="Hugo 0.92.2" />
+  
+  
+  <meta name="author" content="Ilija Eftimov" />
+  
+    
+      <link href="https://twitter.com/itsilija" rel="me" />
+    
+      <link href="https://www.linkedin.com/in/ieftimov/" rel="me" />
+    
+      <link href="mailto:blog@ieftimov.com" rel="me" />
+    
+      <link href="https://dev.to/fteem" rel="me" />
+    
+      <link href="https://github.com/fteem" rel="me" />
+    
+      <link href="https://t.me/ieftimovcom" rel="me" />
+    
+  
+  
+  
+
+
+
+
+
+
+  
+  <script async defer data-domain="ieftimov.com" src="https://plausible.io/js/plausible.js"></script>
+
+  
+  
+</head>
+<body
+    class="flex flex-col h-screen px-6 m-auto text-lg leading-7 bg-neutral text-neutral-900 sm:px-14 md:px-24 lg:px-32 dark:bg-neutral-800 dark:text-neutral max-w-7xl"
+  >
+    <div id="the-top" class="absolute flex self-center">
+      <a
+        class="px-3 py-1 text-sm -translate-y-8 rounded-b-lg bg-primary-200 dark:bg-neutral-600 focus:translate-y-0"
+        href="#main-content"
+        ><span class="font-bold ltr:pr-2 rtl:pl-2 text-primary-600 dark:text-primary-400"
+          >&darr;</span
+        >Skip to main content</a
+      >
+    </div><header
+  class="flex justify-between py-6 font-semibold sm:items-center sm:py-10 text-neutral-900 dark:text-neutral"
+>
+  
+  <div>
+    
+      <a
+        class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+        rel="me"
+        href="/"
+        >Ilija Eftimov 👨‍🚀</a
+      >
+    
+
+  </div>
+  
+  
+    <nav>
+      <ul class="flex flex-col list-none sm:flex-row">
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/"
+              title=""
+              >Home</a
+            >
+          </li>
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/posts/"
+              title="Posts"
+              >Writing</a
+            >
+          </li>
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/work"
+              title=""
+              >Work</a
+            >
+          </li>
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="https://www.getrevue.co/profile/itsilija"
+              title=""
+              >Subscribe</a
+            >
+          </li>
+        
+        
+          <li
+            class="ltr:text-right rtl:text-left ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <button
+              id="search-button"
+              class="text-base hover:text-primary-600 dark:hover:text-primary-400"
+              title="Search (/)"
+            >
+              
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="search" class="svg-inline--fa fa-search fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>
+  </span>
+
+
+            </button>
+          </li>
+        
+      </ul>
+    </nav>
+  
+</header>
+<main id="main-content" class="relative grow">
+  <article>
+    <header class="max-w-prose">
+      
+      <h1 class="mt-0 text-4xl font-extrabold text-neutral-900 dark:text-neutral">
+        Validate your passwords using Elixir and haveibeenpwned.com's API
+      </h1>
+      <div class="mt-8 mb-12 text-base text-neutral-500 dark:text-neutral-400">
+        
+
+
+
+
+
+  
+  
+
+
+
+  
+
+  
+  
+    
+  
+
+  
+
+  
+
+  
+    
+  
+
+  
+
+
+  <div class="flex flex-row flex-wrap items-center">
+    
+    
+      <time datetime="2018-12-23 00:00:00 &#43;0000 UTC">23 December 2018</time><span class="px-2 text-primary-500">&middot;</span><span title="Reading time">11 mins</span>
+    
+
+    
+    
+  </div>
+
+  
+  
+
+
+      </div>
+    </header>
+    <section class="flex flex-col max-w-full mt-0 prose lg:flex-row dark:prose-invert">
+      
+        <div class="order-first px-0 lg:max-w-xs ltr:lg:pl-8 rtl:lg:pr-8 lg:order-last">
+          <div class="ltr:pl-5 rtl:pr-5 toc lg:sticky lg:top-10">
+            <details open class="mt-0 overflow-hidden rounded-lg rtl:pr-5 ltr:pl-5 ltr:-ml-5 rtl:-mr-5 lg:mt-3">
+  <summary
+    class="block py-1 text-lg font-semibold cursor-pointer rtl:pr-5 ltr:pl-5 ltr:-ml-5 rtl:-mr-5 text-neutral-800 dark:text-neutral-100 lg:hidden bg-neutral-100 dark:bg-neutral-700"
+  >
+    Table of Contents
+  </summary>
+  <div
+    class="py-2 border-dotted ltr:border-l rtl:border-r rtl:pr-5 ltr:pl-5 ltr:-ml-5 rtl:-mr-5 border-neutral-300 dark:border-neutral-600"
+  >
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#reader-meet-haveibeenpwnedcom">Reader, meet haveibeenpwned.com</a></li>
+    <li><a href="#using-the-pwned-passwords-api">Using the pwned passwords API</a></li>
+    <li><a href="#pinging-the-api">Pinging the API</a></li>
+    <li><a href="#our-little-algorithm">Our little algorithm</a></li>
+    <li><a href="#manipulating-the-password">Manipulating the password</a></li>
+    <li><a href="#sending-request-to-an-api">Sending request to an API</a></li>
+    <li><a href="#handling-the-response">Handling the response</a></li>
+    <li><a href="#parsing-the-response">Parsing the response</a></li>
+    <li><a href="#returning-a-meaningful-result">Returning a meaningful result</a></li>
+    <li><a href="#using-pwnex">Using Pwnex</a></li>
+  </ul>
+</nav>
+  </div>
+</details>
+
+          </div>
+        </div>
+      
+      <div class="min-w-0 min-h-0 max-w-prose">
+        <p>Unless you&rsquo;ve been living under a rock for the last couple of years, you
+probably know what two-factor authentication (2FA) is. It&rsquo;s quite a neat trick
+actually - you have a password that you have to (obviously) enter correctly
+(first factor), but you also have to receive a second (random) code through a
+different medium, sometimes on a different device, that you have to enter to
+log in (second factor).</p>
+<p>Now, obviously this adds quite a bit of overhead to logging in, but it adds a
+disproportionate value when it comes to security. If you work in any sort of
+organisation it was probably no surprise when you were asked to turn on 2FA for
+all your accounts. If you haven&rsquo;t been asked to (or haven&rsquo;t done it), it&rsquo;s time
+to act ;)</p>
+<p>But, what about factor No. 1? The password. Did we give up on them?</p>
+<p>Not really. But, for sure we had to become more vigilant and smarter when
+setting our passwords. Why? Allow me to explain.</p>
+<h2 id="reader-meet-haveibeenpwnedcom" class="relative group">Reader, meet haveibeenpwned.com <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#reader-meet-haveibeenpwnedcom" aria-label="Anchor">#</a></span></h2>
+<p>Let me introduce you to <a href="https://haveibeenpwned.com">haveibeenpwned.com</a>.  It&rsquo;s
+a free resource for anyone to quickly assess if they may have been put at risk
+due to an online account of their&rsquo;s having been compromised or &ldquo;pwned&rdquo; in a
+data breach. As you can imagine, to fulfil its purpose, this service also
+contains quite a long list of pwned passwords (about 500 million of them to be
+more precise), which are open for querying through a REST API.</p>
+<p>If you want to learn more about the project, or it&rsquo;s
+<a href="https://www.troyhunt.com/">author</a>, I suggest checking
+out the <a href="https://haveibeenpwned.com/About">About</a> page of the project.</p>
+<h2 id="using-the-pwned-passwords-api" class="relative group">Using the pwned passwords API <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#using-the-pwned-passwords-api" aria-label="Anchor">#</a></span></h2>
+<p>This API allows us to check if any password is present in haveibeenpwned
+database. This means that if you send an already pwned password it will tell
+you that this password has been pwned and that it&rsquo;s suggested to choose another
+one.</p>
+<p>Imagine you have a website where people can set their passwords, and once the
+user finished typing their new password you can ping this service and check if
+the password they chose has been pwned before.</p>
+<p>Now, if you are thinking along the lines of &ldquo;are you telling me to send a
+plain-text password across the wire to some random API?&rdquo; then you&rsquo;re a step
+ahead, well done!</p>
+<p>Sorry to disappoint, but no, actually I am not saying that. Instead of sending
+the whole password in plain-text, this API only requires the 5 characters of
+the SHA-1 hash of the actual password.</p>
+<p>In Elixir terms, that would look like:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="ss">:crypto</span><span class="o">.</span><span class="n">hash</span><span class="p">(</span><span class="ss">:sha</span><span class="p">,</span> <span class="s2">&#34;password&#34;</span><span class="p">)</span>
+<span class="o">|&gt;</span> <span class="nc">Base</span><span class="o">.</span><span class="n">encode16</span>
+<span class="o">|&gt;</span> <span class="nc">String</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="mi">4</span><span class="p">)</span></code></pre></div>
+<p>Interestingly what it sends back is <em>the remainder of the hashed passwords</em>
+that match the 5 characters that you sent. Basically, this means if we take a
+SHA-1 of &ldquo;password&rdquo;:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">iex</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">&gt;</span> <span class="ss">:crypto</span><span class="o">.</span><span class="n">hash</span><span class="p">(</span><span class="ss">:sha</span><span class="p">,</span> <span class="s2">&#34;password&#34;</span><span class="p">)</span> <span class="o">|&gt;</span> <span class="nc">Base</span><span class="o">.</span><span class="n">encode16</span>
+<span class="s2">&#34;5BAA61E4C9B93F3F0682250B6CF8331B7EE68FD8&#34;</span></code></pre></div>
+<p>We will send only <code>5BAA6</code> to the API, while in the response body we will
+receive a big list of strings that will represent the rest of the SHA-1, or in
+our example that would be <code>1E4C9B93F3F0682250B6CF8331B7EE68FD8</code>.</p>
+<p>Troy Hunt, who&rsquo;s the author of haveibeenpwned has written quite an extensive
+explanation on how this works - you can read it
+<a href="https://www.troyhunt.com/ive-just-launched-pwned-passwords-version-2/">here</a>.</p>
+<h2 id="pinging-the-api" class="relative group">Pinging the API <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#pinging-the-api" aria-label="Anchor">#</a></span></h2>
+<p>For the purpose of this exercise, we will create a small Mix package that will
+encapsulate all of the behaviours. If you&rsquo;re not familiar with how to create
+new packages using Mix, I suggest reading my article <a href="/writing-elixir-library">Write and publish your
+first Elixir library</a>.</p>
+<p>We will call our package <code>Pwnex</code> because somehow my brain always thinks that I
+have to mix up the main word (pwned) with Elixir to come up with a name.
+Anyway, let&rsquo;s create it:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">› mix new pwnex
+* creating README.md
+* creating .formatter.exs
+* creating .gitignore
+* creating mix.exs
+* creating config
+* creating config/config.exs
+* creating lib
+* creating lib/pwnex.ex
+* creating <span class="nb">test</span>
+* creating test/test_helper.exs
+* creating test/pwnex_test.exs
+
+Your Mix project was created successfully.
+You can use <span class="s2">&#34;mix&#34;</span> to compile it, <span class="nb">test</span> it, and more:
+
+    <span class="nb">cd</span> pwnex
+    mix <span class="nb">test</span>
+
+Run <span class="s2">&#34;mix help&#34;</span> <span class="k">for</span> more commands.</code></pre></div>
+<p>Now that we have the package bootstrapped locally, let&rsquo;s open <code>lib/pwnex.ex</code> and
+add some documentation:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="kd">defmodule</span> <span class="nc">Pwnex</span> <span class="k">do</span>
+  <span class="na">@moduledoc</span> <span class="sh">&#34;&#34;&#34;
+</span><span class="sh">  Consults haveibeenpwned.com&#39;s API for pwned passwords.
+</span><span class="sh">  &#34;&#34;&#34;</span>
+
+  <span class="na">@doc</span> <span class="sh">&#34;&#34;&#34;
+</span><span class="sh">  Checks if a given password is already pwned.
+</span><span class="sh">
+</span><span class="sh">  </span><span class="err">##</span><span class="sh"> Examples
+</span><span class="sh">
+</span><span class="sh">      iex&gt; Pwnex.pwned?(&#34;password&#34;)
+</span><span class="sh">      {:pwned, 3_000_000}
+</span><span class="sh">
+</span><span class="sh">      iex&gt; Pwnex.pwned?(&#34;m4Z2fJJ]r3fxQ*o27&#34;)
+</span><span class="sh">      {:ok, 0}
+</span><span class="sh">
+</span><span class="sh">  &#34;&#34;&#34;</span>
+  <span class="kd">def</span> <span class="n">pwned?</span><span class="p">(</span><span class="n">password</span><span class="p">)</span> <span class="k">do</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></div>
+<p>The <code>moduledoc</code> briefly explains the purpose of the package, while the <code>doc</code>
+explains the purpose of the <code>pwned?/1</code> function and has two examples that we
+could use in the doctests.</p>
+<h2 id="our-little-algorithm" class="relative group">Our little algorithm <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#our-little-algorithm" aria-label="Anchor">#</a></span></h2>
+<p>Let&rsquo;s see what would be the steps to implement the <code>Pwnex.pwned?/1</code> function:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="kd">def</span> <span class="n">pwned?</span><span class="p">(</span><span class="n">password</span><span class="p">)</span> <span class="k">do</span>
+  <span class="p">{</span><span class="n">hash_head</span><span class="p">,</span> <span class="n">hash_tail</span><span class="p">}</span> <span class="o">=</span>
+    <span class="n">password</span>
+    <span class="o">|&gt;</span> <span class="n">sanitize</span>
+    <span class="o">|&gt;</span> <span class="n">hash</span>
+    <span class="o">|&gt;</span> <span class="n">split_password</span>
+
+  <span class="n">hash_head</span>
+    <span class="o">|&gt;</span> <span class="n">fetch_pwns</span>
+    <span class="o">|&gt;</span> <span class="n">handle_response</span>
+    <span class="o">|&gt;</span> <span class="n">find_pwns</span><span class="p">(</span><span class="n">hash_tail</span><span class="p">)</span>
+    <span class="o">|&gt;</span> <span class="n">return_result</span>
+<span class="k">end</span></code></pre></div>
+<p>Once more - the pipeline operator in Elixir makes this function so clear and
+procedure-like that explaining feels a tad redundant. Still, here it is:</p>
+<ul>
+<li><code>sanitize</code> - we want to remove all leading and trailing whitespaces from the
+password</li>
+<li><code>hash</code> - we want to convert the password to a SHA1 hash and return it&rsquo;s first
+5 characters</li>
+<li><code>split_password</code> - we want to split the head - first 5 characters that we
+will send to the API and the tail - the rest of the SHA-1 hash</li>
+<li><code>fetch_pwns</code> - we will send an API request to haveibeenpwned to get all (if
+any) pwns of the password</li>
+<li><code>handle_response</code> - depending on the response we will either get the body, or
+the reason for failure returned</li>
+<li><code>find_pwns</code> - we will take the response body, and because haveibeenpwned uses
+a k-Anonymity model we will need to find the actual match ourselves (if
+present)</li>
+<li><code>return_result</code> - will return the tuple which will contain a result atom and
+a pwns count</li>
+</ul>
+<p>Let&rsquo;s take a step by step approach and implement these functions.</p>
+<h2 id="manipulating-the-password" class="relative group">Manipulating the password <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#manipulating-the-password" aria-label="Anchor">#</a></span></h2>
+<p>Let&rsquo;s start easy. In sanitize, we want to trim leading and trailing
+whitespaces, while in <code>hash</code> we want to turn the password to SHA1 and return
+it&rsquo;s first five characters.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="kd">def</span> <span class="n">sanitize</span><span class="p">(</span><span class="n">password</span><span class="p">),</span> <span class="ss">do</span><span class="p">:</span> <span class="nc">String</span><span class="o">.</span><span class="n">trim</span><span class="p">(</span><span class="n">password</span><span class="p">)</span></code></pre></div>
+<p>There isn&rsquo;t much to explain here really. Instead of using <code>sanitize</code> we can use
+<code>String.trim/1</code>, but I prefer to have a separate function that we could extend
+and test for any edge cases.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="kd">defp</span> <span class="n">hash</span><span class="p">(</span><span class="n">password</span><span class="p">)</span> <span class="k">do</span>
+  <span class="ss">:crypto</span><span class="o">.</span><span class="n">hash</span><span class="p">(</span><span class="ss">:sha</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+  <span class="o">|&gt;</span> <span class="nc">Base</span><span class="o">.</span><span class="n">encode16</span>
+<span class="k">end</span></code></pre></div>
+<p><code>:crypto</code> is an <a href="http://erlang.org/doc/man/crypto.html">Erlang module</a> that
+provides a set of cryptographic functions. Interestingly, it&rsquo;s not part of the
+standard library, but it comes included in the distribution. One of the
+functions, as you can see in the code above, is <code>hash/2</code>, which takes the
+hashing algorithm as the first argument and the actual string to be hashed as
+the second argument. It returns the binary hash, that we can convert to hex by
+using <code>Base.encode16</code>.</p>
+<h2 id="sending-request-to-an-api" class="relative group">Sending request to an API <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#sending-request-to-an-api" aria-label="Anchor">#</a></span></h2>
+<p>I bet you&rsquo;re thinking <a href="https://hex.pm/packages/httpoison">HTTPoison</a>. Aren&rsquo;t
+you? While I was writing this article I was also wondering do we have to
+include to a whole package just to do a simple GET request. You guessed it - we
+do not.</p>
+<p>Although Elixir does not ship an HTTP client, Erlang does. And just like with
+<code>:crypto</code>, you can use Erlang&rsquo;s HTTP client from Elixir using <code>:httpc</code>. This
+module provides the API to an HTTP/1.1 compatible client. I suggest giving
+<a href="http://erlang.org/doc/man/httpc.html">it&rsquo;s documentation</a> a quick scan before
+we move on.</p>
+<p>Let&rsquo;s let&rsquo;s open up IEx and give <code>:httpc</code> a spin:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">iex</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">&gt;</span> <span class="ss">:httpc</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s1">&#39;https://api.pwnedpasswords.com/range/21FCB&#39;</span><span class="p">)</span>
+<span class="p">{</span><span class="ss">:ok</span><span class="p">,</span>
+ <span class="err">\</span><span class="p">{</span><span class="err">\</span><span class="p">{</span><span class="s1">&#39;HTTP/1.1&#39;</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="s1">&#39;OK&#39;</span><span class="p">},</span>
+  <span class="p">[</span>
+    <span class="p">{</span><span class="s1">&#39;cache-control&#39;</span><span class="p">,</span> <span class="s1">&#39;public, max-age=2678400&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;connection&#39;</span><span class="p">,</span> <span class="s1">&#39;keep-alive&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="s1">&#39;Sat, 22 Dec 2018 11:09:46 GMT&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;server&#39;</span><span class="p">,</span> <span class="s1">&#39;cloudflare&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;vary&#39;</span><span class="p">,</span> <span class="s1">&#39;Accept-Encoding&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;content-length&#39;</span><span class="p">,</span> <span class="s1">&#39;19951&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;content-type&#39;</span><span class="p">,</span> <span class="s1">&#39;text/plain&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;expires&#39;</span><span class="p">,</span> <span class="s1">&#39;Tue, 22 Jan 2019 11:09:46 GMT&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;last-modified&#39;</span><span class="p">,</span> <span class="s1">&#39;Thu, 12 Jul 2018 01:32:06 GMT&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;set-cookie&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;__cfduid=d51115381191fd7bd0a003d466916efc41545476986; expires=Sun, 22-Dec-19 11:09:46 GMT; path=/; domain=.pwnedpasswords.com; HttpOnly; Secure&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;cf-cache-status&#39;</span><span class="p">,</span> <span class="s1">&#39;HIT&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;access-control-allow-origin&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;arr-disable-session-affinity&#39;</span><span class="p">,</span> <span class="s1">&#39;True&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;cf-ray&#39;</span><span class="p">,</span> <span class="s1">&#39;48d2235cbe93bf5c-AMS&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;expect-ct&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;max-age=604800, report-uri=&#34;https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct&#34;&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;strict-transport-security&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;max-age=31536000; includeSubDomains; preload&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;x-content-type-options&#39;</span><span class="p">,</span> <span class="s1">&#39;nosniff&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;x-powered-by&#39;</span><span class="p">,</span> <span class="s1">&#39;ASP.NET&#39;</span><span class="p">}</span>
+  <span class="p">],</span>
+  <span class="s1">&#39;THEBODYISHERE</span><span class="se">\r\n</span><span class="s1">OMGSOMUCHSTUFFHEREWHATISTHISEVEN&#39;</span> <span class="o">++</span> <span class="n">...</span><span class="p">}}</span></code></pre></div>
+<p>You see, although the output is pretty verbose if you have ever sent an HTTP
+request via cURL or you&rsquo;ve opened your browser&rsquo;s debugging tools, there
+shouldn&rsquo;t be any surprises here. The <code>request/1</code> function will send a request
+to the pwnedpasswords API and it will return a ton of nested tuples, most of
+them being the response headers and the raw body of the response.</p>
+<p>For our purpose, we can keep it simple. We are only interested if the function
+will return <code>:ok</code> atom as the first item in the tuple, or <code>:error</code>. We can use
+pattern matching to do this:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">iex</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="p">{</span><span class="n">_status</span><span class="p">,</span> <span class="n">_headers</span><span class="p">,</span> <span class="n">body</span> <span class="p">}}</span> <span class="o">=</span>
+  <span class="ss">:httpc</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s1">&#39;https://api.pwnedpasswords.com/range/21FCB&#39;</span><span class="p">)</span></code></pre></div>
+<p>So, lets get back to our <code>Pwnex.fetch_pwns/1</code> function. The function will
+receive the first 5 characters of the hashed password, it will send that to the
+API and will return the <code>body</code> of the response:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="kd">def</span> <span class="n">fetch_pwns</span><span class="p">(</span><span class="n">head</span><span class="p">)</span> <span class="k">do</span>
+  <span class="ss">:httpc</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s1">&#39;https://api.pwnedpasswords.com/range/</span><span class="si">#{</span><span class="n">head</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="k">end</span></code></pre></div>
+<h2 id="handling-the-response" class="relative group">Handling the response <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#handling-the-response" aria-label="Anchor">#</a></span></h2>
+<p>The <code>handle_response</code> will actually be one function with three bodies:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir">  <span class="kd">def</span> <span class="n">handle_response</span><span class="p">({</span><span class="ss">:ok</span><span class="p">,</span> <span class="p">{</span><span class="n">_status</span><span class="p">,</span> <span class="n">_headers</span><span class="p">,</span> <span class="n">body</span><span class="p">}}),</span> <span class="ss">do</span><span class="p">:</span> <span class="n">body</span>
+  <span class="kd">def</span> <span class="n">handle_response</span><span class="p">({</span><span class="ss">:error</span><span class="p">,</span> <span class="p">{</span><span class="n">reason</span><span class="p">,</span> <span class="n">_meta</span><span class="p">}}),</span> <span class="ss">do</span><span class="p">:</span> <span class="n">reason</span>
+  <span class="kd">def</span> <span class="n">handle_response</span><span class="p">(</span><span class="n">_</span><span class="p">),</span> <span class="ss">do</span><span class="p">:</span> <span class="no">nil</span></code></pre></div>
+<p>By using pattern matching we can have three types of function bodies. The first
+one will be invoked when the response status is HTTP 200 OK, the second one
+when there&rsquo;s an error and the third one for any other case.</p>
+<p>As you can imagine, we could have used conditional logic here, but having the
+power of pattern matching allows us to have three tiny functions that are very
+easy to read, understand and test.</p>
+<h2 id="parsing-the-response" class="relative group">Parsing the response <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#parsing-the-response" aria-label="Anchor">#</a></span></h2>
+<p>Here&rsquo;s the body of the response:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">003D68EB55068C33ACE09247EE4C639306B:3\r\n012C192B2F16F82EA0EB9EF18D9D539B0DD:1\r\n01330C689E5D64F660D6947A93AD634EF8F:1\r\n0198748F3315F40B1A102BF18EEA0194CD9:1\r\n01F9033B3C00C65DBFD6D1DC4D22918F5E9:2\r\n0424DB98C7A0846D2C6C75E697092A0CC3E:5\r\n047F229A81EE2747253F9897DA38946E241:1\r\n04A37A676E312CC7C4D236C93FBD992AA3C:5\r\n04AE045B134BDC43043B216AEF66100EE00:2\r\n0502EA98ED7A1000D932B10F7707D37FFB4:5\r\n0539F86F519AACC7030B728CD47803E5B22:5\r\n054A0BD53E2BC83A87EFDC236E2D0498C08:3\r\n05AA835DC9423327DAEC1CBD38FA99B8834:1\r\n05E0182DEAE22D02F6ED35280BCAC370179:4</code></pre></div>
+<p>If you look carefully you&rsquo;ll notice that it&rsquo;s actually a list of partial SHA-1
+hashes separated by <code>\r\n</code>. With a closer inspection of the first one:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">003D68EB55068C33ACE09247EE4C639306B:3</code></pre></div>
+<p>you notice that it&rsquo;s actually a part of the hash, a colon <code>:</code> and a number (<code>3</code>
+in the example above). This is actually the hash without it&rsquo;s first 5
+characters and the number of times that particular password has been pwned.</p>
+<p>This means that the password who&rsquo;s SHA-1 hash is
+<code>5BAA6003D68EB55068C33ACE09247EE4C639306B</code> has been pwned 3 times, according to
+haveibeenpwned.com.</p>
+<p>What we need to with this response body is to split it, to convert it to a list
+which we will iterate and find our matching hash in. Let&rsquo;s do that:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="kd">def</span> <span class="n">find_pwns</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">hash_tail</span><span class="p">)</span> <span class="k">do</span>
+  <span class="n">response</span>
+  <span class="o">|&gt;</span> <span class="n">to_string</span>
+  <span class="o">|&gt;</span> <span class="nc">String</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+  <span class="o">|&gt;</span> <span class="nc">Enum</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="o">&amp;</span><span class="p">(</span><span class="nc">String</span><span class="o">.</span><span class="n">starts_with?</span><span class="p">(</span><span class="ni">&amp;1</span><span class="p">,</span> <span class="n">hash_tail</span><span class="p">)))</span>
+<span class="k">end</span></code></pre></div>
+<p>Although <code>find_pwns/2</code> might look a bit loaded, let me assure you it&rsquo;s not.
+Let&rsquo;s see what each of the lines do here:</p>
+<ol>
+<li><code>to_string</code> will convert the character list we receive from <code>fetch_pwns</code> and
+will convert it to a string so we can parse it in the next steps</li>
+<li><code>String.split</code> will split the string on the <code>\r\n</code> characters and will
+create a list of strings, looking like:
+<code>[&quot;003D68EB55068C33ACE09247EE4C639306B:3&quot;, ...]</code></li>
+<li>We will invoke <code>Enum.find</code> which takes the list and a function as arguments.
+The list is the parsed list of hash tails and their pwns count, while the
+function is <code>String.starts_with?/2</code>, which will return <code>true</code> when a line
+starts with the value of <code>hash_tail</code>.</li>
+</ol>
+<p>That&rsquo;s all. At the end, the <code>find_pwns/2</code> function will return either the line
+that contains the matched hash tail or it will return <code>nil</code>.</p>
+<h2 id="returning-a-meaningful-result" class="relative group">Returning a meaningful result <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#returning-a-meaningful-result" aria-label="Anchor">#</a></span></h2>
+<p>Now that we have found the count of pwns for the hash (or just a <code>nil</code>), we
+need to handle that and return a meaningful tuple to the user of the module.</p>
+<p>When the <code>find_pwns</code> function does find a count, we want to return a tuple like
+<code>{:pwned, count}</code>. Otherwise, when <code>find_pwns</code> does not find a count it will
+return <code>nil</code>, which we handle in the second definition of the <code>return_result</code>
+function:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="kd">def</span> <span class="n">return_result</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="ow">when</span> <span class="n">is_binary</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">do</span>
+  <span class="p">[</span><span class="n">_</span><span class="p">,</span> <span class="n">count</span><span class="p">]</span> <span class="o">=</span> <span class="nc">String</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="s2">&#34;:&#34;</span><span class="p">)</span>
+  <span class="p">{</span><span class="ss">:pwned</span><span class="p">,</span> <span class="n">count</span><span class="p">}</span>
+<span class="k">end</span>
+
+<span class="kd">def</span> <span class="n">return_result</span><span class="p">(</span><span class="n">_</span><span class="p">),</span> <span class="ss">do</span><span class="p">:</span> <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="mi">0</span><span class="p">}</span></code></pre></div>
+<p>In the first function body we will take the <code>line</code>, which should be a binary
+(string), split it at the <code>:</code> character and then return the tuple with the
+count.  In the second function body we take any argument (which in our case is
+<code>nil</code>) and return a tuple with <code>0</code> as the count.</p>
+<h2 id="using-pwnex" class="relative group">Using Pwnex <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#using-pwnex" aria-label="Anchor">#</a></span></h2>
+<p>Now, let&rsquo;s load Pwnex in IEx and give it a spin. To load it in IEx, you need to
+open the root of the module and run <code>iex -S mix</code>. This will open a IEx session
+and execute <code>mix</code> in it, which will in fact, load and compile the module and
+make it available for invocation directly from IEx:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="err">›</span> <span class="n">iex</span> <span class="o">-</span><span class="nc">S</span> <span class="n">mix</span>
+<span class="nc">Erlang</span><span class="o">/</span><span class="nc">OTP</span> <span class="mi">21</span> <span class="p">[</span><span class="n">erts</span><span class="o">-</span><span class="mf">10.2</span><span class="p">]</span> <span class="p">[</span><span class="n">source</span><span class="p">]</span> <span class="p">[</span><span class="mi">64</span><span class="o">-</span><span class="n">bit</span><span class="p">]</span> <span class="p">[</span><span class="n">smp</span><span class="p">:</span><span class="mi">4</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="p">[</span><span class="n">ds</span><span class="p">:</span><span class="mi">4</span><span class="p">:</span><span class="mi">4</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span> <span class="p">[</span><span class="n">async</span><span class="o">-</span><span class="n">threads</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span> <span class="p">[</span><span class="n">hipe</span><span class="p">]</span> <span class="p">[</span><span class="n">dtrace</span><span class="p">]</span>
+
+<span class="nc">Interactive</span> <span class="nc">Elixir</span> <span class="p">(</span><span class="mf">1.7</span><span class="o">.</span><span class="mi">4</span><span class="p">)</span> <span class="o">-</span> <span class="n">press</span> <span class="nc">Ctrl</span><span class="o">+</span><span class="nc">C</span> <span class="n">to</span> <span class="n">exit</span> <span class="p">(</span><span class="n">type</span> <span class="n">h</span><span class="p">()</span> <span class="nc">ENTER</span> <span class="k">for</span> <span class="n">help</span><span class="p">)</span>
+<span class="n">iex</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">h</span> <span class="nc">Pwnex</span>
+
+                          <span class="nc">Pwnex</span>
+
+<span class="nc">Consults</span> <span class="n">haveibeenpwned</span><span class="o">.</span><span class="n">com</span><span class="s1">&#39;s API for pwned passwords.
+</span><span class="s1">iex(2)&gt; Pwnex.pwned?(&#34;password&#34;)
+</span><span class="s1">{:pwned, 3533661}
+</span><span class="s1">iex(3)&gt; Pwnex.pwned?(&#34;123!@</span><span class="err">#</span><span class="s1">asd*&amp;(*123SAkjhda&#34;)
+</span><span class="s1">{:ok, 0}</span></code></pre></div>
+<p>As you can see, <code>password</code> has been pwned about 3.5 million times, while
+<code>123!@#asd*&amp;(*123SAkjhda</code> never.</p>
+<p>That&rsquo;s basically it. We have Pwnex working - it takes our input as a function
+argument, talks to an API through an Erlang HTTP client, parses its response
+body, builds a map of hashes and finds any pwns for the given password.</p>
+<p>As you can see, this whole package does quite a bit in 65 lines of code.</p>
+<p>In this article, we saw how we can create a new package, use it to communicate
+with an API over HTTP, we learned why you don&rsquo;t always need HTTPoison, how you
+can parse a request body and how you can mingle with some data.</p>
+<p>If you would like to see the actual code that we wrote in this article, head
+over to <a href="https://github.com/fteem/pwnex">its repo on Github</a>.</p>
+<div id="revue-embed">
+  <form action="https://www.getrevue.co/profile/itsilija/add_subscriber" method="post" id="revue-form" name="revue-form"  target="_blank">
+    <p><b>Liked this article?</b>
+Subscribe to my newsletter and get future articles in your inbox. It's a
+short and sweet read, going out to hundreds of other engineers.</p>
+    <div class="revue-form-group">
+      <input class="revue-form-field" placeholder="Your email address..." type="email" name="member[email]" id="member_email">
+    </div>
+    <div class="revue-form-actions">
+      <input type="submit" value="Subscribe" name="member[subscribe]" id="member_submit">
+    </div>
+  </form>
+</div>
+
+
+      </div>
+    </section>
+    <footer class="pt-8 max-w-prose">
+      
+  <div class="flex">
+    
+      
+      
+        
+        <img
+          class="w-24 h-24 !mt-0 !mb-0 ltr:mr-4 rtl:ml-4 rounded-full"
+          width="96"
+          height="96"
+          alt="Author"
+          src="/img/avatar_huae39953c6189b6aa60e47103b358d088_112612_192x192_fill_q75_box_smart1.jpg"
+        />
+      
+    
+    <div class="place-self-center">
+      
+        <div class="text-[0.6rem] leading-3 text-neutral-500 dark:text-neutral-400 uppercase">
+          Author
+        </div>
+        <div class="font-semibold leading-6 text-neutral-800 dark:text-neutral-300">
+          Ilija Eftimov
+        </div>
+      
+      
+      <div class="text-2xl sm:text-lg">
+  <div class="flex flex-wrap text-neutral-400 dark:text-neutral-500">
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://twitter.com/itsilija"
+          target="_blank"
+          aria-label="Twitter"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="twitter" class="svg-inline--fa fa-twitter fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://www.linkedin.com/in/ieftimov/"
+          target="_blank"
+          aria-label="Linkedin"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="linkedin" class="svg-inline--fa fa-linkedin fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="mailto:blog@ieftimov.com"
+          target="_blank"
+          aria-label="Email"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="at" class="svg-inline--fa fa-at fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 8C118.941 8 8 118.919 8 256c0 137.059 110.919 248 248 248 48.154 0 95.342-14.14 135.408-40.223 12.005-7.815 14.625-24.288 5.552-35.372l-10.177-12.433c-7.671-9.371-21.179-11.667-31.373-5.129C325.92 429.757 291.314 440 256 440c-101.458 0-184-82.542-184-184S154.542 72 256 72c100.139 0 184 57.619 184 160 0 38.786-21.093 79.742-58.17 83.693-17.349-.454-16.91-12.857-13.476-30.024l23.433-121.11C394.653 149.75 383.308 136 368.225 136h-44.981a13.518 13.518 0 0 0-13.432 11.993l-.01.092c-14.697-17.901-40.448-21.775-59.971-21.775-74.58 0-137.831 62.234-137.831 151.46 0 65.303 36.785 105.87 96 105.87 26.984 0 57.369-15.637 74.991-38.333 9.522 34.104 40.613 34.103 70.71 34.103C462.609 379.41 504 307.798 504 232 504 95.653 394.023 8 256 8zm-21.68 304.43c-22.249 0-36.07-15.623-36.07-40.771 0-44.993 30.779-72.729 58.63-72.729 22.292 0 35.601 15.241 35.601 40.77 0 45.061-33.875 72.73-58.161 72.73z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://dev.to/fteem"
+          target="_blank"
+          aria-label="Dev"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="dev" class="svg-inline--fa fa-dev fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M120.12 208.29c-3.88-2.9-7.77-4.35-11.65-4.35H91.03v104.47h17.45c3.88 0 7.77-1.45 11.65-4.35 3.88-2.9 5.82-7.25 5.82-13.06v-69.65c-.01-5.8-1.96-10.16-5.83-13.06zM404.1 32H43.9C19.7 32 .06 51.59 0 75.8v360.4C.06 460.41 19.7 480 43.9 480h360.2c24.21 0 43.84-19.59 43.9-43.8V75.8c-.06-24.21-19.7-43.8-43.9-43.8zM154.2 291.19c0 18.81-11.61 47.31-48.36 47.25h-46.4V172.98h47.38c35.44 0 47.36 28.46 47.37 47.28l.01 70.93zm100.68-88.66H201.6v38.42h32.57v29.57H201.6v38.41h53.29v29.57h-62.18c-11.16.29-20.44-8.53-20.72-19.69V193.7c-.27-11.15 8.56-20.41 19.71-20.69h63.19l-.01 29.52zm103.64 115.29c-13.2 30.75-36.85 24.63-47.44 0l-38.53-144.8h32.57l29.71 113.72 29.57-113.72h32.58l-38.46 144.8z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://github.com/fteem"
+          target="_blank"
+          aria-label="Github"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="github" class="svg-inline--fa fa-github fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path fill="currentColor" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://t.me/ieftimovcom"
+          target="_blank"
+          aria-label="Telegram"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="telegram-plane" class="svg-inline--fa fa-telegram-plane fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M446.7 98.6l-67.6 318.8c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-49.7 47.8c-5.5 5.5-10.1 10.1-20.7 10.1l7.4-104.9 190.9-172.5c8.3-7.4-1.8-11.5-12.9-4.1L117.8 284 16.2 252.2c-22.1-6.9-22.5-22.1 4.6-32.7L418.2 66.4c18.4-6.9 34.5 4.1 28.5 32.2z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+  </div>
+
+</div>
+    </div>
+  </div>
+
+
+      
+  
+  <section class="flex flex-row flex-wrap justify-center pt-4 text-xl">
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://www.facebook.com/sharer/sharer.php?u=https://ieftimov.com/posts/haveibeenpwned-password-lookup-elixir/&amp;quote=Validate%20your%20passwords%20using%20Elixir%20and%20haveibeenpwned.com%27s%20API"
+          title="Share on Facebook"
+          aria-label="Share on Facebook"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="facebook" class="svg-inline--fa fa-facebook fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://twitter.com/intent/tweet/?url=https://ieftimov.com/posts/haveibeenpwned-password-lookup-elixir/&amp;text=Validate%20your%20passwords%20using%20Elixir%20and%20haveibeenpwned.com%27s%20API"
+          title="Tweet on Twitter"
+          aria-label="Tweet on Twitter"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="twitter" class="svg-inline--fa fa-twitter fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://reddit.com/submit/?url=https://ieftimov.com/posts/haveibeenpwned-password-lookup-elixir/&amp;resubmit=true&amp;title=Validate%20your%20passwords%20using%20Elixir%20and%20haveibeenpwned.com%27s%20API"
+          title="Submit to Reddit"
+          aria-label="Submit to Reddit"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="reddit" class="svg-inline--fa fa-reddit fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M201.5 305.5c-13.8 0-24.9-11.1-24.9-24.6 0-13.8 11.1-24.9 24.9-24.9 13.6 0 24.6 11.1 24.6 24.9 0 13.6-11.1 24.6-24.6 24.6zM504 256c0 137-111 248-248 248S8 393 8 256 119 8 256 8s248 111 248 248zm-132.3-41.2c-9.4 0-17.7 3.9-23.8 10-22.4-15.5-52.6-25.5-86.1-26.6l17.4-78.3 55.4 12.5c0 13.6 11.1 24.6 24.6 24.6 13.8 0 24.9-11.3 24.9-24.9s-11.1-24.9-24.9-24.9c-9.7 0-18 5.8-22.1 13.8l-61.2-13.6c-3-.8-6.1 1.4-6.9 4.4l-19.1 86.4c-33.2 1.4-63.1 11.3-85.5 26.8-6.1-6.4-14.7-10.2-24.1-10.2-34.9 0-46.3 46.9-14.4 62.8-1.1 5-1.7 10.2-1.7 15.5 0 52.6 59.2 95.2 132 95.2 73.1 0 132.3-42.6 132.3-95.2 0-5.3-.6-10.8-1.9-15.8 31.3-16 19.8-62.5-14.9-62.5zM302.8 331c-18.2 18.2-76.1 17.9-93.6 0-2.2-2.2-6.1-2.2-8.3 0-2.5 2.5-2.5 6.4 0 8.6 22.8 22.8 87.3 22.8 110.2 0 2.5-2.2 2.5-6.1 0-8.6-2.2-2.2-6.1-2.2-8.3 0zm7.7-75c-13.6 0-24.6 11.1-24.6 24.9 0 13.6 11.1 24.6 24.6 24.6 13.8 0 24.9-11.1 24.9-24.6 0-13.8-11-24.9-24.9-24.9z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https://ieftimov.com/posts/haveibeenpwned-password-lookup-elixir/&amp;title=Validate%20your%20passwords%20using%20Elixir%20and%20haveibeenpwned.com%27s%20API"
+          title="Share on LinkedIn"
+          aria-label="Share on LinkedIn"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="linkedin" class="svg-inline--fa fa-linkedin fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="mailto:?body=https://ieftimov.com/posts/haveibeenpwned-password-lookup-elixir/&amp;subject=Validate%20your%20passwords%20using%20Elixir%20and%20haveibeenpwned.com%27s%20API"
+          title="Send via email"
+          aria-label="Send via email"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="at" class="svg-inline--fa fa-at fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 8C118.941 8 8 118.919 8 256c0 137.059 110.919 248 248 248 48.154 0 95.342-14.14 135.408-40.223 12.005-7.815 14.625-24.288 5.552-35.372l-10.177-12.433c-7.671-9.371-21.179-11.667-31.373-5.129C325.92 429.757 291.314 440 256 440c-101.458 0-184-82.542-184-184S154.542 72 256 72c100.139 0 184 57.619 184 160 0 38.786-21.093 79.742-58.17 83.693-17.349-.454-16.91-12.857-13.476-30.024l23.433-121.11C394.653 149.75 383.308 136 368.225 136h-44.981a13.518 13.518 0 0 0-13.432 11.993l-.01.092c-14.697-17.901-40.448-21.775-59.971-21.775-74.58 0-137.831 62.234-137.831 151.46 0 65.303 36.785 105.87 96 105.87 26.984 0 57.369-15.637 74.991-38.333 9.522 34.104 40.613 34.103 70.71 34.103C462.609 379.41 504 307.798 504 232 504 95.653 394.023 8 256 8zm-21.68 304.43c-22.249 0-36.07-15.623-36.07-40.771 0-44.993 30.779-72.729 58.63-72.729 22.292 0 35.601 15.241 35.601 40.77 0 45.061-33.875 72.73-58.161 72.73z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+  </section>
+
+
+      
+  
+    
+    
+    
+    <div class="pt-8">
+      <hr class="border-dotted border-neutral-300 dark:border-neutral-600" />
+      <div class="flex justify-between pt-3">
+        <span>
+          
+            <a class="flex group" href="/posts/golang-datastructures-stacks-queues/">
+              <span
+                class="mr-3 ltr:inline rtl:hidden text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&larr;</span
+              >
+              <span
+                class="ml-3 ltr:hidden rtl:inline text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&rarr;</span
+              >
+              <span class="flex flex-col">
+                <span
+                  class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+                  >Data structures in Go: Stacks and queues</span
+                >
+                <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+                  
+                    <time datetime="2018-02-24 00:00:00 &#43;0000 UTC">24 February 2018</time>
+                  
+                </span>
+              </span>
+            </a>
+          
+        </span>
+        <span>
+          
+            <a class="flex text-right group" href="/posts/a-deeper-dive-in-elixir-plug/">
+              <span class="flex flex-col">
+                <span
+                  class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+                  >A deeper dive in Elixir's Plug</span
+                >
+                <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+                  
+                    <time datetime="2018-12-31 00:00:00 &#43;0000 UTC">31 December 2018</time>
+                  
+                </span>
+              </span>
+              <span
+                class="ml-3 ltr:inline rtl:hidden text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&rarr;</span
+              >
+              <span
+                class="mr-3 ltr:hidden rtl:inline text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&larr;</span
+              >
+            </a>
+          
+        </span>
+      </div>
+    </div>
+  
+
+
+    </footer>
+    
+  </article>
+
+      
+        <div
+          class="absolute top-[110vh] ltr:right-0 rtl:left-0 w-12 pointer-events-none bottom-[-5.5rem]"
+        >
+          <a
+            href="#the-top"
+            class="w-12 h-12 sticky pointer-events-auto top-[calc(100vh-5rem)] bg-neutral/50 dark:bg-neutral-800/50 backdrop-blur rounded-full text-xl flex items-center justify-center text-neutral-700 dark:text-neutral hover:text-primary-600 dark:hover:text-primary-400"
+            aria-label="Scroll to top"
+            title="Scroll to top"
+          >
+            &uarr;
+          </a>
+        </div>
+      
+    </main>
+    <div
+  id="search-wrapper"
+  class="fixed inset-0 z-50 flex flex-col p-4 sm:p-6 md:p-[10vh] lg:p-[12vh] w-screen h-screen cursor-default bg-neutral-500/50 backdrop-blur-sm dark:bg-neutral-900/50 invisible"
+  data-url="https://ieftimov.com/"
+>
+  <div
+    id="search-modal"
+    class="flex flex-col w-full max-w-3xl min-h-0 mx-auto border rounded-md shadow-lg border-neutral-200 top-20 bg-neutral dark:bg-neutral-800 dark:border-neutral-700"
+  >
+    <header class="relative z-10 flex items-center justify-between flex-none px-2">
+      <form class="flex items-center flex-auto min-w-0">
+        <div class="flex items-center justify-center w-8 h-8 text-neutral-400">
+          
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="search" class="svg-inline--fa fa-search fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>
+  </span>
+
+
+        </div>
+        <input
+          type="search"
+          id="search-query"
+          class="flex flex-auto h-12 mx-1 bg-transparent appearance-none focus:outline-dotted focus:outline-transparent focus:outline-2"
+          placeholder="Search"
+          tabindex="0"
+        />
+      </form>
+      <button
+        id="close-search-button"
+        class="flex items-center justify-center w-8 h-8 text-neutral-700 dark:text-neutral hover:text-primary-600 dark:hover:text-primary-400"
+        title="Close (Esc)"
+      >
+        
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
+  </span>
+
+
+      </button>
+    </header>
+    <section class="flex-auto px-2 overflow-auto">
+      <ul id="search-results">
+        
+      </ul>
+    </section>
+  </div>
+</div>
+<footer class="py-10">
+  
+  
+    <nav class="pb-4 text-base font-medium text-neutral-500 dark:text-neutral-400">
+      <ul class="flex flex-col list-none sm:flex-row">
+        
+          <li class="mb-1 sm:mb-0 sm:mr-7 sm:last:mr-0">
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/analytics"
+              title=""
+              >Analytics</a
+            >
+          </li>
+        
+          <li class="mb-1 sm:mb-0 sm:mr-7 sm:last:mr-0">
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/index.xml"
+              title=""
+              >RSS</a
+            >
+          </li>
+        
+          <li class="mb-1 sm:mb-0 sm:mr-7 sm:last:mr-0">
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="https://forms.gle/orfXK5jh1LRaiFzo8"
+              title=""
+              >Suggest a topic</a
+            >
+          </li>
+        
+      </ul>
+    </nav>
+  
+  <div class="flex justify-between">
+    <div>
+      
+      <p class="text-sm text-neutral-500 dark:text-neutral-400">
+          &copy;
+          2022
+          Ilija Eftimov
+      </p>
+      
+      
+        <p class="text-xs text-neutral-500 dark:text-neutral-400">
+          
+          
+          Powered by <a class="hover:underline hover:decoration-primary-400 hover:text-primary-500"
+            href="https://gohugo.io/" target="_blank" rel="noopener noreferrer">Hugo</a> &amp; <a class="hover:underline hover:decoration-primary-400 hover:text-primary-500" href="https://git.io/hugo-congo" target="_blank" rel="noopener noreferrer">Congo</a>
+        </p>
+      
+    </div>
+    
+    
+      <div
+        class="text-sm cursor-pointer text-neutral-700 dark:text-neutral hover:text-primary-600 dark:hover:text-primary-400 ltr:mr-14 rtl:ml-14"
+      >
+        <button
+          id="appearance-switcher"
+          class="w-12 h-12 "
+          type="button"
+          title="Switch to dark appearance"
+        >
+          <span class="inline dark:hidden">
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M283.211 512c78.962 0 151.079-35.925 198.857-94.792 7.068-8.708-.639-21.43-11.562-19.35-124.203 23.654-238.262-71.576-238.262-196.954 0-72.222 38.662-138.635 101.498-174.394 9.686-5.512 7.25-20.197-3.756-22.23A258.156 258.156 0 0 0 283.211 0c-141.309 0-256 114.511-256 256 0 141.309 114.511 256 256 256z"></path></svg>
+  </span>
+
+</span>
+          <span class="hidden dark:inline">
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 160c-52.9 0-96 43.1-96 96s43.1 96 96 96 96-43.1 96-96-43.1-96-96-96zm246.4 80.5l-94.7-47.3 33.5-100.4c4.5-13.6-8.4-26.5-21.9-21.9l-100.4 33.5-47.4-94.8c-6.4-12.8-24.6-12.8-31 0l-47.3 94.7L92.7 70.8c-13.6-4.5-26.5 8.4-21.9 21.9l33.5 100.4-94.7 47.4c-12.8 6.4-12.8 24.6 0 31l94.7 47.3-33.5 100.5c-4.5 13.6 8.4 26.5 21.9 21.9l100.4-33.5 47.3 94.7c6.4 12.8 24.6 12.8 31 0l47.3-94.7 100.4 33.5c13.6 4.5 26.5-8.4 21.9-21.9l-33.5-100.4 94.7-47.3c13-6.5 13-24.7.2-31.1zm-155.9 106c-49.9 49.9-131.1 49.9-181 0-49.9-49.9-49.9-131.1 0-181 49.9-49.9 131.1-49.9 181 0 49.9 49.9 49.9 131.1 0 181z"></path></svg>
+  </span>
+
+</span>
+        </button>
+      </div>
+    
+  </div>
+  
+  
+</footer>
+</body>
+</html>

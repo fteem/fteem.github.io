@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html
+  lang="en"
+  dir="ltr"
+  class="scroll-smooth"
+  data-default-appearance="light"
+  data-auto-appearance="true"
+><head>
+  <meta charset="utf-8" />
+  
+    <meta http-equiv="content-language" content="en" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  
+  <title>Sprinkle some HATEOAS on your Rails APIs &middot; Ilija Eftimov 👨‍🚀</title>
+    <meta name="title" content="Sprinkle some HATEOAS on your Rails APIs &middot; Ilija Eftimov 👨‍🚀" />
+  
+  <meta name="description" content="Documenting my experiences and learnings, with the goal of helping other software engineers on their journey" />
+  
+  
+  
+  <link rel="canonical" href="https://ieftimov.com/posts/sprinkle-some-hateoas-on-rails-apis/" />
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <link
+    type="text/css"
+    rel="stylesheet"
+    href="/css/main.bundle.min.b4e16dd9839a706aac3e482fb2ead8a30c01f199844299a37ddc79029b6a3bae7c65ff23668804cf9b10c85a4931caa1dca1efa0395de6dc9fe0784468f41457.css"
+    integrity="sha512-tOFt2YOacGqsPkgvsurYowwB8ZmEQpmjfdx5AptqO658Zf8jZogEz5sQyFpJMcqh3KHvoDld5tyf4HhEaPQUVw=="
+  />
+  
+  
+  <script type="text/javascript" src="/js/appearance.min.dbca9e2200cf929a23b55442f2ff09361b8d5290147ff1407f89ed3839f0fea13db4e94f5ae6bf2f3de10d322b4bede74b578455e9cc7d5565314d914602c974.js" integrity="sha512-28qeIgDPkpojtVRC8v8JNhuNUpAUf/FAf4ntODnw/qE9tOlPWua/Lz3hDTIrS&#43;3nS1eEVenMfVVlMU2RRgLJdA=="></script>
+  
+    
+    
+    
+  
+  
+    
+    
+  
+  
+    
+    <script defer type="text/javascript" id="script-bundle" src="/js/main.bundle.min.238e7ce9c541b4e7abb5781ad8e736e849e74890fcb8a26e73ea1845f573b3a0cf91418b20ac4401bdbb57d9c6c009d8f6ec50dad6d44b48f3936aea0f95c391.js" integrity="sha512-I4586cVBtOertXga2Oc26EnnSJD8uKJuc&#43;oYRfVzs6DPkUGLIKxEAb27V9nGwAnY9uxQ2tbUS0jzk2rqD5XDkQ==" data-copy="Copy" data-copied="Copied"></script>
+  
+  
+  
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+  
+  
+  
+  
+  
+  
+  
+  <meta property="og:title" content="Sprinkle some HATEOAS on your Rails APIs" />
+<meta property="og:description" content="REST as a concept was introduced by Roy Fielding in his doctoral thesis, named Architectural Styles and the Design of Network-based Software Architectures." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/posts/sprinkle-some-hateoas-on-rails-apis/" /><meta property="og:image" content="https://ieftimov.com/cards/sprinkle-some-hateoas-on-rails-apis-1.png" /><meta property="article:section" content="posts" />
+
+<meta property="og:site_name" content="Ilija Eftimov 👨‍🚀" />
+
+
+  <meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/sprinkle-some-hateoas-on-rails-apis-1.png"/>
+
+<meta name="twitter:title" content="Sprinkle some HATEOAS on your Rails APIs"/>
+<meta name="twitter:description" content="REST as a concept was introduced by Roy Fielding in his doctoral thesis, named Architectural Styles and the Design of Network-based Software Architectures."/>
+
+  
+  <script type="application/ld+json">
+  [{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "articleSection": "Posts",
+    "name": "Sprinkle some HATEOAS on your Rails APIs",
+    "headline": "Sprinkle some HATEOAS on your Rails APIs",
+    
+    "abstract": "REST as a concept was introduced by Roy Fielding in his doctoral thesis, named Architectural Styles and the Design of Network-based Software Architectures.",
+    "inLanguage": "en",
+    "url" : "https:\/\/ieftimov.com\/posts\/sprinkle-some-hateoas-on-rails-apis\/",
+    "author" : {
+      "@type": "Person",
+      "name": "Ilija Eftimov"
+    },
+    
+    "dateCreated": "2016-06-26T00:00:00\u002b00:00",
+    
+    
+    
+    
+    "keywords": ["HTTP","APIs","HATEOAS"],
+    
+    "mainEntityOfPage": "true",
+    "wordCount": "4445"
+  }]
+  </script>
+
+
+  
+  
+    <meta name="generator" content="Hugo 0.92.2" />
+  
+  
+  <meta name="author" content="Ilija Eftimov" />
+  
+    
+      <link href="https://twitter.com/itsilija" rel="me" />
+    
+      <link href="https://www.linkedin.com/in/ieftimov/" rel="me" />
+    
+      <link href="mailto:blog@ieftimov.com" rel="me" />
+    
+      <link href="https://dev.to/fteem" rel="me" />
+    
+      <link href="https://github.com/fteem" rel="me" />
+    
+      <link href="https://t.me/ieftimovcom" rel="me" />
+    
+  
+  
+  
+
+
+
+
+
+
+  
+  <script async defer data-domain="ieftimov.com" src="https://plausible.io/js/plausible.js"></script>
+
+  
+  
+</head>
+<body
+    class="flex flex-col h-screen px-6 m-auto text-lg leading-7 bg-neutral text-neutral-900 sm:px-14 md:px-24 lg:px-32 dark:bg-neutral-800 dark:text-neutral max-w-7xl"
+  >
+    <div id="the-top" class="absolute flex self-center">
+      <a
+        class="px-3 py-1 text-sm -translate-y-8 rounded-b-lg bg-primary-200 dark:bg-neutral-600 focus:translate-y-0"
+        href="#main-content"
+        ><span class="font-bold ltr:pr-2 rtl:pl-2 text-primary-600 dark:text-primary-400"
+          >&darr;</span
+        >Skip to main content</a
+      >
+    </div><header
+  class="flex justify-between py-6 font-semibold sm:items-center sm:py-10 text-neutral-900 dark:text-neutral"
+>
+  
+  <div>
+    
+      <a
+        class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+        rel="me"
+        href="/"
+        >Ilija Eftimov 👨‍🚀</a
+      >
+    
+
+  </div>
+  
+  
+    <nav>
+      <ul class="flex flex-col list-none sm:flex-row">
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/"
+              title=""
+              >Home</a
+            >
+          </li>
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/posts/"
+              title="Posts"
+              >Writing</a
+            >
+          </li>
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/work"
+              title=""
+              >Work</a
+            >
+          </li>
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="https://www.getrevue.co/profile/itsilija"
+              title=""
+              >Subscribe</a
+            >
+          </li>
+        
+        
+          <li
+            class="ltr:text-right rtl:text-left ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <button
+              id="search-button"
+              class="text-base hover:text-primary-600 dark:hover:text-primary-400"
+              title="Search (/)"
+            >
+              
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="search" class="svg-inline--fa fa-search fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>
+  </span>
+
+
+            </button>
+          </li>
+        
+      </ul>
+    </nav>
+  
+</header>
+<main id="main-content" class="relative grow">
+  <article>
+    <header class="max-w-prose">
+      
+      <h1 class="mt-0 text-4xl font-extrabold text-neutral-900 dark:text-neutral">
+        Sprinkle some HATEOAS on your Rails APIs
+      </h1>
+      <div class="mt-8 mb-12 text-base text-neutral-500 dark:text-neutral-400">
+        
+
+
+
+
+
+  
+  
+
+
+
+  
+
+  
+  
+    
+  
+
+  
+
+  
+
+  
+    
+  
+
+  
+
+
+  <div class="flex flex-row flex-wrap items-center">
+    
+    
+      <time datetime="2016-06-26 00:00:00 &#43;0000 UTC">26 June 2016</time><span class="px-2 text-primary-500">&middot;</span><span title="Reading time">21 mins</span>
+    
+
+    
+    
+  </div>
+
+  
+  
+
+
+      </div>
+    </header>
+    <section class="flex flex-col max-w-full mt-0 prose lg:flex-row dark:prose-invert">
+      
+        <div class="order-first px-0 lg:max-w-xs ltr:lg:pl-8 rtl:lg:pr-8 lg:order-last">
+          <div class="ltr:pl-5 rtl:pr-5 toc lg:sticky lg:top-10">
+            <details open class="mt-0 overflow-hidden rounded-lg rtl:pr-5 ltr:pl-5 ltr:-ml-5 rtl:-mr-5 lg:mt-3">
+  <summary
+    class="block py-1 text-lg font-semibold cursor-pointer rtl:pr-5 ltr:pl-5 ltr:-ml-5 rtl:-mr-5 text-neutral-800 dark:text-neutral-100 lg:hidden bg-neutral-100 dark:bg-neutral-700"
+  >
+    Table of Contents
+  </summary>
+  <div
+    class="py-2 border-dotted ltr:border-l rtl:border-r rtl:pr-5 ltr:pl-5 ltr:-ml-5 rtl:-mr-5 border-neutral-300 dark:border-neutral-600"
+  >
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#so-what-was-rest-again">So, what was REST again?</a>
+      <ul>
+        <li><a href="#level-1">Level 1</a></li>
+        <li><a href="#level-2">Level 2</a></li>
+        <li><a href="#level-3">Level 3</a></li>
+        <li><a href="#level-4">Level 4</a></li>
+      </ul>
+    </li>
+    <li><a href="#content-negotiation">Content negotiation</a></li>
+    <li><a href="#hateoas">HATEOAS</a></li>
+    <li><a href="#hateoas-serializers">HATEOAS Serializers</a>
+      <ul>
+        <li><a href="#author-serializer">Author serializer</a></li>
+        <li><a href="#adding-links-to-our-serializer">Adding links to our serializer</a></li>
+      </ul>
+    </li>
+    <li><a href="#specifications">Specifications</a>
+      <ul>
+        <li><a href="#hal">HAL</a></li>
+        <li><a href="#json-api">JSON API</a></li>
+        <li><a href="#other-standards">Other standards</a></li>
+      </ul>
+    </li>
+    <li><a href="#json-api-and-active-model-serializers">JSON API and Active Model Serializers</a></li>
+    <li><a href="#including-additional-resources">Including additional resources</a></li>
+    <li><a href="#navigating-resources">Navigating resources</a></li>
+    <li><a href="#outro">Outro</a></li>
+    <li><a href="#additional-reading">Additional reading</a></li>
+  </ul>
+</nav>
+  </div>
+</details>
+
+          </div>
+        </div>
+      
+      <div class="min-w-0 min-h-0 max-w-prose">
+        <p>REST as a concept was introduced by <a href="https://en.wikipedia.org/wiki/Roy_Fielding">Roy
+Fielding</a> in his doctoral thesis,
+named <a href="http://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm">Architectural Styles and the Design of Network-based Software
+Architectures</a>.  16
+years later, REST as an architecture is the most widely accepted way to design
+and build APIs. I am sure we have all heard about it, and most of us think we
+are building actual RESTful APIs. But, are we?</p>
+<p>Let&rsquo;s remind ourselves what REST is and then continue on something else that
+supplements REST, called HATEOAS.</p>
+<h2 id="so-what-was-rest-again" class="relative group">So, what was REST again? <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#so-what-was-rest-again" aria-label="Anchor">#</a></span></h2>
+<p>I was thinking of a good way to explain this, but this gem by Ryan Tomako named
+<a href="http://web.archive.org/web/20130316031532/http://tomayko.com/writings/rest-to-my-wife">How I Explained REST to My
+Wife</a>
+is the best explanation of REST I have seen so far.</p>
+<p>Overall, REST (an acronym for <em>REpresentational State Transfer</em>) is an
+architecture over which the Internet is built upon. The easiest way to explain
+REST is, in my opinion, the Richardson Maturity Model. Here, we will not go in
+much depth, but if you want to learn RMM in more depth, I recommend reading
+<a href="http://martinfowler.com/articles/richardsonMaturityModel.html">Richardson Maturity Model, steps toward the glory of
+REST</a> written by
+Martin Fowler.</p>
+<p>The RMM explains REST in four levels:</p>
+<ol>
+<li>Use a protocol to do remote procedure calls (RPC).</li>
+<li>Introduce Resources</li>
+<li>HTTP Verbs</li>
+<li>Hypermedia Controls</li>
+</ol>
+<p>Let&rsquo;s deconstruct all of these levels briefly.</p>
+<h3 id="level-1" class="relative group">Level 1 <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#level-1" aria-label="Anchor">#</a></span></h3>
+<p>Level one basically states that we need to use a protocol (HTTP) to execute
+procedure calls on some remote location (a server). This also means that we
+will not use any of the mechanism that the protocol provides, but we will just
+use it as a tunnel to send the requests and responses.</p>
+<h3 id="level-2" class="relative group">Level 2 <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#level-2" aria-label="Anchor">#</a></span></h3>
+<p>Level two is something very familiar to all of us, I am sure. Resources. Back
+in the day, when I was probably still in high school, RPC worked by
+communicating with a single endpoint on a server. This is called a &ldquo;service
+endpoint&rdquo;.</p>
+<p>By implementing resources in an API, we provide multiple endpoints that will
+represent the resources. This means that instead of having one single
+multipurpose endpoint, we have an endpoint for every resource that the API
+exposes.</p>
+<h3 id="level-3" class="relative group">Level 3 <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#level-3" aria-label="Anchor">#</a></span></h3>
+<p>With level 1 and level 2 the mechanisms of the protocol were skipped, because
+we think only about tunneling our calls instead of fully utilising the
+protocol.  Level 3 takes this to the next level (pun intended) and states that
+any RESTful service needs to utilise HTTP verbs so clients can interact with
+resources.</p>
+<p>If you are coming from Rails land, I am sure you already know this - there&rsquo;s a
+big difference between GET, POST, PUT, PATCH and DELETE. Sure, you could handle
+these in various ways in your backend, but this is where Rails shines - it
+strongly encourages you to comply to REST.</p>
+<p>If you do not obey Level 3 of the RMM, you could have a different endpoint for
+every action on the API side. For example, if you had a <code>Pet</code> resource, to
+create a new entry you could use a <code>/pets/create</code> or a <code>/pets/update</code> to update
+it. By utilising Level 3, when HTTP verbs come into play, you would use
+something that Rails makes super easy: <code>GET /pets/:id</code> to get a <code>Pet</code>, <code>POST /pets</code> to create a new <code>Pet</code> or <code>PATCH /pets</code> to update one.</p>
+<h3 id="level-4" class="relative group">Level 4 <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#level-4" aria-label="Anchor">#</a></span></h3>
+<p>Now, while Rails does a great job to <strong>make you</strong> write RESTful APIs, Level 4
+is something that falls onto you, the programmer, to implement. This is
+something that most of us don&rsquo;t follow and we, as a community, still haven&rsquo;t
+find the best way to accomplish.</p>
+<p>Hypermedia Controls is REST&rsquo;s &ldquo;holy grail&rdquo;, and the ultimate level of
+&ldquo;RESTfulness&rdquo;. It states that when an API is at level four, it&rsquo;s clients can
+request resources in a specific data format and can navigate throughout the API
+by using Hypermedia Controls.</p>
+<p>If you find this confusing, let&rsquo;s take a step back and think about browsers and
+websites. When you use a website you usually know only the entry point, in the
+form of <code>domainname.tld</code>, like <code>ieftimov.com</code> or <code>google.com</code>. Then, by
+interacting the website via your browser you navigate throughout the different
+pages it has. Well, navigating is done by clicking on links, right? Imagine a
+website that instead of having links makes your remember every URL on the
+website and you have to type it in manually. Worst website ever!</p>
+<p>Having this in mind, the idea of Hypermedia Controls means that a resource
+should provide links, so a client that consumes the resource can navigate
+through and interact with it without knowing any other endpoint except the
+entry point. Just like normal websites - the page provides you with the links
+so you can interact with it.</p>
+<p>We will get into the format of the JSON responses that HATEOAS APIs return in a
+bit, but first we will look at another important mechanism of HATEAOS - content
+negotiation.</p>
+<h2 id="content-negotiation" class="relative group">Content negotiation <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#content-negotiation" aria-label="Anchor">#</a></span></h2>
+<p>Content negotiation is a mechanism embedded into HTTP that allows web services
+to serve different versions (or formats) of documents. Or in REST terminology,
+resources. This is achieved by the <code>Accept</code> group of HTTP headers. For example,
+when requesting a web page the user agent (the browser) sends these (or similar)
+headers, depending on the browser:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Encoding: gzip, deflate, sdch, br
+Accept-Language: en-US,en;q=0.8</code></pre></div>
+<p>This tells the server that the user agent can accept the document in a
+<code>text/html</code>, compressed with one of the specified compression schemes, formatted
+in <code>en-US</code> (US English) language.</p>
+<p>If we go back to APIs, Rails does a very good job in content negotiation. When
+we are building apps nowadays, we usually make sure our resources have a <code>HTML</code>,
+<code>JSON</code> and (maybe) an <code>XML</code> representation. I am sure all of us have seen this:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="n">respond_to</span> <span class="ss">:html</span><span class="p">,</span> <span class="ss">:json</span><span class="p">,</span> <span class="ss">:xml</span>
+
+<span class="k">def</span> <span class="nf">index</span>
+  <span class="vi">@pets</span> <span class="o">=</span> <span class="no">Pet</span><span class="o">.</span><span class="n">all</span>
+  <span class="n">respond_with</span><span class="p">(</span><span class="vi">@pets</span><span class="p">)</span>
+<span class="k">end</span></code></pre></div>
+<p>Or maybe the older version of this code:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nf">index</span>
+  <span class="vi">@pets</span> <span class="o">=</span> <span class="no">Pet</span><span class="o">.</span><span class="n">all</span>
+  <span class="n">respond_to</span> <span class="k">do</span> <span class="o">|</span><span class="nb">format</span><span class="o">|</span>
+    <span class="nb">format</span><span class="o">.</span><span class="n">html</span>
+    <span class="nb">format</span><span class="o">.</span><span class="n">json</span> <span class="p">{</span> <span class="n">render</span> <span class="ss">:json</span> <span class="o">=&gt;</span> <span class="vi">@pets</span> <span class="p">}</span>
+    <span class="nb">format</span><span class="o">.</span><span class="n">xml</span> <span class="p">{</span> <span class="n">render</span> <span class="ss">:xml</span> <span class="o">=&gt;</span> <span class="vi">@pets</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></div>
+<p>This tells our <code>index</code> action to allow three types of content format are
+requested, via content negotiation. <code>HTML</code>, <code>JSON</code> and <code>XML</code> are in fact Media
+(or MIME) types.</p>
+<p>If you look at the example headers, you can notice the <code>q</code> parameter. This is
+called a <em>Quality Value</em> and it is what makes one content type more important
+than another. In other words, the <code>q</code> parameter adds a relative <em>weight</em> to the
+preference for that associated kind of content.</p>
+<p>For example, let&rsquo;s say we have the following <code>Accept</code> header:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">Accept: application/json; q=0.5, application/xml; q=0.001</code></pre></div>
+<p>This tells the server that the client prefers JSON content type much more than
+XML. If the <code>q</code> value is not specified, then the value is defaulted to 1. You
+can read more about content negotiation in <a href="https://tools.ietf.org/html/rfc7231#section-5.3">RFC 7231</a>.</p>
+<h2 id="hateoas" class="relative group">HATEOAS <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#hateoas" aria-label="Anchor">#</a></span></h2>
+<p>So what is HATEOAS? It is an acronym, just like REST, which translates to
+<strong>H</strong>ypermedia <strong>A</strong>s <strong>T</strong>he <strong>E</strong>ngine <strong>O</strong>f <strong>A</strong>pplication <strong>S</strong>tate. Whoa,
+what a mouthful, right?</p>
+<p>Like we mentioned, Level 4 of the RMM states that an API should provide
+hypermedia controls to navigate in and interact with. But, what does HATEOAS
+have to do with this? Well, think about this - REST means Representational
+State Transfer while HATEOAS means Hypermedia As The Engine Of Application
+State. If you look just as the names, it makes sense that HATEOAS is a mechanism
+of REST. It all revolves around application state and state transitions.</p>
+<p>Too complex? Let&rsquo;s see an example of a usual JSON representation of a resource,
+in this case, my user somewhere on a server:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">curl http://awesomeapi.com/users/1</code></pre></div>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;user&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;first_name&#34;</span><span class="p">:</span> <span class="s2">&#34;Ilija&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;last_name&#34;</span><span class="p">:</span> <span class="s2">&#34;Eftimov&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;age&#34;</span><span class="p">:</span> <span class="mi">25</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+<p>Simple enough. Now, when we apply HATEOAS to our representations of resources,
+it should look something like this:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;user&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;first_name&#34;</span><span class="p">:</span> <span class="s2">&#34;Ilija&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;last_name&#34;</span><span class="p">:</span> <span class="s2">&#34;Eftimov&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;age&#34;</span><span class="p">:</span> <span class="mi">25</span><span class="p">,</span>
+    <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+        <span class="nt">&#34;rel&#34;</span><span class="p">:</span> <span class="s2">&#34;self&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;http://awesomeapi.com/users/1&#34;</span>
+      <span class="p">},</span>
+      <span class="p">{</span>
+        <span class="nt">&#34;rel&#34;</span><span class="p">:</span> <span class="s2">&#34;roles&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;http://awesomeapi.com/users/1/roles&#34;</span>
+      <span class="p">}</span>
+    <span class="p">]</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+<p>By providing the <code>links</code> we allow the clients to use hypermedia (in our case,
+JSON) as the engine (list of available actions) of our application state
+(changing the data on the API side). The idea here is that there should be only
+one entry point to an API, or to a resource, and that the representation of the
+resource should include all of the actions that can be executed on this
+resources.</p>
+<p>This means that a consumer of the API can take use the <code>self</code> attribute of the
+<code>User</code> resource, and consider this the endpoint where it can execute actions on
+it. By knowing that the API is RESTful, the client knows how to update the
+resource:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">curl -X <span class="s2">&#34;PUT&#34;</span> -d <span class="s2">&#34;{ &#39;age&#39;: 26 }&#34;</span> http://awesomeapi.com/users/1</code></pre></div>
+<p>Also, it knows how to delete the resource:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">curl -X <span class="s2">&#34;DELETE&#34;</span> http://awesomeapi.com/users/1</code></pre></div>
+<p>Furthermore, if it wants to see all of the roles for this user, it can execute
+a <code>GET</code> request to the <code>roles</code> relation of the user:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">curl http://awesomeapi.com/users/1/roles</code></pre></div>
+<p>As you can see, by putting HATEOAS in the mix, clients can interact with
+resources just by getting the URIs from the resources and by assuming that the
+API is level three RESTful (utilises HTTP verbs).</p>
+<h2 id="hateoas-serializers" class="relative group">HATEOAS Serializers <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#hateoas-serializers" aria-label="Anchor">#</a></span></h2>
+<p>How can we make our Rails API implement Level 4 of RMM? Let&rsquo;s see an example.</p>
+<p>Our API is part of a blog CMS. It has an <code>Author</code> model, which has a
+one-to-many association with an <code>Article</code> model. This means that, one <code>Author</code>
+can have multiple <code>Article</code>.</p>
+<p>The <code>Author</code> model:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># == Schema Information</span>
+<span class="c1">#</span>
+<span class="c1"># Table name: authors</span>
+<span class="c1">#</span>
+<span class="c1">#  id         :integer          not null, primary key</span>
+<span class="c1">#  first_name :string</span>
+<span class="c1">#  last_name  :string</span>
+<span class="c1">#  created_at :datetime         not null</span>
+<span class="c1">#  updated_at :datetime         not null</span>
+<span class="c1">#</span>
+
+<span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:articles</span>
+<span class="k">end</span></code></pre></div>
+<p>And the <code>Article</code> model:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># == Schema Information</span>
+<span class="c1">#</span>
+<span class="c1"># Table name: articles</span>
+<span class="c1">#</span>
+<span class="c1">#  id         :integer          not null, primary key</span>
+<span class="c1">#  author_id  :integer</span>
+<span class="c1">#  title      :string</span>
+<span class="c1">#  body       :text</span>
+<span class="c1">#  created_at :datetime         not null</span>
+<span class="c1">#  updated_at :datetime         not null</span>
+<span class="c1">#</span>
+
+<span class="k">class</span> <span class="nc">Article</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span>
+<span class="k">end</span></code></pre></div>
+<p>Our routes look like the following:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="no">Rails</span><span class="o">.</span><span class="n">application</span><span class="o">.</span><span class="n">routes</span><span class="o">.</span><span class="n">draw</span> <span class="k">do</span>
+  <span class="n">resources</span> <span class="ss">:authors</span> <span class="k">do</span>
+    <span class="n">resources</span> <span class="ss">:articles</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></div>
+<p>Finally, we will have serializers for both, the <code>Article</code> and the <code>Author</code> model.
+For this example, we will use
+<a href="https://github.com/rails-api/active_model_serializers">Active Model Serializers</a>.</p>
+<h3 id="author-serializer" class="relative group">Author serializer <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#author-serializer" aria-label="Anchor">#</a></span></h3>
+<p>All of the <code>Author</code> objects will be serialized by the <code>AuthorSerializer</code>. Let&rsquo;s
+add the required attributes first to the serializer, and we can talk about
+extension afterwards.</p>
+<p>The <code>AuthorSerializer</code> class will look like this:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># == Schema Information</span>
+<span class="c1">#</span>
+<span class="c1"># Table name: authors</span>
+<span class="c1">#</span>
+<span class="c1">#  id         :integer          not null, primary key</span>
+<span class="c1">#  first_name :string</span>
+<span class="c1">#  last_name  :string</span>
+<span class="c1">#  created_at :datetime         not null</span>
+<span class="c1">#  updated_at :datetime         not null</span>
+<span class="c1">#</span>
+
+<span class="k">class</span> <span class="nc">AuthorSerializer</span> <span class="o">&lt;</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Serializer</span>
+  <span class="n">attributes</span> <span class="ss">:id</span><span class="p">,</span> <span class="ss">:first_name</span><span class="p">,</span> <span class="ss">:last_name</span><span class="p">,</span> <span class="ss">:created_at</span><span class="p">,</span> <span class="ss">:updated_at</span>
+  <span class="n">has_many</span> <span class="ss">:articles</span>
+  <span class="n">type</span> <span class="ss">:author</span>
+<span class="k">end</span></code></pre></div>
+<p>Super simple! I will leave the annotations in, to keep the context of the data
+visible to us throughout this short example. In my everyday work, I usually
+consult with the schema file if I forget the shape of the data instead of
+adding annotations.</p>
+<p>Let&rsquo;s try sending a <code>GET /authors</code> request and see what the data looks like.
+For reference, this is the implementation of the index action in the
+<code>AuthorsController</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">AuthorsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="n">render</span> <span class="ss">json</span><span class="p">:</span> <span class="no">Author</span><span class="o">.</span><span class="n">all</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">curl http://localhost:3000/authors</code></pre></div>
+<p>This request will return the following JSON:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="p">[</span>
+  <span class="p">{</span>
+    <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="nt">&#34;first_name&#34;</span><span class="p">:</span> <span class="s2">&#34;ilija&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;last_name&#34;</span><span class="p">:</span> <span class="s2">&#34;eftimov&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;created_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T20:52:12.804Z&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;updated_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T20:52:12.804Z&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;articles&#34;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+        <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;Lorem ipsum&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;Lorem ipsum dolor sit amet&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T22:25:51.874Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T22:25:51.874Z&#34;</span>
+      <span class="p">},</span>
+      <span class="p">{</span>
+        <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;A princess of Mars&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;His reference to the great games of which I had heard so much while among the Tharks convinced me that I had but jumped from purgatory into gehenna. After a few more words with the female, during which she assured him that I was now fully fit to travel, the jed ordered that we mount and ride after the main column. I was strapped securely to as wild and unmanageable a thoat as I had&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-26T00:20:09.388Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-26T00:20:09.388Z&#34;</span>
+      <span class="p">}</span>
+    <span class="p">]</span>
+  <span class="p">}</span>
+<span class="p">]</span></code></pre></div>
+<p>Since my database has only one <code>Author</code> instance, it returns only that one.
+Also, the <code>Author</code> has two associated <code>Article</code> instances, so the serializer
+includes them in the response.</p>
+<h3 id="adding-links-to-our-serializer" class="relative group">Adding links to our serializer <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#adding-links-to-our-serializer" aria-label="Anchor">#</a></span></h3>
+<p>Now we have our serializer working. The next step is to extend it with <code>links</code>.
+This is quite trivial to do using Active Model Serializers - we need to add a
+new <code>links</code> attribute to the serializer, and provide the implementation of the
+attribute (which will be a method in fact) in the class:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># == Schema Information</span>
+<span class="c1">#</span>
+<span class="c1"># Table name: authors</span>
+<span class="c1">#</span>
+<span class="c1">#  id         :integer          not null, primary key</span>
+<span class="c1">#  first_name :string</span>
+<span class="c1">#  last_name  :string</span>
+<span class="c1">#  created_at :datetime         not null</span>
+<span class="c1">#  updated_at :datetime         not null</span>
+<span class="c1">#</span>
+
+<span class="k">class</span> <span class="nc">AuthorSerializer</span> <span class="o">&lt;</span> <span class="no">BaseSerializer</span>
+  <span class="n">attributes</span> <span class="ss">:id</span><span class="p">,</span> <span class="ss">:first_name</span><span class="p">,</span> <span class="ss">:last_name</span><span class="p">,</span> <span class="ss">:created_at</span><span class="p">,</span> <span class="ss">:updated_at</span><span class="p">,</span> <span class="ss">:links</span>
+  <span class="n">has_many</span> <span class="ss">:articles</span>
+  <span class="n">type</span> <span class="ss">:author</span>
+
+  <span class="k">def</span> <span class="nf">links</span>
+    <span class="o">[</span>
+      <span class="p">{</span>
+        <span class="ss">rel</span><span class="p">:</span> <span class="ss">:self</span><span class="p">,</span>
+        <span class="ss">href</span><span class="p">:</span> <span class="n">author_path</span><span class="p">(</span><span class="n">object</span><span class="p">)</span>
+      <span class="p">}</span>
+    <span class="o">]</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></div>
+<p>As you can see, the implementation is quite simple. We add a new attribute
+called <code>links</code>, and the method just returns an array of hashes. For starters,
+we will have only one - the <code>self</code> link which will point to the resource whose
+representation we are seeing.</p>
+<p>But, if you execute the curl request again, you will gen an error, something
+like:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">#&lt;NoMethodError: undefined method `author_path&#39; for #&lt;AuthorSerializer:0x007fe251b4c450&gt;&gt;</code></pre></div>
+<p>This occurs because Rails' route helpers are not included in the scope of the
+serializers. This is easily fixable by including them to the serializer:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">AuthorSerializer</span> <span class="o">&lt;</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Serializer</span>
+  <span class="kp">include</span> <span class="no">Rails</span><span class="o">.</span><span class="n">application</span><span class="o">.</span><span class="n">routes</span><span class="o">.</span><span class="n">url_helpers</span>
+
+  <span class="c1"># *snip*</span>
+<span class="k">end</span></code></pre></div>
+<p>If we execute the curl request again now, we will see the links in the JSON:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="p">[</span>
+  <span class="p">{</span>
+    <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="nt">&#34;first_name&#34;</span><span class="p">:</span> <span class="s2">&#34;ilija&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;last_name&#34;</span><span class="p">:</span> <span class="s2">&#34;eftimov&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;created_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T20:52:12.804Z&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;updated_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T20:52:12.804Z&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+        <span class="nt">&#34;rel&#34;</span><span class="p">:</span> <span class="s2">&#34;self&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/authors/1&#34;</span>
+      <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="nt">&#34;articles&#34;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+        <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;Lorem ipsum&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;Lorem ipsum dolor sit amet&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T22:25:51.874Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T22:25:51.874Z&#34;</span>
+      <span class="p">},</span>
+      <span class="p">{</span>
+        <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;A princess of Mars&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;His reference to the great games of which I had heard so much while among the Tharks convinced me that I had but jumped from purgatory into gehenna. After a few more words with the female, during which she assured him that I was now fully fit to travel, the jed ordered that we mount and ride after the main column. I was strapped securely to as wild and unmanageable a thoat as I had&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-26T00:20:09.388Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-26T00:20:09.388Z&#34;</span>
+      <span class="p">}</span>
+    <span class="p">]</span>
+  <span class="p">}</span>
+<span class="p">]</span></code></pre></div>
+<p>Great stuff! We added <em>some</em> HATEOAS to our resources.</p>
+<h2 id="specifications" class="relative group">Specifications <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#specifications" aria-label="Anchor">#</a></span></h2>
+<p>Before we continue to add any more hypermedia to our resources, we need to put
+some thought into this. As you can see, we went on to implement the <code>links</code>
+attribute to the serializer without any thought. Sure, you might say, I am the
+creator of the API and I will structure the responses of the API as I please.</p>
+<p>True, you are the author of the API, but that statement is false. Imagine if
+all of us thought of a way to implement hypermedia in a different way? Every
+single API would be different in it&rsquo;s hypermedia controls and it would be a
+hell to find your way around.</p>
+<p>Well, the sad part is that we still don&rsquo;t know how to do HATEOAS. Or better
+said, we still don&rsquo;t know <strong>the best way</strong> to do HATEOAS. That is why, people
+have tried to create specifications, which have been somewhat adopted.</p>
+<h3 id="hal" class="relative group">HAL <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#hal" aria-label="Anchor">#</a></span></h3>
+<p>From <a href="http://stateless.co/hal_specification.html">HAL</a>&rsquo;s documentation:</p>
+<blockquote>
+<p>HAL is a simple format that gives a consistent and easy way to hyperlink
+between resources in your API.</p>
+</blockquote>
+<p>As you can see, the motivation behind HAL is to create an easy and consistent
+way to add hypermedia controls. Just like any other specification, HAL provides
+a set of conventions for expressing hyperlinks in either JSON or XML.</p>
+<p>This is an example of a JSON that applies the HAL specification:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&#34;_links&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/orders&#34;</span> <span class="p">},</span>
+        <span class="nt">&#34;curies&#34;</span><span class="p">:</span> <span class="p">[{</span> <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;ea&#34;</span><span class="p">,</span> <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;http://example.com/docs/rels/{rel}&#34;</span><span class="p">,</span> <span class="nt">&#34;templated&#34;</span><span class="p">:</span> <span class="kc">true</span> <span class="p">}],</span>
+        <span class="nt">&#34;next&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/orders?page=2&#34;</span> <span class="p">},</span>
+        <span class="nt">&#34;ea:find&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/orders{?id}&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;templated&#34;</span><span class="p">:</span> <span class="kc">true</span>
+        <span class="p">},</span>
+        <span class="nt">&#34;ea:admin&#34;</span><span class="p">:</span> <span class="p">[{</span>
+            <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/admins/2&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;Fred&#34;</span>
+        <span class="p">},</span> <span class="p">{</span>
+            <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/admins/5&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;Kate&#34;</span>
+        <span class="p">}]</span>
+    <span class="p">},</span>
+    <span class="nt">&#34;currentlyProcessing&#34;</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span>
+    <span class="nt">&#34;shippedToday&#34;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+    <span class="nt">&#34;_embedded&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;ea:order&#34;</span><span class="p">:</span> <span class="p">[{</span>
+            <span class="nt">&#34;_links&#34;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/orders/123&#34;</span> <span class="p">},</span>
+                <span class="nt">&#34;ea:basket&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/baskets/98712&#34;</span> <span class="p">},</span>
+                <span class="nt">&#34;ea:customer&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/customers/7809&#34;</span> <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="nt">&#34;total&#34;</span><span class="p">:</span> <span class="mf">30.00</span><span class="p">,</span>
+            <span class="nt">&#34;currency&#34;</span><span class="p">:</span> <span class="s2">&#34;USD&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;status&#34;</span><span class="p">:</span> <span class="s2">&#34;shipped&#34;</span>
+        <span class="p">},</span> <span class="p">{</span>
+            <span class="nt">&#34;_links&#34;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/orders/124&#34;</span> <span class="p">},</span>
+                <span class="nt">&#34;ea:basket&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/baskets/97213&#34;</span> <span class="p">},</span>
+                <span class="nt">&#34;ea:customer&#34;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/customers/12369&#34;</span> <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="nt">&#34;total&#34;</span><span class="p">:</span> <span class="mf">20.00</span><span class="p">,</span>
+            <span class="nt">&#34;currency&#34;</span><span class="p">:</span> <span class="s2">&#34;USD&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;status&#34;</span><span class="p">:</span> <span class="s2">&#34;processing&#34;</span>
+        <span class="p">}]</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+<h3 id="json-api" class="relative group">JSON API <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#json-api" aria-label="Anchor">#</a></span></h3>
+<p>JSON API, just like HAL is:</p>
+<blockquote>
+<p>a specification for how a client should request that resources be fetched or
+modified, and how a server should respond to those requests.</p>
+</blockquote>
+<p>It was was originally drafted by Yehuda Katz in 2013. This first draft was
+extracted from the JSON transport implicitly defined by Ember Data’s REST
+adapter. From there on, it picked up some popularity, but I cannot say with
+certainty that it&rsquo;s the de facto API specification.</p>
+<p>This is an example of a JSON that applies the JSON API specification:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">[{</span>
+    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;articles&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;JSON API paints my bikeshed!&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;The shortest article. Ever.&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;created&#34;</span><span class="p">:</span> <span class="s2">&#34;2015-05-22T14:56:29.000Z&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;updated&#34;</span><span class="p">:</span> <span class="s2">&#34;2015-05-22T14:56:28.000Z&#34;</span>
+    <span class="p">},</span>
+    <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;author&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;42&#34;</span><span class="p">,</span> <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;people&#34;</span><span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}],</span>
+  <span class="nt">&#34;included&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;people&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;42&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;John&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;age&#34;</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span>
+        <span class="nt">&#34;gender&#34;</span><span class="p">:</span> <span class="s2">&#34;male&#34;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span></code></pre></div>
+<h3 id="other-standards" class="relative group">Other standards <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#other-standards" aria-label="Anchor">#</a></span></h3>
+<p>As you can imagine, people have tried to create a good JSON standard for quite
+some time. Some of the more popular specs are
+<a href="http://json-ld.org/">JSON for Linking Data</a>, also known as JSON-LD;
+<a href="http://amundsen.com/media-types/collection/">Collection+JSON</a> and
+<a href="https://github.com/kevinswiber/siren">SIREN</a>.</p>
+<h2 id="json-api-and-active-model-serializers" class="relative group">JSON API and Active Model Serializers <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#json-api-and-active-model-serializers" aria-label="Anchor">#</a></span></h2>
+<p>Since JSON API is picking up momentum and Active Model Serializers has a very
+good integration of it, we will stick to it and carry on with the
+implementation. Active Model Serializers on a high-level works through two
+parts: serializers and adapters. From the documentation:</p>
+<blockquote>
+<p>Serializers describe which attributes and relationships should be serialized.
+Adapters describe how attributes and relationships should be serialized.</p>
+</blockquote>
+<p>To get our JSON serialized in the JSON API format, we need to use a different
+adapter called, believe it or not, <code>:json_api</code>. Personally, I prefer to do this
+type of configuration in an initializer file:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># config/initializers/active_model_serializers.rb</span>
+
+<span class="no">ActiveModelSerializers</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">adapter</span> <span class="o">=</span> <span class="ss">:json_api</span></code></pre></div>
+<p>By setting the adapter to <code>:json_api</code>, our API will produce and consume JSON
+formatted in the JSON API spec. If we execute the same API call that we did
+earlier, we will get a newly formatted JSON:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;author&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;first-name&#34;</span><span class="p">:</span> <span class="s2">&#34;ilija&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;last-name&#34;</span><span class="p">:</span> <span class="s2">&#34;eftimov&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T20:52:12.804Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T20:52:12.804Z&#34;</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;articles&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;2&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/authors/1&#34;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span></code></pre></div>
+<p>As you can notice, the JSON that we get back has a completely different
+structure compared to what we have before. The reason is that the JSON API
+adapter that we use now formats the JSON in the JSON API Spec format.</p>
+<p>Another cool thing about the JSON API adapter is that it allows us to specify
+links very explicitly, with a very nice DSL:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">AuthorSerializer</span> <span class="o">&lt;</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Serializer</span>
+  <span class="n">attributes</span> <span class="ss">:id</span><span class="p">,</span> <span class="ss">:first_name</span><span class="p">,</span> <span class="ss">:last_name</span><span class="p">,</span> <span class="ss">:created_at</span><span class="p">,</span> <span class="ss">:updated_at</span>
+  <span class="n">has_many</span> <span class="ss">:articles</span>
+  <span class="n">type</span> <span class="ss">:author</span>
+
+  <span class="n">link</span> <span class="ss">:self</span> <span class="k">do</span>
+    <span class="n">href</span> <span class="n">author_path</span><span class="p">(</span><span class="n">object</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></div>
+<p>Also, we do not have to specify the <code>links</code> as an attribute and we can remove
+the <code>include</code> line that mixed-in Rails' url helpers in our serializer. If we
+call the <code>/authors</code> endpoint with a <code>GET</code> request again, we will see an
+extended JSON, that again complies with the JSON API Spec:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;author&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;first-name&#34;</span><span class="p">:</span> <span class="s2">&#34;ilija&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;last-name&#34;</span><span class="p">:</span> <span class="s2">&#34;eftimov&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T20:52:12.804Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T20:52:12.804Z&#34;</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;articles&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;2&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/authors/1&#34;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span></code></pre></div>
+<h2 id="including-additional-resources" class="relative group">Including additional resources <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#including-additional-resources" aria-label="Anchor">#</a></span></h2>
+<p>Since AMS is an awesome gem, it allows you to include additional resources by
+including them in the controllers:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">AuthorsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="n">render</span> <span class="ss">json</span><span class="p">:</span> <span class="no">Author</span><span class="o">.</span><span class="n">all</span><span class="p">,</span> <span class="kp">include</span><span class="p">:</span> <span class="s1">&#39;articles&#39;</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></div>
+<p>By including the <code>Article</code> association of on the <code>Author</code> model, we are able to
+extend the JSON result with the associated articles for each of the users:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;author&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;first-name&#34;</span><span class="p">:</span> <span class="s2">&#34;ilija&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;last-name&#34;</span><span class="p">:</span> <span class="s2">&#34;eftimov&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T20:52:12.804Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T20:52:12.804Z&#34;</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;articles&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;2&#34;</span><span class="p">,</span>
+              <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/authors/1&#34;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;included&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;Lorem ipsum&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;Lorem ipsum dolor sit amet&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T22:25:51.874Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T22:25:51.874Z&#34;</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;author&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;author&#34;</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/authors/1/articles/1&#34;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;2&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;A princess of Mars&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;His reference to the great games of which I had heard so much while among the Tharks convinced me that I had but jumped from purgatory into gehenna. After a few more words with the female, during which she assured him that I was now fully fit to travel, the jed ordered that we mount and ride after the main column. I was strapped securely to as wild and unmanageable a thoat as I had&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-26T00:20:09.388Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-26T00:20:09.388Z&#34;</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;author&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;author&#34;</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/authors/1/articles/2&#34;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span></code></pre></div>
+<p>Although this is quite nice, beware that this introduces N+1 queries for every
+resource that we fetch. That&rsquo;s why, usually <code>index</code> actions return only the
+requested resources, while <code>show</code> actions tend to include some additional
+resources:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">AuthorsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="n">render</span> <span class="ss">json</span><span class="p">:</span> <span class="no">Author</span><span class="o">.</span><span class="n">all</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">show</span>
+    <span class="n">author</span> <span class="o">=</span> <span class="no">Author</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">params</span><span class="o">[</span><span class="ss">:id</span><span class="o">]</span><span class="p">)</span>
+    <span class="n">render</span> <span class="ss">json</span><span class="p">:</span> <span class="n">author</span><span class="p">,</span> <span class="kp">include</span><span class="p">:</span> <span class="ss">:articles</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></div>
+<p>This will add all of the articles found for the author that we requested:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;author&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;first-name&#34;</span><span class="p">:</span> <span class="s2">&#34;ilija&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;last-name&#34;</span><span class="p">:</span> <span class="s2">&#34;eftimov&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;created-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T20:52:12.804Z&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;updated-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T20:52:12.804Z&#34;</span>
+    <span class="p">},</span>
+    <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;articles&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">[</span>
+          <span class="p">{</span>
+            <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span>
+          <span class="p">},</span>
+          <span class="p">{</span>
+            <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;2&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span>
+          <span class="p">}</span>
+        <span class="p">]</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/authors/1&#34;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="nt">&#34;included&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;Lorem ipsum&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;Lorem ipsum dolor sit amet&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T22:25:51.874Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-25T22:25:51.874Z&#34;</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;author&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;author&#34;</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/authors/1/articles/1&#34;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;2&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;A princess of Mars&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;His reference to the great games of which I had heard so much while among the Tharks convinced me that I had but jumped from purgatory into gehenna. After a few more words with the female, during which she assured him that I was now fully fit to travel, the jed ordered that we mount and ride after the main column. I was strapped securely to as wild and unmanageable a thoat as I had&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;created-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-26T00:20:09.388Z&#34;</span><span class="p">,</span>
+        <span class="nt">&#34;updated-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-26T00:20:09.388Z&#34;</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;author&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+            <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;author&#34;</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/authors/1/articles/2&#34;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span></code></pre></div>
+<p>As you can notice, because we supplied the <code>has_many</code> association in the
+serializer, AMS knows to utilise the correct serializer for each of the
+included resources. This adds the same structure to the included resources and
+the requested resource, which makes the result consistent and parsing this JSON
+much easier.</p>
+<h2 id="navigating-resources" class="relative group">Navigating resources <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#navigating-resources" aria-label="Anchor">#</a></span></h2>
+<p>Now, to actually see how easy it is to navigate through resources, let&rsquo;s
+implement the <code>ArticlesController#show</code> action as well:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">ArticlesController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+
+  <span class="k">def</span> <span class="nf">show</span>
+    <span class="n">article</span> <span class="o">=</span> <span class="no">Article</span><span class="o">.</span><span class="n">find_by</span><span class="p">(</span><span class="ss">author_id</span><span class="p">:</span> <span class="n">params</span><span class="o">[</span><span class="ss">:author_id</span><span class="o">]</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="n">params</span><span class="o">[</span><span class="ss">:id</span><span class="o">]</span><span class="p">)</span>
+    <span class="n">render</span> <span class="ss">json</span><span class="p">:</span> <span class="n">article</span>
+  <span class="k">end</span>
+<span class="k">end</span></code></pre></div>
+<p>Super simple - we find the <code>Article</code> by the <code>author_id</code> and the <code>id</code> params and
+render it as a JSON. If we call <code>GET /authors/1/articles/2</code>, we will get the
+JSON API representation of the <code>Article</code> object:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;2&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;article&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;attributes&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;title&#34;</span><span class="p">:</span> <span class="s2">&#34;A princess of Mars&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;His reference to the great games of which I had heard so much while among the Tharks convinced me that I had but jumped from purgatory into gehenna. After a few more words with the female, during which she assured him that I was now fully fit to travel, the jed ordered that we mount and ride after the main column. I was strapped securely to as wild and unmanageable a thoat as I had&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;created-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-26T00:20:09.388Z&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;updated-at&#34;</span><span class="p">:</span> <span class="s2">&#34;2016-06-26T00:20:09.388Z&#34;</span>
+    <span class="p">},</span>
+    <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;author&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span><span class="p">,</span>
+          <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;author&#34;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&#34;links&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;self&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;href&#34;</span><span class="p">:</span> <span class="s2">&#34;/authors/1/articles/2&#34;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+<p>If you use <a href="https://www.getpostman.com/">Postman</a>, which I really enjoy using,
+or any other API browser to test the endpoints you could see how easy it is to
+navigate the resources:</p>
+<p><img src="/postman-hateoas-1.png" alt=""  />
+</p>
+<p>Just link in the web browser, you know the entry point
+<code>localhost:3000/authors</code>.  From there you can click on the <code>links</code> property of
+the <code>Author</code> and get the single <code>Author</code> resource:</p>
+<p><img src="/postman-hateoas-2.png" alt=""  />
+</p>
+<p>By seeing the resource with all of it&rsquo;s included resources, then you can click
+on any of the links on the included <code>Article</code> resources, and see their
+attributes in JSON format:</p>
+<p><img src="/postman-hateoas-3.png" alt=""  />
+</p>
+<p>This is what essentially HATEOAS means - navigating and interacting with
+resources via the endpoints that are provided in the JSON representation of the
+resources.</p>
+<h2 id="outro" class="relative group">Outro <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#outro" aria-label="Anchor">#</a></span></h2>
+<p>As you can see, to understand and learn what Hypermedia As The Engine Of
+Application State is, there is quite a bit of context that we need to get in
+our heads. Although all of this sometimes can appear as quite complex, Rails
+makes implementing HATEOAS APIs quite easy, as you could see in the examples.
+Sure, there is more to hypermedia controls, but these examples should be more
+than enough to get your feet wet.</p>
+<p>Also, the HATEOAS concept seems quite complex on the surface, but when you
+deconstruct it it&rsquo;s quite simple, because we have already seen the same
+behaviour in web browsers. The issue of why it seems quite complex is because
+we haven&rsquo;t even thought about normal web sites like RESTful APIs, and
+vice-versa.</p>
+<p>If you want to see the actual implementation of the endpoints that we worked
+with in this article, you can check <a href="https://github.com/fteem/hateoas">this
+repo</a> on Github.</p>
+<h2 id="additional-reading" class="relative group">Additional reading <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#additional-reading" aria-label="Anchor">#</a></span></h2>
+<ul>
+<li><a href="https://tools.ietf.org/html/rfc5988">Web Linking - RFC 5988</a></li>
+<li><a href="http://timelessrepo.com/haters-gonna-hateoas">Haters gonna HATEOAS</a></li>
+<li><a href="http://martinfowler.com/articles/richardsonMaturityModel.html">Richardson Maturity Model, steps toward the glory of REST</a></li>
+<li><a href="http://restcookbook.com/Miscellaneous/richardsonmaturitymodel/">What is the Richardson Maturity Model?</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Media_type">Media type</a></li>
+<li><a href="https://tools.ietf.org/html/rfc7231#section-5.3">Content negotiation</a></li>
+</ul>
+<div id="revue-embed">
+  <form action="https://www.getrevue.co/profile/itsilija/add_subscriber" method="post" id="revue-form" name="revue-form"  target="_blank">
+    <p><b>Liked this article?</b>
+Subscribe to my newsletter and get future articles in your inbox. It's a
+short and sweet read, going out to hundreds of other engineers.</p>
+    <div class="revue-form-group">
+      <input class="revue-form-field" placeholder="Your email address..." type="email" name="member[email]" id="member_email">
+    </div>
+    <div class="revue-form-actions">
+      <input type="submit" value="Subscribe" name="member[subscribe]" id="member_submit">
+    </div>
+  </form>
+</div>
+
+
+      </div>
+    </section>
+    <footer class="pt-8 max-w-prose">
+      
+  <div class="flex">
+    
+      
+      
+        
+        <img
+          class="w-24 h-24 !mt-0 !mb-0 ltr:mr-4 rtl:ml-4 rounded-full"
+          width="96"
+          height="96"
+          alt="Author"
+          src="/img/avatar_huae39953c6189b6aa60e47103b358d088_112612_192x192_fill_q75_box_smart1.jpg"
+        />
+      
+    
+    <div class="place-self-center">
+      
+        <div class="text-[0.6rem] leading-3 text-neutral-500 dark:text-neutral-400 uppercase">
+          Author
+        </div>
+        <div class="font-semibold leading-6 text-neutral-800 dark:text-neutral-300">
+          Ilija Eftimov
+        </div>
+      
+      
+      <div class="text-2xl sm:text-lg">
+  <div class="flex flex-wrap text-neutral-400 dark:text-neutral-500">
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://twitter.com/itsilija"
+          target="_blank"
+          aria-label="Twitter"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="twitter" class="svg-inline--fa fa-twitter fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://www.linkedin.com/in/ieftimov/"
+          target="_blank"
+          aria-label="Linkedin"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="linkedin" class="svg-inline--fa fa-linkedin fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="mailto:blog@ieftimov.com"
+          target="_blank"
+          aria-label="Email"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="at" class="svg-inline--fa fa-at fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 8C118.941 8 8 118.919 8 256c0 137.059 110.919 248 248 248 48.154 0 95.342-14.14 135.408-40.223 12.005-7.815 14.625-24.288 5.552-35.372l-10.177-12.433c-7.671-9.371-21.179-11.667-31.373-5.129C325.92 429.757 291.314 440 256 440c-101.458 0-184-82.542-184-184S154.542 72 256 72c100.139 0 184 57.619 184 160 0 38.786-21.093 79.742-58.17 83.693-17.349-.454-16.91-12.857-13.476-30.024l23.433-121.11C394.653 149.75 383.308 136 368.225 136h-44.981a13.518 13.518 0 0 0-13.432 11.993l-.01.092c-14.697-17.901-40.448-21.775-59.971-21.775-74.58 0-137.831 62.234-137.831 151.46 0 65.303 36.785 105.87 96 105.87 26.984 0 57.369-15.637 74.991-38.333 9.522 34.104 40.613 34.103 70.71 34.103C462.609 379.41 504 307.798 504 232 504 95.653 394.023 8 256 8zm-21.68 304.43c-22.249 0-36.07-15.623-36.07-40.771 0-44.993 30.779-72.729 58.63-72.729 22.292 0 35.601 15.241 35.601 40.77 0 45.061-33.875 72.73-58.161 72.73z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://dev.to/fteem"
+          target="_blank"
+          aria-label="Dev"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="dev" class="svg-inline--fa fa-dev fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M120.12 208.29c-3.88-2.9-7.77-4.35-11.65-4.35H91.03v104.47h17.45c3.88 0 7.77-1.45 11.65-4.35 3.88-2.9 5.82-7.25 5.82-13.06v-69.65c-.01-5.8-1.96-10.16-5.83-13.06zM404.1 32H43.9C19.7 32 .06 51.59 0 75.8v360.4C.06 460.41 19.7 480 43.9 480h360.2c24.21 0 43.84-19.59 43.9-43.8V75.8c-.06-24.21-19.7-43.8-43.9-43.8zM154.2 291.19c0 18.81-11.61 47.31-48.36 47.25h-46.4V172.98h47.38c35.44 0 47.36 28.46 47.37 47.28l.01 70.93zm100.68-88.66H201.6v38.42h32.57v29.57H201.6v38.41h53.29v29.57h-62.18c-11.16.29-20.44-8.53-20.72-19.69V193.7c-.27-11.15 8.56-20.41 19.71-20.69h63.19l-.01 29.52zm103.64 115.29c-13.2 30.75-36.85 24.63-47.44 0l-38.53-144.8h32.57l29.71 113.72 29.57-113.72h32.58l-38.46 144.8z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://github.com/fteem"
+          target="_blank"
+          aria-label="Github"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="github" class="svg-inline--fa fa-github fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path fill="currentColor" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://t.me/ieftimovcom"
+          target="_blank"
+          aria-label="Telegram"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="telegram-plane" class="svg-inline--fa fa-telegram-plane fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M446.7 98.6l-67.6 318.8c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-49.7 47.8c-5.5 5.5-10.1 10.1-20.7 10.1l7.4-104.9 190.9-172.5c8.3-7.4-1.8-11.5-12.9-4.1L117.8 284 16.2 252.2c-22.1-6.9-22.5-22.1 4.6-32.7L418.2 66.4c18.4-6.9 34.5 4.1 28.5 32.2z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+  </div>
+
+</div>
+    </div>
+  </div>
+
+
+      
+  
+  <section class="flex flex-row flex-wrap justify-center pt-4 text-xl">
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://www.facebook.com/sharer/sharer.php?u=https://ieftimov.com/posts/sprinkle-some-hateoas-on-rails-apis/&amp;quote=Sprinkle%20some%20HATEOAS%20on%20your%20Rails%20APIs"
+          title="Share on Facebook"
+          aria-label="Share on Facebook"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="facebook" class="svg-inline--fa fa-facebook fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://twitter.com/intent/tweet/?url=https://ieftimov.com/posts/sprinkle-some-hateoas-on-rails-apis/&amp;text=Sprinkle%20some%20HATEOAS%20on%20your%20Rails%20APIs"
+          title="Tweet on Twitter"
+          aria-label="Tweet on Twitter"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="twitter" class="svg-inline--fa fa-twitter fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://reddit.com/submit/?url=https://ieftimov.com/posts/sprinkle-some-hateoas-on-rails-apis/&amp;resubmit=true&amp;title=Sprinkle%20some%20HATEOAS%20on%20your%20Rails%20APIs"
+          title="Submit to Reddit"
+          aria-label="Submit to Reddit"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="reddit" class="svg-inline--fa fa-reddit fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M201.5 305.5c-13.8 0-24.9-11.1-24.9-24.6 0-13.8 11.1-24.9 24.9-24.9 13.6 0 24.6 11.1 24.6 24.9 0 13.6-11.1 24.6-24.6 24.6zM504 256c0 137-111 248-248 248S8 393 8 256 119 8 256 8s248 111 248 248zm-132.3-41.2c-9.4 0-17.7 3.9-23.8 10-22.4-15.5-52.6-25.5-86.1-26.6l17.4-78.3 55.4 12.5c0 13.6 11.1 24.6 24.6 24.6 13.8 0 24.9-11.3 24.9-24.9s-11.1-24.9-24.9-24.9c-9.7 0-18 5.8-22.1 13.8l-61.2-13.6c-3-.8-6.1 1.4-6.9 4.4l-19.1 86.4c-33.2 1.4-63.1 11.3-85.5 26.8-6.1-6.4-14.7-10.2-24.1-10.2-34.9 0-46.3 46.9-14.4 62.8-1.1 5-1.7 10.2-1.7 15.5 0 52.6 59.2 95.2 132 95.2 73.1 0 132.3-42.6 132.3-95.2 0-5.3-.6-10.8-1.9-15.8 31.3-16 19.8-62.5-14.9-62.5zM302.8 331c-18.2 18.2-76.1 17.9-93.6 0-2.2-2.2-6.1-2.2-8.3 0-2.5 2.5-2.5 6.4 0 8.6 22.8 22.8 87.3 22.8 110.2 0 2.5-2.2 2.5-6.1 0-8.6-2.2-2.2-6.1-2.2-8.3 0zm7.7-75c-13.6 0-24.6 11.1-24.6 24.9 0 13.6 11.1 24.6 24.6 24.6 13.8 0 24.9-11.1 24.9-24.6 0-13.8-11-24.9-24.9-24.9z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https://ieftimov.com/posts/sprinkle-some-hateoas-on-rails-apis/&amp;title=Sprinkle%20some%20HATEOAS%20on%20your%20Rails%20APIs"
+          title="Share on LinkedIn"
+          aria-label="Share on LinkedIn"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="linkedin" class="svg-inline--fa fa-linkedin fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="mailto:?body=https://ieftimov.com/posts/sprinkle-some-hateoas-on-rails-apis/&amp;subject=Sprinkle%20some%20HATEOAS%20on%20your%20Rails%20APIs"
+          title="Send via email"
+          aria-label="Send via email"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="at" class="svg-inline--fa fa-at fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 8C118.941 8 8 118.919 8 256c0 137.059 110.919 248 248 248 48.154 0 95.342-14.14 135.408-40.223 12.005-7.815 14.625-24.288 5.552-35.372l-10.177-12.433c-7.671-9.371-21.179-11.667-31.373-5.129C325.92 429.757 291.314 440 256 440c-101.458 0-184-82.542-184-184S154.542 72 256 72c100.139 0 184 57.619 184 160 0 38.786-21.093 79.742-58.17 83.693-17.349-.454-16.91-12.857-13.476-30.024l23.433-121.11C394.653 149.75 383.308 136 368.225 136h-44.981a13.518 13.518 0 0 0-13.432 11.993l-.01.092c-14.697-17.901-40.448-21.775-59.971-21.775-74.58 0-137.831 62.234-137.831 151.46 0 65.303 36.785 105.87 96 105.87 26.984 0 57.369-15.637 74.991-38.333 9.522 34.104 40.613 34.103 70.71 34.103C462.609 379.41 504 307.798 504 232 504 95.653 394.023 8 256 8zm-21.68 304.43c-22.249 0-36.07-15.623-36.07-40.771 0-44.993 30.779-72.729 58.63-72.729 22.292 0 35.601 15.241 35.601 40.77 0 45.061-33.875 72.73-58.161 72.73z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+  </section>
+
+
+      
+  
+    
+    
+    
+    <div class="pt-8">
+      <hr class="border-dotted border-neutral-300 dark:border-neutral-600" />
+      <div class="flex justify-between pt-3">
+        <span>
+          
+            <a class="flex group" href="/posts/practicality-designing-describing-apis/">
+              <span
+                class="mr-3 ltr:inline rtl:hidden text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&larr;</span
+              >
+              <span
+                class="ml-3 ltr:hidden rtl:inline text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&rarr;</span
+              >
+              <span class="flex flex-col">
+                <span
+                  class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+                  >The practicality of designing and describing your APIs</span
+                >
+                <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+                  
+                    <time datetime="2016-06-16 00:00:00 &#43;0000 UTC">16 June 2016</time>
+                  
+                </span>
+              </span>
+            </a>
+          
+        </span>
+        <span>
+          
+            <a class="flex text-right group" href="/posts/when-you-delete-an-api-resource/">
+              <span class="flex flex-col">
+                <span
+                  class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+                  >What happens when you DELETE a resource?</span
+                >
+                <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+                  
+                    <time datetime="2016-10-29 00:00:00 &#43;0000 UTC">29 October 2016</time>
+                  
+                </span>
+              </span>
+              <span
+                class="ml-3 ltr:inline rtl:hidden text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&rarr;</span
+              >
+              <span
+                class="mr-3 ltr:hidden rtl:inline text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&larr;</span
+              >
+            </a>
+          
+        </span>
+      </div>
+    </div>
+  
+
+
+    </footer>
+    
+  </article>
+
+      
+        <div
+          class="absolute top-[110vh] ltr:right-0 rtl:left-0 w-12 pointer-events-none bottom-[-5.5rem]"
+        >
+          <a
+            href="#the-top"
+            class="w-12 h-12 sticky pointer-events-auto top-[calc(100vh-5rem)] bg-neutral/50 dark:bg-neutral-800/50 backdrop-blur rounded-full text-xl flex items-center justify-center text-neutral-700 dark:text-neutral hover:text-primary-600 dark:hover:text-primary-400"
+            aria-label="Scroll to top"
+            title="Scroll to top"
+          >
+            &uarr;
+          </a>
+        </div>
+      
+    </main>
+    <div
+  id="search-wrapper"
+  class="fixed inset-0 z-50 flex flex-col p-4 sm:p-6 md:p-[10vh] lg:p-[12vh] w-screen h-screen cursor-default bg-neutral-500/50 backdrop-blur-sm dark:bg-neutral-900/50 invisible"
+  data-url="https://ieftimov.com/"
+>
+  <div
+    id="search-modal"
+    class="flex flex-col w-full max-w-3xl min-h-0 mx-auto border rounded-md shadow-lg border-neutral-200 top-20 bg-neutral dark:bg-neutral-800 dark:border-neutral-700"
+  >
+    <header class="relative z-10 flex items-center justify-between flex-none px-2">
+      <form class="flex items-center flex-auto min-w-0">
+        <div class="flex items-center justify-center w-8 h-8 text-neutral-400">
+          
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="search" class="svg-inline--fa fa-search fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>
+  </span>
+
+
+        </div>
+        <input
+          type="search"
+          id="search-query"
+          class="flex flex-auto h-12 mx-1 bg-transparent appearance-none focus:outline-dotted focus:outline-transparent focus:outline-2"
+          placeholder="Search"
+          tabindex="0"
+        />
+      </form>
+      <button
+        id="close-search-button"
+        class="flex items-center justify-center w-8 h-8 text-neutral-700 dark:text-neutral hover:text-primary-600 dark:hover:text-primary-400"
+        title="Close (Esc)"
+      >
+        
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
+  </span>
+
+
+      </button>
+    </header>
+    <section class="flex-auto px-2 overflow-auto">
+      <ul id="search-results">
+        
+      </ul>
+    </section>
+  </div>
+</div>
+<footer class="py-10">
+  
+  
+    <nav class="pb-4 text-base font-medium text-neutral-500 dark:text-neutral-400">
+      <ul class="flex flex-col list-none sm:flex-row">
+        
+          <li class="mb-1 sm:mb-0 sm:mr-7 sm:last:mr-0">
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/analytics"
+              title=""
+              >Analytics</a
+            >
+          </li>
+        
+          <li class="mb-1 sm:mb-0 sm:mr-7 sm:last:mr-0">
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/index.xml"
+              title=""
+              >RSS</a
+            >
+          </li>
+        
+          <li class="mb-1 sm:mb-0 sm:mr-7 sm:last:mr-0">
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="https://forms.gle/orfXK5jh1LRaiFzo8"
+              title=""
+              >Suggest a topic</a
+            >
+          </li>
+        
+      </ul>
+    </nav>
+  
+  <div class="flex justify-between">
+    <div>
+      
+      <p class="text-sm text-neutral-500 dark:text-neutral-400">
+          &copy;
+          2022
+          Ilija Eftimov
+      </p>
+      
+      
+        <p class="text-xs text-neutral-500 dark:text-neutral-400">
+          
+          
+          Powered by <a class="hover:underline hover:decoration-primary-400 hover:text-primary-500"
+            href="https://gohugo.io/" target="_blank" rel="noopener noreferrer">Hugo</a> &amp; <a class="hover:underline hover:decoration-primary-400 hover:text-primary-500" href="https://git.io/hugo-congo" target="_blank" rel="noopener noreferrer">Congo</a>
+        </p>
+      
+    </div>
+    
+    
+      <div
+        class="text-sm cursor-pointer text-neutral-700 dark:text-neutral hover:text-primary-600 dark:hover:text-primary-400 ltr:mr-14 rtl:ml-14"
+      >
+        <button
+          id="appearance-switcher"
+          class="w-12 h-12 "
+          type="button"
+          title="Switch to dark appearance"
+        >
+          <span class="inline dark:hidden">
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M283.211 512c78.962 0 151.079-35.925 198.857-94.792 7.068-8.708-.639-21.43-11.562-19.35-124.203 23.654-238.262-71.576-238.262-196.954 0-72.222 38.662-138.635 101.498-174.394 9.686-5.512 7.25-20.197-3.756-22.23A258.156 258.156 0 0 0 283.211 0c-141.309 0-256 114.511-256 256 0 141.309 114.511 256 256 256z"></path></svg>
+  </span>
+
+</span>
+          <span class="hidden dark:inline">
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 160c-52.9 0-96 43.1-96 96s43.1 96 96 96 96-43.1 96-96-43.1-96-96-96zm246.4 80.5l-94.7-47.3 33.5-100.4c4.5-13.6-8.4-26.5-21.9-21.9l-100.4 33.5-47.4-94.8c-6.4-12.8-24.6-12.8-31 0l-47.3 94.7L92.7 70.8c-13.6-4.5-26.5 8.4-21.9 21.9l33.5 100.4-94.7 47.4c-12.8 6.4-12.8 24.6 0 31l94.7 47.3-33.5 100.5c-4.5 13.6 8.4 26.5 21.9 21.9l100.4-33.5 47.3 94.7c6.4 12.8 24.6 12.8 31 0l47.3-94.7 100.4 33.5c13.6 4.5 26.5-8.4 21.9-21.9l-33.5-100.4 94.7-47.3c13-6.5 13-24.7.2-31.1zm-155.9 106c-49.9 49.9-131.1 49.9-181 0-49.9-49.9-49.9-131.1 0-181 49.9-49.9 131.1-49.9 181 0 49.9 49.9 49.9 131.1 0 181z"></path></svg>
+  </span>
+
+</span>
+        </button>
+      </div>
+    
+  </div>
+  
+  
+</footer>
+</body>
+</html>

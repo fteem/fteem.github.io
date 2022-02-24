@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html
+  lang="en"
+  dir="ltr"
+  class="scroll-smooth"
+  data-default-appearance="light"
+  data-auto-appearance="true"
+><head>
+  <meta charset="utf-8" />
+  
+    <meta http-equiv="content-language" content="en" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  
+  <title>Testing in Go: Stop Leaking Files &middot; Ilija Eftimov 👨‍🚀</title>
+    <meta name="title" content="Testing in Go: Stop Leaking Files &middot; Ilija Eftimov 👨‍🚀" />
+  
+  <meta name="description" content="Documenting my experiences and learnings, with the goal of helping other software engineers on their journey" />
+  
+  
+  
+  <link rel="canonical" href="https://ieftimov.com/posts/testing-in-go-stop-leaking-files/" />
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <link
+    type="text/css"
+    rel="stylesheet"
+    href="/css/main.bundle.min.b4e16dd9839a706aac3e482fb2ead8a30c01f199844299a37ddc79029b6a3bae7c65ff23668804cf9b10c85a4931caa1dca1efa0395de6dc9fe0784468f41457.css"
+    integrity="sha512-tOFt2YOacGqsPkgvsurYowwB8ZmEQpmjfdx5AptqO658Zf8jZogEz5sQyFpJMcqh3KHvoDld5tyf4HhEaPQUVw=="
+  />
+  
+  
+  <script type="text/javascript" src="/js/appearance.min.dbca9e2200cf929a23b55442f2ff09361b8d5290147ff1407f89ed3839f0fea13db4e94f5ae6bf2f3de10d322b4bede74b578455e9cc7d5565314d914602c974.js" integrity="sha512-28qeIgDPkpojtVRC8v8JNhuNUpAUf/FAf4ntODnw/qE9tOlPWua/Lz3hDTIrS&#43;3nS1eEVenMfVVlMU2RRgLJdA=="></script>
+  
+    
+    
+    
+  
+  
+    
+    
+  
+  
+    
+    <script defer type="text/javascript" id="script-bundle" src="/js/main.bundle.min.238e7ce9c541b4e7abb5781ad8e736e849e74890fcb8a26e73ea1845f573b3a0cf91418b20ac4401bdbb57d9c6c009d8f6ec50dad6d44b48f3936aea0f95c391.js" integrity="sha512-I4586cVBtOertXga2Oc26EnnSJD8uKJuc&#43;oYRfVzs6DPkUGLIKxEAb27V9nGwAnY9uxQ2tbUS0jzk2rqD5XDkQ==" data-copy="Copy" data-copied="Copied"></script>
+  
+  
+  
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+  
+  
+  
+  
+  
+  
+  
+  <meta property="og:title" content="Testing in Go: Stop Leaking Files" />
+<meta property="og:description" content="No test suite is perfect." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/posts/testing-in-go-stop-leaking-files/" /><meta property="og:image" content="https://ieftimov.com/cards/testing-in-go-stop-leaking-files.png" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-05-22T00:00:00+00:00" />
+<meta property="article:modified_time" content="2020-05-22T00:00:00+00:00" /><meta property="og:site_name" content="Ilija Eftimov 👨‍🚀" />
+
+
+  <meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/testing-in-go-stop-leaking-files.png"/>
+
+<meta name="twitter:title" content="Testing in Go: Stop Leaking Files"/>
+<meta name="twitter:description" content="No test suite is perfect."/>
+
+  
+  <script type="application/ld+json">
+  [{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "articleSection": "Posts",
+    "name": "Testing in Go: Stop Leaking Files",
+    "headline": "Testing in Go: Stop Leaking Files",
+    
+    "abstract": "No test suite is perfect.",
+    "inLanguage": "en",
+    "url" : "https:\/\/ieftimov.com\/posts\/testing-in-go-stop-leaking-files\/",
+    "author" : {
+      "@type": "Person",
+      "name": "Ilija Eftimov"
+    },
+    "copyrightYear": "2020",
+    "dateCreated": "2020-05-22T00:00:00\u002b00:00",
+    "datePublished": "2020-05-22T00:00:00\u002b00:00",
+    
+    "dateModified": "2020-05-22T00:00:00\u002b00:00",
+    
+    
+    
+    "mainEntityOfPage": "true",
+    "wordCount": "2538"
+  }]
+  </script>
+
+
+  
+  
+    <meta name="generator" content="Hugo 0.92.2" />
+  
+  
+  <meta name="author" content="Ilija Eftimov" />
+  
+    
+      <link href="https://twitter.com/itsilija" rel="me" />
+    
+      <link href="https://www.linkedin.com/in/ieftimov/" rel="me" />
+    
+      <link href="mailto:blog@ieftimov.com" rel="me" />
+    
+      <link href="https://dev.to/fteem" rel="me" />
+    
+      <link href="https://github.com/fteem" rel="me" />
+    
+      <link href="https://t.me/ieftimovcom" rel="me" />
+    
+  
+  
+  
+
+
+
+
+
+
+  
+  <script async defer data-domain="ieftimov.com" src="https://plausible.io/js/plausible.js"></script>
+
+  
+  
+</head>
+<body
+    class="flex flex-col h-screen px-6 m-auto text-lg leading-7 bg-neutral text-neutral-900 sm:px-14 md:px-24 lg:px-32 dark:bg-neutral-800 dark:text-neutral max-w-7xl"
+  >
+    <div id="the-top" class="absolute flex self-center">
+      <a
+        class="px-3 py-1 text-sm -translate-y-8 rounded-b-lg bg-primary-200 dark:bg-neutral-600 focus:translate-y-0"
+        href="#main-content"
+        ><span class="font-bold ltr:pr-2 rtl:pl-2 text-primary-600 dark:text-primary-400"
+          >&darr;</span
+        >Skip to main content</a
+      >
+    </div><header
+  class="flex justify-between py-6 font-semibold sm:items-center sm:py-10 text-neutral-900 dark:text-neutral"
+>
+  
+  <div>
+    
+      <a
+        class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+        rel="me"
+        href="/"
+        >Ilija Eftimov 👨‍🚀</a
+      >
+    
+
+  </div>
+  
+  
+    <nav>
+      <ul class="flex flex-col list-none sm:flex-row">
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/"
+              title=""
+              >Home</a
+            >
+          </li>
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/posts/"
+              title="Posts"
+              >Writing</a
+            >
+          </li>
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/work"
+              title=""
+              >Work</a
+            >
+          </li>
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="https://www.getrevue.co/profile/itsilija"
+              title=""
+              >Subscribe</a
+            >
+          </li>
+        
+        
+          <li
+            class="ltr:text-right rtl:text-left ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <button
+              id="search-button"
+              class="text-base hover:text-primary-600 dark:hover:text-primary-400"
+              title="Search (/)"
+            >
+              
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="search" class="svg-inline--fa fa-search fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>
+  </span>
+
+
+            </button>
+          </li>
+        
+      </ul>
+    </nav>
+  
+</header>
+<main id="main-content" class="relative grow">
+  <article>
+    <header class="max-w-prose">
+      
+      <h1 class="mt-0 text-4xl font-extrabold text-neutral-900 dark:text-neutral">
+        Testing in Go: Stop Leaking Files
+      </h1>
+      <div class="mt-8 mb-12 text-base text-neutral-500 dark:text-neutral-400">
+        
+
+
+
+
+
+  
+  
+
+
+
+  
+
+  
+  
+    
+  
+
+  
+
+  
+
+  
+    
+  
+
+  
+
+
+  <div class="flex flex-row flex-wrap items-center">
+    
+    
+      <time datetime="2020-05-22 00:00:00 &#43;0000 UTC">22 May 2020</time><span class="px-2 text-primary-500">&middot;</span><span title="Reading time">12 mins</span>
+    
+
+    
+    
+  </div>
+
+  
+  
+
+
+      </div>
+    </header>
+    <section class="flex flex-col max-w-full mt-0 prose lg:flex-row dark:prose-invert">
+      
+        <div class="order-first px-0 lg:max-w-xs ltr:lg:pl-8 rtl:lg:pr-8 lg:order-last">
+          <div class="ltr:pl-5 rtl:pr-5 toc lg:sticky lg:top-10">
+            <details open class="mt-0 overflow-hidden rounded-lg rtl:pr-5 ltr:pl-5 ltr:-ml-5 rtl:-mr-5 lg:mt-3">
+  <summary
+    class="block py-1 text-lg font-semibold cursor-pointer rtl:pr-5 ltr:pl-5 ltr:-ml-5 rtl:-mr-5 text-neutral-800 dark:text-neutral-100 lg:hidden bg-neutral-100 dark:bg-neutral-700"
+  >
+    Table of Contents
+  </summary>
+  <div
+    class="py-2 border-dotted ltr:border-l rtl:border-r rtl:pr-5 ltr:pl-5 ltr:-ml-5 rtl:-mr-5 border-neutral-300 dark:border-neutral-600"
+  >
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#converting-pdfs-to-txt-files">Converting PDFs to TXT files</a></li>
+    <li><a href="#testing-persist">Testing <code>persist</code></a></li>
+    <li><a href="#testing-slurp">Testing <code>slurp</code></a></li>
+    <li><a href="#testing-run">Testing <code>run</code></a></li>
+    <li><a href="#cleaning-up-after-our-test">Cleaning up after our test</a></li>
+  </ul>
+</nav>
+  </div>
+</details>
+
+          </div>
+        </div>
+      
+      <div class="min-w-0 min-h-0 max-w-prose">
+        <p>No test suite is perfect. Some test suites are missing good helper functions;
+others are under-configured or over-customize. Some have obsolete packages
+included and are left unmaintained. Folks that have experience with more mature
+projects will likely agree that all of the above can be found in the wild.</p>
+<p>Often, when we test our Go programs, need to create files. Such files can be
+just fixture files, or whole file trees, to set up the correct environment for
+the tests to run. Once the tests finish running, we have to clean them up, so
+they don&rsquo;t linger around.</p>
+<p>We should rely on the test suite&rsquo;s set of helpers to provide us with a way to
+manage test files if they exist in the first place. Unfortunately, not all test
+suites have such clean-up helpers set up. Sometimes, you might find a few
+different implementations, instead of one obvious way to do it.</p>
+<p>Coming up in Go v1.15, the <a href="https://golang.org/pkg/testing/"><code>testing</code></a> package
+will improve the support for creating temporary test files and directories.
+Let&rsquo;s see how we can put them to use.</p>
+<h2 id="converting-pdfs-to-txt-files" class="relative group">Converting PDFs to TXT files <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#converting-pdfs-to-txt-files" aria-label="Anchor">#</a></span></h2>
+<p>While thinking about a small program that will aid our understanding of leaking
+test files, I was asking myself, &ldquo;What is a program that generates files?&rdquo;.
+Because I work for a company that does a lot with documents, I thought, &ldquo;let&rsquo;s
+do something straightforward with PDFs&rdquo;.</p>
+<p>Imagine we have a program that extracts text out of PDFs. Why? Well, for one,
+if we want to know how long it will take us to read the PDF, we can take the
+number of words in a PDF and divide it by the average reading speed (which,
+according to Google, is 250 words per minute).</p>
+<p>But to do that, we first have to take a PDF and create a TXT file with all of
+the sentences inside. To do that, we can use <a href="https://github.com/ledongthuc/pdf">one of the many PDF parsing
+libraries for Go</a>.</p>
+<p>Here&rsquo;s the code that takes a PDF, extracts all rows of text from it, and saves
+them in a TXT file.</p>
+<p>First, the <code>persist</code> function:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">persist</span><span class="p">(</span><span class="nx">content</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">w</span> <span class="nx">io</span><span class="p">.</span><span class="nx">Writer</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+	<span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="nx">content</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Failed to persist contents.&#34;</span><span class="p">)</span>
+		<span class="k">return</span> <span class="nx">err</span>
+	<span class="p">}</span>
+
+	<span class="k">return</span> <span class="kc">nil</span>
+<span class="p">}</span>
+</code></pre></div><p>It takes some bytes as <code>content</code> and persists them to a <code>io.Writer</code> - it can be
+a file, a <code>strings.StringBuilder</code> or a different type that implements the
+<code>io.Writer</code> interface. The argument types are generic (interfaces) by design,
+so the function arguments are more liberal. You will see why when we test this
+function.</p>
+<p>The <code>slurp</code> function is next. It will take a <code>pdf.Reader</code> type, which is a type
+from the <code>pdf</code> library we use. We will slurp all of the relevant content (text)
+from the PDF and return a slice of bytes.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">slurp</span><span class="p">(</span><span class="nx">r</span> <span class="o">*</span><span class="nx">pdf</span><span class="p">.</span><span class="nx">Reader</span><span class="p">)</span> <span class="p">[]</span><span class="kt">byte</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">bs</span> <span class="p">[]</span><span class="kt">byte</span>
+
+	<span class="nx">total</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">NumPage</span><span class="p">()</span>
+	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;=</span> <span class="nx">total</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="nx">p</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">Page</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span>
+		<span class="k">if</span> <span class="nx">p</span><span class="p">.</span><span class="nx">V</span><span class="p">.</span><span class="nf">IsNull</span><span class="p">()</span> <span class="p">{</span>
+			<span class="k">continue</span>
+		<span class="p">}</span>
+
+		<span class="nx">rows</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">p</span><span class="p">.</span><span class="nf">GetTextByRow</span><span class="p">()</span>
+		<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">row</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">rows</span> <span class="p">{</span>
+			<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">word</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">row</span><span class="p">.</span><span class="nx">Content</span> <span class="p">{</span>
+				<span class="nx">bs</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">bs</span><span class="p">,</span> <span class="p">[]</span><span class="nb">byte</span><span class="p">(</span><span class="nx">word</span><span class="p">.</span><span class="nx">S</span><span class="p">)</span><span class="o">...</span><span class="p">)</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="nx">bs</span>
+<span class="p">}</span>
+</code></pre></div><p>By returning a slice of bytes, instead of a string, we can use a generic
+interface such as <a href="https://golang.org/pkg/io/#Writer"><code>io.Writer</code></a> (like in
+<code>persist</code>). The interface is applicable because the <code>Write</code> function it
+implements takes a slice of bytes as an argument - making the arguments of
+<code>slurp</code> and the returned values of <code>persist</code> compatible.</p>
+<p>Next, the function that ties them all together – <code>run</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">run</span><span class="p">(</span><span class="nx">args</span> <span class="p">[]</span><span class="kt">string</span><span class="p">,</span> <span class="nx">out</span> <span class="nx">io</span><span class="p">.</span><span class="nx">Writer</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+	<span class="nx">log</span><span class="p">.</span><span class="nf">SetOutput</span><span class="p">(</span><span class="nx">out</span><span class="p">)</span>
+
+	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">args</span><span class="p">)</span> <span class="p">&lt;</span> <span class="mi">3</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected at least 2 arguments, got %d.&#34;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">args</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="nx">pdfFile</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">pdf</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="nx">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">err</span>
+	<span class="p">}</span>
+	<span class="k">defer</span> <span class="nx">pdfFile</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+
+	<span class="nx">contents</span> <span class="o">:=</span> <span class="nf">slurp</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+
+	<span class="nx">txtFile</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="nx">args</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">err</span>
+	<span class="p">}</span>
+	<span class="k">defer</span> <span class="nx">txtFile</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+
+	<span class="nx">err</span> <span class="p">=</span> <span class="nf">persist</span><span class="p">(</span><span class="nx">contents</span><span class="p">,</span> <span class="nx">txtFile</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">err</span>
+	<span class="p">}</span>
+
+	<span class="k">return</span> <span class="kc">nil</span>
+<span class="p">}</span>
+</code></pre></div><p><code>run</code>&rsquo;s role is to check the arguments received from <code>main</code> and the <code>io.Writer</code>
+to where it should send all of its output. Then it opens the PDF file for
+reading and passes the file reference to the <code>slurp</code> function.</p>
+<p>Once <code>slurp</code> returns the contents of the file, which is just a slice of bytes
+<code>run</code> will create a new file for writing, called <code>txtFile</code>. Once it opens the
+file, it will send the <code>contents</code> and the <code>txtFile</code> to <code>persist</code> as arguments.</p>
+<p>As we already saw above, <code>persist</code> will save the <code>contents</code> to the file and
+return any potential errors. If no errors are returned, <code>run</code> successfully
+exits.</p>
+<p>Lastly, the straightforward <code>main</code> function:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">run</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">,</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><p>Locally, I have a simple PDF with some text inside that I&rsquo;ve found online. Its
+contents, according to the author, are popular interview questions. We will run
+the above program with any PDF, and as long as it finds some text inside it
+will save it to an output file.</p>
+<p>Here it is in action:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="err">$</span> <span class="k">go</span> <span class="nx">run</span> <span class="nx">main</span><span class="p">.</span><span class="k">go</span> <span class="nx">input</span><span class="p">.</span><span class="nx">pdf</span> <span class="nx">out</span><span class="p">.</span><span class="nx">txt</span>
+<span class="err">$</span> <span class="nx">cat</span> <span class="nx">out</span><span class="p">.</span><span class="nx">txt</span>
+<span class="mi">50</span> <span class="nx">Common</span> <span class="nx">Interview</span> <span class="nx">Questions</span> <span class="nx">and</span> <span class="nx">Answers1</span><span class="p">.</span> <span class="nx">Tell</span> <span class="nx">me</span> <span class="nx">about</span> <span class="nx">yourself</span><span class="p">:</span> <span class="nx">The</span> <span class="nx">most</span> <span class="nx">often</span> <span class="nx">asked</span> <span class="nx">question</span> <span class="nx">in</span> <span class="nx">interviews</span><span class="p">.</span> <span class="o">...</span>
+</code></pre></div><p>That&rsquo;s really it. Our program took the contents from <code>input.pdf</code> and stored
+them in <code>out.txt</code>. Let&rsquo;s see how we can test this program.</p>
+<h2 id="testing-persist" class="relative group">Testing <code>persist</code> <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#testing-persist" aria-label="Anchor">#</a></span></h2>
+<p>The <code>persist</code> function does not do much. In fact it just invokes the <code>Write</code>
+function of the <code>io.Writer</code> instance. Since we are using a file, that is part
+of the standard library, we do not need to test it. But, given that there&rsquo;s
+some error handling, which is a custom implementation, we can add some tests to
+strive to get to that full test coverage.</p>
+<p><code>TestPersist</code>, in all of its glory:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestPersist</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">tt</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
+		<span class="nx">name</span>    <span class="kt">string</span>
+		<span class="nx">content</span> <span class="p">[]</span><span class="kt">byte</span>
+		<span class="nx">out</span>     <span class="kd">func</span><span class="p">()</span> <span class="p">(</span><span class="nx">io</span><span class="p">.</span><span class="nx">ReadWriter</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>
+	<span class="p">}{</span>
+		<span class="p">{</span>
+			<span class="nx">name</span><span class="p">:</span>    <span class="s">&#34;WithNoContent&#34;</span><span class="p">,</span>
+			<span class="nx">content</span><span class="p">:</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">{},</span>
+			<span class="nx">out</span><span class="p">:</span> <span class="kd">func</span><span class="p">()</span> <span class="p">(</span><span class="nx">io</span><span class="p">.</span><span class="nx">ReadWriter</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+				<span class="k">return</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="s">&#34;empty.txt&#34;</span><span class="p">)</span>
+			<span class="p">},</span>
+		<span class="p">},</span>
+		<span class="p">{</span>
+			<span class="nx">name</span><span class="p">:</span>    <span class="s">&#34;WithContent&#34;</span><span class="p">,</span>
+			<span class="nx">content</span><span class="p">:</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">{},</span>
+			<span class="nx">out</span><span class="p">:</span> <span class="kd">func</span><span class="p">()</span> <span class="p">(</span><span class="nx">io</span><span class="p">.</span><span class="nx">ReadWriter</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+				<span class="k">return</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="s">&#34;not-empty.txt&#34;</span><span class="p">)</span>
+			<span class="p">},</span>
+		<span class="p">},</span>
+	<span class="p">}</span>
+
+	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tt</span> <span class="p">{</span>
+		<span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+			<span class="nx">f</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">tc</span><span class="p">.</span><span class="nf">out</span><span class="p">()</span>
+			<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+				<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Cannot create output file: %s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+			<span class="p">}</span>
+
+			<span class="nx">err</span> <span class="p">=</span> <span class="nf">persist</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">content</span><span class="p">,</span> <span class="nx">f</span><span class="p">)</span>
+			<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+				<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Cannot persits to output file: %s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+			<span class="p">}</span>
+
+			<span class="nx">b</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">{}</span>
+			<span class="k">if</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">io</span><span class="p">.</span><span class="nf">ReadFull</span><span class="p">(</span><span class="nx">f</span><span class="p">,</span> <span class="nx">b</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+				<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Cannot read test output file: %s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+			<span class="p">}</span>
+
+			<span class="k">if</span> <span class="p">!</span><span class="nx">bytes</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">b</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">content</span><span class="p">)</span> <span class="p">{</span>
+				<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Persisted content is different than saved content.&#34;</span><span class="p">)</span>
+			<span class="p">}</span>
+		<span class="p">})</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><p>Each of the test cases, part of the table-driven tests, contains the <code>name</code> of
+the test case, the <code>content</code> that it will persist, and the <code>out</code> function,
+which will create the output file.</p>
+<p>In the test itself, we create a subtest for each of the test cases,
+which will try to write the <code>content</code> to a file, and then it will read all of
+the content back from the file. If the persisted content and the test case
+content are the same, then the test successfully passes.</p>
+<p>If we run the tests, this is the output we will see:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ go <span class="nb">test</span> -v -run <span class="nv">TestPersist</span>
+<span class="o">===</span> RUN   <span class="nv">TestPersist</span>
+<span class="o">===</span> RUN   TestPersist/WithNoContent
+<span class="o">===</span> RUN   TestPersist/WithContent
+--- PASS: TestPersist <span class="o">(</span>0.00s<span class="o">)</span>
+    --- PASS: TestPersist/WithNoContent <span class="o">(</span>0.00s<span class="o">)</span>
+    --- PASS: TestPersist/WithContent <span class="o">(</span>0.00s<span class="o">)</span>
+PASS
+ok  	github.com/fteem/go-playground/testing-in-go-leak-test-files	0.250s
+</code></pre></div><p>We ran the two test cases where we try to persist a file with no content and
+some content. Both of them passed, and we can move on!</p>
+<h2 id="testing-slurp" class="relative group">Testing <code>slurp</code> <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#testing-slurp" aria-label="Anchor">#</a></span></h2>
+<p>The <code>slurp</code> function is more involved. It requires two different test files
+– two dummy PDFs with some content and no content (empty). Then, by passing the
+two different files to <code>slurp</code>, we can test if extracting the text from the PDF
+works as intended.</p>
+<p>This is the test:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestSlurp</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">tt</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
+		<span class="nx">name</span>    <span class="kt">string</span>
+		<span class="nx">pdfPath</span> <span class="kt">string</span>
+		<span class="nx">size</span>    <span class="kt">int</span>
+	<span class="p">}{</span>
+		<span class="p">{</span>
+			<span class="nx">name</span><span class="p">:</span>    <span class="s">&#34;PDFWithContent&#34;</span><span class="p">,</span>
+			<span class="nx">pdfPath</span><span class="p">:</span> <span class="s">&#34;testdata/content.pdf&#34;</span><span class="p">,</span>
+			<span class="nx">size</span><span class="p">:</span>    <span class="mi">11463</span><span class="p">,</span>
+		<span class="p">},</span>
+		<span class="p">{</span>
+			<span class="nx">name</span><span class="p">:</span>    <span class="s">&#34;PDFWithoutContent&#34;</span><span class="p">,</span>
+			<span class="nx">pdfPath</span><span class="p">:</span> <span class="s">&#34;testdata/empty.pdf&#34;</span><span class="p">,</span>
+			<span class="nx">size</span><span class="p">:</span>    <span class="mi">0</span><span class="p">,</span>
+		<span class="p">},</span>
+	<span class="p">}</span>
+
+	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tt</span> <span class="p">{</span>
+		<span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+			<span class="nx">pdfFile</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">pdf</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">pdfPath</span><span class="p">)</span>
+			<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+				<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Couldn&#39;t open PDF %s, error: %s&#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">pdfPath</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+			<span class="p">}</span>
+			<span class="k">defer</span> <span class="nx">pdfFile</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+
+			<span class="nx">contents</span> <span class="o">:=</span> <span class="nf">slurp</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+
+			<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">contents</span><span class="p">)</span> <span class="o">!=</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">size</span> <span class="p">{</span>
+				<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected contents to be %d bytes, got %d&#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">size</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">contents</span><span class="p">))</span>
+			<span class="p">}</span>
+		<span class="p">})</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><p>Each of the test cases from the table-driven tests will have a <code>pdfPath</code>, which
+is an actual PDF file on disk. For each of the test cases, a subtest will be
+run, which will open the PDF using the <code>ledongthuc/pdf</code> library. We will then
+pass the reference to the PDF file to the slurp function, expecting the
+<code>contents</code> to be returned by <code>slurp</code>.</p>
+<p>Once it returns the <code>content</code>, we simply compare the <code>size</code> - the number of
+bytes that are expected (<code>tc.size</code>), comparing it against the <code>len(contents)</code>,
+which is the size of the bytes returned. If the sizes match, we assume that the
+content is correct, and the test will pass.</p>
+<p>Here&rsquo;s the test in action:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ go <span class="nb">test</span> -v -run <span class="nv">TestSlurp</span>
+<span class="o">===</span> RUN   <span class="nv">TestSlurp</span>
+<span class="o">===</span> RUN   TestSlurp/PDFWithContent
+<span class="o">===</span> RUN   TestSlurp/PDFWithoutContent
+--- PASS: TestSlurp <span class="o">(</span>0.03s<span class="o">)</span>
+    --- PASS: TestSlurp/PDFWithContent <span class="o">(</span>0.03s<span class="o">)</span>
+    --- PASS: TestSlurp/PDFWithoutContent <span class="o">(</span>0.00s<span class="o">)</span>
+PASS
+ok  	github.com/fteem/go-playground/testing-in-go-leak-test-files	0.253s
+</code></pre></div><h2 id="testing-run" class="relative group">Testing <code>run</code> <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#testing-run" aria-label="Anchor">#</a></span></h2>
+<p>The <code>run</code> function is what glues everything together. It validates the
+arguments, then opens the PDF for reading, slurps all of the contents using
+<code>slurp</code>, and lastly saves all of the text content to the TXT file using
+<code>persist</code>.</p>
+<p>Here&rsquo;s the test:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestRun</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">tt</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span> <span class="nx">name</span>   <span class="kt">string</span> <span class="nx">input</span>  <span class="kt">string</span> <span class="nx">output</span> <span class="kt">string</span>
+	<span class="p">}{</span>
+		<span class="p">{</span>
+			<span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;WithValidArguments&#34;</span><span class="p">,</span>
+			<span class="nx">input</span><span class="p">:</span>  <span class="s">&#34;testdata/input.pdf&#34;</span><span class="p">,</span>
+			<span class="nx">output</span><span class="p">:</span> <span class="s">&#34;testdata/output.txt&#34;</span><span class="p">,</span>
+		<span class="p">},</span>
+		<span class="p">{</span>
+			<span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;WithEmptyInput&#34;</span><span class="p">,</span>
+			<span class="nx">input</span><span class="p">:</span>  <span class="s">&#34;testdata/empty.pdf&#34;</span><span class="p">,</span>
+			<span class="nx">output</span><span class="p">:</span> <span class="s">&#34;testdata/output.txt&#34;</span><span class="p">,</span>
+		<span class="p">},</span>
+	<span class="p">}</span>
+
+	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tt</span> <span class="p">{</span>
+		<span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+			<span class="nx">err</span> <span class="o">:=</span> <span class="nf">run</span><span class="p">([]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;foo&#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">input</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">output</span><span class="p">},</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">)</span>
+			<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+				<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Expected no error, got:  %s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+			<span class="p">}</span>
+
+			<span class="k">if</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Stat</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">output</span><span class="p">);</span> <span class="nx">os</span><span class="p">.</span><span class="nf">IsNotExist</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+				<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected persisted file at %s, did not find it: %s&#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">output</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+			<span class="p">}</span>
+		<span class="p">})</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><p>In <code>TestRun</code>, we check if, for each of the test PDFs we provide, the <code>run</code>
+function crates the corresponding TXT file. In <code>TestRun</code>, we do not care about
+the actual contents – we can assume that the rest of the unit tests covers that
+part of the functionality.</p>
+<p>Then, for each test case, we use <code>os.Stat</code>, which will return an error if the
+file does not exist. If the file does exist, we consider the <code>run</code> function as
+properly functioning and mark the test as passed.</p>
+<p>Here&rsquo;s the test in action:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ go <span class="nb">test</span> -v -run <span class="nv">TestRun</span>
+<span class="o">===</span> RUN   <span class="nv">TestRun</span>
+<span class="o">===</span> RUN   TestRun/WithValidArguments
+<span class="o">===</span> RUN   TestRun/WithEmptyInput
+--- PASS: TestRun <span class="o">(</span>0.03s<span class="o">)</span>
+    --- PASS: TestRun/WithValidArguments <span class="o">(</span>0.03s<span class="o">)</span>
+    --- PASS: TestRun/WithEmptyInput <span class="o">(</span>0.00s<span class="o">)</span>
+PASS
+ok  	github.com/fteem/go-playground/testing-in-go-leak-test-files	0.106s
+</code></pre></div><p>Another test we can also run is to test the returned errors. We will create
+another function called <code>TestRunErrors</code>, which will cover the potential errors
+returned by <code>run</code>. Here&rsquo;s the test function:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestRunErrors</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">tt</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
+		<span class="nx">name</span>   <span class="kt">string</span>
+		<span class="nx">input</span>  <span class="kt">string</span>
+		<span class="nx">output</span> <span class="kt">string</span>
+	<span class="p">}{</span>
+		<span class="p">{</span>
+			<span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;WithoutArguments&#34;</span><span class="p">,</span>
+			<span class="nx">input</span><span class="p">:</span>  <span class="s">&#34;&#34;</span><span class="p">,</span>
+			<span class="nx">output</span><span class="p">:</span> <span class="s">&#34;&#34;</span><span class="p">,</span>
+		<span class="p">},</span>
+		<span class="p">{</span>
+			<span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;WithoutOneArgument&#34;</span><span class="p">,</span>
+			<span class="nx">input</span><span class="p">:</span>  <span class="s">&#34;testdata/input.pdf&#34;</span><span class="p">,</span>
+			<span class="nx">output</span><span class="p">:</span> <span class="s">&#34;&#34;</span><span class="p">,</span>
+		<span class="p">},</span>
+		<span class="p">{</span>
+			<span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;WithNonexistentInput&#34;</span><span class="p">,</span>
+			<span class="nx">input</span><span class="p">:</span>  <span class="s">&#34;testdata/nonexistent.pdf&#34;</span><span class="p">,</span>
+			<span class="nx">output</span><span class="p">:</span> <span class="s">&#34;testdata/output.txt&#34;</span><span class="p">,</span>
+		<span class="p">},</span>
+	<span class="p">}</span>
+
+	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tt</span> <span class="p">{</span>
+		<span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+			<span class="nx">err</span> <span class="o">:=</span> <span class="nf">run</span><span class="p">([]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;foo&#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">input</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">output</span><span class="p">},</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">)</span>
+
+			<span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+				<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Expected an error, did not get one.&#34;</span><span class="p">)</span>
+			<span class="p">}</span>
+		<span class="p">})</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><p>The <code>TestRunErrors</code> is similar to <code>TestRun</code>, with having the focus on the
+returned errors. It checks that for each of the bad inputs the <code>run</code> function
+receives, that it returns an error. We could take this a step further by
+implementing <a href="https://dave.cheney.net/2019/06/10/constant-time">sentinel
+errors</a> and asserting on
+them, but this will do just fine this article.</p>
+<p>Here&rsquo;s the <code>TestRunErrors</code> function in action:</p>
+<pre tabindex="0"><code>$ go test -v -run TestRunErrors
+=== RUN   TestRunErrors
+=== RUN   TestRunErrors/WithoutArguments
+=== RUN   TestRunErrors/WithoutOneArgument
+=== RUN   TestRunErrors/WithNonexistentInput
+--- PASS: TestRunErrors (0.02s)
+    --- PASS: TestRunErrors/WithoutArguments (0.00s)
+    --- PASS: TestRunErrors/WithoutOneArgument (0.02s)
+    --- PASS: TestRunErrors/WithNonexistentInput (0.00s)
+PASS
+ok  	github.com/fteem/go-playground/testing-in-go-leak-test-files	0.140sbash
+</code></pre><h2 id="cleaning-up-after-our-test" class="relative group">Cleaning up after our test <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#cleaning-up-after-our-test" aria-label="Anchor">#</a></span></h2>
+<p>If you were following along, you should notice that test files are created in
+your project&rsquo;s directory. The files stay there because we never clean up the
+output files that our program creates when the tests run.</p>
+<p>Starting from Go v1.15, there will be a nice way to do this: <code>TB.TempDir()</code>.
+To clean up the test files, we can use <code>TB.TempDir</code> as a parent directory
+wherever we are passing the output file path. Once the tests pass, Go will
+automatically get rid of this directory, without us having to do any clean-up.</p>
+<p>First, let&rsquo;s see how we can change the <code>TestPersist</code> function to clean up the
+<code>empty.txt</code> and <code>non-empty.txt</code> files it creates:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestPersist</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">tt</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
+		<span class="nx">name</span>    <span class="kt">string</span>
+		<span class="nx">content</span> <span class="p">[]</span><span class="kt">byte</span>
+		<span class="nx">out</span>     <span class="kd">func</span><span class="p">()</span> <span class="p">(</span><span class="nx">io</span><span class="p">.</span><span class="nx">ReadWriter</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>
+	<span class="p">}{</span>
+		<span class="p">{</span>
+			<span class="nx">name</span><span class="p">:</span>    <span class="s">&#34;WithNoContent&#34;</span><span class="p">,</span>
+			<span class="nx">content</span><span class="p">:</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">{},</span>
+			<span class="nx">out</span><span class="p">:</span> <span class="kd">func</span><span class="p">()</span> <span class="p">(</span><span class="nx">io</span><span class="p">.</span><span class="nx">ReadWriter</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+				<span class="k">return</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="nx">filepath</span><span class="p">.</span><span class="nf">Join</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nf">TempDir</span><span class="p">(),</span> <span class="s">&#34;empty.txt&#34;</span><span class="p">))</span>
+			<span class="p">},</span>
+		<span class="p">},</span>
+		<span class="p">{</span>
+			<span class="nx">name</span><span class="p">:</span>    <span class="s">&#34;WithContent&#34;</span><span class="p">,</span>
+			<span class="nx">content</span><span class="p">:</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">{},</span>
+			<span class="nx">out</span><span class="p">:</span> <span class="kd">func</span><span class="p">()</span> <span class="p">(</span><span class="nx">io</span><span class="p">.</span><span class="nx">ReadWriter</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+				<span class="k">return</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="nx">filepath</span><span class="p">.</span><span class="nf">Join</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nf">TempDir</span><span class="p">(),</span> <span class="s">&#34;not-empty.txt&#34;</span><span class="p">))</span>
+			<span class="p">},</span>
+		<span class="p">},</span>
+	<span class="p">}</span>
+
+	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tt</span> <span class="p">{</span>
+		<span class="c1">// Snipped...
+</span><span class="c1"></span>	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><p>The only notable change is to use <code>filepath.Join</code> with <code>t.TempDir()</code> and the
+file name as arguments. This combo will compose a valid temporary path, that Go
+will remove once the tests finish. Given that at the time of writing this, Go
+1.15 is still not out, we can use the <code>gotip</code> tool to run Go&rsquo;s latest <code>master</code>
+version:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ gotip <span class="nb">test</span> -v -run <span class="nv">TestPersist</span>
+<span class="o">===</span> RUN   <span class="nv">TestPersist</span>
+<span class="o">===</span> RUN   TestPersist/WithNoContent
+<span class="o">===</span> RUN   TestPersist/WithContent
+--- PASS: TestPersist <span class="o">(</span>0.00s<span class="o">)</span>
+    --- PASS: TestPersist/WithNoContent <span class="o">(</span>0.00s<span class="o">)</span>
+    --- PASS: TestPersist/WithContent <span class="o">(</span>0.00s<span class="o">)</span>
+PASS
+ok  	github.com/fteem/go-playground/testing-in-go-leak-test-files	0.048s
+</code></pre></div><p>If we inspect the project root, we will see that no new files are being
+created. The output files are cleaned up after the tests have finished running.</p>
+<div class="flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900">
+  <span class="ltr:pr-3 rtl:pl-3 text-primary-400">
+    
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="exclamation-triangle" class="svg-inline--fa fa-exclamation-triangle fa-w-18" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="currentColor" d="M569.517 440.013C587.975 472.007 564.806 512 527.94 512H48.054c-36.937 0-59.999-40.055-41.577-71.987L246.423 23.985c18.467-32.009 64.72-31.951 83.154 0l239.94 416.028zM288 354c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"></path></svg>
+  </span>
+
+
+  </span>
+  <span class="dark:text-neutral-300"><strong>Protip:</strong> The <code>gotip</code> tool compiles and runs the <code>go</code> command from the
+development tree.  Using the <code>gotip</code> command, instead of the normal <code>go</code>
+command, will run the latest version of the language, as seen in the main Git
+trunk. You can see <a href="https://pkg.go.dev/golang.org/dl/gotip?tab=doc">its
+documentation</a> for more
+details.</span>
+</div>
+
+<p>Next, we can do the same change to the <code>TestRun</code> function:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestRun</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">tt</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
+		<span class="nx">name</span>   <span class="kt">string</span>
+		<span class="nx">input</span>  <span class="kt">string</span>
+		<span class="nx">output</span> <span class="kt">string</span>
+	<span class="p">}{</span>
+		<span class="p">{</span>
+			<span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;WithValidArguments&#34;</span><span class="p">,</span>
+			<span class="nx">input</span><span class="p">:</span>  <span class="s">&#34;testdata/input.pdf&#34;</span><span class="p">,</span>
+			<span class="nx">output</span><span class="p">:</span> <span class="nx">filepath</span><span class="p">.</span><span class="nf">Join</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nf">TempDir</span><span class="p">(),</span> <span class="s">&#34;output.txt&#34;</span><span class="p">),</span>
+		<span class="p">},</span>
+		<span class="p">{</span>
+			<span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;WithEmptyInput&#34;</span><span class="p">,</span>
+			<span class="nx">input</span><span class="p">:</span>  <span class="s">&#34;testdata/empty.pdf&#34;</span><span class="p">,</span>
+			<span class="nx">output</span><span class="p">:</span> <span class="nx">filepath</span><span class="p">.</span><span class="nf">Join</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nf">TempDir</span><span class="p">(),</span> <span class="s">&#34;output.txt&#34;</span><span class="p">),</span>
+		<span class="p">},</span>
+	<span class="p">}</span>
+
+	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tt</span> <span class="p">{</span>
+		<span class="c1">// Same as before...
+</span><span class="c1"></span>	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><p>In the <code>TestRun</code> function, we use the same trick - we use the <code>T.TempDir</code>
+function to concatenate the path of the <code>output</code> file. Running the test the
+same way, we can see <code>T.TempDir</code> once more in action:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ gotip <span class="nb">test</span> -v -run <span class="nv">TestRun</span>
+<span class="o">===</span> RUN   <span class="nv">TestRun</span>
+<span class="o">===</span> RUN   TestRun/WithValidArguments
+<span class="o">===</span> RUN   TestRun/WithEmptyInput
+--- PASS: TestRun <span class="o">(</span>0.03s<span class="o">)</span>
+    --- PASS: TestRun/WithValidArguments <span class="o">(</span>0.03s<span class="o">)</span>
+    --- PASS: TestRun/WithEmptyInput <span class="o">(</span>0.00s<span class="o">)</span>
+<span class="o">===</span> RUN   <span class="nv">TestRunErrors</span>
+<span class="o">===</span> RUN   TestRunErrors/WithoutArguments
+<span class="o">===</span> RUN   TestRunErrors/WithoutOneArgument
+<span class="o">===</span> RUN   TestRunErrors/WithNonexistentInput
+--- PASS: TestRunErrors <span class="o">(</span>0.02s<span class="o">)</span>
+    --- PASS: TestRunErrors/WithoutArguments <span class="o">(</span>0.00s<span class="o">)</span>
+    --- PASS: TestRunErrors/WithoutOneArgument <span class="o">(</span>0.02s<span class="o">)</span>
+    --- PASS: TestRunErrors/WithNonexistentInput <span class="o">(</span>0.00s<span class="o">)</span>
+PASS
+ok  	github.com/fteem/go-playground/testing-in-go-leak-test-files	0.265s
+</code></pre></div><p>If you want to check out the motivation and the discussion around this addition
+to the new Go version 1.15, you can head over to the <a href="https://github.com/golang/go/issues/35998">original
+proposal</a>.</p>
+<div id="revue-embed">
+  <form action="https://www.getrevue.co/profile/itsilija/add_subscriber" method="post" id="revue-form" name="revue-form"  target="_blank">
+    <p><b>Liked this article?</b>
+Subscribe to my newsletter and get future articles in your inbox. It's a
+short and sweet read, going out to hundreds of other engineers.</p>
+    <div class="revue-form-group">
+      <input class="revue-form-field" placeholder="Your email address..." type="email" name="member[email]" id="member_email">
+    </div>
+    <div class="revue-form-actions">
+      <input type="submit" value="Subscribe" name="member[subscribe]" id="member_submit">
+    </div>
+  </form>
+</div>
+
+
+      </div>
+    </section>
+    <footer class="pt-8 max-w-prose">
+      
+  <div class="flex">
+    
+      
+      
+        
+        <img
+          class="w-24 h-24 !mt-0 !mb-0 ltr:mr-4 rtl:ml-4 rounded-full"
+          width="96"
+          height="96"
+          alt="Author"
+          src="/img/avatar_huae39953c6189b6aa60e47103b358d088_112612_192x192_fill_q75_box_smart1.jpg"
+        />
+      
+    
+    <div class="place-self-center">
+      
+        <div class="text-[0.6rem] leading-3 text-neutral-500 dark:text-neutral-400 uppercase">
+          Author
+        </div>
+        <div class="font-semibold leading-6 text-neutral-800 dark:text-neutral-300">
+          Ilija Eftimov
+        </div>
+      
+      
+      <div class="text-2xl sm:text-lg">
+  <div class="flex flex-wrap text-neutral-400 dark:text-neutral-500">
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://twitter.com/itsilija"
+          target="_blank"
+          aria-label="Twitter"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="twitter" class="svg-inline--fa fa-twitter fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://www.linkedin.com/in/ieftimov/"
+          target="_blank"
+          aria-label="Linkedin"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="linkedin" class="svg-inline--fa fa-linkedin fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="mailto:blog@ieftimov.com"
+          target="_blank"
+          aria-label="Email"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="at" class="svg-inline--fa fa-at fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 8C118.941 8 8 118.919 8 256c0 137.059 110.919 248 248 248 48.154 0 95.342-14.14 135.408-40.223 12.005-7.815 14.625-24.288 5.552-35.372l-10.177-12.433c-7.671-9.371-21.179-11.667-31.373-5.129C325.92 429.757 291.314 440 256 440c-101.458 0-184-82.542-184-184S154.542 72 256 72c100.139 0 184 57.619 184 160 0 38.786-21.093 79.742-58.17 83.693-17.349-.454-16.91-12.857-13.476-30.024l23.433-121.11C394.653 149.75 383.308 136 368.225 136h-44.981a13.518 13.518 0 0 0-13.432 11.993l-.01.092c-14.697-17.901-40.448-21.775-59.971-21.775-74.58 0-137.831 62.234-137.831 151.46 0 65.303 36.785 105.87 96 105.87 26.984 0 57.369-15.637 74.991-38.333 9.522 34.104 40.613 34.103 70.71 34.103C462.609 379.41 504 307.798 504 232 504 95.653 394.023 8 256 8zm-21.68 304.43c-22.249 0-36.07-15.623-36.07-40.771 0-44.993 30.779-72.729 58.63-72.729 22.292 0 35.601 15.241 35.601 40.77 0 45.061-33.875 72.73-58.161 72.73z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://dev.to/fteem"
+          target="_blank"
+          aria-label="Dev"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="dev" class="svg-inline--fa fa-dev fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M120.12 208.29c-3.88-2.9-7.77-4.35-11.65-4.35H91.03v104.47h17.45c3.88 0 7.77-1.45 11.65-4.35 3.88-2.9 5.82-7.25 5.82-13.06v-69.65c-.01-5.8-1.96-10.16-5.83-13.06zM404.1 32H43.9C19.7 32 .06 51.59 0 75.8v360.4C.06 460.41 19.7 480 43.9 480h360.2c24.21 0 43.84-19.59 43.9-43.8V75.8c-.06-24.21-19.7-43.8-43.9-43.8zM154.2 291.19c0 18.81-11.61 47.31-48.36 47.25h-46.4V172.98h47.38c35.44 0 47.36 28.46 47.37 47.28l.01 70.93zm100.68-88.66H201.6v38.42h32.57v29.57H201.6v38.41h53.29v29.57h-62.18c-11.16.29-20.44-8.53-20.72-19.69V193.7c-.27-11.15 8.56-20.41 19.71-20.69h63.19l-.01 29.52zm103.64 115.29c-13.2 30.75-36.85 24.63-47.44 0l-38.53-144.8h32.57l29.71 113.72 29.57-113.72h32.58l-38.46 144.8z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://github.com/fteem"
+          target="_blank"
+          aria-label="Github"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="github" class="svg-inline--fa fa-github fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path fill="currentColor" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://t.me/ieftimovcom"
+          target="_blank"
+          aria-label="Telegram"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="telegram-plane" class="svg-inline--fa fa-telegram-plane fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M446.7 98.6l-67.6 318.8c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-49.7 47.8c-5.5 5.5-10.1 10.1-20.7 10.1l7.4-104.9 190.9-172.5c8.3-7.4-1.8-11.5-12.9-4.1L117.8 284 16.2 252.2c-22.1-6.9-22.5-22.1 4.6-32.7L418.2 66.4c18.4-6.9 34.5 4.1 28.5 32.2z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+  </div>
+
+</div>
+    </div>
+  </div>
+
+
+      
+  
+  <section class="flex flex-row flex-wrap justify-center pt-4 text-xl">
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://www.facebook.com/sharer/sharer.php?u=https://ieftimov.com/posts/testing-in-go-stop-leaking-files/&amp;quote=Testing%20in%20Go:%20Stop%20Leaking%20Files"
+          title="Share on Facebook"
+          aria-label="Share on Facebook"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="facebook" class="svg-inline--fa fa-facebook fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://twitter.com/intent/tweet/?url=https://ieftimov.com/posts/testing-in-go-stop-leaking-files/&amp;text=Testing%20in%20Go:%20Stop%20Leaking%20Files"
+          title="Tweet on Twitter"
+          aria-label="Tweet on Twitter"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="twitter" class="svg-inline--fa fa-twitter fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://reddit.com/submit/?url=https://ieftimov.com/posts/testing-in-go-stop-leaking-files/&amp;resubmit=true&amp;title=Testing%20in%20Go:%20Stop%20Leaking%20Files"
+          title="Submit to Reddit"
+          aria-label="Submit to Reddit"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="reddit" class="svg-inline--fa fa-reddit fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M201.5 305.5c-13.8 0-24.9-11.1-24.9-24.6 0-13.8 11.1-24.9 24.9-24.9 13.6 0 24.6 11.1 24.6 24.9 0 13.6-11.1 24.6-24.6 24.6zM504 256c0 137-111 248-248 248S8 393 8 256 119 8 256 8s248 111 248 248zm-132.3-41.2c-9.4 0-17.7 3.9-23.8 10-22.4-15.5-52.6-25.5-86.1-26.6l17.4-78.3 55.4 12.5c0 13.6 11.1 24.6 24.6 24.6 13.8 0 24.9-11.3 24.9-24.9s-11.1-24.9-24.9-24.9c-9.7 0-18 5.8-22.1 13.8l-61.2-13.6c-3-.8-6.1 1.4-6.9 4.4l-19.1 86.4c-33.2 1.4-63.1 11.3-85.5 26.8-6.1-6.4-14.7-10.2-24.1-10.2-34.9 0-46.3 46.9-14.4 62.8-1.1 5-1.7 10.2-1.7 15.5 0 52.6 59.2 95.2 132 95.2 73.1 0 132.3-42.6 132.3-95.2 0-5.3-.6-10.8-1.9-15.8 31.3-16 19.8-62.5-14.9-62.5zM302.8 331c-18.2 18.2-76.1 17.9-93.6 0-2.2-2.2-6.1-2.2-8.3 0-2.5 2.5-2.5 6.4 0 8.6 22.8 22.8 87.3 22.8 110.2 0 2.5-2.2 2.5-6.1 0-8.6-2.2-2.2-6.1-2.2-8.3 0zm7.7-75c-13.6 0-24.6 11.1-24.6 24.9 0 13.6 11.1 24.6 24.6 24.6 13.8 0 24.9-11.1 24.9-24.6 0-13.8-11-24.9-24.9-24.9z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https://ieftimov.com/posts/testing-in-go-stop-leaking-files/&amp;title=Testing%20in%20Go:%20Stop%20Leaking%20Files"
+          title="Share on LinkedIn"
+          aria-label="Share on LinkedIn"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="linkedin" class="svg-inline--fa fa-linkedin fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="mailto:?body=https://ieftimov.com/posts/testing-in-go-stop-leaking-files/&amp;subject=Testing%20in%20Go:%20Stop%20Leaking%20Files"
+          title="Send via email"
+          aria-label="Send via email"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="at" class="svg-inline--fa fa-at fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 8C118.941 8 8 118.919 8 256c0 137.059 110.919 248 248 248 48.154 0 95.342-14.14 135.408-40.223 12.005-7.815 14.625-24.288 5.552-35.372l-10.177-12.433c-7.671-9.371-21.179-11.667-31.373-5.129C325.92 429.757 291.314 440 256 440c-101.458 0-184-82.542-184-184S154.542 72 256 72c100.139 0 184 57.619 184 160 0 38.786-21.093 79.742-58.17 83.693-17.349-.454-16.91-12.857-13.476-30.024l23.433-121.11C394.653 149.75 383.308 136 368.225 136h-44.981a13.518 13.518 0 0 0-13.432 11.993l-.01.092c-14.697-17.901-40.448-21.775-59.971-21.775-74.58 0-137.831 62.234-137.831 151.46 0 65.303 36.785 105.87 96 105.87 26.984 0 57.369-15.637 74.991-38.333 9.522 34.104 40.613 34.103 70.71 34.103C462.609 379.41 504 307.798 504 232 504 95.653 394.023 8 256 8zm-21.68 304.43c-22.249 0-36.07-15.623-36.07-40.771 0-44.993 30.779-72.729 58.63-72.729 22.292 0 35.601 15.241 35.601 40.77 0 45.061-33.875 72.73-58.161 72.73z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+  </section>
+
+
+      
+  
+    
+    
+    
+    <div class="pt-8">
+      <hr class="border-dotted border-neutral-300 dark:border-neutral-600" />
+      <div class="flex justify-between pt-3">
+        <span>
+          
+            <a class="flex group" href="/posts/four-steps-daemonize-your-golang-programs/">
+              <span
+                class="mr-3 ltr:inline rtl:hidden text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&larr;</span
+              >
+              <span
+                class="ml-3 ltr:hidden rtl:inline text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&rarr;</span
+              >
+              <span class="flex flex-col">
+                <span
+                  class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+                  >Four Steps to Daemonize Your Go Programs</span
+                >
+                <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+                  
+                    <time datetime="2020-05-02 00:00:00 &#43;0000 UTC">2 May 2020</time>
+                  
+                </span>
+              </span>
+            </a>
+          
+        </span>
+        <span>
+          
+            <a class="flex text-right group" href="/posts/deep-dive-cors-history-how-it-works-best-practices/">
+              <span class="flex flex-col">
+                <span
+                  class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+                  >Deep dive in CORS: History, how it works, and best practices</span
+                >
+                <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+                  
+                    <time datetime="2021-04-12 00:00:00 &#43;0000 UTC">12 April 2021</time>
+                  
+                </span>
+              </span>
+              <span
+                class="ml-3 ltr:inline rtl:hidden text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&rarr;</span
+              >
+              <span
+                class="mr-3 ltr:hidden rtl:inline text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&larr;</span
+              >
+            </a>
+          
+        </span>
+      </div>
+    </div>
+  
+
+
+    </footer>
+    
+  </article>
+
+      
+        <div
+          class="absolute top-[110vh] ltr:right-0 rtl:left-0 w-12 pointer-events-none bottom-[-5.5rem]"
+        >
+          <a
+            href="#the-top"
+            class="w-12 h-12 sticky pointer-events-auto top-[calc(100vh-5rem)] bg-neutral/50 dark:bg-neutral-800/50 backdrop-blur rounded-full text-xl flex items-center justify-center text-neutral-700 dark:text-neutral hover:text-primary-600 dark:hover:text-primary-400"
+            aria-label="Scroll to top"
+            title="Scroll to top"
+          >
+            &uarr;
+          </a>
+        </div>
+      
+    </main>
+    <div
+  id="search-wrapper"
+  class="fixed inset-0 z-50 flex flex-col p-4 sm:p-6 md:p-[10vh] lg:p-[12vh] w-screen h-screen cursor-default bg-neutral-500/50 backdrop-blur-sm dark:bg-neutral-900/50 invisible"
+  data-url="https://ieftimov.com/"
+>
+  <div
+    id="search-modal"
+    class="flex flex-col w-full max-w-3xl min-h-0 mx-auto border rounded-md shadow-lg border-neutral-200 top-20 bg-neutral dark:bg-neutral-800 dark:border-neutral-700"
+  >
+    <header class="relative z-10 flex items-center justify-between flex-none px-2">
+      <form class="flex items-center flex-auto min-w-0">
+        <div class="flex items-center justify-center w-8 h-8 text-neutral-400">
+          
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="search" class="svg-inline--fa fa-search fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>
+  </span>
+
+
+        </div>
+        <input
+          type="search"
+          id="search-query"
+          class="flex flex-auto h-12 mx-1 bg-transparent appearance-none focus:outline-dotted focus:outline-transparent focus:outline-2"
+          placeholder="Search"
+          tabindex="0"
+        />
+      </form>
+      <button
+        id="close-search-button"
+        class="flex items-center justify-center w-8 h-8 text-neutral-700 dark:text-neutral hover:text-primary-600 dark:hover:text-primary-400"
+        title="Close (Esc)"
+      >
+        
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
+  </span>
+
+
+      </button>
+    </header>
+    <section class="flex-auto px-2 overflow-auto">
+      <ul id="search-results">
+        
+      </ul>
+    </section>
+  </div>
+</div>
+<footer class="py-10">
+  
+  
+    <nav class="pb-4 text-base font-medium text-neutral-500 dark:text-neutral-400">
+      <ul class="flex flex-col list-none sm:flex-row">
+        
+          <li class="mb-1 sm:mb-0 sm:mr-7 sm:last:mr-0">
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/analytics"
+              title=""
+              >Analytics</a
+            >
+          </li>
+        
+          <li class="mb-1 sm:mb-0 sm:mr-7 sm:last:mr-0">
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/index.xml"
+              title=""
+              >RSS</a
+            >
+          </li>
+        
+          <li class="mb-1 sm:mb-0 sm:mr-7 sm:last:mr-0">
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="https://forms.gle/orfXK5jh1LRaiFzo8"
+              title=""
+              >Suggest a topic</a
+            >
+          </li>
+        
+      </ul>
+    </nav>
+  
+  <div class="flex justify-between">
+    <div>
+      
+      <p class="text-sm text-neutral-500 dark:text-neutral-400">
+          &copy;
+          2022
+          Ilija Eftimov
+      </p>
+      
+      
+        <p class="text-xs text-neutral-500 dark:text-neutral-400">
+          
+          
+          Powered by <a class="hover:underline hover:decoration-primary-400 hover:text-primary-500"
+            href="https://gohugo.io/" target="_blank" rel="noopener noreferrer">Hugo</a> &amp; <a class="hover:underline hover:decoration-primary-400 hover:text-primary-500" href="https://git.io/hugo-congo" target="_blank" rel="noopener noreferrer">Congo</a>
+        </p>
+      
+    </div>
+    
+    
+      <div
+        class="text-sm cursor-pointer text-neutral-700 dark:text-neutral hover:text-primary-600 dark:hover:text-primary-400 ltr:mr-14 rtl:ml-14"
+      >
+        <button
+          id="appearance-switcher"
+          class="w-12 h-12 "
+          type="button"
+          title="Switch to dark appearance"
+        >
+          <span class="inline dark:hidden">
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M283.211 512c78.962 0 151.079-35.925 198.857-94.792 7.068-8.708-.639-21.43-11.562-19.35-124.203 23.654-238.262-71.576-238.262-196.954 0-72.222 38.662-138.635 101.498-174.394 9.686-5.512 7.25-20.197-3.756-22.23A258.156 258.156 0 0 0 283.211 0c-141.309 0-256 114.511-256 256 0 141.309 114.511 256 256 256z"></path></svg>
+  </span>
+
+</span>
+          <span class="hidden dark:inline">
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 160c-52.9 0-96 43.1-96 96s43.1 96 96 96 96-43.1 96-96-43.1-96-96-96zm246.4 80.5l-94.7-47.3 33.5-100.4c4.5-13.6-8.4-26.5-21.9-21.9l-100.4 33.5-47.4-94.8c-6.4-12.8-24.6-12.8-31 0l-47.3 94.7L92.7 70.8c-13.6-4.5-26.5 8.4-21.9 21.9l33.5 100.4-94.7 47.4c-12.8 6.4-12.8 24.6 0 31l94.7 47.3-33.5 100.5c-4.5 13.6 8.4 26.5 21.9 21.9l100.4-33.5 47.3 94.7c6.4 12.8 24.6 12.8 31 0l47.3-94.7 100.4 33.5c13.6 4.5 26.5-8.4 21.9-21.9l-33.5-100.4 94.7-47.3c13-6.5 13-24.7.2-31.1zm-155.9 106c-49.9 49.9-131.1 49.9-181 0-49.9-49.9-49.9-131.1 0-181 49.9-49.9 131.1-49.9 181 0 49.9 49.9 49.9 131.1 0 181z"></path></svg>
+  </span>
+
+</span>
+        </button>
+      </div>
+    
+  </div>
+  
+  
+</footer>
+</body>
+</html>

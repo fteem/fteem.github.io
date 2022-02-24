@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html
+  lang="en"
+  dir="ltr"
+  class="scroll-smooth"
+  data-default-appearance="light"
+  data-auto-appearance="true"
+><head>
+  <meta charset="utf-8" />
+  
+    <meta http-equiv="content-language" content="en" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  
+  <title>Make resilient Go net/http servers using timeouts, deadlines and context cancellation &middot; Ilija Eftimov 👨‍🚀</title>
+    <meta name="title" content="Make resilient Go net/http servers using timeouts, deadlines and context cancellation &middot; Ilija Eftimov 👨‍🚀" />
+  
+  <meta name="description" content="Documenting my experiences and learnings, with the goal of helping other software engineers on their journey" />
+  
+  
+  
+  <link rel="canonical" href="https://ieftimov.com/posts/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/" />
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <link
+    type="text/css"
+    rel="stylesheet"
+    href="/css/main.bundle.min.b4e16dd9839a706aac3e482fb2ead8a30c01f199844299a37ddc79029b6a3bae7c65ff23668804cf9b10c85a4931caa1dca1efa0395de6dc9fe0784468f41457.css"
+    integrity="sha512-tOFt2YOacGqsPkgvsurYowwB8ZmEQpmjfdx5AptqO658Zf8jZogEz5sQyFpJMcqh3KHvoDld5tyf4HhEaPQUVw=="
+  />
+  
+  
+  <script type="text/javascript" src="/js/appearance.min.dbca9e2200cf929a23b55442f2ff09361b8d5290147ff1407f89ed3839f0fea13db4e94f5ae6bf2f3de10d322b4bede74b578455e9cc7d5565314d914602c974.js" integrity="sha512-28qeIgDPkpojtVRC8v8JNhuNUpAUf/FAf4ntODnw/qE9tOlPWua/Lz3hDTIrS&#43;3nS1eEVenMfVVlMU2RRgLJdA=="></script>
+  
+    
+    
+    
+  
+  
+    
+    
+  
+  
+    
+    <script defer type="text/javascript" id="script-bundle" src="/js/main.bundle.min.238e7ce9c541b4e7abb5781ad8e736e849e74890fcb8a26e73ea1845f573b3a0cf91418b20ac4401bdbb57d9c6c009d8f6ec50dad6d44b48f3936aea0f95c391.js" integrity="sha512-I4586cVBtOertXga2Oc26EnnSJD8uKJuc&#43;oYRfVzs6DPkUGLIKxEAb27V9nGwAnY9uxQ2tbUS0jzk2rqD5XDkQ==" data-copy="Copy" data-copied="Copied"></script>
+  
+  
+  
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+  
+  
+  
+  
+  
+  
+  
+  <meta property="og:title" content="Make resilient Go net/http servers using timeouts, deadlines and context cancellation" />
+<meta property="og:description" content="When it comes to timeouts, there are two types of people: those who know how tricky they can be, and those who are yet to find out." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ieftimov.com/posts/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/" /><meta property="og:image" content="https://ieftimov.com/cards/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation.png" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2020-01-05T00:00:00+00:00" />
+<meta property="article:modified_time" content="2020-01-05T00:00:00+00:00" /><meta property="og:site_name" content="Ilija Eftimov 👨‍🚀" />
+
+
+  <meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ieftimov.com/cards/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation.png"/>
+
+<meta name="twitter:title" content="Make resilient Go net/http servers using timeouts, deadlines and context cancellation"/>
+<meta name="twitter:description" content="When it comes to timeouts, there are two types of people: those who know how tricky they can be, and those who are yet to find out."/>
+
+  
+  <script type="application/ld+json">
+  [{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "articleSection": "Posts",
+    "name": "Make resilient Go net\/http servers using timeouts, deadlines and context cancellation",
+    "headline": "Make resilient Go net\/http servers using timeouts, deadlines and context cancellation",
+    
+    "abstract": "When it comes to timeouts, there are two types of people: those who know how tricky they can be, and those who are yet to find out.",
+    "inLanguage": "en",
+    "url" : "https:\/\/ieftimov.com\/posts\/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation\/",
+    "author" : {
+      "@type": "Person",
+      "name": "Ilija Eftimov"
+    },
+    "copyrightYear": "2020",
+    "dateCreated": "2020-01-05T00:00:00\u002b00:00",
+    "datePublished": "2020-01-05T00:00:00\u002b00:00",
+    
+    "dateModified": "2020-01-05T00:00:00\u002b00:00",
+    
+    
+    
+    "mainEntityOfPage": "true",
+    "wordCount": "2973"
+  }]
+  </script>
+
+
+  
+  
+    <meta name="generator" content="Hugo 0.92.2" />
+  
+  
+  <meta name="author" content="Ilija Eftimov" />
+  
+    
+      <link href="https://twitter.com/itsilija" rel="me" />
+    
+      <link href="https://www.linkedin.com/in/ieftimov/" rel="me" />
+    
+      <link href="mailto:blog@ieftimov.com" rel="me" />
+    
+      <link href="https://dev.to/fteem" rel="me" />
+    
+      <link href="https://github.com/fteem" rel="me" />
+    
+      <link href="https://t.me/ieftimovcom" rel="me" />
+    
+  
+  
+  
+
+
+
+
+
+
+  
+  <script async defer data-domain="ieftimov.com" src="https://plausible.io/js/plausible.js"></script>
+
+  
+  
+</head>
+<body
+    class="flex flex-col h-screen px-6 m-auto text-lg leading-7 bg-neutral text-neutral-900 sm:px-14 md:px-24 lg:px-32 dark:bg-neutral-800 dark:text-neutral max-w-7xl"
+  >
+    <div id="the-top" class="absolute flex self-center">
+      <a
+        class="px-3 py-1 text-sm -translate-y-8 rounded-b-lg bg-primary-200 dark:bg-neutral-600 focus:translate-y-0"
+        href="#main-content"
+        ><span class="font-bold ltr:pr-2 rtl:pl-2 text-primary-600 dark:text-primary-400"
+          >&darr;</span
+        >Skip to main content</a
+      >
+    </div><header
+  class="flex justify-between py-6 font-semibold sm:items-center sm:py-10 text-neutral-900 dark:text-neutral"
+>
+  
+  <div>
+    
+      <a
+        class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+        rel="me"
+        href="/"
+        >Ilija Eftimov 👨‍🚀</a
+      >
+    
+
+  </div>
+  
+  
+    <nav>
+      <ul class="flex flex-col list-none sm:flex-row">
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/"
+              title=""
+              >Home</a
+            >
+          </li>
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/posts/"
+              title="Posts"
+              >Writing</a
+            >
+          </li>
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/work"
+              title=""
+              >Work</a
+            >
+          </li>
+        
+          <li
+            class="mb-1 ltr:text-right rtl:text-left sm:mb-0 ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="https://www.getrevue.co/profile/itsilija"
+              title=""
+              >Subscribe</a
+            >
+          </li>
+        
+        
+          <li
+            class="ltr:text-right rtl:text-left ltr:sm:mr-7 ltr:sm:last:mr-0 rtl:sm:ml-7 rtl:sm:last:ml-0"
+          >
+            <button
+              id="search-button"
+              class="text-base hover:text-primary-600 dark:hover:text-primary-400"
+              title="Search (/)"
+            >
+              
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="search" class="svg-inline--fa fa-search fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>
+  </span>
+
+
+            </button>
+          </li>
+        
+      </ul>
+    </nav>
+  
+</header>
+<main id="main-content" class="relative grow">
+  <article>
+    <header class="max-w-prose">
+      
+      <h1 class="mt-0 text-4xl font-extrabold text-neutral-900 dark:text-neutral">
+        Make resilient Go net/http servers using timeouts, deadlines and context cancellation
+      </h1>
+      <div class="mt-8 mb-12 text-base text-neutral-500 dark:text-neutral-400">
+        
+
+
+
+
+
+  
+  
+
+
+
+  
+
+  
+  
+    
+  
+
+  
+
+  
+
+  
+    
+  
+
+  
+
+
+  <div class="flex flex-row flex-wrap items-center">
+    
+    
+      <time datetime="2020-01-05 00:00:00 &#43;0000 UTC">5 January 2020</time><span class="px-2 text-primary-500">&middot;</span><span title="Reading time">14 mins</span>
+    
+
+    
+    
+  </div>
+
+  
+  
+
+
+      </div>
+    </header>
+    <section class="flex flex-col max-w-full mt-0 prose lg:flex-row dark:prose-invert">
+      
+        <div class="order-first px-0 lg:max-w-xs ltr:lg:pl-8 rtl:lg:pr-8 lg:order-last">
+          <div class="ltr:pl-5 rtl:pr-5 toc lg:sticky lg:top-10">
+            <details open class="mt-0 overflow-hidden rounded-lg rtl:pr-5 ltr:pl-5 ltr:-ml-5 rtl:-mr-5 lg:mt-3">
+  <summary
+    class="block py-1 text-lg font-semibold cursor-pointer rtl:pr-5 ltr:pl-5 ltr:-ml-5 rtl:-mr-5 text-neutral-800 dark:text-neutral-100 lg:hidden bg-neutral-100 dark:bg-neutral-700"
+  >
+    Table of Contents
+  </summary>
+  <div
+    class="py-2 border-dotted ltr:border-l rtl:border-r rtl:pr-5 ltr:pl-5 ltr:-ml-5 rtl:-mr-5 border-neutral-300 dark:border-neutral-600"
+  >
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#server-timeouts---first-principles">Server timeouts - first principles</a></li>
+    <li><a href="#timeouts-and-deadlines">Timeouts and deadlines</a></li>
+    <li><a href="#handler-timeout">Handler timeout</a></li>
+    <li><a href="#unhandled-timeouts-and-request-cancellations">Unhandled timeouts and request cancellations</a></li>
+    <li><a href="#context-timeouts-and-cancellation">Context timeouts and cancellation</a></li>
+    <li><a href="#resilient-nethttp-servers">Resilient <code>net/http</code> servers</a></li>
+  </ul>
+</nav>
+  </div>
+</details>
+
+          </div>
+        </div>
+      
+      <div class="min-w-0 min-h-0 max-w-prose">
+        <p>When it comes to timeouts, there are two types of people: those who know how
+tricky they can be, and those who are yet to find out.</p>
+<p>As tricky as they are, timeouts are a reality in the connected world we live
+in. As I am writing this, on the other side of the table, two persons are
+typing on their smartphones, probably chatting to people very far from them.
+All made possible because of networks.</p>
+<p>Networks and all their intricacies are here to stay, and we, who write servers
+for the web, have to know how to use them efficiently and guard against their
+deficiencies.</p>
+<p>Without further ado, let&rsquo;s look at timeouts and how they affect our <code>net/http</code>
+servers.</p>
+<h2 id="server-timeouts---first-principles" class="relative group">Server timeouts - first principles <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#server-timeouts---first-principles" aria-label="Anchor">#</a></span></h2>
+<p>In web programming, the general classification of timeouts is client and server
+timeouts. What inspired me to dive into this topic was an interesting server
+timeout problem I found myself in. That&rsquo;s why, in this article, we will focus
+on server-side timeouts.</p>
+<p>To get the basic terminology out of the way: timeout is a time interval (or
+limit) in which a specific action must complete. If the operation does not
+complete in the given time limit, a timeout occurs, and the operation is
+canceled.</p>
+<p>Initializing a <code>net/http</code> server in Golang reveals a few basic timeout
+configurations:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">srv</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Server</span><span class="p">{</span>
+    <span class="nx">ReadTimeout</span><span class="p">:</span>       <span class="mi">1</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+    <span class="nx">WriteTimeout</span><span class="p">:</span>      <span class="mi">1</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+    <span class="nx">IdleTimeout</span><span class="p">:</span>       <span class="mi">30</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+    <span class="nx">ReadHeaderTimeout</span><span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+    <span class="nx">TLSConfig</span><span class="p">:</span>         <span class="nx">tlsConfig</span><span class="p">,</span>
+    <span class="nx">Handler</span><span class="p">:</span>           <span class="nx">srvMux</span><span class="p">,</span>
+<span class="p">}</span></code></pre></div>
+<p>This server of <code>http.Server</code> type can be initialized with four different
+timeouts:</p>
+<ul>
+<li><code>ReadTimeout</code>: the maximum duration for reading the entire request, including
+the body</li>
+<li><code>WriteTimeout</code>: the maximum duration before timing out writes of the response</li>
+<li><code>IdleTimetout</code>: the maximum amount of time to wait for the next request when
+keep-alive is enabled</li>
+<li><code>ReadHeaderTimeout</code>: the amount of time allowed to read request headers</li>
+</ul>
+<p>A graphical representation of the above timeouts:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<figure class="imagecaption">
+  <img class="caption" src="/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/request-lifecycle-timeouts.png" caption="" alt="">
+  <span class="caption-text" style="font-size: 0.75em;display: table;margin: 0 auto 1.5em;"></span>
+</figure>
+
+<p>Before you start thinking that these are all the timeouts you need, tread
+carefully! There&rsquo;s more than meets the eye here. These timeout values provide
+much more fine-grained control, and they are not going to help us to timeout
+our long-running HTTP handlers.</p>
+<p>Let me explain.</p>
+<h2 id="timeouts-and-deadlines" class="relative group">Timeouts and deadlines <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#timeouts-and-deadlines" aria-label="Anchor">#</a></span></h2>
+<p>If we look at the source of <code>net/http</code>, in particular, the <a href="https://github.com/golang/go/blob/bbbc658/src/net/http/server.go#L248"><code>conn</code>
+type</a>,
+we will notice that it uses <code>net.Conn</code> connection under the hood which
+represents the underlying network connection:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// Taken from: https://github.com/golang/go/blob/bbbc658/src/net/http/server.go#L247
+</span><span class="c1">// A conn represents the server-side of an HTTP connection.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">conn</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="c1">// server is the server on which the connection arrived.
+</span><span class="c1"></span>    <span class="c1">// Immutable; never nil.
+</span><span class="c1"></span>    <span class="nx">server</span> <span class="o">*</span><span class="nx">Server</span>
+
+    <span class="c1">// * Snipped *
+</span><span class="c1"></span>
+    <span class="c1">// rwc is the underlying network connection.
+</span><span class="c1"></span>    <span class="c1">// This is never wrapped by other types and is the value given out
+</span><span class="c1"></span>    <span class="c1">// to CloseNotifier callers. It is usually of type *net.TCPConn or
+</span><span class="c1"></span>    <span class="c1">// *tls.Conn.
+</span><span class="c1"></span>    <span class="nx">rwc</span> <span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span>
+
+    <span class="c1">// * Snipped *
+</span><span class="c1"></span><span class="p">}</span></code></pre></div>
+<p>In other words, it&rsquo;s the actual TCP connection that our HTTP
+request travels on. From a type perspective, it&rsquo;s a <code>*net.TCPConn</code> or
+<code>*tls.Conn</code> if it&rsquo;s a TLS connection.</p>
+<p>The <code>serve</code>
+<a href="https://github.com/golang/go/blob/bbbc658/src/net/http/server.go#L1765">function</a>,
+calls the <code>readRequest</code> function <a href="https://github.com/golang/go/blob/bbbc658/src/net/http/server.go#L1822">for each incoming
+request</a>.
+<code>readRequest</code> <a href="https://github.com/golang/go/blob/bbbc658/src/net/http/server.go#L946-L958">uses the timeout
+values</a>
+that we set on the server to <strong>set deadlines on the TCP connection</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// Taken from: https://github.com/golang/go/blob/bbbc658/src/net/http/server.go#L936
+</span><span class="c1">// Read next request from connection.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">c</span> <span class="o">*</span><span class="nx">conn</span><span class="p">)</span> <span class="nf">readRequest</span><span class="p">(</span><span class="nx">ctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">)</span> <span class="p">(</span><span class="nx">w</span> <span class="o">*</span><span class="nx">response</span><span class="p">,</span> <span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// *Snipped*
+</span><span class="c1"></span>
+        <span class="nx">t0</span> <span class="o">:=</span> <span class="nx">time</span><span class="p">.</span><span class="nf">Now</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nx">d</span> <span class="o">:=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">server</span><span class="p">.</span><span class="nf">readHeaderTimeout</span><span class="p">();</span> <span class="nx">d</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+                <span class="nx">hdrDeadline</span> <span class="p">=</span> <span class="nx">t0</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="nx">d</span> <span class="o">:=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">server</span><span class="p">.</span><span class="nx">ReadTimeout</span><span class="p">;</span> <span class="nx">d</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+                <span class="nx">wholeReqDeadline</span> <span class="p">=</span> <span class="nx">t0</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="nx">c</span><span class="p">.</span><span class="nx">rwc</span><span class="p">.</span><span class="nf">SetReadDeadline</span><span class="p">(</span><span class="nx">hdrDeadline</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">d</span> <span class="o">:=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">server</span><span class="p">.</span><span class="nx">WriteTimeout</span><span class="p">;</span> <span class="nx">d</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+                <span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+                        <span class="nx">c</span><span class="p">.</span><span class="nx">rwc</span><span class="p">.</span><span class="nf">SetWriteDeadline</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nf">Now</span><span class="p">().</span><span class="nf">Add</span><span class="p">(</span><span class="nx">d</span><span class="p">))</span>
+                <span class="p">}()</span>
+        <span class="p">}</span>
+
+        <span class="c1">// *Snipped*
+</span><span class="c1"></span><span class="p">}</span></code></pre></div>
+<p>From the snippet above, we can conclude that the timeout values set on the
+server end up as TCP connection deadlines instead of HTTP timeouts.</p>
+<p>So, what are deadlines then? How do they work? Will they timeout our connection
+if our request takes too long?</p>
+<p>A simple way to think about deadlines is as a point in time at which
+restrictions on specific actions on the connection are enforced. For example,
+if we set a write deadline after the deadline time passes, any write actions on
+the connection will be forbidden.</p>
+<p>While we can create timeout-like behavior using deadlines, we cannot control
+the time it takes for our handlers to complete. Deadlines operate on the
+connection, so our server will fail to return a result only after the handlers
+try to access connection properties (such as writing to <code>http.ResponseWriter</code>).</p>
+<p>To see this in action, let&rsquo;s create a tiny handler that takes longer to
+complete relative to the timeouts we set on the server:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;fmt&#34;</span>
+	<span class="s">&#34;io&#34;</span>
+	<span class="s">&#34;net/http&#34;</span>
+	<span class="s">&#34;time&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">slowHandler</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+	<span class="nx">io</span><span class="p">.</span><span class="nf">WriteString</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;I am slow!\n&#34;</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">srv</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Server</span><span class="p">{</span>
+		<span class="nx">Addr</span><span class="p">:</span>         <span class="s">&#34;:8888&#34;</span><span class="p">,</span>
+		<span class="nx">WriteTimeout</span><span class="p">:</span> <span class="mi">1</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+		<span class="nx">Handler</span><span class="p">:</span>      <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="nx">slowHandler</span><span class="p">),</span>
+	<span class="p">}</span>
+
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">srv</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">();</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Server failed: %s\n&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+<p>The server above has a single handler, which takes 2 seconds to complete. On the
+other hand, the <code>http.Server</code> has a <code>WriteTimeout</code> set to 1 second. Due to the
+configuration of the server, we expect the handler to be unable to write the
+response to the connection.</p>
+<p>We can start the server using <code>go run server.go</code>. To send a request we can
+<code>curl localhost:8888</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">$ <span class="nb">time</span> curl localhost:8888
+curl: <span class="o">(</span>52<span class="o">)</span> Empty reply from server
+curl localhost:8888  0.01s user 0.01s system 0% cpu 2.021 total</code></pre></div>
+<p>The request took 2 seconds to complete, and the response from the server was
+empty. While our server knows that we cannot write to our response after 1
+second, the handler still took 100% more (2 seconds) to complete.</p>
+<p>While this is a timeout-like behavior, it would be more useful to stop our
+server from further execution when it reaches the timeout, ending the request.
+In our example above, the handler proceeds to process the request until it
+completes, although it takes 100% longer (2 seconds) than the response write
+timeout time (1 second).</p>
+<p>The natural question is, how can we have efficient timeouts for our handlers?</p>
+<h2 id="handler-timeout" class="relative group">Handler timeout <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#handler-timeout" aria-label="Anchor">#</a></span></h2>
+<p>Our goal is to make sure our <code>slowHandler</code> does not take longer than 1 seconds
+to complete. If it does take longer, our server should stop its execution and
+return a proper timeout error.</p>
+<p>In Go, as with other programming languages, composition is very often the
+favored approach to writing and designing code. The <a href="https://golang.org/pkg/net/http"><code>net/http</code>
+package</a> of the standard library is one of the
+places where having compatible components that one can put together with little
+effort is an obvious design choice.</p>
+<p>In that light, the <code>net/http</code> packages provide <a href="https://golang.org/pkg/net/http/#TimeoutHandler">a
+<code>TimeoutHandler</code></a> - it returns
+a handler that runs a handler within the given time limit.</p>
+<p>Its signature is:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TimeoutHandler</span><span class="p">(</span><span class="nx">h</span> <span class="nx">Handler</span><span class="p">,</span> <span class="nx">dt</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span><span class="p">,</span> <span class="nx">msg</span> <span class="kt">string</span><span class="p">)</span> <span class="nx">Handler</span></code></pre></div>
+<p>It takes a <code>Handler</code> as the first argument, a <code>time.Duration</code> as the second
+argument (the timeout time) and a <code>string</code>, the message returned when it hits
+the timeout.</p>
+<p>To wrap our <code>slowHandler</code> within a <code>TimeoutHandler</code>, all we have to do is:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;fmt&#34;</span>
+	<span class="s">&#34;io&#34;</span>
+	<span class="s">&#34;net/http&#34;</span>
+	<span class="s">&#34;time&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">slowHandler</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+	<span class="nx">io</span><span class="p">.</span><span class="nf">WriteString</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;I am slow!\n&#34;</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">srv</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Server</span><span class="p">{</span>
+		<span class="nx">Addr</span><span class="p">:</span>         <span class="s">&#34;:8888&#34;</span><span class="p">,</span>
+		<span class="nx">WriteTimeout</span><span class="p">:</span> <span class="mi">5</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+		<span class="nx">Handler</span><span class="p">:</span>      <span class="nx">http</span><span class="p">.</span><span class="nf">TimeoutHandler</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="nx">slowHandler</span><span class="p">),</span> <span class="mi">1</span><span class="o">*</span><span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span> <span class="s">&#34;Timeout!\n&#34;</span><span class="p">),</span>
+	<span class="p">}</span>
+
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">srv</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">();</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Server failed: %s\n&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+<p>The two notable changes are:</p>
+<ul>
+<li>We wrap our <code>slowHanlder</code> in the <code>http.TimetoutHandler</code>, setting the timeout
+to 1 second and the timeout message to &ldquo;Timeout!&rdquo;.</li>
+<li>We increase the <code>WriteTimeout</code> to 5 seconds, to give the
+<code>http.TimeoutHandler</code> time to kick in. If we don&rsquo;t do this when the
+<code>TimeoutHandler</code> kicks in, the deadline will pass, and it won&rsquo;t be able to
+write to the response.</li>
+</ul>
+<p>If we started the server again and hit the slow handler we&rsquo;ll get the following
+output:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">$ <span class="nb">time</span> curl localhost:8888
+Timeout!
+curl localhost:8888  0.01s user 0.01s system 1% cpu 1.023 total</code></pre></div>
+<p>After a second, our <code>TimeoutHandler</code> will kick in, stop processing the
+<code>slowHandler</code>, and return a plain &ldquo;<code>Timeout!</code>&rdquo; message. If the message we set
+is blank, then the handler will return the default timeout response, which is:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-html" data-lang="html"><span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">title</span><span class="p">&gt;</span>Timeout<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>
+   <span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>Timeout<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span></code></pre></div>
+<p>Regardless of the output, this is pretty neat, isn&rsquo;t it? Our application now is
+protected from long-running handlers and specially crafted requests made to
+cause very long-running handlers, leading to a potential DoS (Denial of
+Service) attack.</p>
+<p>It&rsquo;s worth noting that although setting timeouts is a great start, it&rsquo;s still
+elementary protection. If you&rsquo;re under threat of an imminent DoS attack, you
+should look into more advanced protection tools and techniques.
+(<a href="https://www.cloudflare.com/ddos/">Cloudflare</a> is a good start.)</p>
+<p>Our <code>slowHandler</code> is a simple example-only handler. But, what if our
+application was much more complicated, making external calls to other services
+or resources? What if we had an outgoing request to a service such as S3 when
+our handler would time out?</p>
+<p>What would happen then?</p>
+<h2 id="unhandled-timeouts-and-request-cancellations" class="relative group">Unhandled timeouts and request cancellations <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#unhandled-timeouts-and-request-cancellations" aria-label="Anchor">#</a></span></h2>
+<p>Let&rsquo;s expand our example a bit:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">slowAPICall</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
+	<span class="nx">d</span> <span class="o">:=</span> <span class="nx">rand</span><span class="p">.</span><span class="nf">Intn</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+	<span class="k">select</span> <span class="p">{</span>
+	<span class="k">case</span> <span class="o">&lt;-</span><span class="nx">time</span><span class="p">.</span><span class="nf">After</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nf">Duration</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">):</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Slow API call done after %s seconds.\n&#34;</span><span class="p">,</span> <span class="nx">d</span><span class="p">)</span>
+		<span class="k">return</span> <span class="s">&#34;foobar&#34;</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">slowHandler</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">result</span> <span class="o">:=</span> <span class="nf">slowAPICall</span><span class="p">()</span>
+	<span class="nx">io</span><span class="p">.</span><span class="nf">WriteString</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">result</span><span class="o">+</span><span class="s">&#34;\n&#34;</span><span class="p">)</span>
+<span class="p">}</span></code></pre></div>
+<p>Let&rsquo;s imagine that initially we didn&rsquo;t know that our <code>slowHandler</code> took so long
+to complete because it was sending a request to an API - using the
+<code>slowAPICall</code> function.</p>
+<p>The <code>slowAPICall</code> function is straightforward: using <code>select</code> and a
+<code>time.After</code> it blocks between 0 and 5 seconds. Once that period passes, the
+<code>time.After</code> method sends a value through its channel and <code>&quot;foobar&quot;</code> will be
+returned.</p>
+<p>(An alternative approach is to use <code>sleep(time.Duration(rand.Intn(5)) * time.Second)</code>, but we will stick to <code>select</code> because it will make our life
+simpler in the next example.)</p>
+<p>If we run our server, we would expect the timeout handler to cut off the
+request processing after 1 second. Sending a request proves that:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">$ <span class="nb">time</span> curl localhost:8888
+Timeout!
+curl localhost:8888  0.01s user 0.01s system 1% cpu 1.021 total</code></pre></div>
+<p>By looking at the server output, we will notice that it prints the loglines
+after a few seconds instead of when the timeout handler kicks in:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell">$ go run server.go
+2019/12/29 17:20:03 Slow API call <span class="k">done</span> after <span class="m">4</span> seconds.</code></pre></div>
+<p>Such behavior suggests that although the request timed out after 1 second, the
+server proceeded to process the request fully. That&rsquo;s why it printed the
+logline after 4 seconds passed.</p>
+<p>While this example is trivial and naive, such behavior in production servers
+can become a rather big problem. For example, imagine if the <code>slowAPICall</code>
+function spawned hundreds of goroutines, each of them processing some data. Or
+if it was issuing multiple API calls to various systems. Such long-running
+processes will eat up resources from your system, while the caller/client won&rsquo;t
+ever use their result.</p>
+<p>So, how can we guard our system from such unoptimized timeouts or request
+cancellations?</p>
+<h2 id="context-timeouts-and-cancellation" class="relative group">Context timeouts and cancellation <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#context-timeouts-and-cancellation" aria-label="Anchor">#</a></span></h2>
+<p>Go comes with a neat package for handling such scenarios called
+<a href="https://golang.org/pkg/context/"><code>context</code></a>.</p>
+<p>The <code>context</code> package was promoted to the standard library as of Go 1.7.
+Previously it was part of the <a href="https://godoc.org/-/subrepo">Go Sub-repository
+Packages</a>, with the name
+<a href="https://godoc.org/golang.org/x/net/context"><code>golang.org/x/net/context</code></a></p>
+<p>The package defines the <code>Context</code> type. It&rsquo;s primary purpose is to carry
+deadlines, cancellation signals, and other request-scoped values across API
+boundaries and between processes. If you would like to learn more about the
+context package, I recommend reading &ldquo;Go Concurrency Patterns: Context&rdquo; on
+<a href="https://blog.golang.org/context">Golang&rsquo;s blog</a>.</p>
+<p>The <code>Request</code> type that is part of the <code>net/http</code> package already has a
+<code>context</code> attached to it. As of Go 1.7, <code>Request</code> has <a href="https://golang.org/pkg/net/http/#Request.Context">a <code>Context</code>
+function</a>, which returns the
+request&rsquo;s context. For incoming server requests, the server cancels the context
+when the client&rsquo;s connection closes, when the request is canceled (in HTTP/2),
+or when the <code>ServeHTTP</code> method returns.</p>
+<p>The behavior we are looking for is to stop all further processing on the
+server-side when the client cancels the request (we hit <code>CTRL + C</code> on our
+<code>cURL</code>) or the <code>TimeoutHandler</code> steps in after some time and ends the request.
+That will effectively close all connections and free all other resources taken
+up by the running handler (and all of its children goroutines).</p>
+<p>Let&rsquo;s use the request Context to pass it to the <code>slowAPICall</code> function as
+an argument:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">slowAPICall</span><span class="p">(</span><span class="nx">ctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+	<span class="nx">d</span> <span class="o">:=</span> <span class="nx">rand</span><span class="p">.</span><span class="nf">Intn</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+	<span class="k">select</span> <span class="p">{</span>
+	<span class="k">case</span> <span class="o">&lt;-</span><span class="nx">time</span><span class="p">.</span><span class="nf">After</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nf">Duration</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">):</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Slow API call done after %d seconds.\n&#34;</span><span class="p">,</span> <span class="nx">d</span><span class="p">)</span>
+		<span class="k">return</span> <span class="s">&#34;foobar&#34;</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">slowHandler</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">result</span> <span class="o">:=</span> <span class="nf">slowAPICall</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">())</span>
+	<span class="nx">io</span><span class="p">.</span><span class="nf">WriteString</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">result</span><span class="o">+</span><span class="s">&#34;\n&#34;</span><span class="p">)</span>
+<span class="p">}</span></code></pre></div>
+<p>Now that we utilize the request context, how can we put it in action?  <a href="https://golang.org/pkg/context/#Context">The
+<code>Context</code> type</a> has a <code>Done</code>
+attribute, which is of type <code>&lt;-chan struct{}</code>. <code>Done</code> closes when the work
+done on behalf of the context should be canceled, which is what we need in the
+example.</p>
+<p>Let&rsquo;s handle the <code>ctx.Done</code> channel in the <code>select</code> block in the <code>slowAPICall</code>
+function. When we receive an empty <code>struct</code> via the <code>Done</code> channel, this
+signifies the context cancellation, and we have to return a zero-value string
+from the <code>slowAPICall</code> function:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">slowAPICall</span><span class="p">(</span><span class="nx">ctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+	<span class="nx">d</span> <span class="o">:=</span> <span class="nx">rand</span><span class="p">.</span><span class="nf">Intn</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+	<span class="k">select</span> <span class="p">{</span>
+	<span class="k">case</span> <span class="o">&lt;-</span><span class="nx">ctx</span><span class="p">.</span><span class="nf">Done</span><span class="p">():</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;slowAPICall was supposed to take %s seconds, but was canceled.&#34;</span><span class="p">,</span> <span class="nx">d</span><span class="p">)</span>
+		<span class="k">return</span> <span class="s">&#34;&#34;</span>
+	<span class="k">case</span> <span class="o">&lt;-</span><span class="nx">time</span><span class="p">.</span><span class="nf">After</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nf">Duration</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">):</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Slow API call done after %d seconds.\n&#34;</span><span class="p">,</span> <span class="nx">d</span><span class="p">)</span>
+		<span class="k">return</span> <span class="s">&#34;foobar&#34;</span>
+	<span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+<p>(This is the reason we used a <code>select</code> block, instead of the <code>time.Sleep</code> - we
+can just handle the <code>Done</code> channel in the <code>select</code> here.)</p>
+<p>In our limited example, this does the trick – when we receive value through the
+<code>Done</code> channel, we log a line to STDOUT and return an empty string. In more
+complicated situations, such as sending real API requests, you might need to
+close down connections or clean up file descriptors.</p>
+<p>Let&rsquo;s spin up the server again and send a <code>cURL</code> request:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># The cURL command:</span>
+$ curl localhost:8888
+Timeout!
+
+<span class="c1"># The server output:</span>
+$ go run server.go
+2019/12/30 00:07:15 slowAPICall was supposed to take <span class="m">2</span> seconds, but was canceled.</code></pre></div>
+<p>So check this out: we ran a <code>cURL</code> to the server, it took longer than 1 second,
+and our server canceled the <code>slowAPICall</code> function. And we didn&rsquo;t need to write
+almost any code for it. The <code>TimeoutHandler</code> did this for us - when the handler
+took longer than expected, the <code>TimeoutHandler</code> stopped the execution of the
+handler and canceled the request context.</p>
+<p>The <code>TimeoutHandler</code> performs the context cancellation in <a href="https://github.com/golang/go/blob/bbbc658/src/net/http/server.go#L3217-L3263">the
+<code>timeoutHandler.ServeHTTP</code>
+method</a>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// Taken from: https://github.com/golang/go/blob/bbbc658/src/net/http/server.go#L3217-L3263
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">h</span> <span class="o">*</span><span class="nx">timeoutHandler</span><span class="p">)</span> <span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">w</span> <span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">ctx</span> <span class="o">:=</span> <span class="nx">h</span><span class="p">.</span><span class="nx">testContext</span>
+        <span class="k">if</span> <span class="nx">ctx</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+        	<span class="kd">var</span> <span class="nx">cancelCtx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">CancelFunc</span>
+        	<span class="nx">ctx</span><span class="p">,</span> <span class="nx">cancelCtx</span> <span class="p">=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">WithTimeout</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(),</span> <span class="nx">h</span><span class="p">.</span><span class="nx">dt</span><span class="p">)</span>
+        	<span class="k">defer</span> <span class="nf">cancelCtx</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="nx">r</span> <span class="p">=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">WithContext</span><span class="p">(</span><span class="nx">ctx</span><span class="p">)</span>
+
+        <span class="c1">// *Snipped*
+</span><span class="c1"></span><span class="p">}</span></code></pre></div>
+<p>Above, we use the request context by invoking <code>context.WithTimeout</code> on it. The
+timeout value <code>h.dt</code>, which is the second argument received by the
+<code>TimeoutHandler</code>, is applied to the context. The returned context is a copy of
+the request context with a timeout attached. Right after, it&rsquo;s set as the
+request&rsquo;s context using the <code>r.WithContext(ctx)</code> invocation.</p>
+<p>The <code>context.WithTimeout</code> function makes the context cancellation. It returns a
+copy of the <code>Context</code> with a timeout set to the duration passed as an argument.
+Once it reaches the timeout, it cancels the context.</p>
+<p>Here&rsquo;s the code that does it:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// Taken from: https://github.com/golang/go/blob/bbbc6589/src/context/context.go#L486-L498
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">WithTimeout</span><span class="p">(</span><span class="nx">parent</span> <span class="nx">Context</span><span class="p">,</span> <span class="nx">timeout</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span><span class="p">)</span> <span class="p">(</span><span class="nx">Context</span><span class="p">,</span> <span class="nx">CancelFunc</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="nf">WithDeadline</span><span class="p">(</span><span class="nx">parent</span><span class="p">,</span> <span class="nx">time</span><span class="p">.</span><span class="nf">Now</span><span class="p">().</span><span class="nf">Add</span><span class="p">(</span><span class="nx">timeout</span><span class="p">))</span>
+<span class="p">}</span>
+
+<span class="c1">// Taken from: https://github.com/golang/go/blob/bbbc6589/src/context/context.go#L418-L450
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">WithDeadline</span><span class="p">(</span><span class="nx">parent</span> <span class="nx">Context</span><span class="p">,</span> <span class="nx">d</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="p">)</span> <span class="p">(</span><span class="nx">Context</span><span class="p">,</span> <span class="nx">CancelFunc</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// *Snipped*
+</span><span class="c1"></span>
+        <span class="nx">c</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">timerCtx</span><span class="p">{</span>
+        	<span class="nx">cancelCtx</span><span class="p">:</span> <span class="nf">newCancelCtx</span><span class="p">(</span><span class="nx">parent</span><span class="p">),</span>
+        	<span class="nx">deadline</span><span class="p">:</span>  <span class="nx">d</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="c1">// *Snipped*
+</span><span class="c1"></span>
+        <span class="k">if</span> <span class="nx">c</span><span class="p">.</span><span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+        	<span class="nx">c</span><span class="p">.</span><span class="nx">timer</span> <span class="p">=</span> <span class="nx">time</span><span class="p">.</span><span class="nf">AfterFunc</span><span class="p">(</span><span class="nx">dur</span><span class="p">,</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+        		<span class="nx">c</span><span class="p">.</span><span class="nf">cancel</span><span class="p">(</span><span class="kc">true</span><span class="p">,</span> <span class="nx">DeadlineExceeded</span><span class="p">)</span>
+        	<span class="p">})</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nx">c</span><span class="p">,</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span> <span class="nx">c</span><span class="p">.</span><span class="nf">cancel</span><span class="p">(</span><span class="kc">true</span><span class="p">,</span> <span class="nx">Canceled</span><span class="p">)</span> <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+<p>Here we meet deadlines again. The <code>WithDeadline</code> function sets a function that
+executes after the duration <code>d</code> passes. Once the duration passes, it invokes
+the <code>cancel</code> method on the context, which will close the <code>done</code> channel of the
+context and will set the context&rsquo;s <code>timer</code> attribute to <code>nil</code>.</p>
+<p>The closing of the <code>Done</code> channel effectively cancels the context, which allows
+our <code>slowAPICall</code> function to stop its execution. That&rsquo;s how the
+<code>TimeoutHandler</code> timeouts long-running handlers.</p>
+<p>(If you would like to read the code that does the above, you should see the
+<code>cancel</code> functions on <a href="https://github.com/golang/go/blob/bbbc6589dfbc05be2bfa59f51c20f9eaa8d0c531/src/context/context.go#L389-L416">the <code>cancelCtx</code>
+type</a>
+and <a href="https://github.com/golang/go/blob/bbbc6589dfbc05be2bfa59f51c20f9eaa8d0c531/src/context/context.go#L472-L484">the <code>timerCtx</code>
+type</a>.)</p>
+<h2 id="resilient-nethttp-servers" class="relative group">Resilient <code>net/http</code> servers <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#resilient-nethttp-servers" aria-label="Anchor">#</a></span></h2>
+<p>Connection deadlines provide low-level fine-grained control. While their names
+contain &ldquo;timeout&rdquo; they do not have the behavior that folks commonly expect from
+timeouts. They are in fact very powerful, but they expect the programmer to
+know how to wield that weapon.</p>
+<p>On the other hand, when working with HTTP handlers, the <code>TimeoutHandler</code> should
+be our go-to tool. The design chosen by the Go authors, of having composable
+handlers, provides flexibility, so much that we could even have different
+timeouts per handler if we decided to. <code>TimeoutHandler</code> provides execution
+control while maintaining the behavior that we commonly expect when thinking of
+timeouts.</p>
+<p>On top of that, the <code>TimeoutHandler</code> works well with the <code>context</code> package.
+While the <code>context</code> package is simple, it carries cancellation signals and
+request-scoped data, that we can use to make our applications adhere better to
+the intricacies of networks.</p>
+<p>Before we close, here are three suggestions on how to think of timeouts while
+writing your HTTP servers:</p>
+<ol>
+<li>Most-often, reach for <code>TimeoutHandler</code>. It does what we commonly expect of
+timeouts.</li>
+<li>Never forget context cancellations. The <code>context</code> package is simple to use
+and can save your servers lots of processing resources. Especially againts
+bad actors or misbehaving networks.</li>
+<li>By all means, use deadlines. Just make sure you test thoroughly that they
+provide you the functionality that you want.</li>
+</ol>
+<p>To read more on the topic:</p>
+<ul>
+<li>&ldquo;The complete guide to Go net/http timeouts&rdquo; on <a href="https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/">Cloudflare&rsquo;s
+blog</a></li>
+<li>&ldquo;So you want to expose Go on the Internet&rdquo; on <a href="https://blog.cloudflare.com/exposing-go-on-the-internet/">Cloudflare&rsquo;s
+blog</a></li>
+<li>&ldquo;Use http.TimeoutHandler or ReadTimeout/WriteTimeout?&rdquo; on
+<a href="https://stackoverflow.com/questions/51258952/use-http-timeouthandler-or-readtimeout-writetimeout">Stackoverflow</a></li>
+<li>&ldquo;Standard net/http config will break your production environment&rdquo; on <a href="https://blog.simon-frey.eu/go-as-in-golang-standard-net-http-config-will-break-your-production">Simon
+Frey&rsquo;s
+blog</a></li>
+</ul>
+<div id="revue-embed">
+  <form action="https://www.getrevue.co/profile/itsilija/add_subscriber" method="post" id="revue-form" name="revue-form"  target="_blank">
+    <p><b>Liked this article?</b>
+Subscribe to my newsletter and get future articles in your inbox. It's a
+short and sweet read, going out to hundreds of other engineers.</p>
+    <div class="revue-form-group">
+      <input class="revue-form-field" placeholder="Your email address..." type="email" name="member[email]" id="member_email">
+    </div>
+    <div class="revue-form-actions">
+      <input type="submit" value="Subscribe" name="member[subscribe]" id="member_submit">
+    </div>
+  </form>
+</div>
+
+
+      </div>
+    </section>
+    <footer class="pt-8 max-w-prose">
+      
+  <div class="flex">
+    
+      
+      
+        
+        <img
+          class="w-24 h-24 !mt-0 !mb-0 ltr:mr-4 rtl:ml-4 rounded-full"
+          width="96"
+          height="96"
+          alt="Author"
+          src="/img/avatar_huae39953c6189b6aa60e47103b358d088_112612_192x192_fill_q75_box_smart1.jpg"
+        />
+      
+    
+    <div class="place-self-center">
+      
+        <div class="text-[0.6rem] leading-3 text-neutral-500 dark:text-neutral-400 uppercase">
+          Author
+        </div>
+        <div class="font-semibold leading-6 text-neutral-800 dark:text-neutral-300">
+          Ilija Eftimov
+        </div>
+      
+      
+      <div class="text-2xl sm:text-lg">
+  <div class="flex flex-wrap text-neutral-400 dark:text-neutral-500">
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://twitter.com/itsilija"
+          target="_blank"
+          aria-label="Twitter"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="twitter" class="svg-inline--fa fa-twitter fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://www.linkedin.com/in/ieftimov/"
+          target="_blank"
+          aria-label="Linkedin"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="linkedin" class="svg-inline--fa fa-linkedin fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="mailto:blog@ieftimov.com"
+          target="_blank"
+          aria-label="Email"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="at" class="svg-inline--fa fa-at fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 8C118.941 8 8 118.919 8 256c0 137.059 110.919 248 248 248 48.154 0 95.342-14.14 135.408-40.223 12.005-7.815 14.625-24.288 5.552-35.372l-10.177-12.433c-7.671-9.371-21.179-11.667-31.373-5.129C325.92 429.757 291.314 440 256 440c-101.458 0-184-82.542-184-184S154.542 72 256 72c100.139 0 184 57.619 184 160 0 38.786-21.093 79.742-58.17 83.693-17.349-.454-16.91-12.857-13.476-30.024l23.433-121.11C394.653 149.75 383.308 136 368.225 136h-44.981a13.518 13.518 0 0 0-13.432 11.993l-.01.092c-14.697-17.901-40.448-21.775-59.971-21.775-74.58 0-137.831 62.234-137.831 151.46 0 65.303 36.785 105.87 96 105.87 26.984 0 57.369-15.637 74.991-38.333 9.522 34.104 40.613 34.103 70.71 34.103C462.609 379.41 504 307.798 504 232 504 95.653 394.023 8 256 8zm-21.68 304.43c-22.249 0-36.07-15.623-36.07-40.771 0-44.993 30.779-72.729 58.63-72.729 22.292 0 35.601 15.241 35.601 40.77 0 45.061-33.875 72.73-58.161 72.73z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://dev.to/fteem"
+          target="_blank"
+          aria-label="Dev"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="dev" class="svg-inline--fa fa-dev fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M120.12 208.29c-3.88-2.9-7.77-4.35-11.65-4.35H91.03v104.47h17.45c3.88 0 7.77-1.45 11.65-4.35 3.88-2.9 5.82-7.25 5.82-13.06v-69.65c-.01-5.8-1.96-10.16-5.83-13.06zM404.1 32H43.9C19.7 32 .06 51.59 0 75.8v360.4C.06 460.41 19.7 480 43.9 480h360.2c24.21 0 43.84-19.59 43.9-43.8V75.8c-.06-24.21-19.7-43.8-43.9-43.8zM154.2 291.19c0 18.81-11.61 47.31-48.36 47.25h-46.4V172.98h47.38c35.44 0 47.36 28.46 47.37 47.28l.01 70.93zm100.68-88.66H201.6v38.42h32.57v29.57H201.6v38.41h53.29v29.57h-62.18c-11.16.29-20.44-8.53-20.72-19.69V193.7c-.27-11.15 8.56-20.41 19.71-20.69h63.19l-.01 29.52zm103.64 115.29c-13.2 30.75-36.85 24.63-47.44 0l-38.53-144.8h32.57l29.71 113.72 29.57-113.72h32.58l-38.46 144.8z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://github.com/fteem"
+          target="_blank"
+          aria-label="Github"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="github" class="svg-inline--fa fa-github fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path fill="currentColor" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="px-1 hover:text-primary-700 dark:hover:text-primary-400"
+          href="https://t.me/ieftimovcom"
+          target="_blank"
+          aria-label="Telegram"
+          rel="me noopener noreferrer"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="telegram-plane" class="svg-inline--fa fa-telegram-plane fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M446.7 98.6l-67.6 318.8c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-49.7 47.8c-5.5 5.5-10.1 10.1-20.7 10.1l7.4-104.9 190.9-172.5c8.3-7.4-1.8-11.5-12.9-4.1L117.8 284 16.2 252.2c-22.1-6.9-22.5-22.1 4.6-32.7L418.2 66.4c18.4-6.9 34.5 4.1 28.5 32.2z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+  </div>
+
+</div>
+    </div>
+  </div>
+
+
+      
+  
+  <section class="flex flex-row flex-wrap justify-center pt-4 text-xl">
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://www.facebook.com/sharer/sharer.php?u=https://ieftimov.com/posts/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/&amp;quote=Make%20resilient%20Go%20net/http%20servers%20using%20timeouts,%20deadlines%20and%20context%20cancellation"
+          title="Share on Facebook"
+          aria-label="Share on Facebook"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="facebook" class="svg-inline--fa fa-facebook fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://twitter.com/intent/tweet/?url=https://ieftimov.com/posts/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/&amp;text=Make%20resilient%20Go%20net/http%20servers%20using%20timeouts,%20deadlines%20and%20context%20cancellation"
+          title="Tweet on Twitter"
+          aria-label="Tweet on Twitter"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="twitter" class="svg-inline--fa fa-twitter fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://reddit.com/submit/?url=https://ieftimov.com/posts/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/&amp;resubmit=true&amp;title=Make%20resilient%20Go%20net/http%20servers%20using%20timeouts,%20deadlines%20and%20context%20cancellation"
+          title="Submit to Reddit"
+          aria-label="Submit to Reddit"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="reddit" class="svg-inline--fa fa-reddit fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M201.5 305.5c-13.8 0-24.9-11.1-24.9-24.6 0-13.8 11.1-24.9 24.9-24.9 13.6 0 24.6 11.1 24.6 24.9 0 13.6-11.1 24.6-24.6 24.6zM504 256c0 137-111 248-248 248S8 393 8 256 119 8 256 8s248 111 248 248zm-132.3-41.2c-9.4 0-17.7 3.9-23.8 10-22.4-15.5-52.6-25.5-86.1-26.6l17.4-78.3 55.4 12.5c0 13.6 11.1 24.6 24.6 24.6 13.8 0 24.9-11.3 24.9-24.9s-11.1-24.9-24.9-24.9c-9.7 0-18 5.8-22.1 13.8l-61.2-13.6c-3-.8-6.1 1.4-6.9 4.4l-19.1 86.4c-33.2 1.4-63.1 11.3-85.5 26.8-6.1-6.4-14.7-10.2-24.1-10.2-34.9 0-46.3 46.9-14.4 62.8-1.1 5-1.7 10.2-1.7 15.5 0 52.6 59.2 95.2 132 95.2 73.1 0 132.3-42.6 132.3-95.2 0-5.3-.6-10.8-1.9-15.8 31.3-16 19.8-62.5-14.9-62.5zM302.8 331c-18.2 18.2-76.1 17.9-93.6 0-2.2-2.2-6.1-2.2-8.3 0-2.5 2.5-2.5 6.4 0 8.6 22.8 22.8 87.3 22.8 110.2 0 2.5-2.2 2.5-6.1 0-8.6-2.2-2.2-6.1-2.2-8.3 0zm7.7-75c-13.6 0-24.6 11.1-24.6 24.9 0 13.6 11.1 24.6 24.6 24.6 13.8 0 24.9-11.1 24.9-24.6 0-13.8-11-24.9-24.9-24.9z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https://ieftimov.com/posts/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/&amp;title=Make%20resilient%20Go%20net/http%20servers%20using%20timeouts,%20deadlines%20and%20context%20cancellation"
+          title="Share on LinkedIn"
+          aria-label="Share on LinkedIn"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="linkedin" class="svg-inline--fa fa-linkedin fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+      
+        <a
+          class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1"
+          href="mailto:?body=https://ieftimov.com/posts/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/&amp;subject=Make%20resilient%20Go%20net/http%20servers%20using%20timeouts,%20deadlines%20and%20context%20cancellation"
+          title="Send via email"
+          aria-label="Send via email"
+          >
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="at" class="svg-inline--fa fa-at fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 8C118.941 8 8 118.919 8 256c0 137.059 110.919 248 248 248 48.154 0 95.342-14.14 135.408-40.223 12.005-7.815 14.625-24.288 5.552-35.372l-10.177-12.433c-7.671-9.371-21.179-11.667-31.373-5.129C325.92 429.757 291.314 440 256 440c-101.458 0-184-82.542-184-184S154.542 72 256 72c100.139 0 184 57.619 184 160 0 38.786-21.093 79.742-58.17 83.693-17.349-.454-16.91-12.857-13.476-30.024l23.433-121.11C394.653 149.75 383.308 136 368.225 136h-44.981a13.518 13.518 0 0 0-13.432 11.993l-.01.092c-14.697-17.901-40.448-21.775-59.971-21.775-74.58 0-137.831 62.234-137.831 151.46 0 65.303 36.785 105.87 96 105.87 26.984 0 57.369-15.637 74.991-38.333 9.522 34.104 40.613 34.103 70.71 34.103C462.609 379.41 504 307.798 504 232 504 95.653 394.023 8 256 8zm-21.68 304.43c-22.249 0-36.07-15.623-36.07-40.771 0-44.993 30.779-72.729 58.63-72.729 22.292 0 35.601 15.241 35.601 40.77 0 45.061-33.875 72.73-58.161 72.73z"></path></svg>
+  </span>
+
+</a
+        >
+      
+    
+  </section>
+
+
+      
+  
+    
+    
+    
+    <div class="pt-8">
+      <hr class="border-dotted border-neutral-300 dark:border-neutral-600" />
+      <div class="flex justify-between pt-3">
+        <span>
+          
+            <a class="flex group" href="/posts/testing-in-go-test-doubles-by-example/">
+              <span
+                class="mr-3 ltr:inline rtl:hidden text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&larr;</span
+              >
+              <span
+                class="ml-3 ltr:hidden rtl:inline text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&rarr;</span
+              >
+              <span class="flex flex-col">
+                <span
+                  class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+                  >Testing in Go: Test Doubles by Example</span
+                >
+                <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+                  
+                    <time datetime="2019-12-16 00:00:00 &#43;0000 UTC">16 December 2019</time>
+                  
+                </span>
+              </span>
+            </a>
+          
+        </span>
+        <span>
+          
+            <a class="flex text-right group" href="/posts/testing-in-go-golden-files/">
+              <span class="flex flex-col">
+                <span
+                  class="mt-[0.1rem] leading-6 group-hover:underline group-hover:decoration-primary-500"
+                  >Testing in Go: Golden Files</span
+                >
+                <span class="mt-[0.1rem] text-xs text-neutral-500 dark:text-neutral-400">
+                  
+                    <time datetime="2020-02-02 00:00:00 &#43;0000 UTC">2 February 2020</time>
+                  
+                </span>
+              </span>
+              <span
+                class="ml-3 ltr:inline rtl:hidden text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&rarr;</span
+              >
+              <span
+                class="mr-3 ltr:hidden rtl:inline text-neutral-700 dark:text-neutral group-hover:text-primary-600 dark:group-hover:text-primary-400"
+                >&larr;</span
+              >
+            </a>
+          
+        </span>
+      </div>
+    </div>
+  
+
+
+    </footer>
+    
+  </article>
+
+      
+        <div
+          class="absolute top-[110vh] ltr:right-0 rtl:left-0 w-12 pointer-events-none bottom-[-5.5rem]"
+        >
+          <a
+            href="#the-top"
+            class="w-12 h-12 sticky pointer-events-auto top-[calc(100vh-5rem)] bg-neutral/50 dark:bg-neutral-800/50 backdrop-blur rounded-full text-xl flex items-center justify-center text-neutral-700 dark:text-neutral hover:text-primary-600 dark:hover:text-primary-400"
+            aria-label="Scroll to top"
+            title="Scroll to top"
+          >
+            &uarr;
+          </a>
+        </div>
+      
+    </main>
+    <div
+  id="search-wrapper"
+  class="fixed inset-0 z-50 flex flex-col p-4 sm:p-6 md:p-[10vh] lg:p-[12vh] w-screen h-screen cursor-default bg-neutral-500/50 backdrop-blur-sm dark:bg-neutral-900/50 invisible"
+  data-url="https://ieftimov.com/"
+>
+  <div
+    id="search-modal"
+    class="flex flex-col w-full max-w-3xl min-h-0 mx-auto border rounded-md shadow-lg border-neutral-200 top-20 bg-neutral dark:bg-neutral-800 dark:border-neutral-700"
+  >
+    <header class="relative z-10 flex items-center justify-between flex-none px-2">
+      <form class="flex items-center flex-auto min-w-0">
+        <div class="flex items-center justify-center w-8 h-8 text-neutral-400">
+          
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="search" class="svg-inline--fa fa-search fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>
+  </span>
+
+
+        </div>
+        <input
+          type="search"
+          id="search-query"
+          class="flex flex-auto h-12 mx-1 bg-transparent appearance-none focus:outline-dotted focus:outline-transparent focus:outline-2"
+          placeholder="Search"
+          tabindex="0"
+        />
+      </form>
+      <button
+        id="close-search-button"
+        class="flex items-center justify-center w-8 h-8 text-neutral-700 dark:text-neutral hover:text-primary-600 dark:hover:text-primary-400"
+        title="Close (Esc)"
+      >
+        
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
+  </span>
+
+
+      </button>
+    </header>
+    <section class="flex-auto px-2 overflow-auto">
+      <ul id="search-results">
+        
+      </ul>
+    </section>
+  </div>
+</div>
+<footer class="py-10">
+  
+  
+    <nav class="pb-4 text-base font-medium text-neutral-500 dark:text-neutral-400">
+      <ul class="flex flex-col list-none sm:flex-row">
+        
+          <li class="mb-1 sm:mb-0 sm:mr-7 sm:last:mr-0">
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/analytics"
+              title=""
+              >Analytics</a
+            >
+          </li>
+        
+          <li class="mb-1 sm:mb-0 sm:mr-7 sm:last:mr-0">
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="/index.xml"
+              title=""
+              >RSS</a
+            >
+          </li>
+        
+          <li class="mb-1 sm:mb-0 sm:mr-7 sm:last:mr-0">
+            <a
+              class="decoration-primary-500 hover:underline hover:decoration-2 hover:underline-offset-2"
+              href="https://forms.gle/orfXK5jh1LRaiFzo8"
+              title=""
+              >Suggest a topic</a
+            >
+          </li>
+        
+      </ul>
+    </nav>
+  
+  <div class="flex justify-between">
+    <div>
+      
+      <p class="text-sm text-neutral-500 dark:text-neutral-400">
+          &copy;
+          2022
+          Ilija Eftimov
+      </p>
+      
+      
+        <p class="text-xs text-neutral-500 dark:text-neutral-400">
+          
+          
+          Powered by <a class="hover:underline hover:decoration-primary-400 hover:text-primary-500"
+            href="https://gohugo.io/" target="_blank" rel="noopener noreferrer">Hugo</a> &amp; <a class="hover:underline hover:decoration-primary-400 hover:text-primary-500" href="https://git.io/hugo-congo" target="_blank" rel="noopener noreferrer">Congo</a>
+        </p>
+      
+    </div>
+    
+    
+      <div
+        class="text-sm cursor-pointer text-neutral-700 dark:text-neutral hover:text-primary-600 dark:hover:text-primary-400 ltr:mr-14 rtl:ml-14"
+      >
+        <button
+          id="appearance-switcher"
+          class="w-12 h-12 "
+          type="button"
+          title="Switch to dark appearance"
+        >
+          <span class="inline dark:hidden">
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M283.211 512c78.962 0 151.079-35.925 198.857-94.792 7.068-8.708-.639-21.43-11.562-19.35-124.203 23.654-238.262-71.576-238.262-196.954 0-72.222 38.662-138.635 101.498-174.394 9.686-5.512 7.25-20.197-3.756-22.23A258.156 258.156 0 0 0 283.211 0c-141.309 0-256 114.511-256 256 0 141.309 114.511 256 256 256z"></path></svg>
+  </span>
+
+</span>
+          <span class="hidden dark:inline">
+
+  <span class="relative inline-block align-text-bottom icon">
+    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 160c-52.9 0-96 43.1-96 96s43.1 96 96 96 96-43.1 96-96-43.1-96-96-96zm246.4 80.5l-94.7-47.3 33.5-100.4c4.5-13.6-8.4-26.5-21.9-21.9l-100.4 33.5-47.4-94.8c-6.4-12.8-24.6-12.8-31 0l-47.3 94.7L92.7 70.8c-13.6-4.5-26.5 8.4-21.9 21.9l33.5 100.4-94.7 47.4c-12.8 6.4-12.8 24.6 0 31l94.7 47.3-33.5 100.5c-4.5 13.6 8.4 26.5 21.9 21.9l100.4-33.5 47.3 94.7c6.4 12.8 24.6 12.8 31 0l47.3-94.7 100.4 33.5c13.6 4.5 26.5-8.4 21.9-21.9l-33.5-100.4 94.7-47.3c13-6.5 13-24.7.2-31.1zm-155.9 106c-49.9 49.9-131.1 49.9-181 0-49.9-49.9-49.9-131.1 0-181 49.9-49.9 131.1-49.9 181 0 49.9 49.9 49.9 131.1 0 181z"></path></svg>
+  </span>
+
+</span>
+        </button>
+      </div>
+    
+  </div>
+  
+  
+</footer>
+</body>
+</html>
