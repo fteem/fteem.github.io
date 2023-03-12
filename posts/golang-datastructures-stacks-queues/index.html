@@ -43,7 +43,7 @@
   />
   
   
-  <script type="text/javascript" src="/js/appearance.min.4df8309499991be53c71b2b39ba0f5d5e77ea7d411d0710ce48c24218e7cc24ded28f19e85838fdc56db2306195cb001f049f577be0cf0ffb2dd6e2037ede1b9.js" integrity="sha512-TfgwlJmZG&#43;U8cbKzm6D11ed&#43;p9QR0HEM5IwkIY58wk3tKPGehYOP3FbbIwYZXLAB8En1d74M8P&#43;y3W4gN&#43;3huQ=="></script>
+  <script type="text/javascript" src="/js/appearance.min.badab316c9287a5a42a843e4eb45da65bb3d194a5a0f5fa4a3e516160e67df0b8c65f4f19a8e146436e29d583699e6cb41d6bbe99e05e1dbaa877763bad9f8e2.js" integrity="sha512-utqzFskoelpCqEPk60XaZbs9GUpaD1&#43;ko&#43;UWFg5n3wuMZfTxmo4UZDbinVg2mebLQda76Z4F4duqh3djutn44g=="></script>
   
     
     
@@ -56,7 +56,7 @@
   
   
     
-    <script defer type="text/javascript" id="script-bundle" src="/js/main.bundle.min.bbbc21fe00162ca986299c3aa2587e88662408cef57709874b7c316048a5ff80b7e342fc03812cff1393cb2be2ce65593299494d88df71ec6eb48ee261fc0fd6.js" integrity="sha512-u7wh/gAWLKmGKZw6olh&#43;iGYkCM71dwmHS3wxYEil/4C340L8A4Es/xOTyyvizmVZMplJTYjfcexutI7iYfwP1g==" data-copy="Copy" data-copied="Copied"></script>
+    <script defer type="text/javascript" id="script-bundle" src="/js/main.bundle.min.15ae6e2c9b1ac24a9ccf40003fa689efb1a18db1ee9b73d780b01a6c31b150441415862513e93184f68fe385759e4698b8763cba6a0f79493c1fed99ad5868d4.js" integrity="sha512-Fa5uLJsawkqcz0AAP6aJ77GhjbHum3PXgLAabDGxUEQUFYYlE&#43;kxhPaP44V1nkaYuHY8umoPeUk8H&#43;2ZrVho1A==" data-copy="Copy" data-copied="Copied"></script>
   
   
   
@@ -77,7 +77,6 @@
 <meta property="og:url" content="https://ieftimov.com/posts/golang-datastructures-stacks-queues/" /><meta property="og:image" content="https://ieftimov.com/cards/golang-datastructures-stacks-queues.png" /><meta property="article:section" content="posts" />
 
 <meta property="og:site_name" content="Ilija Eftimov 👨‍🚀" />
-
 
   <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://ieftimov.com/cards/golang-datastructures-stacks-queues.png"/>
@@ -364,31 +363,31 @@ opportunity? Let&rsquo;s explore a data structure that can help us with such a t
 have. Also, later on, we will see how we can keep the history of the actions
 and &ldquo;Undo&rdquo; them.</p>
 <p>A simple <code>Action</code> <code>struct</code> would look something like:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> Action <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
-	name <span style="color:#81a1c1">string</span>
-	metadata Meta
-	<span style="color:#616e87;font-style:italic">// Probably some other data here...
-</span><span style="color:#616e87;font-style:italic"></span><span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> Action <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	name <span style="color:#81a1c1">string</span>
+</span></span><span style="display:flex;"><span>	metadata Meta
+</span></span><span style="display:flex;"><span>	<span style="color:#616e87;font-style:italic">// Probably some other data here...
+</span></span></span><span style="display:flex;"><span><span style="color:#616e87;font-style:italic"></span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>We will store only the name at the moment, while the real-deal would have much
 more options compared to our example. So now, when the user of the editor
 applies a function to a bunch of text, we want to store that action in some
 sort of a collection so we can &ldquo;Undo&rdquo; it later.</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> ActionHistory <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
-  top <span style="color:#81a1c1">*</span>Action
-  size <span style="color:#81a1c1">int</span>
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> ActionHistory <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>  top <span style="color:#81a1c1">*</span>Action
+</span></span><span style="display:flex;"><span>  size <span style="color:#81a1c1">int</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>Looking at this <code>ActionHistory</code> data structure, we store a pointer to the
 <code>Action</code> at the top of the stack and the size of the stack. Once an action is
 applied, we will link it to the <code>top</code> item. So, when applying an action to the
 document, this is what could go under the hood.</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>history <span style="color:#81a1c1">*</span>ActionHistory<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Apply</span><span style="color:#eceff4">(</span>newAction <span style="color:#81a1c1">*</span>Action<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	<span style="color:#81a1c1;font-weight:bold">if</span> history<span style="color:#eceff4">.</span>top <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
-		oldTop <span style="color:#81a1c1">:=</span> history<span style="color:#eceff4">.</span>top
-		newAction<span style="color:#eceff4">.</span>next <span style="color:#eceff4">=</span> oldTop
-	<span style="color:#eceff4">}</span>
-	history<span style="color:#eceff4">.</span>top <span style="color:#eceff4">=</span> newAction
-	history<span style="color:#eceff4">.</span>size<span style="color:#81a1c1">++</span>
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>history <span style="color:#81a1c1">*</span>ActionHistory<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Apply</span><span style="color:#eceff4">(</span>newAction <span style="color:#81a1c1">*</span>Action<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">if</span> history<span style="color:#eceff4">.</span>top <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		oldTop <span style="color:#81a1c1">:=</span> history<span style="color:#eceff4">.</span>top
+</span></span><span style="display:flex;"><span>		newAction<span style="color:#eceff4">.</span>next <span style="color:#eceff4">=</span> oldTop
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>	history<span style="color:#eceff4">.</span>top <span style="color:#eceff4">=</span> newAction
+</span></span><span style="display:flex;"><span>	history<span style="color:#eceff4">.</span>size<span style="color:#81a1c1">++</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>An <code>Add</code> function would add the latest <code>Action</code> to the top of the
 <code>ActionHistory</code>. If the history struct has an action present at the top, it
 would push it down the history by linking it to the new action. Otherwise, it
@@ -398,16 +397,16 @@ Go</a>) you might see the
 resemblance here. So far, what we use here is essentially a linked list, none
 the less.</p>
 <p>What about undoing an action? This is what an <code>Undo</code> function would look like:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>history <span style="color:#81a1c1">*</span>ActionHistory<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Undo</span><span style="color:#eceff4">()</span> <span style="color:#81a1c1">*</span>Action <span style="color:#eceff4">{</span>
-	topAction <span style="color:#81a1c1">:=</span> history<span style="color:#eceff4">.</span>top
-	<span style="color:#81a1c1;font-weight:bold">if</span> topAction <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
-		history<span style="color:#eceff4">.</span>top <span style="color:#eceff4">=</span> topAction<span style="color:#eceff4">.</span>next
-	<span style="color:#eceff4">}</span> <span style="color:#81a1c1;font-weight:bold">else</span> <span style="color:#81a1c1;font-weight:bold">if</span> topAction<span style="color:#eceff4">.</span>next <span style="color:#81a1c1">==</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
-		history<span style="color:#eceff4">.</span>top <span style="color:#eceff4">=</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
-	<span style="color:#eceff4">}</span>
-	historyAction<span style="color:#eceff4">.</span>size<span style="color:#81a1c1">--</span>
-	<span style="color:#81a1c1;font-weight:bold">return</span> topAction
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>history <span style="color:#81a1c1">*</span>ActionHistory<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Undo</span><span style="color:#eceff4">()</span> <span style="color:#81a1c1">*</span>Action <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	topAction <span style="color:#81a1c1">:=</span> history<span style="color:#eceff4">.</span>top
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">if</span> topAction <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		history<span style="color:#eceff4">.</span>top <span style="color:#eceff4">=</span> topAction<span style="color:#eceff4">.</span>next
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span> <span style="color:#81a1c1;font-weight:bold">else</span> <span style="color:#81a1c1;font-weight:bold">if</span> topAction<span style="color:#eceff4">.</span>next <span style="color:#81a1c1">==</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		history<span style="color:#eceff4">.</span>top <span style="color:#eceff4">=</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>	historyAction<span style="color:#eceff4">.</span>size<span style="color:#81a1c1">--</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">return</span> topAction
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>If you are paying close attention you can notice that this is a bit different
 than just removing a node from a linked list. Due to the nature of an
 <code>ActionHistory</code>, we want the <strong>last</strong> applied action to be the one that will be
@@ -462,28 +461,28 @@ moment. We would have to somehow represent the luggage on the strip as a
 collection of items, and the x-ray machine that scans the luggage one piece at
 a time.</p>
 <p>The <code>Luggage</code> would be simple, for now:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> Luggage <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
-	weight <span style="color:#81a1c1">int</span>
-	passenger <span style="color:#81a1c1">string</span>
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> Luggage <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	weight <span style="color:#81a1c1">int</span>
+</span></span><span style="display:flex;"><span>	passenger <span style="color:#81a1c1">string</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>We can also add a simple constructor function for the <code>Luggage</code> type as well:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span>weight <span style="color:#81a1c1">int</span><span style="color:#eceff4">,</span> passenger <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">*</span>Luggage <span style="color:#eceff4">{</span>
-	l <span style="color:#81a1c1">:=</span> Luggage<span style="color:#eceff4">{</span>
-		weight<span style="color:#eceff4">:</span>    weight<span style="color:#eceff4">,</span>
-		passenger<span style="color:#eceff4">:</span> passenger<span style="color:#eceff4">,</span> <span style="color:#616e87;font-style:italic">// just as an identifier
-</span><span style="color:#616e87;font-style:italic"></span>	<span style="color:#eceff4">}</span>
-	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">&amp;</span>l
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span>weight <span style="color:#81a1c1">int</span><span style="color:#eceff4">,</span> passenger <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">*</span>Luggage <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	l <span style="color:#81a1c1">:=</span> Luggage<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		weight<span style="color:#eceff4">:</span>    weight<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		passenger<span style="color:#eceff4">:</span> passenger<span style="color:#eceff4">,</span> <span style="color:#616e87;font-style:italic">// just as an identifier
+</span></span></span><span style="display:flex;"><span><span style="color:#616e87;font-style:italic"></span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">&amp;</span>l
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>Then, we can create a <code>Belt</code> where the <code>Luggage</code> is put on and taken to the
 x-ray scanner:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> Belt <span style="color:#eceff4">[]</span><span style="color:#81a1c1">*</span>Luggage</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> Belt <span style="color:#eceff4">[]</span><span style="color:#81a1c1">*</span>Luggage</span></span></code></pre></div>
 <p>Not what you were expecting? Well, what we create is a <code>Belt</code> type that is
 actually a slice of <code>Luggage</code> pointers. Which is what exactly the machine belt
 is - just a collection of bags that get scanned one by one.</p>
 <p>So now we need to add a function that knows how to add <code>Luggage</code> to the <code>Belt</code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>belt <span style="color:#81a1c1">*</span>Belt<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span>newLuggage <span style="color:#81a1c1">*</span>Luggage<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	<span style="color:#81a1c1">*</span>belt <span style="color:#eceff4">=</span> <span style="color:#81a1c1">append</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>belt<span style="color:#eceff4">,</span> newLuggage<span style="color:#eceff4">)</span>
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>belt <span style="color:#81a1c1">*</span>Belt<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span>newLuggage <span style="color:#81a1c1">*</span>Luggage<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1">*</span>belt <span style="color:#eceff4">=</span> <span style="color:#81a1c1">append</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>belt<span style="color:#eceff4">,</span> newLuggage<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>Since <code>Belt</code> is actually a slice, we can use the built-in <code>append</code> function
 which will add the <code>newLuggage</code> to the <code>Belt</code>.  The cool part about this
 implementation the time complexity - because we use <code>append</code>, which is a
@@ -498,33 +497,33 @@ to be scanned. So, we can say that the <code>Belt</code> is a FIFO (First in, fi
 data structure.</p>
 <p>This is what the function <code>Take</code>  would look like, keeping in mind the details
 above:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>belt <span style="color:#81a1c1">*</span>Belt<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Take</span><span style="color:#eceff4">()</span> <span style="color:#81a1c1">*</span>Luggage <span style="color:#eceff4">{</span>
-	first<span style="color:#eceff4">,</span> rest <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>belt<span style="color:#eceff4">)[</span><span style="color:#b48ead">0</span><span style="color:#eceff4">],</span> <span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>belt<span style="color:#eceff4">)[</span><span style="color:#b48ead">1</span><span style="color:#eceff4">:]</span>
-	<span style="color:#81a1c1">*</span>belt <span style="color:#eceff4">=</span> rest
-	<span style="color:#81a1c1;font-weight:bold">return</span> first
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>belt <span style="color:#81a1c1">*</span>Belt<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Take</span><span style="color:#eceff4">()</span> <span style="color:#81a1c1">*</span>Luggage <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	first<span style="color:#eceff4">,</span> rest <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>belt<span style="color:#eceff4">)[</span><span style="color:#b48ead">0</span><span style="color:#eceff4">],</span> <span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>belt<span style="color:#eceff4">)[</span><span style="color:#b48ead">1</span><span style="color:#eceff4">:]</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1">*</span>belt <span style="color:#eceff4">=</span> rest
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">return</span> first
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>It will take the first item and return it, and it will assign everything else
 in the collection to the beginning of it,  so the second item becomes first and
 so on. If you were wondering, this has a <code>O(1)</code> time complexity since it always
 takes the first item from the queue.</p>
 <p>Using our new types and functions can be done as such:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">main</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
-	belt <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>Belt<span style="color:#eceff4">{}</span>
-	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">3</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Elmer Fudd&#34;</span><span style="color:#eceff4">))</span>
-	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">5</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Sylvester&#34;</span><span style="color:#eceff4">))</span>
-	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">2</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Yosemite Sam&#34;</span><span style="color:#eceff4">))</span>
-	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">10</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Daffy Duck&#34;</span><span style="color:#eceff4">))</span>
-	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Bugs Bunny&#34;</span><span style="color:#eceff4">))</span>
-
-	fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Println</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Belt:&#34;</span><span style="color:#eceff4">,</span> belt<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Length:&#34;</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">len</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>belt<span style="color:#eceff4">))</span>
-	first <span style="color:#81a1c1">:=</span> belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Take</span><span style="color:#eceff4">()</span>
-	fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Println</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;First luggage:&#34;</span><span style="color:#eceff4">,</span> first<span style="color:#eceff4">)</span>
-	fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Println</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Belt:&#34;</span><span style="color:#eceff4">,</span> belt<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Length:&#34;</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">len</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>belt<span style="color:#eceff4">))</span>
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">main</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	belt <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>Belt<span style="color:#eceff4">{}</span>
+</span></span><span style="display:flex;"><span>	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">3</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Elmer Fudd&#34;</span><span style="color:#eceff4">))</span>
+</span></span><span style="display:flex;"><span>	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">5</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Sylvester&#34;</span><span style="color:#eceff4">))</span>
+</span></span><span style="display:flex;"><span>	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">2</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Yosemite Sam&#34;</span><span style="color:#eceff4">))</span>
+</span></span><span style="display:flex;"><span>	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">10</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Daffy Duck&#34;</span><span style="color:#eceff4">))</span>
+</span></span><span style="display:flex;"><span>	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Bugs Bunny&#34;</span><span style="color:#eceff4">))</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Println</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Belt:&#34;</span><span style="color:#eceff4">,</span> belt<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Length:&#34;</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">len</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>belt<span style="color:#eceff4">))</span>
+</span></span><span style="display:flex;"><span>	first <span style="color:#81a1c1">:=</span> belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Take</span><span style="color:#eceff4">()</span>
+</span></span><span style="display:flex;"><span>	fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Println</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;First luggage:&#34;</span><span style="color:#eceff4">,</span> first<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Println</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Belt:&#34;</span><span style="color:#eceff4">,</span> belt<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Length:&#34;</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">len</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>belt<span style="color:#eceff4">))</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>The output of the <code>main</code> function will be something like:
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Belt: &amp;[0x1040a0c0 0x1040a0d0 0x1040a0e0 0x1040a100 0x1040a110] Length: 5
-First luggage: &amp;{3 Elmer Fudd}
-Belt: &amp;[0x1040a0d0 0x1040a0e0 0x1040a100 0x1040a110] Length: 4</code></pre></div></p>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Belt: &amp;[0x1040a0c0 0x1040a0d0 0x1040a0e0 0x1040a100 0x1040a110] Length: 5
+</span></span><span style="display:flex;"><span>First luggage: &amp;{3 Elmer Fudd}
+</span></span><span style="display:flex;"><span>Belt: &amp;[0x1040a0d0 0x1040a0e0 0x1040a100 0x1040a110] Length: 4</span></span></code></pre></div></p>
 <p>Basically what happens is we add five different <code>Luggage</code> structs on the <code>Belt</code>
 and we take the first one off, which is the one printed on the second line of
 the output.</p>
@@ -554,42 +553,42 @@ holders. So, how can we prioritise these passengers? What if their luggage has
 some sort of priority, where the higher the priority is the faster they get
 through the queue?</p>
 <p>Let’s modify our <code>Luggage</code> struct to enable this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> Luggage <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
-	weight    <span style="color:#81a1c1">int</span>
-	priority  <span style="color:#81a1c1">int</span>
-	passenger <span style="color:#81a1c1">string</span>
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> Luggage <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	weight    <span style="color:#81a1c1">int</span>
+</span></span><span style="display:flex;"><span>	priority  <span style="color:#81a1c1">int</span>
+</span></span><span style="display:flex;"><span>	passenger <span style="color:#81a1c1">string</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>Also, all <code>Luggage</code> created in the <code>NewLuggage</code> function will have to take the
 <code>priority</code> level as an argument:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span>weight <span style="color:#81a1c1">int</span><span style="color:#eceff4">,</span> priority <span style="color:#81a1c1">int</span><span style="color:#eceff4">,</span> passenger <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">*</span>Luggage <span style="color:#eceff4">{</span>
-	l <span style="color:#81a1c1">:=</span> Luggage<span style="color:#eceff4">{</span>
-		weight<span style="color:#eceff4">:</span>    weight<span style="color:#eceff4">,</span>
-		priority<span style="color:#eceff4">:</span>  priority<span style="color:#eceff4">,</span>
-		passenger<span style="color:#eceff4">:</span> passenger<span style="color:#eceff4">,</span>
-	<span style="color:#eceff4">}</span>
-	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">&amp;</span>l
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span>weight <span style="color:#81a1c1">int</span><span style="color:#eceff4">,</span> priority <span style="color:#81a1c1">int</span><span style="color:#eceff4">,</span> passenger <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">*</span>Luggage <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	l <span style="color:#81a1c1">:=</span> Luggage<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		weight<span style="color:#eceff4">:</span>    weight<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		priority<span style="color:#eceff4">:</span>  priority<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		passenger<span style="color:#eceff4">:</span> passenger<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">&amp;</span>l
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>Let’s think this through again. Basically, when a new <code>Luggage</code> is put on the
 <code>Belt</code>, we need to detect it’s <code>priority</code> and put it as close to the beginning
 of the <code>Belt</code> as possible based on the detected <code>priority</code>.</p>
 <p>Let’s modify our <code>Add</code> function:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>belt <span style="color:#81a1c1">*</span>Belt<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span>newLuggage <span style="color:#81a1c1">*</span>Luggage<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#81a1c1">len</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>belt<span style="color:#eceff4">)</span> <span style="color:#81a1c1">==</span> <span style="color:#b48ead">0</span> <span style="color:#eceff4">{</span>
-		<span style="color:#81a1c1">*</span>belt <span style="color:#eceff4">=</span> <span style="color:#81a1c1">append</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>belt<span style="color:#eceff4">,</span> newLuggage<span style="color:#eceff4">)</span>
-	<span style="color:#eceff4">}</span> <span style="color:#81a1c1;font-weight:bold">else</span> <span style="color:#eceff4">{</span>
-		added <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">false</span>
-		<span style="color:#81a1c1;font-weight:bold">for</span> i<span style="color:#eceff4">,</span> placedLuggage <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> <span style="color:#81a1c1">*</span>belt <span style="color:#eceff4">{</span>
-			<span style="color:#81a1c1;font-weight:bold">if</span> newLuggage<span style="color:#eceff4">.</span>priority <span style="color:#eceff4">&gt;</span> placedLuggage<span style="color:#eceff4">.</span>priority <span style="color:#eceff4">{</span>
-				<span style="color:#81a1c1">*</span>belt <span style="color:#eceff4">=</span> <span style="color:#81a1c1">append</span><span style="color:#eceff4">((</span><span style="color:#81a1c1">*</span>belt<span style="color:#eceff4">)[:</span>i<span style="color:#eceff4">],</span> <span style="color:#81a1c1">append</span><span style="color:#eceff4">(</span>Belt<span style="color:#eceff4">{</span>newLuggage<span style="color:#eceff4">},</span> <span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>belt<span style="color:#eceff4">)[</span>i<span style="color:#eceff4">:]</span><span style="color:#81a1c1">...</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">...</span><span style="color:#eceff4">)</span>
-				added <span style="color:#eceff4">=</span> <span style="color:#81a1c1;font-weight:bold">true</span>
-				<span style="color:#81a1c1;font-weight:bold">break</span>
-			<span style="color:#eceff4">}</span>
-		<span style="color:#eceff4">}</span>
-		<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#eceff4">!</span>added <span style="color:#eceff4">{</span>
-			<span style="color:#81a1c1">*</span>belt <span style="color:#eceff4">=</span> <span style="color:#81a1c1">append</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>belt<span style="color:#eceff4">,</span> newLuggage<span style="color:#eceff4">)</span>
-		<span style="color:#eceff4">}</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>belt <span style="color:#81a1c1">*</span>Belt<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span>newLuggage <span style="color:#81a1c1">*</span>Luggage<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#81a1c1">len</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>belt<span style="color:#eceff4">)</span> <span style="color:#81a1c1">==</span> <span style="color:#b48ead">0</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#81a1c1">*</span>belt <span style="color:#eceff4">=</span> <span style="color:#81a1c1">append</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>belt<span style="color:#eceff4">,</span> newLuggage<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span> <span style="color:#81a1c1;font-weight:bold">else</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		added <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">false</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#81a1c1;font-weight:bold">for</span> i<span style="color:#eceff4">,</span> placedLuggage <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> <span style="color:#81a1c1">*</span>belt <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#81a1c1;font-weight:bold">if</span> newLuggage<span style="color:#eceff4">.</span>priority <span style="color:#eceff4">&gt;</span> placedLuggage<span style="color:#eceff4">.</span>priority <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#81a1c1">*</span>belt <span style="color:#eceff4">=</span> <span style="color:#81a1c1">append</span><span style="color:#eceff4">((</span><span style="color:#81a1c1">*</span>belt<span style="color:#eceff4">)[:</span>i<span style="color:#eceff4">],</span> <span style="color:#81a1c1">append</span><span style="color:#eceff4">(</span>Belt<span style="color:#eceff4">{</span>newLuggage<span style="color:#eceff4">},</span> <span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>belt<span style="color:#eceff4">)[</span>i<span style="color:#eceff4">:]</span><span style="color:#81a1c1">...</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">...</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>				added <span style="color:#eceff4">=</span> <span style="color:#81a1c1;font-weight:bold">true</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#81a1c1;font-weight:bold">break</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#eceff4">!</span>added <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#81a1c1">*</span>belt <span style="color:#eceff4">=</span> <span style="color:#81a1c1">append</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>belt<span style="color:#eceff4">,</span> newLuggage<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>Compared to the previous implementation, this is rather complicated. There are
 a couple of things going on here and the first case is quite simple. If the
 belt is empty,  we just put the new luggage on the belt and we are done. The
@@ -606,47 +605,47 @@ because in worst case scenario it will have to traverse the whole slice before
 it inserts the new <code>Luggage</code> struct. Inherently, searching and accessing any
 item in our queue will cost us the same - <code>O(n)</code>.</p>
 <p>To demonstrate the new <code>Add</code> functionality, we can run the following code:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">main</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
-	belt <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">make</span><span style="color:#eceff4">(</span>Belt<span style="color:#eceff4">,</span> <span style="color:#b48ead">0</span><span style="color:#eceff4">)</span>
-	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">3</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Elmer Fudd&#34;</span><span style="color:#eceff4">))</span>
-	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">3</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Sylvester&#34;</span><span style="color:#eceff4">))</span>
-	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">3</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Yosemite Sam&#34;</span><span style="color:#eceff4">))</span>
-	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Inspect</span><span style="color:#eceff4">()</span>
-
-	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">3</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">2</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Daffy Duck&#34;</span><span style="color:#eceff4">))</span>
-	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Inspect</span><span style="color:#eceff4">()</span>
-
-	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">3</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">3</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Bugs Bunny&#34;</span><span style="color:#eceff4">))</span>
-	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Inspect</span><span style="color:#eceff4">()</span>
-
-	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">100</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">2</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Wile E. Coyote&#34;</span><span style="color:#eceff4">))</span>
-	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Inspect</span><span style="color:#eceff4">()</span>
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">main</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	belt <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">make</span><span style="color:#eceff4">(</span>Belt<span style="color:#eceff4">,</span> <span style="color:#b48ead">0</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">3</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Elmer Fudd&#34;</span><span style="color:#eceff4">))</span>
+</span></span><span style="display:flex;"><span>	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">3</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Sylvester&#34;</span><span style="color:#eceff4">))</span>
+</span></span><span style="display:flex;"><span>	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">3</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Yosemite Sam&#34;</span><span style="color:#eceff4">))</span>
+</span></span><span style="display:flex;"><span>	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Inspect</span><span style="color:#eceff4">()</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">3</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">2</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Daffy Duck&#34;</span><span style="color:#eceff4">))</span>
+</span></span><span style="display:flex;"><span>	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Inspect</span><span style="color:#eceff4">()</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">3</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">3</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Bugs Bunny&#34;</span><span style="color:#eceff4">))</span>
+</span></span><span style="display:flex;"><span>	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Inspect</span><span style="color:#eceff4">()</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#88c0d0">NewLuggage</span><span style="color:#eceff4">(</span><span style="color:#b48ead">100</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">2</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Wile E. Coyote&#34;</span><span style="color:#eceff4">))</span>
+</span></span><span style="display:flex;"><span>	belt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Inspect</span><span style="color:#eceff4">()</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>First, it will create a <code>Belt</code> with three <code>Luggage</code> structs on it, each of them
 with a priority of <code>1</code>:</p>
 <pre tabindex="0"><code>0. &amp;{3 1 Elmer Fudd}
 1. &amp;{3 1 Sylvester}
 2. &amp;{3 1 Yosemite Sam}
 </code></pre><p>Then, it will add a new <code>Luggage</code> with a priority of <code>2</code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">0. &amp;{3 2 Daffy Duck}
-1. &amp;{3 1 Elmer Fudd}
-2. &amp;{3 1 Sylvester}
-3. &amp;{3 1 Yosemite Sam}</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>0. &amp;{3 2 Daffy Duck}
+</span></span><span style="display:flex;"><span>1. &amp;{3 1 Elmer Fudd}
+</span></span><span style="display:flex;"><span>2. &amp;{3 1 Sylvester}
+</span></span><span style="display:flex;"><span>3. &amp;{3 1 Yosemite Sam}</span></span></code></pre></div>
 <p>You see, the new luggage with the highest priority got promoted to the first
 place in the <code>Belt</code>. Next, we add a new one with even higher priority (<code>3</code>):</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">0. &amp;{3 3 Bugs Bunny}
-1. &amp;{3 2 Daffy Duck}
-2. &amp;{3 1 Elmer Fudd}
-3. &amp;{3 1 Sylvester}
-4. &amp;{3 1 Yosemite Sam}</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>0. &amp;{3 3 Bugs Bunny}
+</span></span><span style="display:flex;"><span>1. &amp;{3 2 Daffy Duck}
+</span></span><span style="display:flex;"><span>2. &amp;{3 1 Elmer Fudd}
+</span></span><span style="display:flex;"><span>3. &amp;{3 1 Sylvester}
+</span></span><span style="display:flex;"><span>4. &amp;{3 1 Yosemite Sam}</span></span></code></pre></div>
 <p>As expected, the one with the highest priority was put on the first spot in the
 <code>Belt</code>. Lastly, we add another <code>Luggage</code>, this time with priority <code>2</code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">0. &amp;{3 3 Bugs Bunny}
-1. &amp;{3 2 Daffy Duck}
-2. &amp;{100 2 Wile E. Coyote}
-3. &amp;{3 1 Elmer Fudd}
-4. &amp;{3 1 Sylvester}
-5. &amp;{3 1 Yosemite Sam}</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>0. &amp;{3 3 Bugs Bunny}
+</span></span><span style="display:flex;"><span>1. &amp;{3 2 Daffy Duck}
+</span></span><span style="display:flex;"><span>2. &amp;{100 2 Wile E. Coyote}
+</span></span><span style="display:flex;"><span>3. &amp;{3 1 Elmer Fudd}
+</span></span><span style="display:flex;"><span>4. &amp;{3 1 Sylvester}
+</span></span><span style="display:flex;"><span>5. &amp;{3 1 Yosemite Sam}</span></span></code></pre></div>
 <p>The new <code>Luggage</code> was added right after the <code>Luggage</code> with the same priority as
 the new one and of course, not at the beginning of the <code>Belt</code>. Basically, our
 <code>Belt</code> gets implicitly sorted by the priority as we add new <code>Luggage</code> to it.</p>
@@ -677,14 +676,14 @@ for reviewing a final draft of this post and his constructive criticism on it.
 </small>
 <iframe src="https://quadratic.fm/embed" width="100%" height="320" style="margin-top:2em" frameborder="0" scrolling="no"></iframe>
 
-<section class="footnotes" role="doc-endnotes">
+<div class="footnotes" role="doc-endnotes">
 <hr>
 <ol>
-<li id="fn:1" role="doc-endnote">
+<li id="fn:1">
 <p><a href="/post/data-structures-in-go-linked-lists/">Data structures in Go: Linked lists</a>&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 </ol>
-</section>
+</div>
 
       </div>
     </section>

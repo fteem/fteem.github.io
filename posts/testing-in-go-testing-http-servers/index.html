@@ -43,7 +43,7 @@
   />
   
   
-  <script type="text/javascript" src="/js/appearance.min.4df8309499991be53c71b2b39ba0f5d5e77ea7d411d0710ce48c24218e7cc24ded28f19e85838fdc56db2306195cb001f049f577be0cf0ffb2dd6e2037ede1b9.js" integrity="sha512-TfgwlJmZG&#43;U8cbKzm6D11ed&#43;p9QR0HEM5IwkIY58wk3tKPGehYOP3FbbIwYZXLAB8En1d74M8P&#43;y3W4gN&#43;3huQ=="></script>
+  <script type="text/javascript" src="/js/appearance.min.badab316c9287a5a42a843e4eb45da65bb3d194a5a0f5fa4a3e516160e67df0b8c65f4f19a8e146436e29d583699e6cb41d6bbe99e05e1dbaa877763bad9f8e2.js" integrity="sha512-utqzFskoelpCqEPk60XaZbs9GUpaD1&#43;ko&#43;UWFg5n3wuMZfTxmo4UZDbinVg2mebLQda76Z4F4duqh3djutn44g=="></script>
   
     
     
@@ -56,7 +56,7 @@
   
   
     
-    <script defer type="text/javascript" id="script-bundle" src="/js/main.bundle.min.bbbc21fe00162ca986299c3aa2587e88662408cef57709874b7c316048a5ff80b7e342fc03812cff1393cb2be2ce65593299494d88df71ec6eb48ee261fc0fd6.js" integrity="sha512-u7wh/gAWLKmGKZw6olh&#43;iGYkCM71dwmHS3wxYEil/4C340L8A4Es/xOTyyvizmVZMplJTYjfcexutI7iYfwP1g==" data-copy="Copy" data-copied="Copied"></script>
+    <script defer type="text/javascript" id="script-bundle" src="/js/main.bundle.min.15ae6e2c9b1ac24a9ccf40003fa689efb1a18db1ee9b73d780b01a6c31b150441415862513e93184f68fe385759e4698b8763cba6a0f79493c1fed99ad5868d4.js" integrity="sha512-Fa5uLJsawkqcz0AAP6aJ77GhjbHum3PXgLAabDGxUEQUFYYlE&#43;kxhPaP44V1nkaYuHY8umoPeUk8H&#43;2ZrVho1A==" data-copy="Copy" data-copied="Copied"></script>
   
   
   
@@ -77,7 +77,6 @@
 <meta property="og:url" content="https://ieftimov.com/posts/testing-in-go-testing-http-servers/" /><meta property="og:image" content="https://ieftimov.com/cards/testing-in-go-testing-http-servers.png" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2020-03-02T00:00:00+00:00" />
 <meta property="article:modified_time" content="2020-03-02T00:00:00+00:00" /><meta property="og:site_name" content="Ilija Eftimov 👨‍🚀" />
-
 
   <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://ieftimov.com/cards/testing-in-go-testing-http-servers.png"/>
@@ -348,126 +347,126 @@ can use as a test subject.</p>
 <li>List all orders in the system: <code>GET /orders</code></li>
 </ol>
 <p>Here&rsquo;s the code:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">package</span> main
-
-<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
-	<span style="color:#a3be8c">&#34;encoding/json&#34;</span>
-	<span style="color:#a3be8c">&#34;fmt&#34;</span>
-	<span style="color:#a3be8c">&#34;log&#34;</span>
-	<span style="color:#a3be8c">&#34;net/http&#34;</span>
-<span style="color:#eceff4">)</span>
-
-<span style="color:#81a1c1;font-weight:bold">type</span> Pizza <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
-	ID    <span style="color:#81a1c1">int</span>    <span style="color:#a3be8c">`json:&#34;id&#34;`</span>
-	Name  <span style="color:#81a1c1">string</span> <span style="color:#a3be8c">`json:&#34;name&#34;`</span>
-	Price <span style="color:#81a1c1">int</span>    <span style="color:#a3be8c">`json:&#34;price&#34;`</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">type</span> Pizzas <span style="color:#eceff4">[]</span>Pizza
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>ps Pizzas<span style="color:#eceff4">)</span> <span style="color:#88c0d0">FindByID</span><span style="color:#eceff4">(</span>ID <span style="color:#81a1c1">int</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">(</span>Pizza<span style="color:#eceff4">,</span> <span style="color:#81a1c1">error</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> pizza <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> ps <span style="color:#eceff4">{</span>
-		<span style="color:#81a1c1;font-weight:bold">if</span> pizza<span style="color:#eceff4">.</span>ID <span style="color:#81a1c1">==</span> ID <span style="color:#eceff4">{</span>
-			<span style="color:#81a1c1;font-weight:bold">return</span> pizza<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
-		<span style="color:#eceff4">}</span>
-	<span style="color:#eceff4">}</span>
-
-	<span style="color:#81a1c1;font-weight:bold">return</span> Pizza<span style="color:#eceff4">{},</span> fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Couldn&#39;t find pizza with ID: %d&#34;</span><span style="color:#eceff4">,</span> ID<span style="color:#eceff4">)</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">type</span> Order <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
-	PizzaID  <span style="color:#81a1c1">int</span> <span style="color:#a3be8c">`json:&#34;pizza_id&#34;`</span>
-	Quantity <span style="color:#81a1c1">int</span> <span style="color:#a3be8c">`json:&#34;quantity&#34;`</span>
-	Total    <span style="color:#81a1c1">int</span> <span style="color:#a3be8c">`json:&#34;total&#34;`</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">type</span> Orders <span style="color:#eceff4">[]</span>Order
-
-<span style="color:#81a1c1;font-weight:bold">type</span> pizzasHandler <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
-	pizzas <span style="color:#81a1c1">*</span>Pizzas
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>ph pizzasHandler<span style="color:#eceff4">)</span> <span style="color:#88c0d0">ServeHTTP</span><span style="color:#eceff4">(</span>w http<span style="color:#eceff4">.</span>ResponseWriter<span style="color:#eceff4">,</span> r <span style="color:#81a1c1">*</span>http<span style="color:#eceff4">.</span>Request<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	w<span style="color:#eceff4">.</span><span style="color:#88c0d0">Header</span><span style="color:#eceff4">().</span><span style="color:#88c0d0">Set</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Content-Type&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;application/json&#34;</span><span style="color:#eceff4">)</span>
-
-	<span style="color:#81a1c1;font-weight:bold">switch</span> r<span style="color:#eceff4">.</span>Method <span style="color:#eceff4">{</span>
-	<span style="color:#81a1c1;font-weight:bold">case</span> http<span style="color:#eceff4">.</span>MethodGet<span style="color:#eceff4">:</span>
-		<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#81a1c1">len</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>ph<span style="color:#eceff4">.</span>pizzas<span style="color:#eceff4">)</span> <span style="color:#81a1c1">==</span> <span style="color:#b48ead">0</span> <span style="color:#eceff4">{</span>
-			http<span style="color:#eceff4">.</span><span style="color:#88c0d0">Error</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Error: No pizzas found&#34;</span><span style="color:#eceff4">,</span> http<span style="color:#eceff4">.</span>StatusNotFound<span style="color:#eceff4">)</span>
-			<span style="color:#81a1c1;font-weight:bold">return</span>
-		<span style="color:#eceff4">}</span>
-
-		json<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewEncoder</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">).</span><span style="color:#88c0d0">Encode</span><span style="color:#eceff4">(</span>ph<span style="color:#eceff4">.</span>pizzas<span style="color:#eceff4">)</span>
-	<span style="color:#81a1c1;font-weight:bold">default</span><span style="color:#eceff4">:</span>
-		http<span style="color:#eceff4">.</span><span style="color:#88c0d0">Error</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Method not allowed&#34;</span><span style="color:#eceff4">,</span> http<span style="color:#eceff4">.</span>StatusMethodNotAllowed<span style="color:#eceff4">)</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">type</span> ordersHandler <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
-	pizzas <span style="color:#81a1c1">*</span>Pizzas
-	orders <span style="color:#81a1c1">*</span>Orders
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>oh ordersHandler<span style="color:#eceff4">)</span> <span style="color:#88c0d0">ServeHTTP</span><span style="color:#eceff4">(</span>w http<span style="color:#eceff4">.</span>ResponseWriter<span style="color:#eceff4">,</span> r <span style="color:#81a1c1">*</span>http<span style="color:#eceff4">.</span>Request<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	w<span style="color:#eceff4">.</span><span style="color:#88c0d0">Header</span><span style="color:#eceff4">().</span><span style="color:#88c0d0">Set</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Content-Type&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;application/json&#34;</span><span style="color:#eceff4">)</span>
-
-	<span style="color:#81a1c1;font-weight:bold">switch</span> r<span style="color:#eceff4">.</span>Method <span style="color:#eceff4">{</span>
-	<span style="color:#81a1c1;font-weight:bold">case</span> http<span style="color:#eceff4">.</span>MethodPost<span style="color:#eceff4">:</span>
-		<span style="color:#81a1c1;font-weight:bold">var</span> o Order
-
-		<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#81a1c1">len</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>oh<span style="color:#eceff4">.</span>pizzas<span style="color:#eceff4">)</span> <span style="color:#81a1c1">==</span> <span style="color:#b48ead">0</span> <span style="color:#eceff4">{</span>
-			http<span style="color:#eceff4">.</span><span style="color:#88c0d0">Error</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Error: No pizzas found&#34;</span><span style="color:#eceff4">,</span> http<span style="color:#eceff4">.</span>StatusNotFound<span style="color:#eceff4">)</span>
-			<span style="color:#81a1c1;font-weight:bold">return</span>
-		<span style="color:#eceff4">}</span>
-
-		err <span style="color:#81a1c1">:=</span> json<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewDecoder</span><span style="color:#eceff4">(</span>r<span style="color:#eceff4">.</span>Body<span style="color:#eceff4">).</span><span style="color:#88c0d0">Decode</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">&amp;</span>o<span style="color:#eceff4">)</span>
-		<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
-			http<span style="color:#eceff4">.</span><span style="color:#88c0d0">Error</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Can&#39;t decode body&#34;</span><span style="color:#eceff4">,</span> http<span style="color:#eceff4">.</span>StatusBadRequest<span style="color:#eceff4">)</span>
-			<span style="color:#81a1c1;font-weight:bold">return</span>
-		<span style="color:#eceff4">}</span>
-
-		p<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> oh<span style="color:#eceff4">.</span>pizzas<span style="color:#eceff4">.</span><span style="color:#88c0d0">FindByID</span><span style="color:#eceff4">(</span>o<span style="color:#eceff4">.</span>PizzaID<span style="color:#eceff4">)</span>
-		<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
-			http<span style="color:#eceff4">.</span><span style="color:#88c0d0">Error</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">,</span> fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Error: %s&#34;</span><span style="color:#eceff4">,</span> err<span style="color:#eceff4">),</span> http<span style="color:#eceff4">.</span>StatusBadRequest<span style="color:#eceff4">)</span>
-			<span style="color:#81a1c1;font-weight:bold">return</span>
-		<span style="color:#eceff4">}</span>
-
-		o<span style="color:#eceff4">.</span>Total <span style="color:#eceff4">=</span> p<span style="color:#eceff4">.</span>Price <span style="color:#81a1c1">*</span> o<span style="color:#eceff4">.</span>Quantity
-		<span style="color:#81a1c1">*</span>oh<span style="color:#eceff4">.</span>orders <span style="color:#eceff4">=</span> <span style="color:#81a1c1">append</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>oh<span style="color:#eceff4">.</span>orders<span style="color:#eceff4">,</span> o<span style="color:#eceff4">)</span>
-		json<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewEncoder</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">).</span><span style="color:#88c0d0">Encode</span><span style="color:#eceff4">(</span>o<span style="color:#eceff4">)</span>
-	<span style="color:#81a1c1;font-weight:bold">case</span> http<span style="color:#eceff4">.</span>MethodGet<span style="color:#eceff4">:</span>
-		json<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewEncoder</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">).</span><span style="color:#88c0d0">Encode</span><span style="color:#eceff4">(</span>oh<span style="color:#eceff4">.</span>orders<span style="color:#eceff4">)</span>
-	<span style="color:#81a1c1;font-weight:bold">default</span><span style="color:#eceff4">:</span>
-		http<span style="color:#eceff4">.</span><span style="color:#88c0d0">Error</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Method not allowed&#34;</span><span style="color:#eceff4">,</span> http<span style="color:#eceff4">.</span>StatusMethodNotAllowed<span style="color:#eceff4">)</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">main</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
-	<span style="color:#81a1c1;font-weight:bold">var</span> orders Orders
-	pizzas <span style="color:#81a1c1">:=</span> Pizzas<span style="color:#eceff4">{</span>
-		Pizza<span style="color:#eceff4">{</span>
-			ID<span style="color:#eceff4">:</span>    <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
-			Name<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;Pepperoni&#34;</span><span style="color:#eceff4">,</span>
-			Price<span style="color:#eceff4">:</span> <span style="color:#b48ead">12</span><span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-		Pizza<span style="color:#eceff4">{</span>
-			ID<span style="color:#eceff4">:</span>    <span style="color:#b48ead">2</span><span style="color:#eceff4">,</span>
-			Name<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;Capricciosa&#34;</span><span style="color:#eceff4">,</span>
-			Price<span style="color:#eceff4">:</span> <span style="color:#b48ead">11</span><span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-		Pizza<span style="color:#eceff4">{</span>
-			ID<span style="color:#eceff4">:</span>    <span style="color:#b48ead">3</span><span style="color:#eceff4">,</span>
-			Name<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;Margherita&#34;</span><span style="color:#eceff4">,</span>
-			Price<span style="color:#eceff4">:</span> <span style="color:#b48ead">10</span><span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-	<span style="color:#eceff4">}</span>
-
-	mux <span style="color:#81a1c1">:=</span> http<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewServeMux</span><span style="color:#eceff4">()</span>
-	mux<span style="color:#eceff4">.</span><span style="color:#88c0d0">Handle</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;/pizzas&#34;</span><span style="color:#eceff4">,</span> pizzasHandler<span style="color:#eceff4">{</span><span style="color:#81a1c1">&amp;</span>pizzas<span style="color:#eceff4">})</span>
-	mux<span style="color:#eceff4">.</span><span style="color:#88c0d0">Handle</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;/orders&#34;</span><span style="color:#eceff4">,</span> ordersHandler<span style="color:#eceff4">{</span><span style="color:#81a1c1">&amp;</span>pizzas<span style="color:#eceff4">,</span> <span style="color:#81a1c1">&amp;</span>orders<span style="color:#eceff4">})</span>
-
-	log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatal</span><span style="color:#eceff4">(</span>http<span style="color:#eceff4">.</span><span style="color:#88c0d0">ListenAndServe</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;:8080&#34;</span><span style="color:#eceff4">,</span> mux<span style="color:#eceff4">))</span>
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">package</span> main
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a3be8c">&#34;encoding/json&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a3be8c">&#34;fmt&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a3be8c">&#34;log&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a3be8c">&#34;net/http&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> Pizza <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	ID    <span style="color:#81a1c1">int</span>    <span style="color:#a3be8c">`json:&#34;id&#34;`</span>
+</span></span><span style="display:flex;"><span>	Name  <span style="color:#81a1c1">string</span> <span style="color:#a3be8c">`json:&#34;name&#34;`</span>
+</span></span><span style="display:flex;"><span>	Price <span style="color:#81a1c1">int</span>    <span style="color:#a3be8c">`json:&#34;price&#34;`</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> Pizzas <span style="color:#eceff4">[]</span>Pizza
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>ps Pizzas<span style="color:#eceff4">)</span> <span style="color:#88c0d0">FindByID</span><span style="color:#eceff4">(</span>ID <span style="color:#81a1c1">int</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">(</span>Pizza<span style="color:#eceff4">,</span> <span style="color:#81a1c1">error</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> pizza <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> ps <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#81a1c1;font-weight:bold">if</span> pizza<span style="color:#eceff4">.</span>ID <span style="color:#81a1c1">==</span> ID <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#81a1c1;font-weight:bold">return</span> pizza<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">return</span> Pizza<span style="color:#eceff4">{},</span> fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Couldn&#39;t find pizza with ID: %d&#34;</span><span style="color:#eceff4">,</span> ID<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> Order <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	PizzaID  <span style="color:#81a1c1">int</span> <span style="color:#a3be8c">`json:&#34;pizza_id&#34;`</span>
+</span></span><span style="display:flex;"><span>	Quantity <span style="color:#81a1c1">int</span> <span style="color:#a3be8c">`json:&#34;quantity&#34;`</span>
+</span></span><span style="display:flex;"><span>	Total    <span style="color:#81a1c1">int</span> <span style="color:#a3be8c">`json:&#34;total&#34;`</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> Orders <span style="color:#eceff4">[]</span>Order
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> pizzasHandler <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	pizzas <span style="color:#81a1c1">*</span>Pizzas
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>ph pizzasHandler<span style="color:#eceff4">)</span> <span style="color:#88c0d0">ServeHTTP</span><span style="color:#eceff4">(</span>w http<span style="color:#eceff4">.</span>ResponseWriter<span style="color:#eceff4">,</span> r <span style="color:#81a1c1">*</span>http<span style="color:#eceff4">.</span>Request<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	w<span style="color:#eceff4">.</span><span style="color:#88c0d0">Header</span><span style="color:#eceff4">().</span><span style="color:#88c0d0">Set</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Content-Type&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;application/json&#34;</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">switch</span> r<span style="color:#eceff4">.</span>Method <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">case</span> http<span style="color:#eceff4">.</span>MethodGet<span style="color:#eceff4">:</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#81a1c1">len</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>ph<span style="color:#eceff4">.</span>pizzas<span style="color:#eceff4">)</span> <span style="color:#81a1c1">==</span> <span style="color:#b48ead">0</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			http<span style="color:#eceff4">.</span><span style="color:#88c0d0">Error</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Error: No pizzas found&#34;</span><span style="color:#eceff4">,</span> http<span style="color:#eceff4">.</span>StatusNotFound<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#81a1c1;font-weight:bold">return</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		json<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewEncoder</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">).</span><span style="color:#88c0d0">Encode</span><span style="color:#eceff4">(</span>ph<span style="color:#eceff4">.</span>pizzas<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">default</span><span style="color:#eceff4">:</span>
+</span></span><span style="display:flex;"><span>		http<span style="color:#eceff4">.</span><span style="color:#88c0d0">Error</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Method not allowed&#34;</span><span style="color:#eceff4">,</span> http<span style="color:#eceff4">.</span>StatusMethodNotAllowed<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> ordersHandler <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	pizzas <span style="color:#81a1c1">*</span>Pizzas
+</span></span><span style="display:flex;"><span>	orders <span style="color:#81a1c1">*</span>Orders
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>oh ordersHandler<span style="color:#eceff4">)</span> <span style="color:#88c0d0">ServeHTTP</span><span style="color:#eceff4">(</span>w http<span style="color:#eceff4">.</span>ResponseWriter<span style="color:#eceff4">,</span> r <span style="color:#81a1c1">*</span>http<span style="color:#eceff4">.</span>Request<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	w<span style="color:#eceff4">.</span><span style="color:#88c0d0">Header</span><span style="color:#eceff4">().</span><span style="color:#88c0d0">Set</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Content-Type&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;application/json&#34;</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">switch</span> r<span style="color:#eceff4">.</span>Method <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">case</span> http<span style="color:#eceff4">.</span>MethodPost<span style="color:#eceff4">:</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#81a1c1;font-weight:bold">var</span> o Order
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#81a1c1">len</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>oh<span style="color:#eceff4">.</span>pizzas<span style="color:#eceff4">)</span> <span style="color:#81a1c1">==</span> <span style="color:#b48ead">0</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			http<span style="color:#eceff4">.</span><span style="color:#88c0d0">Error</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Error: No pizzas found&#34;</span><span style="color:#eceff4">,</span> http<span style="color:#eceff4">.</span>StatusNotFound<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#81a1c1;font-weight:bold">return</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		err <span style="color:#81a1c1">:=</span> json<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewDecoder</span><span style="color:#eceff4">(</span>r<span style="color:#eceff4">.</span>Body<span style="color:#eceff4">).</span><span style="color:#88c0d0">Decode</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">&amp;</span>o<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			http<span style="color:#eceff4">.</span><span style="color:#88c0d0">Error</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Can&#39;t decode body&#34;</span><span style="color:#eceff4">,</span> http<span style="color:#eceff4">.</span>StatusBadRequest<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#81a1c1;font-weight:bold">return</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		p<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> oh<span style="color:#eceff4">.</span>pizzas<span style="color:#eceff4">.</span><span style="color:#88c0d0">FindByID</span><span style="color:#eceff4">(</span>o<span style="color:#eceff4">.</span>PizzaID<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			http<span style="color:#eceff4">.</span><span style="color:#88c0d0">Error</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">,</span> fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Error: %s&#34;</span><span style="color:#eceff4">,</span> err<span style="color:#eceff4">),</span> http<span style="color:#eceff4">.</span>StatusBadRequest<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#81a1c1;font-weight:bold">return</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		o<span style="color:#eceff4">.</span>Total <span style="color:#eceff4">=</span> p<span style="color:#eceff4">.</span>Price <span style="color:#81a1c1">*</span> o<span style="color:#eceff4">.</span>Quantity
+</span></span><span style="display:flex;"><span>		<span style="color:#81a1c1">*</span>oh<span style="color:#eceff4">.</span>orders <span style="color:#eceff4">=</span> <span style="color:#81a1c1">append</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>oh<span style="color:#eceff4">.</span>orders<span style="color:#eceff4">,</span> o<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>		json<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewEncoder</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">).</span><span style="color:#88c0d0">Encode</span><span style="color:#eceff4">(</span>o<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">case</span> http<span style="color:#eceff4">.</span>MethodGet<span style="color:#eceff4">:</span>
+</span></span><span style="display:flex;"><span>		json<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewEncoder</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">).</span><span style="color:#88c0d0">Encode</span><span style="color:#eceff4">(</span>oh<span style="color:#eceff4">.</span>orders<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">default</span><span style="color:#eceff4">:</span>
+</span></span><span style="display:flex;"><span>		http<span style="color:#eceff4">.</span><span style="color:#88c0d0">Error</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Method not allowed&#34;</span><span style="color:#eceff4">,</span> http<span style="color:#eceff4">.</span>StatusMethodNotAllowed<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">main</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">var</span> orders Orders
+</span></span><span style="display:flex;"><span>	pizzas <span style="color:#81a1c1">:=</span> Pizzas<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		Pizza<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			ID<span style="color:#eceff4">:</span>    <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			Name<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;Pepperoni&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			Price<span style="color:#eceff4">:</span> <span style="color:#b48ead">12</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>		Pizza<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			ID<span style="color:#eceff4">:</span>    <span style="color:#b48ead">2</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			Name<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;Capricciosa&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			Price<span style="color:#eceff4">:</span> <span style="color:#b48ead">11</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>		Pizza<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			ID<span style="color:#eceff4">:</span>    <span style="color:#b48ead">3</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			Name<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;Margherita&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			Price<span style="color:#eceff4">:</span> <span style="color:#b48ead">10</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	mux <span style="color:#81a1c1">:=</span> http<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewServeMux</span><span style="color:#eceff4">()</span>
+</span></span><span style="display:flex;"><span>	mux<span style="color:#eceff4">.</span><span style="color:#88c0d0">Handle</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;/pizzas&#34;</span><span style="color:#eceff4">,</span> pizzasHandler<span style="color:#eceff4">{</span><span style="color:#81a1c1">&amp;</span>pizzas<span style="color:#eceff4">})</span>
+</span></span><span style="display:flex;"><span>	mux<span style="color:#eceff4">.</span><span style="color:#88c0d0">Handle</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;/orders&#34;</span><span style="color:#eceff4">,</span> ordersHandler<span style="color:#eceff4">{</span><span style="color:#81a1c1">&amp;</span>pizzas<span style="color:#eceff4">,</span> <span style="color:#81a1c1">&amp;</span>orders<span style="color:#eceff4">})</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatal</span><span style="color:#eceff4">(</span>http<span style="color:#eceff4">.</span><span style="color:#88c0d0">ListenAndServe</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;:8080&#34;</span><span style="color:#eceff4">,</span> mux<span style="color:#eceff4">))</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>The orders and the pizzas are kept in-memory – the example is simple on purpose
 and adding any storage solution will greatly complicate the example. The body
 of the <code>POST /orders</code> endpoint expects a JSON body, with a <code>pizza_id</code> and
@@ -478,54 +477,54 @@ are lacking additional details and proper envelopes. Our little HTTP server
 also never validates the data the client sends – if the quantity is missing
 from the request body of the <code>POST /orders</code> it will create a new order with a
 total of $0:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ curl -X POST localhost:8080/orders -d <span style="color:#a3be8c">&#39;{&#34;pizza_id&#34;:1,&#34;quantity&#34;:0}&#39;</span> <span style="color:#eceff4">|</span> jq
-<span style="color:#81a1c1">{</span>
-  <span style="color:#a3be8c">&#34;pizza_id&#34;</span>: 1,
-  <span style="color:#a3be8c">&#34;quantity&#34;</span>: 0,
-  <span style="color:#a3be8c">&#34;total&#34;</span>: <span style="color:#b48ead">0</span>
-<span style="color:#81a1c1">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ curl -X POST localhost:8080/orders -d <span style="color:#a3be8c">&#39;{&#34;pizza_id&#34;:1,&#34;quantity&#34;:0}&#39;</span> <span style="color:#eceff4">|</span> jq
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a3be8c">&#34;pizza_id&#34;</span>: 1,
+</span></span><span style="display:flex;"><span>  <span style="color:#a3be8c">&#34;quantity&#34;</span>: 0,
+</span></span><span style="display:flex;"><span>  <span style="color:#a3be8c">&#34;total&#34;</span>: <span style="color:#b48ead">0</span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">}</span></span></span></code></pre></div>
 <p>Lastly, it allows us to order only one type of pizza per order. What a weird
 pizza shop, isn&rsquo;t it? Still, as an example for this article it will do just
 fine.</p>
 <p>Let&rsquo;s run it locally and send a few requests using <code>cURL</code>. To see all of the
 available pizzas on the menu:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ curl -X GET localhost:8080/pizzas <span style="color:#eceff4">|</span> jq
-<span style="color:#81a1c1">[</span>
-  <span style="color:#81a1c1">{</span>
-    <span style="color:#a3be8c">&#34;id&#34;</span>: 1,
-    <span style="color:#a3be8c">&#34;name&#34;</span>: <span style="color:#a3be8c">&#34;Pepperoni&#34;</span>,
-    <span style="color:#a3be8c">&#34;price&#34;</span>: <span style="color:#b48ead">12</span>
-  <span style="color:#81a1c1">}</span>,
-  <span style="color:#81a1c1">{</span>
-    <span style="color:#a3be8c">&#34;id&#34;</span>: 2,
-    <span style="color:#a3be8c">&#34;name&#34;</span>: <span style="color:#a3be8c">&#34;Capricciosa&#34;</span>,
-    <span style="color:#a3be8c">&#34;price&#34;</span>: <span style="color:#b48ead">11</span>
-  <span style="color:#81a1c1">}</span>,
-  <span style="color:#81a1c1">{</span>
-    <span style="color:#a3be8c">&#34;id&#34;</span>: 3,
-    <span style="color:#a3be8c">&#34;name&#34;</span>: <span style="color:#a3be8c">&#34;Margherita&#34;</span>,
-    <span style="color:#a3be8c">&#34;price&#34;</span>: <span style="color:#b48ead">10</span>
-  <span style="color:#81a1c1">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ curl -X GET localhost:8080/pizzas <span style="color:#eceff4">|</span> jq
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">[</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a3be8c">&#34;id&#34;</span>: 1,
+</span></span><span style="display:flex;"><span>    <span style="color:#a3be8c">&#34;name&#34;</span>: <span style="color:#a3be8c">&#34;Pepperoni&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#a3be8c">&#34;price&#34;</span>: <span style="color:#b48ead">12</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1">}</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a3be8c">&#34;id&#34;</span>: 2,
+</span></span><span style="display:flex;"><span>    <span style="color:#a3be8c">&#34;name&#34;</span>: <span style="color:#a3be8c">&#34;Capricciosa&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#a3be8c">&#34;price&#34;</span>: <span style="color:#b48ead">11</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1">}</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a3be8c">&#34;id&#34;</span>: 3,
+</span></span><span style="display:flex;"><span>    <span style="color:#a3be8c">&#34;name&#34;</span>: <span style="color:#a3be8c">&#34;Margherita&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#a3be8c">&#34;price&#34;</span>: <span style="color:#b48ead">10</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1">}</span></span></span></code></pre></div>
 <p>To see the (empty) list of orders:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ curl -X GET localhost:8080/orders
-null</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ curl -X GET localhost:8080/orders
+</span></span><span style="display:flex;"><span>null</span></span></code></pre></div>
 <p>To create an order of four Pepperoni pizzas:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ curl -X POST localhost:8080/orders -d <span style="color:#a3be8c">&#39;{&#34;pizza_id&#34;:1,&#34;quantity&#34;:4}&#39;</span> <span style="color:#eceff4">|</span> jq
-<span style="color:#81a1c1">{</span>
-  <span style="color:#a3be8c">&#34;pizza_id&#34;</span>: 1,
-  <span style="color:#a3be8c">&#34;quantity&#34;</span>: 4,
-  <span style="color:#a3be8c">&#34;total&#34;</span>: <span style="color:#b48ead">48</span>
-<span style="color:#81a1c1">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ curl -X POST localhost:8080/orders -d <span style="color:#a3be8c">&#39;{&#34;pizza_id&#34;:1,&#34;quantity&#34;:4}&#39;</span> <span style="color:#eceff4">|</span> jq
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">{</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a3be8c">&#34;pizza_id&#34;</span>: 1,
+</span></span><span style="display:flex;"><span>  <span style="color:#a3be8c">&#34;quantity&#34;</span>: 4,
+</span></span><span style="display:flex;"><span>  <span style="color:#a3be8c">&#34;total&#34;</span>: <span style="color:#b48ead">48</span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">}</span></span></span></code></pre></div>
 <p>From the response it is clear that the total is $48. To see the new order in
 the list of orders:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ curl -X GET localhost:8080/orders <span style="color:#eceff4">|</span> jq
-<span style="color:#81a1c1">[</span>
-  <span style="color:#81a1c1">{</span>
-    <span style="color:#a3be8c">&#34;pizza_id&#34;</span>: 1,
-    <span style="color:#a3be8c">&#34;quantity&#34;</span>: 4,
-    <span style="color:#a3be8c">&#34;total&#34;</span>: <span style="color:#b48ead">48</span>
-  <span style="color:#81a1c1">}</span>
-<span style="color:#81a1c1">]</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ curl -X GET localhost:8080/orders <span style="color:#eceff4">|</span> jq
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">[</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a3be8c">&#34;pizza_id&#34;</span>: 1,
+</span></span><span style="display:flex;"><span>    <span style="color:#a3be8c">&#34;quantity&#34;</span>: 4,
+</span></span><span style="display:flex;"><span>    <span style="color:#a3be8c">&#34;total&#34;</span>: <span style="color:#b48ead">48</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">]</span></span></span></code></pre></div>
 <p>Great! Our simple HTTP server is working as it should. So, how do we test it?</p>
 <h2 id="testing-the-pizzashandler" class="relative group">Testing the <code>pizzasHandler</code> <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#testing-the-pizzashandler" aria-label="Anchor">#</a></span></h2>
 <p>As mentioned in the first section of this article, Go ships with everything we
@@ -534,60 +533,60 @@ need to test our HTTP server in a single package called <code>net/http/httptest<
 provides utilities for HTTP testing.</p>
 <p>Let&rsquo;s create a <code>main_test.go</code> file where we will add our tests. First, we will
 test our <code>pizzasHandler</code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestPizzasHandler</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	tt <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
-		name       <span style="color:#81a1c1">string</span>
-		method     <span style="color:#81a1c1">string</span>
-		input      <span style="color:#81a1c1">*</span>Pizzas
-		want       <span style="color:#81a1c1">string</span>
-		statusCode <span style="color:#81a1c1">int</span>
-	<span style="color:#eceff4">}{</span>
-		<span style="color:#eceff4">{</span>
-			name<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;without pizzas&#34;</span><span style="color:#eceff4">,</span>
-			method<span style="color:#eceff4">:</span>     http<span style="color:#eceff4">.</span>MethodGet<span style="color:#eceff4">,</span>
-			input<span style="color:#eceff4">:</span>      <span style="color:#81a1c1">&amp;</span>Pizzas<span style="color:#eceff4">{},</span>
-			want<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;Error: No pizzas found&#34;</span><span style="color:#eceff4">,</span>
-			statusCode<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusNotFound<span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-		<span style="color:#eceff4">{</span>
-			name<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;with pizzas&#34;</span><span style="color:#eceff4">,</span>
-			method<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>MethodGet<span style="color:#eceff4">,</span>
-			input<span style="color:#eceff4">:</span> <span style="color:#81a1c1">&amp;</span>Pizzas<span style="color:#eceff4">{</span>
-				Pizza<span style="color:#eceff4">{</span>
-					ID<span style="color:#eceff4">:</span>    <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
-					Name<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;Foo&#34;</span><span style="color:#eceff4">,</span>
-					Price<span style="color:#eceff4">:</span> <span style="color:#b48ead">10</span><span style="color:#eceff4">,</span>
-				<span style="color:#eceff4">},</span>
-			<span style="color:#eceff4">},</span>
-			want<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">`[{&#34;id&#34;:1,&#34;name&#34;:&#34;Foo&#34;,&#34;price&#34;:10}]`</span><span style="color:#eceff4">,</span>
-			statusCode<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusOK<span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-		<span style="color:#eceff4">{</span>
-			name<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;with bad method&#34;</span><span style="color:#eceff4">,</span>
-			method<span style="color:#eceff4">:</span>     http<span style="color:#eceff4">.</span>MethodPost<span style="color:#eceff4">,</span>
-			input<span style="color:#eceff4">:</span>      <span style="color:#81a1c1">&amp;</span>Pizzas<span style="color:#eceff4">{},</span>
-			want<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;Method not allowed&#34;</span><span style="color:#eceff4">,</span>
-			statusCode<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusMethodNotAllowed<span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-	<span style="color:#eceff4">}</span>
-
-	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> tc <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> tt <span style="color:#eceff4">{</span>
-		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Run</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>name<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-			request <span style="color:#81a1c1">:=</span> httptest<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewRequest</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>method<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;/orders&#34;</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">nil</span><span style="color:#eceff4">)</span>
-			responseRecorder <span style="color:#81a1c1">:=</span> httptest<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewRecorder</span><span style="color:#eceff4">()</span>
-
-			pizzasHandler<span style="color:#eceff4">{</span>tc<span style="color:#eceff4">.</span>input<span style="color:#eceff4">}.</span><span style="color:#88c0d0">ServeHTTP</span><span style="color:#eceff4">(</span>responseRecorder<span style="color:#eceff4">,</span> request<span style="color:#eceff4">)</span>
-
-			<span style="color:#81a1c1;font-weight:bold">if</span> responseRecorder<span style="color:#eceff4">.</span>Code <span style="color:#81a1c1">!=</span> tc<span style="color:#eceff4">.</span>statusCode <span style="color:#eceff4">{</span>
-				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want status &#39;%d&#39;, got &#39;%d&#39;&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>statusCode<span style="color:#eceff4">,</span> responseRecorder<span style="color:#eceff4">.</span>Code<span style="color:#eceff4">)</span>
-			<span style="color:#eceff4">}</span>
-
-			<span style="color:#81a1c1;font-weight:bold">if</span> strings<span style="color:#eceff4">.</span><span style="color:#88c0d0">TrimSpace</span><span style="color:#eceff4">(</span>responseRecorder<span style="color:#eceff4">.</span>Body<span style="color:#eceff4">.</span><span style="color:#88c0d0">String</span><span style="color:#eceff4">())</span> <span style="color:#81a1c1">!=</span> tc<span style="color:#eceff4">.</span>want <span style="color:#eceff4">{</span>
-				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>want<span style="color:#eceff4">,</span> responseRecorder<span style="color:#eceff4">.</span>Body<span style="color:#eceff4">)</span>
-			<span style="color:#eceff4">}</span>
-		<span style="color:#eceff4">})</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestPizzasHandler</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	tt <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		name       <span style="color:#81a1c1">string</span>
+</span></span><span style="display:flex;"><span>		method     <span style="color:#81a1c1">string</span>
+</span></span><span style="display:flex;"><span>		input      <span style="color:#81a1c1">*</span>Pizzas
+</span></span><span style="display:flex;"><span>		want       <span style="color:#81a1c1">string</span>
+</span></span><span style="display:flex;"><span>		statusCode <span style="color:#81a1c1">int</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			name<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;without pizzas&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			method<span style="color:#eceff4">:</span>     http<span style="color:#eceff4">.</span>MethodGet<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			input<span style="color:#eceff4">:</span>      <span style="color:#81a1c1">&amp;</span>Pizzas<span style="color:#eceff4">{},</span>
+</span></span><span style="display:flex;"><span>			want<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;Error: No pizzas found&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			statusCode<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusNotFound<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			name<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;with pizzas&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			method<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>MethodGet<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			input<span style="color:#eceff4">:</span> <span style="color:#81a1c1">&amp;</span>Pizzas<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>				Pizza<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>					ID<span style="color:#eceff4">:</span>    <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>					Name<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;Foo&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>					Price<span style="color:#eceff4">:</span> <span style="color:#b48ead">10</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>			want<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">`[{&#34;id&#34;:1,&#34;name&#34;:&#34;Foo&#34;,&#34;price&#34;:10}]`</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			statusCode<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusOK<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			name<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;with bad method&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			method<span style="color:#eceff4">:</span>     http<span style="color:#eceff4">.</span>MethodPost<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			input<span style="color:#eceff4">:</span>      <span style="color:#81a1c1">&amp;</span>Pizzas<span style="color:#eceff4">{},</span>
+</span></span><span style="display:flex;"><span>			want<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;Method not allowed&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			statusCode<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusMethodNotAllowed<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> tc <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> tt <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Run</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>name<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			request <span style="color:#81a1c1">:=</span> httptest<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewRequest</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>method<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;/orders&#34;</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">nil</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>			responseRecorder <span style="color:#81a1c1">:=</span> httptest<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewRecorder</span><span style="color:#eceff4">()</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>			pizzasHandler<span style="color:#eceff4">{</span>tc<span style="color:#eceff4">.</span>input<span style="color:#eceff4">}.</span><span style="color:#88c0d0">ServeHTTP</span><span style="color:#eceff4">(</span>responseRecorder<span style="color:#eceff4">,</span> request<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>			<span style="color:#81a1c1;font-weight:bold">if</span> responseRecorder<span style="color:#eceff4">.</span>Code <span style="color:#81a1c1">!=</span> tc<span style="color:#eceff4">.</span>statusCode <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want status &#39;%d&#39;, got &#39;%d&#39;&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>statusCode<span style="color:#eceff4">,</span> responseRecorder<span style="color:#eceff4">.</span>Code<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>			<span style="color:#81a1c1;font-weight:bold">if</span> strings<span style="color:#eceff4">.</span><span style="color:#88c0d0">TrimSpace</span><span style="color:#eceff4">(</span>responseRecorder<span style="color:#eceff4">.</span>Body<span style="color:#eceff4">.</span><span style="color:#88c0d0">String</span><span style="color:#eceff4">())</span> <span style="color:#81a1c1">!=</span> tc<span style="color:#eceff4">.</span>want <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>want<span style="color:#eceff4">,</span> responseRecorder<span style="color:#eceff4">.</span>Body<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">})</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>In this test we take the common <a href="/post/testing-in-go-table-driven-tests">table-driven
 approach</a> to testing the handler. We
 provide three cases: without any pizzas on the menu, with some pizzas on the
@@ -611,17 +610,17 @@ allows us to make any assertions on it later in the test.</p>
 <p>The <code>httptest.ResponseRecorder</code> and <code>http.Request</code> duo are all we need to
 sucessfully test any HTTP handler in Go.</p>
 <p>If we run the above test, we&rsquo;ll see the following output:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#bf616a">$</span> <span style="color:#81a1c1;font-weight:bold">go</span> test <span style="color:#81a1c1">-</span>v <span style="color:#81a1c1">-</span>run PizzasHandler
-<span style="color:#81a1c1">==</span><span style="color:#eceff4">=</span> RUN   TestPizzasHandler
-<span style="color:#81a1c1">==</span><span style="color:#eceff4">=</span> RUN   TestPizzasHandler<span style="color:#81a1c1">/</span>without_pizzas
-<span style="color:#81a1c1">==</span><span style="color:#eceff4">=</span> RUN   TestPizzasHandler<span style="color:#81a1c1">/</span>with_pizzas
-<span style="color:#81a1c1">==</span><span style="color:#eceff4">=</span> RUN   TestPizzasHandler<span style="color:#81a1c1">/</span>with_bad_method
-<span style="color:#81a1c1">---</span> PASS<span style="color:#eceff4">:</span> <span style="color:#88c0d0">TestPizzasHandler</span> <span style="color:#eceff4">(</span><span style="color:#b48ead">0.00</span>s<span style="color:#eceff4">)</span>
-    <span style="color:#81a1c1">---</span> PASS<span style="color:#eceff4">:</span> TestPizzasHandler<span style="color:#81a1c1">/</span><span style="color:#88c0d0">without_pizzas</span> <span style="color:#eceff4">(</span><span style="color:#b48ead">0.00</span>s<span style="color:#eceff4">)</span>
-    <span style="color:#81a1c1">---</span> PASS<span style="color:#eceff4">:</span> TestPizzasHandler<span style="color:#81a1c1">/</span><span style="color:#88c0d0">with_pizzas</span> <span style="color:#eceff4">(</span><span style="color:#b48ead">0.00</span>s<span style="color:#eceff4">)</span>
-    <span style="color:#81a1c1">---</span> PASS<span style="color:#eceff4">:</span> TestPizzasHandler<span style="color:#81a1c1">/</span><span style="color:#88c0d0">with_bad_method</span> <span style="color:#eceff4">(</span><span style="color:#b48ead">0.00</span>s<span style="color:#eceff4">)</span>
-PASS
-ok  	_<span style="color:#81a1c1">/</span>Users<span style="color:#81a1c1">/</span>Ilija<span style="color:#81a1c1">/</span>Documents<span style="color:#81a1c1">/</span><span style="color:#81a1c1;font-weight:bold">go</span><span style="color:#81a1c1">-</span>playground<span style="color:#81a1c1">/</span>testing<span style="color:#81a1c1">-</span>in<span style="color:#81a1c1">-</span><span style="color:#81a1c1;font-weight:bold">go</span><span style="color:#81a1c1">-</span>http<span style="color:#81a1c1">-</span>servers	<span style="color:#b48ead">0.023</span>s</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#bf616a">$</span> <span style="color:#81a1c1;font-weight:bold">go</span> test <span style="color:#81a1c1">-</span>v <span style="color:#81a1c1">-</span>run PizzasHandler
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">==</span><span style="color:#eceff4">=</span> RUN   TestPizzasHandler
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">==</span><span style="color:#eceff4">=</span> RUN   TestPizzasHandler<span style="color:#81a1c1">/</span>without_pizzas
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">==</span><span style="color:#eceff4">=</span> RUN   TestPizzasHandler<span style="color:#81a1c1">/</span>with_pizzas
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">==</span><span style="color:#eceff4">=</span> RUN   TestPizzasHandler<span style="color:#81a1c1">/</span>with_bad_method
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">---</span> PASS<span style="color:#eceff4">:</span> <span style="color:#88c0d0">TestPizzasHandler</span> <span style="color:#eceff4">(</span><span style="color:#b48ead">0.00</span>s<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1">---</span> PASS<span style="color:#eceff4">:</span> TestPizzasHandler<span style="color:#81a1c1">/</span><span style="color:#88c0d0">without_pizzas</span> <span style="color:#eceff4">(</span><span style="color:#b48ead">0.00</span>s<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1">---</span> PASS<span style="color:#eceff4">:</span> TestPizzasHandler<span style="color:#81a1c1">/</span><span style="color:#88c0d0">with_pizzas</span> <span style="color:#eceff4">(</span><span style="color:#b48ead">0.00</span>s<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1">---</span> PASS<span style="color:#eceff4">:</span> TestPizzasHandler<span style="color:#81a1c1">/</span><span style="color:#88c0d0">with_bad_method</span> <span style="color:#eceff4">(</span><span style="color:#b48ead">0.00</span>s<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>PASS
+</span></span><span style="display:flex;"><span>ok  	_<span style="color:#81a1c1">/</span>Users<span style="color:#81a1c1">/</span>Ilija<span style="color:#81a1c1">/</span>Documents<span style="color:#81a1c1">/</span><span style="color:#81a1c1;font-weight:bold">go</span><span style="color:#81a1c1">-</span>playground<span style="color:#81a1c1">/</span>testing<span style="color:#81a1c1">-</span>in<span style="color:#81a1c1">-</span><span style="color:#81a1c1;font-weight:bold">go</span><span style="color:#81a1c1">-</span>http<span style="color:#81a1c1">-</span>servers	<span style="color:#b48ead">0.023</span>s</span></span></code></pre></div>
 <p>(In case you&rsquo;re following along, I recommend breaking the tests by changing any
 of the expected values and seeing how these tests fail.)</p>
 <p>Testing the <code>pizzasHandler</code> is straightforward - we have only one <code>GET</code>
@@ -633,108 +632,108 @@ it contains two endpoints, the <code>POST</code> one creates a new order while t
 one returns the list of all orders. This means that when testing, we will have
 to cover more cases.</p>
 <p>Here&rsquo;s a test:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestOrdersHandler</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	tt <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
-		name       <span style="color:#81a1c1">string</span>
-		method     <span style="color:#81a1c1">string</span>
-		pizzas     <span style="color:#81a1c1">*</span>Pizzas
-		orders     <span style="color:#81a1c1">*</span>Orders
-		body       <span style="color:#81a1c1">string</span>
-		want       <span style="color:#81a1c1">string</span>
-		statusCode <span style="color:#81a1c1">int</span>
-	<span style="color:#eceff4">}{</span>
-		<span style="color:#eceff4">{</span>
-			name<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;with a pizza ID and quantity&#34;</span><span style="color:#eceff4">,</span>
-			method<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>MethodPost<span style="color:#eceff4">,</span>
-			pizzas<span style="color:#eceff4">:</span> <span style="color:#81a1c1">&amp;</span>Pizzas<span style="color:#eceff4">{</span>
-				Pizza<span style="color:#eceff4">{</span>
-					ID<span style="color:#eceff4">:</span>    <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
-					Name<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;Margherita&#34;</span><span style="color:#eceff4">,</span>
-					Price<span style="color:#eceff4">:</span> <span style="color:#b48ead">8</span><span style="color:#eceff4">,</span>
-				<span style="color:#eceff4">},</span>
-			<span style="color:#eceff4">},</span>
-			orders<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">&amp;</span>Orders<span style="color:#eceff4">{},</span>
-			body<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">`{&#34;pizza_id&#34;:1,&#34;quantity&#34;:1}`</span><span style="color:#eceff4">,</span>
-			want<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">`{&#34;pizza_id&#34;:1,&#34;quantity&#34;:1,&#34;total&#34;:8}`</span><span style="color:#eceff4">,</span>
-			statusCode<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusOK<span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-		<span style="color:#eceff4">{</span>
-			name<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;with a pizza and no quantity&#34;</span><span style="color:#eceff4">,</span>
-			method<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>MethodPost<span style="color:#eceff4">,</span>
-			pizzas<span style="color:#eceff4">:</span> <span style="color:#81a1c1">&amp;</span>Pizzas<span style="color:#eceff4">{</span>
-				Pizza<span style="color:#eceff4">{</span>
-					ID<span style="color:#eceff4">:</span>    <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
-					Name<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;Margherita&#34;</span><span style="color:#eceff4">,</span>
-					Price<span style="color:#eceff4">:</span> <span style="color:#b48ead">8</span><span style="color:#eceff4">,</span>
-				<span style="color:#eceff4">},</span>
-			<span style="color:#eceff4">},</span>
-			orders<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">&amp;</span>Orders<span style="color:#eceff4">{},</span>
-			body<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">`{&#34;pizza_id&#34;:1}`</span><span style="color:#eceff4">,</span>
-			want<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">`{&#34;pizza_id&#34;:1,&#34;quantity&#34;:0,&#34;total&#34;:0}`</span><span style="color:#eceff4">,</span>
-			statusCode<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusOK<span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-		<span style="color:#eceff4">{</span>
-			name<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;with no pizzas on menu&#34;</span><span style="color:#eceff4">,</span>
-			method<span style="color:#eceff4">:</span>     http<span style="color:#eceff4">.</span>MethodPost<span style="color:#eceff4">,</span>
-			pizzas<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">&amp;</span>Pizzas<span style="color:#eceff4">{},</span>
-			orders<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">&amp;</span>Orders<span style="color:#eceff4">{},</span>
-			body<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">`{&#34;pizza_id&#34;:1,&#34;quantity&#34;:1}`</span><span style="color:#eceff4">,</span>
-			want<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;Error: No pizzas found&#34;</span><span style="color:#eceff4">,</span>
-			statusCode<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusNotFound<span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-		<span style="color:#eceff4">{</span>
-			name<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;with GET method and no orders in memory&#34;</span><span style="color:#eceff4">,</span>
-			method<span style="color:#eceff4">:</span>     http<span style="color:#eceff4">.</span>MethodGet<span style="color:#eceff4">,</span>
-			pizzas<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">&amp;</span>Pizzas<span style="color:#eceff4">{},</span>
-			orders<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">&amp;</span>Orders<span style="color:#eceff4">{},</span>
-			body<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span>
-			want<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;[]&#34;</span><span style="color:#eceff4">,</span>
-			statusCode<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusOK<span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-		<span style="color:#eceff4">{</span>
-			name<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;with GET method and with orders in memory&#34;</span><span style="color:#eceff4">,</span>
-			method<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>MethodGet<span style="color:#eceff4">,</span>
-			pizzas<span style="color:#eceff4">:</span> <span style="color:#81a1c1">&amp;</span>Pizzas<span style="color:#eceff4">{},</span>
-			orders<span style="color:#eceff4">:</span> <span style="color:#81a1c1">&amp;</span>Orders<span style="color:#eceff4">{</span>
-				Order<span style="color:#eceff4">{</span>
-					Quantity<span style="color:#eceff4">:</span> <span style="color:#b48ead">10</span><span style="color:#eceff4">,</span>
-					PizzaID<span style="color:#eceff4">:</span>  <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
-					Total<span style="color:#eceff4">:</span>    <span style="color:#b48ead">100</span><span style="color:#eceff4">,</span>
-				<span style="color:#eceff4">},</span>
-			<span style="color:#eceff4">},</span>
-			body<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span>
-			want<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">`[{&#34;pizza_id&#34;:1,&#34;quantity&#34;:10,&#34;total&#34;:100}]`</span><span style="color:#eceff4">,</span>
-			statusCode<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusOK<span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-		<span style="color:#eceff4">{</span>
-			name<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;with bad HTTP method&#34;</span><span style="color:#eceff4">,</span>
-			method<span style="color:#eceff4">:</span>     http<span style="color:#eceff4">.</span>MethodDelete<span style="color:#eceff4">,</span>
-			pizzas<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">&amp;</span>Pizzas<span style="color:#eceff4">{},</span>
-			orders<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">&amp;</span>Orders<span style="color:#eceff4">{},</span>
-			body<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span>
-			want<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;Method not allowed&#34;</span><span style="color:#eceff4">,</span>
-			statusCode<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusMethodNotAllowed<span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-	<span style="color:#eceff4">}</span>
-
-	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> tc <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> tt <span style="color:#eceff4">{</span>
-		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Run</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>name<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-			request <span style="color:#81a1c1">:=</span> httptest<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewRequest</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>method<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;/orders&#34;</span><span style="color:#eceff4">,</span> strings<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewReader</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>body<span style="color:#eceff4">))</span>
-			responseRecorder <span style="color:#81a1c1">:=</span> httptest<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewRecorder</span><span style="color:#eceff4">()</span>
-
-			handler <span style="color:#81a1c1">:=</span> ordersHandler<span style="color:#eceff4">{</span>tc<span style="color:#eceff4">.</span>pizzas<span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>orders<span style="color:#eceff4">}</span>
-			handler<span style="color:#eceff4">.</span><span style="color:#88c0d0">ServeHTTP</span><span style="color:#eceff4">(</span>responseRecorder<span style="color:#eceff4">,</span> request<span style="color:#eceff4">)</span>
-
-			<span style="color:#81a1c1;font-weight:bold">if</span> responseRecorder<span style="color:#eceff4">.</span>Code <span style="color:#81a1c1">!=</span> tc<span style="color:#eceff4">.</span>statusCode <span style="color:#eceff4">{</span>
-				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want status &#39;%d&#39;, got &#39;%d&#39;&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>statusCode<span style="color:#eceff4">,</span> responseRecorder<span style="color:#eceff4">.</span>Code<span style="color:#eceff4">)</span>
-			<span style="color:#eceff4">}</span>
-
-			<span style="color:#81a1c1;font-weight:bold">if</span> strings<span style="color:#eceff4">.</span><span style="color:#88c0d0">TrimSpace</span><span style="color:#eceff4">(</span>responseRecorder<span style="color:#eceff4">.</span>Body<span style="color:#eceff4">.</span><span style="color:#88c0d0">String</span><span style="color:#eceff4">())</span> <span style="color:#81a1c1">!=</span> tc<span style="color:#eceff4">.</span>want <span style="color:#eceff4">{</span>
-				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>want<span style="color:#eceff4">,</span> responseRecorder<span style="color:#eceff4">.</span>Body<span style="color:#eceff4">)</span>
-			<span style="color:#eceff4">}</span>
-		<span style="color:#eceff4">})</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestOrdersHandler</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	tt <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		name       <span style="color:#81a1c1">string</span>
+</span></span><span style="display:flex;"><span>		method     <span style="color:#81a1c1">string</span>
+</span></span><span style="display:flex;"><span>		pizzas     <span style="color:#81a1c1">*</span>Pizzas
+</span></span><span style="display:flex;"><span>		orders     <span style="color:#81a1c1">*</span>Orders
+</span></span><span style="display:flex;"><span>		body       <span style="color:#81a1c1">string</span>
+</span></span><span style="display:flex;"><span>		want       <span style="color:#81a1c1">string</span>
+</span></span><span style="display:flex;"><span>		statusCode <span style="color:#81a1c1">int</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			name<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;with a pizza ID and quantity&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			method<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>MethodPost<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			pizzas<span style="color:#eceff4">:</span> <span style="color:#81a1c1">&amp;</span>Pizzas<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>				Pizza<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>					ID<span style="color:#eceff4">:</span>    <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>					Name<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;Margherita&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>					Price<span style="color:#eceff4">:</span> <span style="color:#b48ead">8</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>			orders<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">&amp;</span>Orders<span style="color:#eceff4">{},</span>
+</span></span><span style="display:flex;"><span>			body<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">`{&#34;pizza_id&#34;:1,&#34;quantity&#34;:1}`</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			want<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">`{&#34;pizza_id&#34;:1,&#34;quantity&#34;:1,&#34;total&#34;:8}`</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			statusCode<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusOK<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			name<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;with a pizza and no quantity&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			method<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>MethodPost<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			pizzas<span style="color:#eceff4">:</span> <span style="color:#81a1c1">&amp;</span>Pizzas<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>				Pizza<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>					ID<span style="color:#eceff4">:</span>    <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>					Name<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;Margherita&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>					Price<span style="color:#eceff4">:</span> <span style="color:#b48ead">8</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>			orders<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">&amp;</span>Orders<span style="color:#eceff4">{},</span>
+</span></span><span style="display:flex;"><span>			body<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">`{&#34;pizza_id&#34;:1}`</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			want<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">`{&#34;pizza_id&#34;:1,&#34;quantity&#34;:0,&#34;total&#34;:0}`</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			statusCode<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusOK<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			name<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;with no pizzas on menu&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			method<span style="color:#eceff4">:</span>     http<span style="color:#eceff4">.</span>MethodPost<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			pizzas<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">&amp;</span>Pizzas<span style="color:#eceff4">{},</span>
+</span></span><span style="display:flex;"><span>			orders<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">&amp;</span>Orders<span style="color:#eceff4">{},</span>
+</span></span><span style="display:flex;"><span>			body<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">`{&#34;pizza_id&#34;:1,&#34;quantity&#34;:1}`</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			want<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;Error: No pizzas found&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			statusCode<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusNotFound<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			name<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;with GET method and no orders in memory&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			method<span style="color:#eceff4">:</span>     http<span style="color:#eceff4">.</span>MethodGet<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			pizzas<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">&amp;</span>Pizzas<span style="color:#eceff4">{},</span>
+</span></span><span style="display:flex;"><span>			orders<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">&amp;</span>Orders<span style="color:#eceff4">{},</span>
+</span></span><span style="display:flex;"><span>			body<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			want<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;[]&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			statusCode<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusOK<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			name<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;with GET method and with orders in memory&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			method<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>MethodGet<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			pizzas<span style="color:#eceff4">:</span> <span style="color:#81a1c1">&amp;</span>Pizzas<span style="color:#eceff4">{},</span>
+</span></span><span style="display:flex;"><span>			orders<span style="color:#eceff4">:</span> <span style="color:#81a1c1">&amp;</span>Orders<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>				Order<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>					Quantity<span style="color:#eceff4">:</span> <span style="color:#b48ead">10</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>					PizzaID<span style="color:#eceff4">:</span>  <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>					Total<span style="color:#eceff4">:</span>    <span style="color:#b48ead">100</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>			body<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			want<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">`[{&#34;pizza_id&#34;:1,&#34;quantity&#34;:10,&#34;total&#34;:100}]`</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			statusCode<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusOK<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			name<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;with bad HTTP method&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			method<span style="color:#eceff4">:</span>     http<span style="color:#eceff4">.</span>MethodDelete<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			pizzas<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">&amp;</span>Pizzas<span style="color:#eceff4">{},</span>
+</span></span><span style="display:flex;"><span>			orders<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">&amp;</span>Orders<span style="color:#eceff4">{},</span>
+</span></span><span style="display:flex;"><span>			body<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			want<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;Method not allowed&#34;</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			statusCode<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusMethodNotAllowed<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> tc <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> tt <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Run</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>name<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			request <span style="color:#81a1c1">:=</span> httptest<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewRequest</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>method<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;/orders&#34;</span><span style="color:#eceff4">,</span> strings<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewReader</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>body<span style="color:#eceff4">))</span>
+</span></span><span style="display:flex;"><span>			responseRecorder <span style="color:#81a1c1">:=</span> httptest<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewRecorder</span><span style="color:#eceff4">()</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>			handler <span style="color:#81a1c1">:=</span> ordersHandler<span style="color:#eceff4">{</span>tc<span style="color:#eceff4">.</span>pizzas<span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>orders<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>			handler<span style="color:#eceff4">.</span><span style="color:#88c0d0">ServeHTTP</span><span style="color:#eceff4">(</span>responseRecorder<span style="color:#eceff4">,</span> request<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>			<span style="color:#81a1c1;font-weight:bold">if</span> responseRecorder<span style="color:#eceff4">.</span>Code <span style="color:#81a1c1">!=</span> tc<span style="color:#eceff4">.</span>statusCode <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want status &#39;%d&#39;, got &#39;%d&#39;&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>statusCode<span style="color:#eceff4">,</span> responseRecorder<span style="color:#eceff4">.</span>Code<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>			<span style="color:#81a1c1;font-weight:bold">if</span> strings<span style="color:#eceff4">.</span><span style="color:#88c0d0">TrimSpace</span><span style="color:#eceff4">(</span>responseRecorder<span style="color:#eceff4">.</span>Body<span style="color:#eceff4">.</span><span style="color:#88c0d0">String</span><span style="color:#eceff4">())</span> <span style="color:#81a1c1">!=</span> tc<span style="color:#eceff4">.</span>want <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>want<span style="color:#eceff4">,</span> responseRecorder<span style="color:#eceff4">.</span>Body<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">})</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>The tests are similar to the previous, but here each of the requests that we
 create using the <code>httptest.NewRequest</code> function also take a body as the third
 parameter. The body has to be of type <code>io.Reader</code>, which is <a href="https://golang.org/pkg/io/#Reader">an
@@ -749,23 +748,23 @@ pass it along with the <code>request</code> to the <code>ordersHandler</code>&rs
 Right after we compare the <code>Body</code> of the <code>responseRecorder</code> and the expected
 body from the test case.</p>
 <p>If we run the test, we will see the following output:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#81a1c1">test</span> -v -run OrdersHandler
-<span style="color:#81a1c1">===</span> RUN   TestOrdersHandler
-<span style="color:#81a1c1">===</span> RUN   TestOrdersHandler/with_a_pizza_ID_and_quantity
-<span style="color:#81a1c1">===</span> RUN   TestOrdersHandler/with_a_pizza_and_no_quantity
-<span style="color:#81a1c1">===</span> RUN   TestOrdersHandler/with_no_pizzas_on_menu
-<span style="color:#81a1c1">===</span> RUN   TestOrdersHandler/with_GET_method_and_no_orders_in_memory
-<span style="color:#81a1c1">===</span> RUN   TestOrdersHandler/with_GET_method_and_with_orders_in_memory
-<span style="color:#81a1c1">===</span> RUN   TestOrdersHandler/with_bad_HTTP_method
---- PASS: TestOrdersHandler <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
-    --- PASS: TestOrdersHandler/with_a_pizza_ID_and_quantity <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
-    --- PASS: TestOrdersHandler/with_a_pizza_and_no_quantity <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
-    --- PASS: TestOrdersHandler/with_no_pizzas_on_menu <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
-    --- PASS: TestOrdersHandler/with_GET_method_and_no_orders_in_memory <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
-    --- PASS: TestOrdersHandler/with_GET_method_and_with_orders_in_memory <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
-    --- PASS: TestOrdersHandler/with_bad_HTTP_method <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
-PASS
-ok  	_/Users/Ilija/Documents/go-playground/testing-in-go-http-servers	0.011s</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ go <span style="color:#81a1c1">test</span> -v -run OrdersHandler
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">===</span> RUN   TestOrdersHandler
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">===</span> RUN   TestOrdersHandler/with_a_pizza_ID_and_quantity
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">===</span> RUN   TestOrdersHandler/with_a_pizza_and_no_quantity
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">===</span> RUN   TestOrdersHandler/with_no_pizzas_on_menu
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">===</span> RUN   TestOrdersHandler/with_GET_method_and_no_orders_in_memory
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">===</span> RUN   TestOrdersHandler/with_GET_method_and_with_orders_in_memory
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">===</span> RUN   TestOrdersHandler/with_bad_HTTP_method
+</span></span><span style="display:flex;"><span>--- PASS: TestOrdersHandler <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
+</span></span><span style="display:flex;"><span>    --- PASS: TestOrdersHandler/with_a_pizza_ID_and_quantity <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
+</span></span><span style="display:flex;"><span>    --- PASS: TestOrdersHandler/with_a_pizza_and_no_quantity <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
+</span></span><span style="display:flex;"><span>    --- PASS: TestOrdersHandler/with_no_pizzas_on_menu <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
+</span></span><span style="display:flex;"><span>    --- PASS: TestOrdersHandler/with_GET_method_and_no_orders_in_memory <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
+</span></span><span style="display:flex;"><span>    --- PASS: TestOrdersHandler/with_GET_method_and_with_orders_in_memory <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
+</span></span><span style="display:flex;"><span>    --- PASS: TestOrdersHandler/with_bad_HTTP_method <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
+</span></span><span style="display:flex;"><span>PASS
+</span></span><span style="display:flex;"><span>ok  	_/Users/Ilija/Documents/go-playground/testing-in-go-http-servers	0.011s</span></span></code></pre></div>
 <p>(In case you&rsquo;re following along, I recommend breaking the tests by changing any
 of the expected values and seeing how these tests fail.)</p>
 <p>As you can see, the <code>testing</code> package in combination with the

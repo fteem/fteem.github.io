@@ -43,7 +43,7 @@
   />
   
   
-  <script type="text/javascript" src="/js/appearance.min.4df8309499991be53c71b2b39ba0f5d5e77ea7d411d0710ce48c24218e7cc24ded28f19e85838fdc56db2306195cb001f049f577be0cf0ffb2dd6e2037ede1b9.js" integrity="sha512-TfgwlJmZG&#43;U8cbKzm6D11ed&#43;p9QR0HEM5IwkIY58wk3tKPGehYOP3FbbIwYZXLAB8En1d74M8P&#43;y3W4gN&#43;3huQ=="></script>
+  <script type="text/javascript" src="/js/appearance.min.badab316c9287a5a42a843e4eb45da65bb3d194a5a0f5fa4a3e516160e67df0b8c65f4f19a8e146436e29d583699e6cb41d6bbe99e05e1dbaa877763bad9f8e2.js" integrity="sha512-utqzFskoelpCqEPk60XaZbs9GUpaD1&#43;ko&#43;UWFg5n3wuMZfTxmo4UZDbinVg2mebLQda76Z4F4duqh3djutn44g=="></script>
   
     
     
@@ -56,7 +56,7 @@
   
   
     
-    <script defer type="text/javascript" id="script-bundle" src="/js/main.bundle.min.bbbc21fe00162ca986299c3aa2587e88662408cef57709874b7c316048a5ff80b7e342fc03812cff1393cb2be2ce65593299494d88df71ec6eb48ee261fc0fd6.js" integrity="sha512-u7wh/gAWLKmGKZw6olh&#43;iGYkCM71dwmHS3wxYEil/4C340L8A4Es/xOTyyvizmVZMplJTYjfcexutI7iYfwP1g==" data-copy="Copy" data-copied="Copied"></script>
+    <script defer type="text/javascript" id="script-bundle" src="/js/main.bundle.min.15ae6e2c9b1ac24a9ccf40003fa689efb1a18db1ee9b73d780b01a6c31b150441415862513e93184f68fe385759e4698b8763cba6a0f79493c1fed99ad5868d4.js" integrity="sha512-Fa5uLJsawkqcz0AAP6aJ77GhjbHum3PXgLAabDGxUEQUFYYlE&#43;kxhPaP44V1nkaYuHY8umoPeUk8H&#43;2ZrVho1A==" data-copy="Copy" data-copied="Copied"></script>
   
   
   
@@ -77,7 +77,6 @@
 <meta property="og:url" content="https://ieftimov.com/posts/testing-in-go-test-doubles-by-example/" /><meta property="og:image" content="https://ieftimov.com/cards/testing-in-go-test-doubles-by-example.png" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2019-12-16T00:00:00+00:00" />
 <meta property="article:modified_time" content="2019-12-16T00:00:00+00:00" /><meta property="og:site_name" content="Ilija Eftimov 👨‍🚀" />
-
 
   <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://ieftimov.com/cards/testing-in-go-test-doubles-by-example.png"/>
@@ -366,62 +365,62 @@ we can find a person&rsquo;s phone number using their first and last names.</p>
 <p>The <code>Find</code> method uses a <code>Searcher</code> object whose <code>Search</code> function it uses to
 find the entry in the slice of people. <code>Searcher</code>&rsquo;s implementation is not
 essential at this moment.</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">package</span> main
-
-<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
-	<span style="color:#a3be8c">&#34;errors&#34;</span>
-<span style="color:#eceff4">)</span>
-
-<span style="color:#81a1c1;font-weight:bold">var</span> <span style="color:#eceff4">(</span>
-	ErrMissingArgs   <span style="color:#eceff4">=</span> errors<span style="color:#eceff4">.</span><span style="color:#88c0d0">New</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;FirstName and LastName are mandatory arguments&#34;</span><span style="color:#eceff4">)</span>
-	ErrNoPersonFound <span style="color:#eceff4">=</span> errors<span style="color:#eceff4">.</span><span style="color:#88c0d0">New</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;No person found&#34;</span><span style="color:#eceff4">)</span>
-<span style="color:#eceff4">)</span>
-
-<span style="color:#81a1c1;font-weight:bold">type</span> Searcher <span style="color:#81a1c1;font-weight:bold">interface</span> <span style="color:#eceff4">{</span>
-	<span style="color:#88c0d0">Search</span><span style="color:#eceff4">(</span>people <span style="color:#eceff4">[]</span><span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">,</span> firstName <span style="color:#81a1c1">string</span><span style="color:#eceff4">,</span> lastName <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">*</span>Person
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">type</span> Person <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
-	FirstName <span style="color:#81a1c1">string</span>
-	LastName  <span style="color:#81a1c1">string</span>
-	Phone     <span style="color:#81a1c1">string</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">type</span> Phonebook <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
-	People <span style="color:#eceff4">[]</span><span style="color:#81a1c1">*</span>Person
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>p <span style="color:#81a1c1">*</span>Phonebook<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Find</span><span style="color:#eceff4">(</span>searcher Searcher<span style="color:#eceff4">,</span> firstName<span style="color:#eceff4">,</span> lastName <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">(</span><span style="color:#81a1c1">string</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">error</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	<span style="color:#81a1c1;font-weight:bold">if</span> firstName <span style="color:#81a1c1">==</span> <span style="color:#a3be8c">&#34;&#34;</span> <span style="color:#81a1c1">||</span> lastName <span style="color:#81a1c1">==</span> <span style="color:#a3be8c">&#34;&#34;</span> <span style="color:#eceff4">{</span>
-		<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span> ErrMissingArgs
-	<span style="color:#eceff4">}</span>
-
-	person <span style="color:#81a1c1">:=</span> searcher<span style="color:#eceff4">.</span><span style="color:#88c0d0">Search</span><span style="color:#eceff4">(</span>p<span style="color:#eceff4">.</span>People<span style="color:#eceff4">,</span> firstName<span style="color:#eceff4">,</span> lastName<span style="color:#eceff4">)</span>
-
-	<span style="color:#81a1c1;font-weight:bold">if</span> person <span style="color:#81a1c1">==</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
-		<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span> ErrNoPersonFound
-	<span style="color:#eceff4">}</span>
-
-	<span style="color:#81a1c1;font-weight:bold">return</span> person<span style="color:#eceff4">.</span>Phone<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">package</span> main
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a3be8c">&#34;errors&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">var</span> <span style="color:#eceff4">(</span>
+</span></span><span style="display:flex;"><span>	ErrMissingArgs   <span style="color:#eceff4">=</span> errors<span style="color:#eceff4">.</span><span style="color:#88c0d0">New</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;FirstName and LastName are mandatory arguments&#34;</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	ErrNoPersonFound <span style="color:#eceff4">=</span> errors<span style="color:#eceff4">.</span><span style="color:#88c0d0">New</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;No person found&#34;</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> Searcher <span style="color:#81a1c1;font-weight:bold">interface</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#88c0d0">Search</span><span style="color:#eceff4">(</span>people <span style="color:#eceff4">[]</span><span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">,</span> firstName <span style="color:#81a1c1">string</span><span style="color:#eceff4">,</span> lastName <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">*</span>Person
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> Person <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	FirstName <span style="color:#81a1c1">string</span>
+</span></span><span style="display:flex;"><span>	LastName  <span style="color:#81a1c1">string</span>
+</span></span><span style="display:flex;"><span>	Phone     <span style="color:#81a1c1">string</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> Phonebook <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	People <span style="color:#eceff4">[]</span><span style="color:#81a1c1">*</span>Person
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>p <span style="color:#81a1c1">*</span>Phonebook<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Find</span><span style="color:#eceff4">(</span>searcher Searcher<span style="color:#eceff4">,</span> firstName<span style="color:#eceff4">,</span> lastName <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">(</span><span style="color:#81a1c1">string</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">error</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">if</span> firstName <span style="color:#81a1c1">==</span> <span style="color:#a3be8c">&#34;&#34;</span> <span style="color:#81a1c1">||</span> lastName <span style="color:#81a1c1">==</span> <span style="color:#a3be8c">&#34;&#34;</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span> ErrMissingArgs
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	person <span style="color:#81a1c1">:=</span> searcher<span style="color:#eceff4">.</span><span style="color:#88c0d0">Search</span><span style="color:#eceff4">(</span>p<span style="color:#eceff4">.</span>People<span style="color:#eceff4">,</span> firstName<span style="color:#eceff4">,</span> lastName<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">if</span> person <span style="color:#81a1c1">==</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span> ErrNoPersonFound
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">return</span> person<span style="color:#eceff4">.</span>Phone<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>Imagine we want to test the <code>Find</code> method of the <code>Phonebook</code>. How would you
 approach it? Here&rsquo;s one way:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> DummySearcher <span style="color:#81a1c1;font-weight:bold">struct</span><span style="color:#eceff4">{}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>ds DummySearcher<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Search</span><span style="color:#eceff4">(</span>people <span style="color:#eceff4">[]</span><span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">,</span> firstName<span style="color:#eceff4">,</span> lastName <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">*</span>Person <span style="color:#eceff4">{</span>
-	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">&amp;</span>Person<span style="color:#eceff4">{}</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestFindReturnsError</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	phonebook <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>Phonebook<span style="color:#eceff4">{}</span>
-
-	want <span style="color:#81a1c1">:=</span> ErrMissingArgs
-	_<span style="color:#eceff4">,</span> got <span style="color:#81a1c1">:=</span> phonebook<span style="color:#eceff4">.</span><span style="color:#88c0d0">Find</span><span style="color:#eceff4">(</span>DummySearcher<span style="color:#eceff4">{},</span> <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">)</span>
-
-	<span style="color:#81a1c1;font-weight:bold">if</span> got <span style="color:#81a1c1">!=</span> want <span style="color:#eceff4">{</span>
-		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span><span style="color:#eceff4">,</span> want<span style="color:#eceff4">,</span> got<span style="color:#eceff4">)</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> DummySearcher <span style="color:#81a1c1;font-weight:bold">struct</span><span style="color:#eceff4">{}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>ds DummySearcher<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Search</span><span style="color:#eceff4">(</span>people <span style="color:#eceff4">[]</span><span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">,</span> firstName<span style="color:#eceff4">,</span> lastName <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">*</span>Person <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">&amp;</span>Person<span style="color:#eceff4">{}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestFindReturnsError</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	phonebook <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>Phonebook<span style="color:#eceff4">{}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	want <span style="color:#81a1c1">:=</span> ErrMissingArgs
+</span></span><span style="display:flex;"><span>	_<span style="color:#eceff4">,</span> got <span style="color:#81a1c1">:=</span> phonebook<span style="color:#eceff4">.</span><span style="color:#88c0d0">Find</span><span style="color:#eceff4">(</span>DummySearcher<span style="color:#eceff4">{},</span> <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">if</span> got <span style="color:#81a1c1">!=</span> want <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span><span style="color:#eceff4">,</span> want<span style="color:#eceff4">,</span> got<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>To test that the <code>Find</code> method returns an error when one of the arguments is
 blank, we do not care about the implementation of the <code>Searcher</code> argument. In
 such cases, where the functionality of the injected dependency is irrelevant,
@@ -432,28 +431,28 @@ functionality and that we don&rsquo;t want people to use.</p>
 <h2 id="stubs" class="relative group">Stubs <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#stubs" aria-label="Anchor">#</a></span></h2>
 <p>Using the same example from above, how would we test that the <code>Find</code> method
 when supplied the <code>firstName</code> and <code>lastName</code> arguments will work as expected?</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> StubSearcher <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
-	phone <span style="color:#81a1c1">string</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>ss StubSearcher<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Search</span><span style="color:#eceff4">(</span>people <span style="color:#eceff4">[]</span><span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">,</span> firstName<span style="color:#eceff4">,</span> lastName <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">*</span>Person <span style="color:#eceff4">{</span>
-	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">&amp;</span>Person<span style="color:#eceff4">{</span>
-		FirstName<span style="color:#eceff4">:</span> firstName<span style="color:#eceff4">,</span>
-		LastName<span style="color:#eceff4">:</span>  lastName<span style="color:#eceff4">,</span>
-		Phone<span style="color:#eceff4">:</span>     ss<span style="color:#eceff4">.</span>phone<span style="color:#eceff4">,</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestFindReturnsPerson</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	fakePhone <span style="color:#81a1c1">:=</span> <span style="color:#a3be8c">&#34;+31 65 222 333&#34;</span>
-	phonebook <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>Phonebook<span style="color:#eceff4">{}</span>
-
-	phone<span style="color:#eceff4">,</span> _ <span style="color:#81a1c1">:=</span> phonebook<span style="color:#eceff4">.</span><span style="color:#88c0d0">Find</span><span style="color:#eceff4">(</span>StubSearcher<span style="color:#eceff4">{</span>fakePhone<span style="color:#eceff4">},</span> <span style="color:#a3be8c">&#34;Jane&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Doe&#34;</span><span style="color:#eceff4">)</span>
-
-	<span style="color:#81a1c1;font-weight:bold">if</span> phone <span style="color:#81a1c1">!=</span> fakePhone <span style="color:#eceff4">{</span>
-		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span><span style="color:#eceff4">,</span> fakePhone<span style="color:#eceff4">,</span> phone<span style="color:#eceff4">)</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> StubSearcher <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	phone <span style="color:#81a1c1">string</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>ss StubSearcher<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Search</span><span style="color:#eceff4">(</span>people <span style="color:#eceff4">[]</span><span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">,</span> firstName<span style="color:#eceff4">,</span> lastName <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">*</span>Person <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">&amp;</span>Person<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		FirstName<span style="color:#eceff4">:</span> firstName<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		LastName<span style="color:#eceff4">:</span>  lastName<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		Phone<span style="color:#eceff4">:</span>     ss<span style="color:#eceff4">.</span>phone<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestFindReturnsPerson</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	fakePhone <span style="color:#81a1c1">:=</span> <span style="color:#a3be8c">&#34;+31 65 222 333&#34;</span>
+</span></span><span style="display:flex;"><span>	phonebook <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>Phonebook<span style="color:#eceff4">{}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	phone<span style="color:#eceff4">,</span> _ <span style="color:#81a1c1">:=</span> phonebook<span style="color:#eceff4">.</span><span style="color:#88c0d0">Find</span><span style="color:#eceff4">(</span>StubSearcher<span style="color:#eceff4">{</span>fakePhone<span style="color:#eceff4">},</span> <span style="color:#a3be8c">&#34;Jane&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Doe&#34;</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">if</span> phone <span style="color:#81a1c1">!=</span> fakePhone <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span><span style="color:#eceff4">,</span> fakePhone<span style="color:#eceff4">,</span> phone<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>When we want to make the <code>Searcher</code> implementation return an actual value that
 we can assert against, we need a stub. Instead of understanding what it would
 take to set up and/or implement a proper <code>Searcher</code>, you just create a stub
@@ -462,35 +461,35 @@ implementation that returns only one value. This is the idea behind stubs.</p>
 <p>Again, using the <code>Phonebook</code> and <code>Searcher</code> example from above, let&rsquo;s imagine
 we would like to write a test where we want to be sure we invoke the
 <code>Searcher.Search</code> function. How can we do that?</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> SpySearcher <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
-	phone           <span style="color:#81a1c1">string</span>
-	searchWasCalled <span style="color:#81a1c1">bool</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>ss <span style="color:#81a1c1">*</span>SpySearcher<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Search</span><span style="color:#eceff4">(</span>people <span style="color:#eceff4">[]</span><span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">,</span> firstName<span style="color:#eceff4">,</span> lastName <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">*</span>Person <span style="color:#eceff4">{</span>
-	ss<span style="color:#eceff4">.</span>searchWasCalled <span style="color:#eceff4">=</span> <span style="color:#81a1c1;font-weight:bold">true</span>
-	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">&amp;</span>Person<span style="color:#eceff4">{</span>
-		FirstName<span style="color:#eceff4">:</span> firstName<span style="color:#eceff4">,</span>
-		LastName<span style="color:#eceff4">:</span>  lastName<span style="color:#eceff4">,</span>
-		Phone<span style="color:#eceff4">:</span>     ss<span style="color:#eceff4">.</span>phone<span style="color:#eceff4">,</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestFindCallsSearchAndReturnsPerson</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	fakePhone <span style="color:#81a1c1">:=</span> <span style="color:#a3be8c">&#34;+31 65 222 333&#34;</span>
-	phonebook <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>Phonebook<span style="color:#eceff4">{}</span>
-	spy <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>SpySearcher<span style="color:#eceff4">{</span>phone<span style="color:#eceff4">:</span> fakePhone<span style="color:#eceff4">}</span>
-
-	phone<span style="color:#eceff4">,</span> _ <span style="color:#81a1c1">:=</span> phonebook<span style="color:#eceff4">.</span><span style="color:#88c0d0">Find</span><span style="color:#eceff4">(</span>spy<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Jane&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Doe&#34;</span><span style="color:#eceff4">)</span>
-
-	<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#eceff4">!</span>spy<span style="color:#eceff4">.</span>searchWasCalled <span style="color:#eceff4">{</span>
-		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected to call &#39;Search&#39; in &#39;Find&#39;, but it wasn&#39;t.&#34;</span><span style="color:#eceff4">)</span>
-	<span style="color:#eceff4">}</span>
-
-	<span style="color:#81a1c1;font-weight:bold">if</span> phone <span style="color:#81a1c1">!=</span> fakePhone <span style="color:#eceff4">{</span>
-		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span><span style="color:#eceff4">,</span> fakePhone<span style="color:#eceff4">,</span> phone<span style="color:#eceff4">)</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> SpySearcher <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	phone           <span style="color:#81a1c1">string</span>
+</span></span><span style="display:flex;"><span>	searchWasCalled <span style="color:#81a1c1">bool</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>ss <span style="color:#81a1c1">*</span>SpySearcher<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Search</span><span style="color:#eceff4">(</span>people <span style="color:#eceff4">[]</span><span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">,</span> firstName<span style="color:#eceff4">,</span> lastName <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">*</span>Person <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	ss<span style="color:#eceff4">.</span>searchWasCalled <span style="color:#eceff4">=</span> <span style="color:#81a1c1;font-weight:bold">true</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">&amp;</span>Person<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		FirstName<span style="color:#eceff4">:</span> firstName<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		LastName<span style="color:#eceff4">:</span>  lastName<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		Phone<span style="color:#eceff4">:</span>     ss<span style="color:#eceff4">.</span>phone<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestFindCallsSearchAndReturnsPerson</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	fakePhone <span style="color:#81a1c1">:=</span> <span style="color:#a3be8c">&#34;+31 65 222 333&#34;</span>
+</span></span><span style="display:flex;"><span>	phonebook <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>Phonebook<span style="color:#eceff4">{}</span>
+</span></span><span style="display:flex;"><span>	spy <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>SpySearcher<span style="color:#eceff4">{</span>phone<span style="color:#eceff4">:</span> fakePhone<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	phone<span style="color:#eceff4">,</span> _ <span style="color:#81a1c1">:=</span> phonebook<span style="color:#eceff4">.</span><span style="color:#88c0d0">Find</span><span style="color:#eceff4">(</span>spy<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Jane&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Doe&#34;</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#eceff4">!</span>spy<span style="color:#eceff4">.</span>searchWasCalled <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected to call &#39;Search&#39; in &#39;Find&#39;, but it wasn&#39;t.&#34;</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">if</span> phone <span style="color:#81a1c1">!=</span> fakePhone <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span><span style="color:#eceff4">,</span> fakePhone<span style="color:#eceff4">,</span> phone<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>You can think of spies as an upgrade of stubs. While they return a predefined
 value, just like stubs, spies also remember whether we called a specific
 method. Often, spies also keep track of how many times we call a particular
@@ -507,49 +506,49 @@ that simulate the behavior of real objects or units.</p>
 stubs &amp; spies, with a bit more.</p>
 <p>Also, in Go, they are a bit tricky to implement, especially in a generic way.
 Still, for this example, we will do a home-made implementation:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> MockSearcher <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
-	phone         <span style="color:#81a1c1">string</span>
-	methodsToCall <span style="color:#81a1c1;font-weight:bold">map</span><span style="color:#eceff4">[</span><span style="color:#81a1c1">string</span><span style="color:#eceff4">]</span><span style="color:#81a1c1">bool</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>ms <span style="color:#81a1c1">*</span>MockSearcher<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Search</span><span style="color:#eceff4">(</span>people <span style="color:#eceff4">[]</span><span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">,</span> firstName<span style="color:#eceff4">,</span> lastName <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">*</span>Person <span style="color:#eceff4">{</span>
-	ms<span style="color:#eceff4">.</span>methodsToCall<span style="color:#eceff4">[</span><span style="color:#a3be8c">&#34;Search&#34;</span><span style="color:#eceff4">]</span> <span style="color:#eceff4">=</span> <span style="color:#81a1c1;font-weight:bold">true</span>
-	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">&amp;</span>Person<span style="color:#eceff4">{</span>
-		FirstName<span style="color:#eceff4">:</span> firstName<span style="color:#eceff4">,</span>
-		LastName<span style="color:#eceff4">:</span>  lastName<span style="color:#eceff4">,</span>
-		Phone<span style="color:#eceff4">:</span>     ms<span style="color:#eceff4">.</span>phone<span style="color:#eceff4">,</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>ms <span style="color:#81a1c1">*</span>MockSearcher<span style="color:#eceff4">)</span> <span style="color:#88c0d0">ExpectToCall</span><span style="color:#eceff4">(</span>methodName <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	<span style="color:#81a1c1;font-weight:bold">if</span> ms<span style="color:#eceff4">.</span>methodsToCall <span style="color:#81a1c1">==</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
-		ms<span style="color:#eceff4">.</span>methodsToCall <span style="color:#eceff4">=</span> <span style="color:#81a1c1">make</span><span style="color:#eceff4">(</span><span style="color:#81a1c1;font-weight:bold">map</span><span style="color:#eceff4">[</span><span style="color:#81a1c1">string</span><span style="color:#eceff4">]</span><span style="color:#81a1c1">bool</span><span style="color:#eceff4">)</span>
-	<span style="color:#eceff4">}</span>
-	ms<span style="color:#eceff4">.</span>methodsToCall<span style="color:#eceff4">[</span>methodName<span style="color:#eceff4">]</span> <span style="color:#eceff4">=</span> <span style="color:#81a1c1;font-weight:bold">false</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>ms <span style="color:#81a1c1">*</span>MockSearcher<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Verify</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	<span style="color:#81a1c1;font-weight:bold">for</span> methodName<span style="color:#eceff4">,</span> called <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> ms<span style="color:#eceff4">.</span>methodsToCall <span style="color:#eceff4">{</span>
-		<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#eceff4">!</span>called <span style="color:#eceff4">{</span>
-			t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected to call &#39;%s&#39;, but it wasn&#39;t.&#34;</span><span style="color:#eceff4">,</span> methodName<span style="color:#eceff4">)</span>
-		<span style="color:#eceff4">}</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestFindCallsSearchAndReturnsPersonUsingMock</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	fakePhone <span style="color:#81a1c1">:=</span> <span style="color:#a3be8c">&#34;+31 65 222 333&#34;</span>
-	phonebook <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>Phonebook<span style="color:#eceff4">{}</span>
-	mock <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>MockSearcher<span style="color:#eceff4">{</span>phone<span style="color:#eceff4">:</span> fakePhone<span style="color:#eceff4">}</span>
-	mock<span style="color:#eceff4">.</span><span style="color:#88c0d0">ExpectToCall</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Search&#34;</span><span style="color:#eceff4">)</span>
-
-	phone<span style="color:#eceff4">,</span> _ <span style="color:#81a1c1">:=</span> phonebook<span style="color:#eceff4">.</span><span style="color:#88c0d0">Find</span><span style="color:#eceff4">(</span>mock<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Jane&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Doe&#34;</span><span style="color:#eceff4">)</span>
-
-	<span style="color:#81a1c1;font-weight:bold">if</span> phone <span style="color:#81a1c1">!=</span> fakePhone <span style="color:#eceff4">{</span>
-		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span><span style="color:#eceff4">,</span> fakePhone<span style="color:#eceff4">,</span> phone<span style="color:#eceff4">)</span>
-	<span style="color:#eceff4">}</span>
-
-	mock<span style="color:#eceff4">.</span><span style="color:#88c0d0">Verify</span><span style="color:#eceff4">(</span>t<span style="color:#eceff4">)</span>
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> MockSearcher <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	phone         <span style="color:#81a1c1">string</span>
+</span></span><span style="display:flex;"><span>	methodsToCall <span style="color:#81a1c1;font-weight:bold">map</span><span style="color:#eceff4">[</span><span style="color:#81a1c1">string</span><span style="color:#eceff4">]</span><span style="color:#81a1c1">bool</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>ms <span style="color:#81a1c1">*</span>MockSearcher<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Search</span><span style="color:#eceff4">(</span>people <span style="color:#eceff4">[]</span><span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">,</span> firstName<span style="color:#eceff4">,</span> lastName <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">*</span>Person <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	ms<span style="color:#eceff4">.</span>methodsToCall<span style="color:#eceff4">[</span><span style="color:#a3be8c">&#34;Search&#34;</span><span style="color:#eceff4">]</span> <span style="color:#eceff4">=</span> <span style="color:#81a1c1;font-weight:bold">true</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">&amp;</span>Person<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		FirstName<span style="color:#eceff4">:</span> firstName<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		LastName<span style="color:#eceff4">:</span>  lastName<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		Phone<span style="color:#eceff4">:</span>     ms<span style="color:#eceff4">.</span>phone<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>ms <span style="color:#81a1c1">*</span>MockSearcher<span style="color:#eceff4">)</span> <span style="color:#88c0d0">ExpectToCall</span><span style="color:#eceff4">(</span>methodName <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">if</span> ms<span style="color:#eceff4">.</span>methodsToCall <span style="color:#81a1c1">==</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		ms<span style="color:#eceff4">.</span>methodsToCall <span style="color:#eceff4">=</span> <span style="color:#81a1c1">make</span><span style="color:#eceff4">(</span><span style="color:#81a1c1;font-weight:bold">map</span><span style="color:#eceff4">[</span><span style="color:#81a1c1">string</span><span style="color:#eceff4">]</span><span style="color:#81a1c1">bool</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>	ms<span style="color:#eceff4">.</span>methodsToCall<span style="color:#eceff4">[</span>methodName<span style="color:#eceff4">]</span> <span style="color:#eceff4">=</span> <span style="color:#81a1c1;font-weight:bold">false</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>ms <span style="color:#81a1c1">*</span>MockSearcher<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Verify</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">for</span> methodName<span style="color:#eceff4">,</span> called <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> ms<span style="color:#eceff4">.</span>methodsToCall <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#eceff4">!</span>called <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected to call &#39;%s&#39;, but it wasn&#39;t.&#34;</span><span style="color:#eceff4">,</span> methodName<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestFindCallsSearchAndReturnsPersonUsingMock</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	fakePhone <span style="color:#81a1c1">:=</span> <span style="color:#a3be8c">&#34;+31 65 222 333&#34;</span>
+</span></span><span style="display:flex;"><span>	phonebook <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>Phonebook<span style="color:#eceff4">{}</span>
+</span></span><span style="display:flex;"><span>	mock <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>MockSearcher<span style="color:#eceff4">{</span>phone<span style="color:#eceff4">:</span> fakePhone<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>	mock<span style="color:#eceff4">.</span><span style="color:#88c0d0">ExpectToCall</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Search&#34;</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	phone<span style="color:#eceff4">,</span> _ <span style="color:#81a1c1">:=</span> phonebook<span style="color:#eceff4">.</span><span style="color:#88c0d0">Find</span><span style="color:#eceff4">(</span>mock<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Jane&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Doe&#34;</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">if</span> phone <span style="color:#81a1c1">!=</span> fakePhone <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span><span style="color:#eceff4">,</span> fakePhone<span style="color:#eceff4">,</span> phone<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	mock<span style="color:#eceff4">.</span><span style="color:#88c0d0">Verify</span><span style="color:#eceff4">(</span>t<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>This approach is more involved, but there&rsquo;s no magic to it. The <code>MockSearcher</code>
 implementation has a <code>methodsToCall</code> map, which will store all of the methods
 that we expect to call on an instance of this type.</p>
@@ -576,26 +575,26 @@ or <a href="https://github.com/stretchr/testify">stretchr/testify</a>.</p>
 implementation. In our example, this would mean that a fake would have an
 actual implementation of the <code>Search</code> method.</p>
 <p>Let&rsquo;s see a <code>Searcher</code> fake in action:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> FakeSearcher <span style="color:#81a1c1;font-weight:bold">struct</span><span style="color:#eceff4">{}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>fs FakeSearcher<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Search</span><span style="color:#eceff4">(</span>people <span style="color:#eceff4">[]</span><span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">,</span> firstName <span style="color:#81a1c1">string</span><span style="color:#eceff4">,</span> lastName <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">*</span>Person <span style="color:#eceff4">{</span>
-	<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#81a1c1">len</span><span style="color:#eceff4">(</span>people<span style="color:#eceff4">)</span> <span style="color:#81a1c1">==</span> <span style="color:#b48ead">0</span> <span style="color:#eceff4">{</span>
-		<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
-	<span style="color:#eceff4">}</span>
-
-	<span style="color:#81a1c1;font-weight:bold">return</span> people<span style="color:#eceff4">[</span><span style="color:#b48ead">0</span><span style="color:#eceff4">]</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestFindCallsSearchAndReturnsEmptyStringForNoPerson</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	phonebook <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>Phonebook<span style="color:#eceff4">{}</span>
-	fake <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>FakeSearcher<span style="color:#eceff4">{}</span>
-
-	phone<span style="color:#eceff4">,</span> _ <span style="color:#81a1c1">:=</span> phonebook<span style="color:#eceff4">.</span><span style="color:#88c0d0">Find</span><span style="color:#eceff4">(</span>fake<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Jane&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Doe&#34;</span><span style="color:#eceff4">)</span>
-
-	<span style="color:#81a1c1;font-weight:bold">if</span> phone <span style="color:#81a1c1">!=</span> <span style="color:#a3be8c">&#34;&#34;</span> <span style="color:#eceff4">{</span>
-		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Wanted &#39;&#39;, got &#39;%s&#39;&#34;</span><span style="color:#eceff4">,</span> phone<span style="color:#eceff4">)</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> FakeSearcher <span style="color:#81a1c1;font-weight:bold">struct</span><span style="color:#eceff4">{}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>fs FakeSearcher<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Search</span><span style="color:#eceff4">(</span>people <span style="color:#eceff4">[]</span><span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">,</span> firstName <span style="color:#81a1c1">string</span><span style="color:#eceff4">,</span> lastName <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">*</span>Person <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#81a1c1">len</span><span style="color:#eceff4">(</span>people<span style="color:#eceff4">)</span> <span style="color:#81a1c1">==</span> <span style="color:#b48ead">0</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">return</span> people<span style="color:#eceff4">[</span><span style="color:#b48ead">0</span><span style="color:#eceff4">]</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestFindCallsSearchAndReturnsEmptyStringForNoPerson</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	phonebook <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>Phonebook<span style="color:#eceff4">{}</span>
+</span></span><span style="display:flex;"><span>	fake <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>FakeSearcher<span style="color:#eceff4">{}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	phone<span style="color:#eceff4">,</span> _ <span style="color:#81a1c1">:=</span> phonebook<span style="color:#eceff4">.</span><span style="color:#88c0d0">Find</span><span style="color:#eceff4">(</span>fake<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Jane&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Doe&#34;</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">if</span> phone <span style="color:#81a1c1">!=</span> <span style="color:#a3be8c">&#34;&#34;</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Wanted &#39;&#39;, got &#39;%s&#39;&#34;</span><span style="color:#eceff4">,</span> phone<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span></span></span></code></pre></div>
 <p>What you see is a <code>FakeSearcher</code> type, who&rsquo;s <code>Search</code> method has an
 implementation that (kinda) makes sense. If the slice of <code>*Person</code> is empty, it
 will return <code>nil</code>. Otherwise, it will return the first item in the slice.</p>

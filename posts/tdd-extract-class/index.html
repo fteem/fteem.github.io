@@ -43,7 +43,7 @@
   />
   
   
-  <script type="text/javascript" src="/js/appearance.min.4df8309499991be53c71b2b39ba0f5d5e77ea7d411d0710ce48c24218e7cc24ded28f19e85838fdc56db2306195cb001f049f577be0cf0ffb2dd6e2037ede1b9.js" integrity="sha512-TfgwlJmZG&#43;U8cbKzm6D11ed&#43;p9QR0HEM5IwkIY58wk3tKPGehYOP3FbbIwYZXLAB8En1d74M8P&#43;y3W4gN&#43;3huQ=="></script>
+  <script type="text/javascript" src="/js/appearance.min.badab316c9287a5a42a843e4eb45da65bb3d194a5a0f5fa4a3e516160e67df0b8c65f4f19a8e146436e29d583699e6cb41d6bbe99e05e1dbaa877763bad9f8e2.js" integrity="sha512-utqzFskoelpCqEPk60XaZbs9GUpaD1&#43;ko&#43;UWFg5n3wuMZfTxmo4UZDbinVg2mebLQda76Z4F4duqh3djutn44g=="></script>
   
     
     
@@ -56,7 +56,7 @@
   
   
     
-    <script defer type="text/javascript" id="script-bundle" src="/js/main.bundle.min.bbbc21fe00162ca986299c3aa2587e88662408cef57709874b7c316048a5ff80b7e342fc03812cff1393cb2be2ce65593299494d88df71ec6eb48ee261fc0fd6.js" integrity="sha512-u7wh/gAWLKmGKZw6olh&#43;iGYkCM71dwmHS3wxYEil/4C340L8A4Es/xOTyyvizmVZMplJTYjfcexutI7iYfwP1g==" data-copy="Copy" data-copied="Copied"></script>
+    <script defer type="text/javascript" id="script-bundle" src="/js/main.bundle.min.15ae6e2c9b1ac24a9ccf40003fa689efb1a18db1ee9b73d780b01a6c31b150441415862513e93184f68fe385759e4698b8763cba6a0f79493c1fed99ad5868d4.js" integrity="sha512-Fa5uLJsawkqcz0AAP6aJ77GhjbHum3PXgLAabDGxUEQUFYYlE&#43;kxhPaP44V1nkaYuHY8umoPeUk8H&#43;2ZrVho1A==" data-copy="Copy" data-copied="Copied"></script>
   
   
   
@@ -77,7 +77,6 @@
 <meta property="og:url" content="https://ieftimov.com/posts/tdd-extract-class/" /><meta property="article:section" content="posts" />
 
 <meta property="og:site_name" content="Ilija Eftimov 👨‍🚀" />
-
 
   <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Refactoring in Ruby: TDD your way through Extract Class"/>
@@ -108,7 +107,7 @@
     "keywords": ["tdd","extract","class"],
     
     "mainEntityOfPage": "true",
-    "wordCount": "1957"
+    "wordCount": "1963"
   }]
   </script>
 
@@ -333,70 +332,70 @@ Class pattern by using Test-Driven Development.</p>
 <p>Let&rsquo;s dive in!</p>
 <h2 id="what-went-wrong-at-the-test" class="relative group">What went wrong at the test? <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#what-went-wrong-at-the-test" aria-label="Anchor">#</a></span></h2>
 <p>Say we are professors in university and we compile a CSV file with our
-students' grades. Some of them are good, some are not that good. We want to
+students&rsquo; grades. Some of them are good, some are not that good. We want to
 have a small informal meeting with the students that did not pass the exam, in
 a classroom and review the tests and discuss what went wrong. Given that there
 are a lot of students in our class, writing an email for each of the students
 is painful.  Well, good we are programming professors, so we can write our own
 little program to automate sending those emails:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1">require</span> <span style="color:#a3be8c">&#39;csv&#39;</span>
-<span style="color:#81a1c1">require</span> <span style="color:#a3be8c">&#39;mail&#39;</span>
-
-<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Parser</span>
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span><span style="color:#eceff4">(</span>file_path<span style="color:#eceff4">)</span>
-    @file_path <span style="color:#81a1c1">=</span> file_path
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">parse!</span>
-    <span style="color:#8fbcbb">CSV</span><span style="color:#81a1c1">.</span>foreach<span style="color:#eceff4">(</span>@file_path<span style="color:#eceff4">,</span> <span style="color:#a3be8c">headers</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">true</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span> <span style="color:#81a1c1">|</span>row<span style="color:#81a1c1">|</span>
-      <span style="color:#81a1c1;font-weight:bold">if</span> failed_test?<span style="color:#eceff4">(</span>row<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;points&#34;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">)</span>
-        <span style="color:#8fbcbb">Mail</span><span style="color:#81a1c1">.</span>deliver <span style="color:#81a1c1;font-weight:bold">do</span>
-          to      row<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;email&#34;</span><span style="color:#81a1c1">]</span>
-          from    <span style="color:#a3be8c">&#39;John Doe &lt;john@doe.com&gt;&#39;</span>
-          subject <span style="color:#a3be8c">&#39;Post exam meeting invitation&#39;</span>
-          body    failed_exam_body<span style="color:#eceff4">(</span>row<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;first_name&#34;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span> row<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;points&#34;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">)</span>
-        <span style="color:#81a1c1;font-weight:bold">end</span>
-      <span style="color:#81a1c1;font-weight:bold">else</span>
-        <span style="color:#8fbcbb">Mail</span><span style="color:#81a1c1">.</span>deliver <span style="color:#81a1c1;font-weight:bold">do</span>
-          to      row<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;email&#34;</span><span style="color:#81a1c1">]</span>
-          from    <span style="color:#a3be8c">&#39;John Doe &lt;john@doe.com&gt;&#39;</span>
-          subject <span style="color:#a3be8c">&#39;Exam results&#39;</span>
-          body    passed_exam_body<span style="color:#eceff4">(</span>row<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;first_name&#34;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span> row<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;points&#34;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">)</span>
-        <span style="color:#81a1c1;font-weight:bold">end</span>
-      <span style="color:#81a1c1;font-weight:bold">end</span>
-    <span style="color:#81a1c1;font-weight:bold">end</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1">private</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">failed_test?</span><span style="color:#eceff4">(</span>points<span style="color:#eceff4">)</span>
-    points <span style="color:#81a1c1">&lt;</span> <span style="color:#b48ead">50</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">failed_exam_body</span><span style="color:#eceff4">(</span>student_name<span style="color:#eceff4">,</span> points<span style="color:#eceff4">)</span>
-    <span style="color:#a3be8c">%Q{
-</span><span style="color:#a3be8c">      Hi </span><span style="color:#a3be8c">#{</span>student_name<span style="color:#a3be8c">}</span><span style="color:#a3be8c">,
-</span><span style="color:#a3be8c">
-</span><span style="color:#a3be8c">      On the exam last week you got </span><span style="color:#a3be8c">#{</span>points<span style="color:#a3be8c">}</span><span style="color:#a3be8c"> points.
-</span><span style="color:#a3be8c">      It seems to me that you ran into some problems with it so I would like to
-</span><span style="color:#a3be8c">      invite you to a meeting in classrom 201, tomorrow at 2PM.
-</span><span style="color:#a3be8c">
-</span><span style="color:#a3be8c">      Regards,
-</span><span style="color:#a3be8c">      Prof. John Doe
-</span><span style="color:#a3be8c">    }</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">passed_exam_body</span><span style="color:#eceff4">(</span>student_name<span style="color:#eceff4">,</span> points<span style="color:#eceff4">)</span>
-    <span style="color:#a3be8c">%Q{
-</span><span style="color:#a3be8c">      Hi </span><span style="color:#a3be8c">#{</span>student_name<span style="color:#a3be8c">}</span><span style="color:#a3be8c">,
-</span><span style="color:#a3be8c">
-</span><span style="color:#a3be8c">      On the exam last week you got </span><span style="color:#a3be8c">#{</span>scored_points<span style="color:#a3be8c">}</span><span style="color:#a3be8c"> points.
-</span><span style="color:#a3be8c">
-</span><span style="color:#a3be8c">      Congratulations,
-</span><span style="color:#a3be8c">      Prof. John Doe
-</span><span style="color:#a3be8c">    }</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#81a1c1">require</span> <span style="color:#a3be8c">&#39;csv&#39;</span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">require</span> <span style="color:#a3be8c">&#39;mail&#39;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Parser</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span><span style="color:#eceff4">(</span>file_path<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>    @file_path <span style="color:#81a1c1">=</span> file_path
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">parse!</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8fbcbb">CSV</span><span style="color:#81a1c1">.</span>foreach<span style="color:#eceff4">(</span>@file_path<span style="color:#eceff4">,</span> <span style="color:#a3be8c">headers</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">true</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span> <span style="color:#81a1c1">|</span>row<span style="color:#81a1c1">|</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">if</span> failed_test?<span style="color:#eceff4">(</span>row<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;points&#34;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#8fbcbb">Mail</span><span style="color:#81a1c1">.</span>deliver <span style="color:#81a1c1;font-weight:bold">do</span>
+</span></span><span style="display:flex;"><span>          to      row<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;email&#34;</span><span style="color:#81a1c1">]</span>
+</span></span><span style="display:flex;"><span>          from    <span style="color:#a3be8c">&#39;John Doe &lt;john@doe.com&gt;&#39;</span>
+</span></span><span style="display:flex;"><span>          subject <span style="color:#a3be8c">&#39;Post exam meeting invitation&#39;</span>
+</span></span><span style="display:flex;"><span>          body    failed_exam_body<span style="color:#eceff4">(</span>row<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;first_name&#34;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span> row<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;points&#34;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">else</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#8fbcbb">Mail</span><span style="color:#81a1c1">.</span>deliver <span style="color:#81a1c1;font-weight:bold">do</span>
+</span></span><span style="display:flex;"><span>          to      row<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;email&#34;</span><span style="color:#81a1c1">]</span>
+</span></span><span style="display:flex;"><span>          from    <span style="color:#a3be8c">&#39;John Doe &lt;john@doe.com&gt;&#39;</span>
+</span></span><span style="display:flex;"><span>          subject <span style="color:#a3be8c">&#39;Exam results&#39;</span>
+</span></span><span style="display:flex;"><span>          body    passed_exam_body<span style="color:#eceff4">(</span>row<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;first_name&#34;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span> row<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;points&#34;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1">private</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">failed_test?</span><span style="color:#eceff4">(</span>points<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>    points <span style="color:#81a1c1">&lt;</span> <span style="color:#b48ead">50</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">failed_exam_body</span><span style="color:#eceff4">(</span>student_name<span style="color:#eceff4">,</span> points<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a3be8c">%Q{
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">      Hi </span><span style="color:#a3be8c">#{</span>student_name<span style="color:#a3be8c">}</span><span style="color:#a3be8c">,
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">      On the exam last week you got </span><span style="color:#a3be8c">#{</span>points<span style="color:#a3be8c">}</span><span style="color:#a3be8c"> points.
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">      It seems to me that you ran into some problems with it so I would like to
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">      invite you to a meeting in classrom 201, tomorrow at 2PM.
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">      Regards,
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">      Prof. John Doe
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">    }</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">passed_exam_body</span><span style="color:#eceff4">(</span>student_name<span style="color:#eceff4">,</span> points<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a3be8c">%Q{
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">      Hi </span><span style="color:#a3be8c">#{</span>student_name<span style="color:#a3be8c">}</span><span style="color:#a3be8c">,
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">      On the exam last week you got </span><span style="color:#a3be8c">#{</span>scored_points<span style="color:#a3be8c">}</span><span style="color:#a3be8c"> points.
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">      Congratulations,
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">      Prof. John Doe
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">    }</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">end</span></span></span></code></pre></div>
 <p>As you can see, it&rsquo;s quite a simple class. It takes a CSV file path and parses
 it. For each row it checks if the points are less then the minimum amount to
 pass the exam. If so, then a customised email is sent to each of the students.</p>
@@ -427,27 +426,27 @@ emails.</p>
 <p>The first step will be to wish the interface of the <code>Exam</code> and <code>Mailer</code> classes
 and use them in the <code>Parser</code> class. This is called &ldquo;programming by <a href="http://c2.com/cgi/wiki?WishfulThinking">wishful
 thinking</a>&rdquo;.</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#616e87;font-style:italic"># parser.rb</span>
-<span style="color:#81a1c1">require</span> <span style="color:#a3be8c">&#39;csv&#39;</span>
-
-<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Parser</span>
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span><span style="color:#eceff4">(</span>file_path<span style="color:#eceff4">)</span>
-    @file_path <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">File</span><span style="color:#81a1c1">.</span>expand_path<span style="color:#eceff4">(</span>file_path<span style="color:#eceff4">)</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">parse!</span>
-    <span style="color:#8fbcbb">CSV</span><span style="color:#81a1c1">.</span>foreach<span style="color:#eceff4">(</span>@file_path<span style="color:#eceff4">,</span> <span style="color:#a3be8c">headers</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">true</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span> <span style="color:#81a1c1">|</span>row<span style="color:#81a1c1">|</span>
-      exam <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Exam</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span>row<span style="color:#eceff4">)</span>
-      <span style="color:#81a1c1;font-weight:bold">if</span> exam<span style="color:#81a1c1">.</span>failed?
-        <span style="color:#8fbcbb">ExamMailer</span><span style="color:#81a1c1">.</span>failed!<span style="color:#eceff4">(</span>exam<span style="color:#eceff4">)</span>
-      <span style="color:#81a1c1;font-weight:bold">else</span>
-        <span style="color:#8fbcbb">ExamMailer</span><span style="color:#81a1c1">.</span>passed!<span style="color:#eceff4">(</span>exam<span style="color:#eceff4">)</span>
-      <span style="color:#81a1c1;font-weight:bold">end</span>
-    <span style="color:#81a1c1;font-weight:bold">end</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-<span style="color:#81a1c1;font-weight:bold">end</span>
-
-<span style="color:#8fbcbb">Parser</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;grades.csv&#34;</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">.</span>parse!</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#616e87;font-style:italic"># parser.rb</span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">require</span> <span style="color:#a3be8c">&#39;csv&#39;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Parser</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span><span style="color:#eceff4">(</span>file_path<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>    @file_path <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">File</span><span style="color:#81a1c1">.</span>expand_path<span style="color:#eceff4">(</span>file_path<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">parse!</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8fbcbb">CSV</span><span style="color:#81a1c1">.</span>foreach<span style="color:#eceff4">(</span>@file_path<span style="color:#eceff4">,</span> <span style="color:#a3be8c">headers</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">true</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span> <span style="color:#81a1c1">|</span>row<span style="color:#81a1c1">|</span>
+</span></span><span style="display:flex;"><span>      exam <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Exam</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span>row<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">if</span> exam<span style="color:#81a1c1">.</span>failed?
+</span></span><span style="display:flex;"><span>        <span style="color:#8fbcbb">ExamMailer</span><span style="color:#81a1c1">.</span>failed!<span style="color:#eceff4">(</span>exam<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">else</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#8fbcbb">ExamMailer</span><span style="color:#81a1c1">.</span>passed!<span style="color:#eceff4">(</span>exam<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#8fbcbb">Parser</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;grades.csv&#34;</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">.</span>parse!</span></span></code></pre></div>
 <p>Good. As you can see, we&rsquo;ve added the new classes in <code>Parser#parse!</code> method
 which radically simplified the readiness and simplicity of it. Since we now
 have the classes in place, let&rsquo;s take a step back and use TDD to create these
@@ -457,41 +456,41 @@ classes.</p>
 behaviour of an exam. But what does that mean? Well, simply put, it will have
 methods that will decide if an exam is failed based on the data (points). Let&rsquo;s
 TDD our way through this and write some tests before we implement the class:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#616e87;font-style:italic"># exam_test.rb</span>
-
-<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">ExamTest</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">Minitest</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Test</span>
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">test_it_can_be_failed</span>
-    exam <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Exam</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">({</span> <span style="color:#a3be8c">&#39;points&#39;</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;20&#39;</span> <span style="color:#eceff4">})</span>
-    assert exam<span style="color:#81a1c1">.</span>failed?
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">test_it_can_be_passed</span>
-    exam <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Exam</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">({</span> <span style="color:#a3be8c">&#39;points&#39;</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;51&#39;</span> <span style="color:#eceff4">})</span>
-    assert exam<span style="color:#81a1c1">.</span>passed?
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#616e87;font-style:italic"># exam_test.rb</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">ExamTest</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">Minitest</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Test</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">test_it_can_be_failed</span>
+</span></span><span style="display:flex;"><span>    exam <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Exam</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">({</span> <span style="color:#a3be8c">&#39;points&#39;</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;20&#39;</span> <span style="color:#eceff4">})</span>
+</span></span><span style="display:flex;"><span>    assert exam<span style="color:#81a1c1">.</span>failed?
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">test_it_can_be_passed</span>
+</span></span><span style="display:flex;"><span>    exam <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Exam</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">({</span> <span style="color:#a3be8c">&#39;points&#39;</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;51&#39;</span> <span style="color:#eceff4">})</span>
+</span></span><span style="display:flex;"><span>    assert exam<span style="color:#81a1c1">.</span>passed?
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">end</span></span></span></code></pre></div>
 <p>I assume the tests are quite self explanatory. The constructor will take a hash
 as an argument and extract the points from it. Then the <code>Exam#passed?</code> and
 <code>Exam#failed?</code> methods will check if the exam is passed or failed. The rule
 here is that an exam is failed if it has less than 50 points scored. Let&rsquo;s
 implement this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#616e87;font-style:italic"># exam.rb</span>
-
-<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Exam</span>
-  <span style="color:#81a1c1">attr_reader</span> <span style="color:#a3be8c">:scored_points</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span><span style="color:#eceff4">(</span>entry<span style="color:#eceff4">)</span>
-    @scored_points <span style="color:#81a1c1">=</span> entry<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;points&#39;</span><span style="color:#81a1c1">].</span>to_i
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">failed?</span>
-    @scored_points <span style="color:#81a1c1">&lt;</span> <span style="color:#b48ead">50</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">passed?</span>
-    <span style="color:#81a1c1">!</span>failed?
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#616e87;font-style:italic"># exam.rb</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Exam</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1">attr_reader</span> <span style="color:#a3be8c">:scored_points</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span><span style="color:#eceff4">(</span>entry<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>    @scored_points <span style="color:#81a1c1">=</span> entry<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;points&#39;</span><span style="color:#81a1c1">].</span>to_i
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">failed?</span>
+</span></span><span style="display:flex;"><span>    @scored_points <span style="color:#81a1c1">&lt;</span> <span style="color:#b48ead">50</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">passed?</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1">!</span>failed?
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">end</span></span></span></code></pre></div>
 <p>Really easy, right? If we run the tests, they will pass. Additionally we will
 need the exam to contain the data for the student which has taken the exam.
 Some of you might think that a student should be a separate object and I would
@@ -499,49 +498,49 @@ say that you are right. Also, others might say that there can be separate
 classes for a failed and passed exams.</p>
 <p>But, for this example we can keep it really simple. Let&rsquo;s add some tests for
 the attribute readers:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">ExamTest</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">Minitest</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Test</span>
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">test_student_name</span>
-    student_name <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;Ilija&#39;</span>
-    exam <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Exam</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">({</span> <span style="color:#a3be8c">&#39;first_name&#39;</span> <span style="color:#81a1c1">=&gt;</span> student_name <span style="color:#eceff4">})</span>
-
-    assert_equal student_name<span style="color:#eceff4">,</span> exam<span style="color:#81a1c1">.</span>student_name
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">test_student_email</span>
-    student_email <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;ile@eftimov.net&#39;</span>
-    exam <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Exam</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">({</span> <span style="color:#a3be8c">&#39;email&#39;</span> <span style="color:#81a1c1">=&gt;</span> student_email <span style="color:#eceff4">})</span>
-
-    assert_equal student_email<span style="color:#eceff4">,</span> exam<span style="color:#81a1c1">.</span>student_email
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">test_failure</span>
-    exam <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Exam</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">({</span> <span style="color:#a3be8c">&#39;points&#39;</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;20&#39;</span> <span style="color:#eceff4">})</span>
-    assert exam<span style="color:#81a1c1">.</span>failed?
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">test_success</span>
-    exam <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Exam</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">({</span> <span style="color:#a3be8c">&#39;points&#39;</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;51&#39;</span> <span style="color:#eceff4">})</span>
-    assert exam<span style="color:#81a1c1">.</span>passed?
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">ExamTest</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">Minitest</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Test</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">test_student_name</span>
+</span></span><span style="display:flex;"><span>    student_name <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;Ilija&#39;</span>
+</span></span><span style="display:flex;"><span>    exam <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Exam</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">({</span> <span style="color:#a3be8c">&#39;first_name&#39;</span> <span style="color:#81a1c1">=&gt;</span> student_name <span style="color:#eceff4">})</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    assert_equal student_name<span style="color:#eceff4">,</span> exam<span style="color:#81a1c1">.</span>student_name
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">test_student_email</span>
+</span></span><span style="display:flex;"><span>    student_email <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;ile@eftimov.net&#39;</span>
+</span></span><span style="display:flex;"><span>    exam <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Exam</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">({</span> <span style="color:#a3be8c">&#39;email&#39;</span> <span style="color:#81a1c1">=&gt;</span> student_email <span style="color:#eceff4">})</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    assert_equal student_email<span style="color:#eceff4">,</span> exam<span style="color:#81a1c1">.</span>student_email
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">test_failure</span>
+</span></span><span style="display:flex;"><span>    exam <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Exam</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">({</span> <span style="color:#a3be8c">&#39;points&#39;</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;20&#39;</span> <span style="color:#eceff4">})</span>
+</span></span><span style="display:flex;"><span>    assert exam<span style="color:#81a1c1">.</span>failed?
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">test_success</span>
+</span></span><span style="display:flex;"><span>    exam <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Exam</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">({</span> <span style="color:#a3be8c">&#39;points&#39;</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;51&#39;</span> <span style="color:#eceff4">})</span>
+</span></span><span style="display:flex;"><span>    assert exam<span style="color:#81a1c1">.</span>passed?
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">end</span></span></span></code></pre></div>
 <p>Implementing these methods is quite easy as well:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Exam</span>
-  <span style="color:#81a1c1">attr_reader</span> <span style="color:#a3be8c">:student_name</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:student_email</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:scored_points</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span><span style="color:#eceff4">(</span>entry<span style="color:#eceff4">)</span>
-    @student_name  <span style="color:#81a1c1">=</span> entry<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;first_name&#39;</span><span style="color:#81a1c1">]</span>
-    @student_email <span style="color:#81a1c1">=</span> entry<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;email&#39;</span><span style="color:#81a1c1">]</span>
-    @scored_points <span style="color:#81a1c1">=</span> entry<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;points&#39;</span><span style="color:#81a1c1">].</span>to_i
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">failed?</span>
-    @scored_points <span style="color:#81a1c1">&lt;</span> <span style="color:#b48ead">50</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">passed?</span>
-    <span style="color:#81a1c1">!</span>failed?
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Exam</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1">attr_reader</span> <span style="color:#a3be8c">:student_name</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:student_email</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:scored_points</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span><span style="color:#eceff4">(</span>entry<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>    @student_name  <span style="color:#81a1c1">=</span> entry<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;first_name&#39;</span><span style="color:#81a1c1">]</span>
+</span></span><span style="display:flex;"><span>    @student_email <span style="color:#81a1c1">=</span> entry<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;email&#39;</span><span style="color:#81a1c1">]</span>
+</span></span><span style="display:flex;"><span>    @scored_points <span style="color:#81a1c1">=</span> entry<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;points&#39;</span><span style="color:#81a1c1">].</span>to_i
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">failed?</span>
+</span></span><span style="display:flex;"><span>    @scored_points <span style="color:#81a1c1">&lt;</span> <span style="color:#b48ead">50</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">passed?</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1">!</span>failed?
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">end</span></span></span></code></pre></div>
 <p>That is our <code>Exam</code> class with all of it&rsquo;s glory. Did you think about what we
 did in this step? Really simple stuff - noticing that there is room for a class
 to encapsulate all of the required data so it can answer to the question &ldquo;is
@@ -558,44 +557,44 @@ the mailer will have two methods: <code>ExamMailer.passed!</code> and
 <code>ExamMailer.failed!</code>. The mailer class will use the <a href="https://github.com/mikel/mail">Mail
 gem</a> to send emails.</p>
 <p>Let&rsquo;s write some tests around them first and implement them after:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#8fbcbb">Mail</span><span style="color:#81a1c1">.</span>defaults <span style="color:#81a1c1;font-weight:bold">do</span>
-  delivery_method <span style="color:#a3be8c">:test</span>
-<span style="color:#81a1c1;font-weight:bold">end</span>
-
-<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">MailerTest</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">Minitest</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Test</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">setup</span>
-    <span style="color:#8fbcbb">Mail</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">TestMailer</span><span style="color:#81a1c1">.</span>deliveries<span style="color:#81a1c1">.</span>clear
-    @student_mail <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;john@doe.com&#39;</span>
-    @student_name <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;John&#39;</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">test_failed_exam_mail</span>
-    points <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;49&#39;</span>
-    exam <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Exam</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">({</span> <span style="color:#a3be8c">&#39;points&#39;</span> <span style="color:#81a1c1">=&gt;</span> points<span style="color:#eceff4">,</span>
-                      <span style="color:#a3be8c">&#39;email&#39;</span> <span style="color:#81a1c1">=&gt;</span> @student_mail<span style="color:#eceff4">,</span>
-                      <span style="color:#a3be8c">&#39;first_name&#39;</span> <span style="color:#81a1c1">=&gt;</span> @student_name <span style="color:#eceff4">})</span>
-    <span style="color:#8fbcbb">ExamMailer</span><span style="color:#81a1c1">.</span>failed!<span style="color:#eceff4">(</span>exam<span style="color:#eceff4">)</span>
-    mail <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Mail</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">TestMailer</span><span style="color:#81a1c1">.</span>deliveries<span style="color:#81a1c1">.</span>first
-
-    assert_equal @student_mail<span style="color:#eceff4">,</span> mail<span style="color:#81a1c1">.</span>to<span style="color:#81a1c1">.</span>first
-    assert_equal <span style="color:#a3be8c">&#34;Post exam meeting invitation&#34;</span><span style="color:#eceff4">,</span> mail<span style="color:#81a1c1">.</span>subject
-    assert_match <span style="color:#ebcb8b">/you got </span><span style="color:#a3be8c">#{</span>points<span style="color:#a3be8c">}</span><span style="color:#ebcb8b"> points/i</span><span style="color:#eceff4">,</span> mail<span style="color:#81a1c1">.</span>body<span style="color:#81a1c1">.</span>raw_source
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">test_passed_exam_mail</span>
-    points <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;50&#39;</span>
-    exam <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Exam</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">({</span> <span style="color:#a3be8c">&#39;points&#39;</span> <span style="color:#81a1c1">=&gt;</span> points<span style="color:#eceff4">,</span>
-                      <span style="color:#a3be8c">&#39;email&#39;</span> <span style="color:#81a1c1">=&gt;</span> @student_mail<span style="color:#eceff4">,</span>
-                      <span style="color:#a3be8c">&#39;first_name&#39;</span> <span style="color:#81a1c1">=&gt;</span> @student_name <span style="color:#eceff4">})</span>
-    <span style="color:#8fbcbb">ExamMailer</span><span style="color:#81a1c1">.</span>passed!<span style="color:#eceff4">(</span>exam<span style="color:#eceff4">)</span>
-    mail <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Mail</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">TestMailer</span><span style="color:#81a1c1">.</span>deliveries<span style="color:#81a1c1">.</span>first
-
-    assert_equal @student_mail<span style="color:#eceff4">,</span> mail<span style="color:#81a1c1">.</span>to<span style="color:#81a1c1">.</span>first
-    assert_equal <span style="color:#a3be8c">&#34;Exam results&#34;</span><span style="color:#eceff4">,</span> mail<span style="color:#81a1c1">.</span>subject
-    assert_match <span style="color:#ebcb8b">/you got </span><span style="color:#a3be8c">#{</span>points<span style="color:#a3be8c">}</span><span style="color:#ebcb8b"> points/i</span><span style="color:#eceff4">,</span> mail<span style="color:#81a1c1">.</span>body<span style="color:#81a1c1">.</span>raw_source
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#8fbcbb">Mail</span><span style="color:#81a1c1">.</span>defaults <span style="color:#81a1c1;font-weight:bold">do</span>
+</span></span><span style="display:flex;"><span>  delivery_method <span style="color:#a3be8c">:test</span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">MailerTest</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">Minitest</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Test</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">setup</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8fbcbb">Mail</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">TestMailer</span><span style="color:#81a1c1">.</span>deliveries<span style="color:#81a1c1">.</span>clear
+</span></span><span style="display:flex;"><span>    @student_mail <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;john@doe.com&#39;</span>
+</span></span><span style="display:flex;"><span>    @student_name <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;John&#39;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">test_failed_exam_mail</span>
+</span></span><span style="display:flex;"><span>    points <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;49&#39;</span>
+</span></span><span style="display:flex;"><span>    exam <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Exam</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">({</span> <span style="color:#a3be8c">&#39;points&#39;</span> <span style="color:#81a1c1">=&gt;</span> points<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>                      <span style="color:#a3be8c">&#39;email&#39;</span> <span style="color:#81a1c1">=&gt;</span> @student_mail<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>                      <span style="color:#a3be8c">&#39;first_name&#39;</span> <span style="color:#81a1c1">=&gt;</span> @student_name <span style="color:#eceff4">})</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8fbcbb">ExamMailer</span><span style="color:#81a1c1">.</span>failed!<span style="color:#eceff4">(</span>exam<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>    mail <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Mail</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">TestMailer</span><span style="color:#81a1c1">.</span>deliveries<span style="color:#81a1c1">.</span>first
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    assert_equal @student_mail<span style="color:#eceff4">,</span> mail<span style="color:#81a1c1">.</span>to<span style="color:#81a1c1">.</span>first
+</span></span><span style="display:flex;"><span>    assert_equal <span style="color:#a3be8c">&#34;Post exam meeting invitation&#34;</span><span style="color:#eceff4">,</span> mail<span style="color:#81a1c1">.</span>subject
+</span></span><span style="display:flex;"><span>    assert_match <span style="color:#ebcb8b">/you got </span><span style="color:#a3be8c">#{</span>points<span style="color:#a3be8c">}</span><span style="color:#ebcb8b"> points/i</span><span style="color:#eceff4">,</span> mail<span style="color:#81a1c1">.</span>body<span style="color:#81a1c1">.</span>raw_source
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">test_passed_exam_mail</span>
+</span></span><span style="display:flex;"><span>    points <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;50&#39;</span>
+</span></span><span style="display:flex;"><span>    exam <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Exam</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">({</span> <span style="color:#a3be8c">&#39;points&#39;</span> <span style="color:#81a1c1">=&gt;</span> points<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>                      <span style="color:#a3be8c">&#39;email&#39;</span> <span style="color:#81a1c1">=&gt;</span> @student_mail<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>                      <span style="color:#a3be8c">&#39;first_name&#39;</span> <span style="color:#81a1c1">=&gt;</span> @student_name <span style="color:#eceff4">})</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#8fbcbb">ExamMailer</span><span style="color:#81a1c1">.</span>passed!<span style="color:#eceff4">(</span>exam<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>    mail <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Mail</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">TestMailer</span><span style="color:#81a1c1">.</span>deliveries<span style="color:#81a1c1">.</span>first
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    assert_equal @student_mail<span style="color:#eceff4">,</span> mail<span style="color:#81a1c1">.</span>to<span style="color:#81a1c1">.</span>first
+</span></span><span style="display:flex;"><span>    assert_equal <span style="color:#a3be8c">&#34;Exam results&#34;</span><span style="color:#eceff4">,</span> mail<span style="color:#81a1c1">.</span>subject
+</span></span><span style="display:flex;"><span>    assert_match <span style="color:#ebcb8b">/you got </span><span style="color:#a3be8c">#{</span>points<span style="color:#a3be8c">}</span><span style="color:#ebcb8b"> points/i</span><span style="color:#eceff4">,</span> mail<span style="color:#81a1c1">.</span>body<span style="color:#81a1c1">.</span>raw_source
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">end</span></span></span></code></pre></div>
 <p>Now, there&rsquo;s a bit of boilerplate code here, which deals with the Mail gem. In
 the beginning of the file, we set the delivery method of the Mail gem to be
 <code>:test</code>. This means that the gem will hold all of the emails that are sent in
@@ -609,64 +608,64 @@ subject and on the e-mail body. With this step, we want to make sure that the
 most essential parts of the e-mail (recipient, body and subject) are correct.</p>
 <p>Extracting the mailer logic from the initial script to a new mailer class is
 rather simple:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1">require</span> <span style="color:#a3be8c">&#39;mail&#39;</span>
-
-<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">ExamMailer</span>
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#8fbcbb">self</span><span style="color:#81a1c1">.</span><span style="color:#88c0d0">failed!</span><span style="color:#eceff4">(</span>exam<span style="color:#eceff4">)</span>
-    <span style="color:#81a1c1">new</span><span style="color:#eceff4">(</span>exam<span style="color:#eceff4">)</span><span style="color:#81a1c1">.</span>failed!
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#8fbcbb">self</span><span style="color:#81a1c1">.</span><span style="color:#88c0d0">passed!</span><span style="color:#eceff4">(</span>exam<span style="color:#eceff4">)</span>
-    <span style="color:#81a1c1">new</span><span style="color:#eceff4">(</span>exam<span style="color:#eceff4">)</span><span style="color:#81a1c1">.</span>passed!
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span><span style="color:#eceff4">(</span>exam<span style="color:#eceff4">)</span>
-    @exam <span style="color:#81a1c1">=</span> exam
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">failed!</span>
-    send_mail!<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#39;Post exam meeting invitation&#39;</span><span style="color:#eceff4">,</span> failed_exam_email_body<span style="color:#eceff4">)</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">passed!</span>
-    send_mail!<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#39;Exam results&#39;</span><span style="color:#eceff4">,</span> passed_exam_email_body<span style="color:#eceff4">)</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1">private</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">send_mail!</span><span style="color:#eceff4">(</span>subject<span style="color:#eceff4">,</span> body<span style="color:#eceff4">)</span>
-    mail <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Mail</span><span style="color:#81a1c1">.</span>new
-    mail<span style="color:#81a1c1">.</span>to <span style="color:#81a1c1">=</span> @exam<span style="color:#81a1c1">.</span>student_email
-    mail<span style="color:#81a1c1">.</span>from <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;John Doe &lt;john@doe.com&gt;&#39;</span>
-    mail<span style="color:#81a1c1">.</span>subject <span style="color:#81a1c1">=</span> subject
-    mail<span style="color:#81a1c1">.</span>body <span style="color:#81a1c1">=</span> body
-    mail<span style="color:#81a1c1">.</span>deliver
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">passed_exam_email_body</span>
-    <span style="color:#a3be8c">%Q{
-</span><span style="color:#a3be8c">      Hi </span><span style="color:#a3be8c">#{</span>@exam<span style="color:#81a1c1">.</span>student_name<span style="color:#a3be8c">}</span><span style="color:#a3be8c">,
-</span><span style="color:#a3be8c">
-</span><span style="color:#a3be8c">      On the exam last week you got </span><span style="color:#a3be8c">#{</span>@exam<span style="color:#81a1c1">.</span>scored_points<span style="color:#a3be8c">}</span><span style="color:#a3be8c"> points.
-</span><span style="color:#a3be8c">
-</span><span style="color:#a3be8c">      Congratulations,
-</span><span style="color:#a3be8c">      Prof. John Doe
-</span><span style="color:#a3be8c">    }</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">failed_exam_email_body</span>
-    <span style="color:#a3be8c">%Q{
-</span><span style="color:#a3be8c">      Hi </span><span style="color:#a3be8c">#{</span>@exam<span style="color:#81a1c1">.</span>student_name<span style="color:#a3be8c">}</span><span style="color:#a3be8c">,
-</span><span style="color:#a3be8c">
-</span><span style="color:#a3be8c">      On the exam last week you got </span><span style="color:#a3be8c">#{</span>@exam<span style="color:#81a1c1">.</span>scored_points<span style="color:#a3be8c">}</span><span style="color:#a3be8c"> points.
-</span><span style="color:#a3be8c">      It seems to me that you ran into some problems with it so I would like to
-</span><span style="color:#a3be8c">      invite you to a group meeting in classrom 201, tomorrow at 2PM.
-</span><span style="color:#a3be8c">
-</span><span style="color:#a3be8c">      Regards,
-</span><span style="color:#a3be8c">      Prof. John Doe
-</span><span style="color:#a3be8c">    }</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#81a1c1">require</span> <span style="color:#a3be8c">&#39;mail&#39;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">ExamMailer</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#8fbcbb">self</span><span style="color:#81a1c1">.</span><span style="color:#88c0d0">failed!</span><span style="color:#eceff4">(</span>exam<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1">new</span><span style="color:#eceff4">(</span>exam<span style="color:#eceff4">)</span><span style="color:#81a1c1">.</span>failed!
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#8fbcbb">self</span><span style="color:#81a1c1">.</span><span style="color:#88c0d0">passed!</span><span style="color:#eceff4">(</span>exam<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1">new</span><span style="color:#eceff4">(</span>exam<span style="color:#eceff4">)</span><span style="color:#81a1c1">.</span>passed!
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span><span style="color:#eceff4">(</span>exam<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>    @exam <span style="color:#81a1c1">=</span> exam
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">failed!</span>
+</span></span><span style="display:flex;"><span>    send_mail!<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#39;Post exam meeting invitation&#39;</span><span style="color:#eceff4">,</span> failed_exam_email_body<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">passed!</span>
+</span></span><span style="display:flex;"><span>    send_mail!<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#39;Exam results&#39;</span><span style="color:#eceff4">,</span> passed_exam_email_body<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1">private</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">send_mail!</span><span style="color:#eceff4">(</span>subject<span style="color:#eceff4">,</span> body<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>    mail <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Mail</span><span style="color:#81a1c1">.</span>new
+</span></span><span style="display:flex;"><span>    mail<span style="color:#81a1c1">.</span>to <span style="color:#81a1c1">=</span> @exam<span style="color:#81a1c1">.</span>student_email
+</span></span><span style="display:flex;"><span>    mail<span style="color:#81a1c1">.</span>from <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;John Doe &lt;john@doe.com&gt;&#39;</span>
+</span></span><span style="display:flex;"><span>    mail<span style="color:#81a1c1">.</span>subject <span style="color:#81a1c1">=</span> subject
+</span></span><span style="display:flex;"><span>    mail<span style="color:#81a1c1">.</span>body <span style="color:#81a1c1">=</span> body
+</span></span><span style="display:flex;"><span>    mail<span style="color:#81a1c1">.</span>deliver
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">passed_exam_email_body</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a3be8c">%Q{
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">      Hi </span><span style="color:#a3be8c">#{</span>@exam<span style="color:#81a1c1">.</span>student_name<span style="color:#a3be8c">}</span><span style="color:#a3be8c">,
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">      On the exam last week you got </span><span style="color:#a3be8c">#{</span>@exam<span style="color:#81a1c1">.</span>scored_points<span style="color:#a3be8c">}</span><span style="color:#a3be8c"> points.
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">      Congratulations,
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">      Prof. John Doe
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">    }</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">failed_exam_email_body</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a3be8c">%Q{
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">      Hi </span><span style="color:#a3be8c">#{</span>@exam<span style="color:#81a1c1">.</span>student_name<span style="color:#a3be8c">}</span><span style="color:#a3be8c">,
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">      On the exam last week you got </span><span style="color:#a3be8c">#{</span>@exam<span style="color:#81a1c1">.</span>scored_points<span style="color:#a3be8c">}</span><span style="color:#a3be8c"> points.
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">      It seems to me that you ran into some problems with it so I would like to
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">      invite you to a group meeting in classrom 201, tomorrow at 2PM.
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">      Regards,
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">      Prof. John Doe
+</span></span></span><span style="display:flex;"><span><span style="color:#a3be8c">    }</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">end</span></span></span></code></pre></div>
 <p>Most of the magic lies within the <code>send_mail!</code> method. It builds a new <code>Mail</code>
 object and delivers it.</p>
 <p>As you saw in this step, we extracted the mailing logic from the script to a

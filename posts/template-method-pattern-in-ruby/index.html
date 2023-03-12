@@ -43,7 +43,7 @@
   />
   
   
-  <script type="text/javascript" src="/js/appearance.min.4df8309499991be53c71b2b39ba0f5d5e77ea7d411d0710ce48c24218e7cc24ded28f19e85838fdc56db2306195cb001f049f577be0cf0ffb2dd6e2037ede1b9.js" integrity="sha512-TfgwlJmZG&#43;U8cbKzm6D11ed&#43;p9QR0HEM5IwkIY58wk3tKPGehYOP3FbbIwYZXLAB8En1d74M8P&#43;y3W4gN&#43;3huQ=="></script>
+  <script type="text/javascript" src="/js/appearance.min.badab316c9287a5a42a843e4eb45da65bb3d194a5a0f5fa4a3e516160e67df0b8c65f4f19a8e146436e29d583699e6cb41d6bbe99e05e1dbaa877763bad9f8e2.js" integrity="sha512-utqzFskoelpCqEPk60XaZbs9GUpaD1&#43;ko&#43;UWFg5n3wuMZfTxmo4UZDbinVg2mebLQda76Z4F4duqh3djutn44g=="></script>
   
     
     
@@ -56,7 +56,7 @@
   
   
     
-    <script defer type="text/javascript" id="script-bundle" src="/js/main.bundle.min.bbbc21fe00162ca986299c3aa2587e88662408cef57709874b7c316048a5ff80b7e342fc03812cff1393cb2be2ce65593299494d88df71ec6eb48ee261fc0fd6.js" integrity="sha512-u7wh/gAWLKmGKZw6olh&#43;iGYkCM71dwmHS3wxYEil/4C340L8A4Es/xOTyyvizmVZMplJTYjfcexutI7iYfwP1g==" data-copy="Copy" data-copied="Copied"></script>
+    <script defer type="text/javascript" id="script-bundle" src="/js/main.bundle.min.15ae6e2c9b1ac24a9ccf40003fa689efb1a18db1ee9b73d780b01a6c31b150441415862513e93184f68fe385759e4698b8763cba6a0f79493c1fed99ad5868d4.js" integrity="sha512-Fa5uLJsawkqcz0AAP6aJ77GhjbHum3PXgLAabDGxUEQUFYYlE&#43;kxhPaP44V1nkaYuHY8umoPeUk8H&#43;2ZrVho1A==" data-copy="Copy" data-copied="Copied"></script>
   
   
   
@@ -77,7 +77,6 @@
 <meta property="og:url" content="https://ieftimov.com/posts/template-method-pattern-in-ruby/" /><meta property="article:section" content="posts" />
 
 <meta property="og:site_name" content="Ilija Eftimov 👨‍🚀" />
-
 
   <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Template Method Pattern in Ruby"/>
@@ -354,38 +353,38 @@ example payment system is:</p>
 </ol>
 <p>If we want to implement this payment algorithm using Stripe, it would look
 something like:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">StripePayment</span>
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span> card<span style="color:#eceff4">,</span> amount
-    @api_key <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">ENV</span><span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;STRIPE_API_KEY&#39;</span><span style="color:#81a1c1">]</span>
-    @card <span style="color:#81a1c1">=</span> card
-    @amount <span style="color:#81a1c1">=</span> amount
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">process_payment!</span>
-    authenticate_merchant <span style="color:#81a1c1">&amp;&amp;</span> make_payment
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">authenticate_merchant</span>
-    <span style="color:#81a1c1;font-weight:bold">begin</span>
-      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">true</span> <span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#8fbcbb">Stripe</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Merchant</span><span style="color:#81a1c1">.</span>authenticate @api_key
-    <span style="color:#81a1c1;font-weight:bold">rescue</span> <span style="color:#8fbcbb">Stripe</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">MerchantError</span> <span style="color:#81a1c1">=&gt;</span> e
-      <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>error <span style="color:#a3be8c">&#34;Cannot establish connection between Merchant and Provider.&#34;</span>
-      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">false</span>
-    <span style="color:#81a1c1;font-weight:bold">rescue</span> <span style="color:#8fbcbb">Stripe</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">ProviderUnreachable</span> <span style="color:#81a1c1">=&gt;</span> e
-      <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>error <span style="color:#a3be8c">&#34;Provider unreachable.&#34;</span>
-      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">false</span>
-    <span style="color:#81a1c1;font-weight:bold">end</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">make_payment</span>
-    <span style="color:#81a1c1;font-weight:bold">begin</span>
-      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">true</span> <span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#8fbcbb">Stripe</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Payment</span><span style="color:#81a1c1">.</span>process! @api_key<span style="color:#eceff4">,</span> @card<span style="color:#eceff4">,</span> @amount
-    <span style="color:#81a1c1;font-weight:bold">rescue</span> <span style="color:#8fbcbb">Stripe</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">PaymentUnprocessable</span> <span style="color:#81a1c1">=&gt;</span> e
-      <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>error <span style="color:#a3be8c">&#34;Payment unprocessable, try again.&#34;</span>
-      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">false</span>
-    <span style="color:#81a1c1;font-weight:bold">end</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">StripePayment</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span> card<span style="color:#eceff4">,</span> amount
+</span></span><span style="display:flex;"><span>    @api_key <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">ENV</span><span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;STRIPE_API_KEY&#39;</span><span style="color:#81a1c1">]</span>
+</span></span><span style="display:flex;"><span>    @card <span style="color:#81a1c1">=</span> card
+</span></span><span style="display:flex;"><span>    @amount <span style="color:#81a1c1">=</span> amount
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">process_payment!</span>
+</span></span><span style="display:flex;"><span>    authenticate_merchant <span style="color:#81a1c1">&amp;&amp;</span> make_payment
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">authenticate_merchant</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">begin</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">true</span> <span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#8fbcbb">Stripe</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Merchant</span><span style="color:#81a1c1">.</span>authenticate @api_key
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">rescue</span> <span style="color:#8fbcbb">Stripe</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">MerchantError</span> <span style="color:#81a1c1">=&gt;</span> e
+</span></span><span style="display:flex;"><span>      <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>error <span style="color:#a3be8c">&#34;Cannot establish connection between Merchant and Provider.&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">rescue</span> <span style="color:#8fbcbb">Stripe</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">ProviderUnreachable</span> <span style="color:#81a1c1">=&gt;</span> e
+</span></span><span style="display:flex;"><span>      <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>error <span style="color:#a3be8c">&#34;Provider unreachable.&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">make_payment</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">begin</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">true</span> <span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#8fbcbb">Stripe</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Payment</span><span style="color:#81a1c1">.</span>process! @api_key<span style="color:#eceff4">,</span> @card<span style="color:#eceff4">,</span> @amount
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">rescue</span> <span style="color:#8fbcbb">Stripe</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">PaymentUnprocessable</span> <span style="color:#81a1c1">=&gt;</span> e
+</span></span><span style="display:flex;"><span>      <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>error <span style="color:#a3be8c">&#34;Payment unprocessable, try again.&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">end</span></span></span></code></pre></div>
 <p>Again, keep in mind, this is just dummy code, not actual Stripe payment gateway
 implementation. Okay, so this looks all fine. We can instantiate a new
 <em>StripePayment</em> object, pass the card object and the amount of the order as
@@ -411,74 +410,74 @@ payment provider, while on the surface the payment will be done by calling
 the <em>process_payment!</em> method on the payment object, regardless of its class.
 Let&rsquo;s create our <em>BasePayment</em> and <em>StripePayment</em> classes and see how we can
 leverage TMP.</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">BasePayment</span>
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span> card<span style="color:#eceff4">,</span> amount
-    @card <span style="color:#81a1c1">=</span> card
-    @amount <span style="color:#81a1c1">=</span> amount
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">process_payment!</span>
-    authenticate_merchant <span style="color:#81a1c1">&amp;&amp;</span> make_payment
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">authenticate_merchant</span>
-    <span style="color:#81a1c1;font-weight:bold">raise</span> <span style="color:#8fbcbb">NotImplementedError</span><span style="color:#81a1c1">.</span>new <span style="color:#a3be8c">&#34;authenticate_merchant&#34;</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">make_payment</span>
-    <span style="color:#81a1c1;font-weight:bold">raise</span> <span style="color:#8fbcbb">NotImplementedError</span><span style="color:#81a1c1">.</span>new <span style="color:#a3be8c">&#34;make_payment&#34;</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">StripePayment</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">BasePayment</span>
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">authenticate_merchant</span>
-    <span style="color:#81a1c1;font-weight:bold">begin</span>
-      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">true</span> <span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#8fbcbb">Stripe</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Merchant</span><span style="color:#81a1c1">.</span>authenticate <span style="color:#8fbcbb">ENV</span><span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;STRIPE_API_KEY&#39;</span><span style="color:#81a1c1">]</span>
-    <span style="color:#81a1c1;font-weight:bold">rescue</span> <span style="color:#8fbcbb">Stripe</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">MerchantError</span> <span style="color:#81a1c1">=&gt;</span> e
-      <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>error <span style="color:#a3be8c">&#34;Cannot establish connection between Merchant and Provider.&#34;</span>
-      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">false</span>
-    <span style="color:#81a1c1;font-weight:bold">rescue</span> <span style="color:#8fbcbb">Stripe</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">ProviderUnreachable</span> <span style="color:#81a1c1">=&gt;</span> e
-      <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>error <span style="color:#a3be8c">&#34;Provider unreachable.&#34;</span>
-      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">false</span>
-    <span style="color:#81a1c1;font-weight:bold">end</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">make_payment</span>
-    <span style="color:#81a1c1;font-weight:bold">begin</span>
-      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">true</span> <span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#8fbcbb">Stripe</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Payment</span><span style="color:#81a1c1">.</span>process! <span style="color:#8fbcbb">ENV</span><span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;STRIPE_API_KEY&#39;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span> @card<span style="color:#eceff4">,</span> @amount
-    <span style="color:#81a1c1;font-weight:bold">rescue</span> <span style="color:#8fbcbb">Stripe</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">PaymentUnprocessable</span> <span style="color:#81a1c1">=&gt;</span> e
-      <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>error <span style="color:#a3be8c">&#34;Payment unprocessable, try again.&#34;</span>
-      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">false</span>
-    <span style="color:#81a1c1;font-weight:bold">end</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">BasePayment</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span> card<span style="color:#eceff4">,</span> amount
+</span></span><span style="display:flex;"><span>    @card <span style="color:#81a1c1">=</span> card
+</span></span><span style="display:flex;"><span>    @amount <span style="color:#81a1c1">=</span> amount
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">process_payment!</span>
+</span></span><span style="display:flex;"><span>    authenticate_merchant <span style="color:#81a1c1">&amp;&amp;</span> make_payment
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">authenticate_merchant</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">raise</span> <span style="color:#8fbcbb">NotImplementedError</span><span style="color:#81a1c1">.</span>new <span style="color:#a3be8c">&#34;authenticate_merchant&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">make_payment</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">raise</span> <span style="color:#8fbcbb">NotImplementedError</span><span style="color:#81a1c1">.</span>new <span style="color:#a3be8c">&#34;make_payment&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">end</span></span></span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">StripePayment</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">BasePayment</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">authenticate_merchant</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">begin</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">true</span> <span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#8fbcbb">Stripe</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Merchant</span><span style="color:#81a1c1">.</span>authenticate <span style="color:#8fbcbb">ENV</span><span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;STRIPE_API_KEY&#39;</span><span style="color:#81a1c1">]</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">rescue</span> <span style="color:#8fbcbb">Stripe</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">MerchantError</span> <span style="color:#81a1c1">=&gt;</span> e
+</span></span><span style="display:flex;"><span>      <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>error <span style="color:#a3be8c">&#34;Cannot establish connection between Merchant and Provider.&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">rescue</span> <span style="color:#8fbcbb">Stripe</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">ProviderUnreachable</span> <span style="color:#81a1c1">=&gt;</span> e
+</span></span><span style="display:flex;"><span>      <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>error <span style="color:#a3be8c">&#34;Provider unreachable.&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">make_payment</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">begin</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">true</span> <span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#8fbcbb">Stripe</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Payment</span><span style="color:#81a1c1">.</span>process! <span style="color:#8fbcbb">ENV</span><span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;STRIPE_API_KEY&#39;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span> @card<span style="color:#eceff4">,</span> @amount
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">rescue</span> <span style="color:#8fbcbb">Stripe</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">PaymentUnprocessable</span> <span style="color:#81a1c1">=&gt;</span> e
+</span></span><span style="display:flex;"><span>      <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>error <span style="color:#a3be8c">&#34;Payment unprocessable, try again.&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">end</span></span></span></code></pre></div>
 <p>As you can see, the template-method-holding-class, or <em>BasePayment</em>, cannot be
 used as a standalone class. This is because we want to use the class just as a
 blueprint for the subclasses, instead of instantiating any objects of it. Also,
 all of the <em>BasePayment</em> subclasses will have to implement the
 <em>authenticate_merchant</em> and <em>make_payment</em> methods before they can be usable.
 Let&rsquo;s add PayPal as a payment option now!</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">PaypalPayment</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">BasePayment</span>
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">authenticate_merchant</span>
-    <span style="color:#81a1c1;font-weight:bold">begin</span>
-      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">true</span> <span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#8fbcbb">Paypal</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Account</span><span style="color:#81a1c1">.</span>authenticate <span style="color:#8fbcbb">ENV</span><span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;PAYPAL_API_KEY&#39;</span><span style="color:#81a1c1">]</span>
-    <span style="color:#81a1c1;font-weight:bold">rescue</span> <span style="color:#8fbcbb">Paypal</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">NotAuthenticated</span> <span style="color:#81a1c1">=&gt;</span> e
-      <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>error <span style="color:#a3be8c">&#34;Cannot establish connection between Merchant and Provider.&#34;</span>
-      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">false</span>
-    <span style="color:#81a1c1;font-weight:bold">rescue</span> <span style="color:#8fbcbb">Paypal</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">NotFound</span> <span style="color:#81a1c1">=&gt;</span> e
-      <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>error <span style="color:#a3be8c">&#34;Provider unreachable.&#34;</span>
-      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">false</span>
-    <span style="color:#81a1c1;font-weight:bold">end</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-
-  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">make_payment</span>
-    <span style="color:#81a1c1;font-weight:bold">begin</span>
-      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">true</span> <span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#8fbcbb">Paypal</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Payment</span><span style="color:#81a1c1">.</span>create! <span style="color:#8fbcbb">ENV</span><span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;PAYPAL_API_KEY&#39;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span> @card<span style="color:#eceff4">,</span> @amount
-    <span style="color:#81a1c1;font-weight:bold">rescue</span> <span style="color:#8fbcbb">Paypal</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">UnprocessablePayment</span> <span style="color:#81a1c1">=&gt;</span> e
-      <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>error <span style="color:#a3be8c">&#34;Payment unprocessable, try again.&#34;</span>
-      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">false</span>
-    <span style="color:#81a1c1;font-weight:bold">end</span>
-  <span style="color:#81a1c1;font-weight:bold">end</span>
-<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">PaypalPayment</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">BasePayment</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">authenticate_merchant</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">begin</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">true</span> <span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#8fbcbb">Paypal</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Account</span><span style="color:#81a1c1">.</span>authenticate <span style="color:#8fbcbb">ENV</span><span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;PAYPAL_API_KEY&#39;</span><span style="color:#81a1c1">]</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">rescue</span> <span style="color:#8fbcbb">Paypal</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">NotAuthenticated</span> <span style="color:#81a1c1">=&gt;</span> e
+</span></span><span style="display:flex;"><span>      <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>error <span style="color:#a3be8c">&#34;Cannot establish connection between Merchant and Provider.&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">rescue</span> <span style="color:#8fbcbb">Paypal</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">NotFound</span> <span style="color:#81a1c1">=&gt;</span> e
+</span></span><span style="display:flex;"><span>      <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>error <span style="color:#a3be8c">&#34;Provider unreachable.&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">make_payment</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">begin</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">true</span> <span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#8fbcbb">Paypal</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Payment</span><span style="color:#81a1c1">.</span>create! <span style="color:#8fbcbb">ENV</span><span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;PAYPAL_API_KEY&#39;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span> @card<span style="color:#eceff4">,</span> @amount
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">rescue</span> <span style="color:#8fbcbb">Paypal</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">UnprocessablePayment</span> <span style="color:#81a1c1">=&gt;</span> e
+</span></span><span style="display:flex;"><span>      <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>error <span style="color:#a3be8c">&#34;Payment unprocessable, try again.&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">false</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#81a1c1;font-weight:bold">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">end</span></span></span></code></pre></div>
 <p>As you can see, although the subclasses look alike, the logic in the template
 methods is very provider specific. The advantage is that the shared
 logic is inherited and the interfaces of all the payment classes are the same

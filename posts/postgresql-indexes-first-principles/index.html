@@ -43,7 +43,7 @@
   />
   
   
-  <script type="text/javascript" src="/js/appearance.min.4df8309499991be53c71b2b39ba0f5d5e77ea7d411d0710ce48c24218e7cc24ded28f19e85838fdc56db2306195cb001f049f577be0cf0ffb2dd6e2037ede1b9.js" integrity="sha512-TfgwlJmZG&#43;U8cbKzm6D11ed&#43;p9QR0HEM5IwkIY58wk3tKPGehYOP3FbbIwYZXLAB8En1d74M8P&#43;y3W4gN&#43;3huQ=="></script>
+  <script type="text/javascript" src="/js/appearance.min.badab316c9287a5a42a843e4eb45da65bb3d194a5a0f5fa4a3e516160e67df0b8c65f4f19a8e146436e29d583699e6cb41d6bbe99e05e1dbaa877763bad9f8e2.js" integrity="sha512-utqzFskoelpCqEPk60XaZbs9GUpaD1&#43;ko&#43;UWFg5n3wuMZfTxmo4UZDbinVg2mebLQda76Z4F4duqh3djutn44g=="></script>
   
     
     
@@ -56,7 +56,7 @@
   
   
     
-    <script defer type="text/javascript" id="script-bundle" src="/js/main.bundle.min.bbbc21fe00162ca986299c3aa2587e88662408cef57709874b7c316048a5ff80b7e342fc03812cff1393cb2be2ce65593299494d88df71ec6eb48ee261fc0fd6.js" integrity="sha512-u7wh/gAWLKmGKZw6olh&#43;iGYkCM71dwmHS3wxYEil/4C340L8A4Es/xOTyyvizmVZMplJTYjfcexutI7iYfwP1g==" data-copy="Copy" data-copied="Copied"></script>
+    <script defer type="text/javascript" id="script-bundle" src="/js/main.bundle.min.15ae6e2c9b1ac24a9ccf40003fa689efb1a18db1ee9b73d780b01a6c31b150441415862513e93184f68fe385759e4698b8763cba6a0f79493c1fed99ad5868d4.js" integrity="sha512-Fa5uLJsawkqcz0AAP6aJ77GhjbHum3PXgLAabDGxUEQUFYYlE&#43;kxhPaP44V1nkaYuHY8umoPeUk8H&#43;2ZrVho1A==" data-copy="Copy" data-copied="Copied"></script>
   
   
   
@@ -77,7 +77,6 @@
 <meta property="og:url" content="https://ieftimov.com/posts/postgresql-indexes-first-principles/" /><meta property="og:image" content="https://ieftimov.com/cards/postgresql-indexes-first-principles.png" /><meta property="article:section" content="posts" />
 
 <meta property="og:site_name" content="Ilija Eftimov 👨‍🚀" />
-
 
   <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://ieftimov.com/cards/postgresql-indexes-first-principles.png"/>
@@ -362,8 +361,8 @@ looking for.</p>
 The problem with database tables is that the data in them is unordered. If we
 had a <code>people</code> table, containing all information about people, to lookup the
 person with the full name John Doe, we would need to execute:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#81a1c1;font-weight:bold">SELECT</span> <span style="color:#81a1c1">*</span> <span style="color:#81a1c1;font-weight:bold">FROM</span> people <span style="color:#81a1c1;font-weight:bold">WHERE</span> first_name <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#34;John&#34;</span> <span style="color:#81a1c1;font-weight:bold">and</span> last_name <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#34;Doe&#34;</span><span style="color:#eceff4">;</span>
-</code></pre></div><p>Easy enough. But although this query is fast, under the hood, the database will
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">SELECT</span> <span style="color:#81a1c1">*</span> <span style="color:#81a1c1;font-weight:bold">FROM</span> people <span style="color:#81a1c1;font-weight:bold">WHERE</span> first_name <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#34;John&#34;</span> <span style="color:#81a1c1;font-weight:bold">and</span> last_name <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#34;Doe&#34;</span><span style="color:#eceff4">;</span>
+</span></span></code></pre></div><p>Easy enough. But although this query is fast, under the hood, the database will
 hit every row of the table, until it finds the record it is looking for. I am
 sure your side-project won&rsquo;t have this problem soon, but imagine a table with
 millions of records, without indexes. Data retrieval would take seconds,
@@ -409,51 +408,51 @@ PostgreSQL. But first things first - let&rsquo;s play with some indexes.</p>
 <p>Indexes in PostgreSQL are manipulated via a set of commands. For this example,
 I will use a table with 1000 records, representing 1000 users. The table schema
 will look like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">+-------------------------------------------------+
-|             Table &#34;public.users&#34;                |
-+-------------------------------------------------+
-|  Column    |         Type           | Modifiers |
-+------------+------------------------+-----------+
-| id         | integer                | not null  |
-| first_name | character varying(60)  |           |
-| last_name  | character varying(60)  |           |
-| email      | character varying(120) |           |
-| gender     | character varying(6)   |           |
-| created_at | date                   |           |
-+-------------------------------------------------+
-|Indexes:                                         |
-|   &#34;users_pkey&#34; PRIMARY KEY, btree (id)          |
-+-------------------------------------------------+
-</code></pre></div><p>If you want to follow along with this tutorial, you can easily create this
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>+-------------------------------------------------+
+</span></span><span style="display:flex;"><span>|             Table &#34;public.users&#34;                |
+</span></span><span style="display:flex;"><span>+-------------------------------------------------+
+</span></span><span style="display:flex;"><span>|  Column    |         Type           | Modifiers |
+</span></span><span style="display:flex;"><span>+------------+------------------------+-----------+
+</span></span><span style="display:flex;"><span>| id         | integer                | not null  |
+</span></span><span style="display:flex;"><span>| first_name | character varying(60)  |           |
+</span></span><span style="display:flex;"><span>| last_name  | character varying(60)  |           |
+</span></span><span style="display:flex;"><span>| email      | character varying(120) |           |
+</span></span><span style="display:flex;"><span>| gender     | character varying(6)   |           |
+</span></span><span style="display:flex;"><span>| created_at | date                   |           |
+</span></span><span style="display:flex;"><span>+-------------------------------------------------+
+</span></span><span style="display:flex;"><span>|Indexes:                                         |
+</span></span><span style="display:flex;"><span>|   &#34;users_pkey&#34; PRIMARY KEY, btree (id)          |
+</span></span><span style="display:flex;"><span>+-------------------------------------------------+
+</span></span></code></pre></div><p>If you want to follow along with this tutorial, you can easily create this
 table with the following query:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#81a1c1;font-weight:bold">CREATE</span> <span style="color:#81a1c1;font-weight:bold">TABLE</span> users <span style="color:#eceff4">(</span>
-  id <span style="color:#81a1c1">INT</span> <span style="color:#81a1c1;font-weight:bold">PRIMARY</span> <span style="color:#81a1c1;font-weight:bold">KEY</span><span style="color:#eceff4">,</span>
-  first_name <span style="color:#81a1c1">VARCHAR</span><span style="color:#eceff4">(</span><span style="color:#b48ead">60</span><span style="color:#eceff4">),</span>
-  last_name <span style="color:#81a1c1">VARCHAR</span><span style="color:#eceff4">(</span><span style="color:#b48ead">60</span><span style="color:#eceff4">),</span>
-  email <span style="color:#81a1c1">VARCHAR</span><span style="color:#eceff4">(</span><span style="color:#b48ead">120</span><span style="color:#eceff4">),</span>
-  gender <span style="color:#81a1c1">VARCHAR</span><span style="color:#eceff4">(</span><span style="color:#b48ead">6</span><span style="color:#eceff4">),</span>
-  created_at <span style="color:#81a1c1">DATE</span>
-<span style="color:#eceff4">);</span>
-</code></pre></div><p>Having the table now, we can dump any amount of data we want. I will use the
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">CREATE</span> <span style="color:#81a1c1;font-weight:bold">TABLE</span> users <span style="color:#eceff4">(</span>
+</span></span><span style="display:flex;"><span>  id <span style="color:#81a1c1">INT</span> <span style="color:#81a1c1;font-weight:bold">PRIMARY</span> <span style="color:#81a1c1;font-weight:bold">KEY</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>  first_name <span style="color:#81a1c1">VARCHAR</span><span style="color:#eceff4">(</span><span style="color:#b48ead">60</span><span style="color:#eceff4">),</span>
+</span></span><span style="display:flex;"><span>  last_name <span style="color:#81a1c1">VARCHAR</span><span style="color:#eceff4">(</span><span style="color:#b48ead">60</span><span style="color:#eceff4">),</span>
+</span></span><span style="display:flex;"><span>  email <span style="color:#81a1c1">VARCHAR</span><span style="color:#eceff4">(</span><span style="color:#b48ead">120</span><span style="color:#eceff4">),</span>
+</span></span><span style="display:flex;"><span>  gender <span style="color:#81a1c1">VARCHAR</span><span style="color:#eceff4">(</span><span style="color:#b48ead">6</span><span style="color:#eceff4">),</span>
+</span></span><span style="display:flex;"><span>  created_at <span style="color:#81a1c1">DATE</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">);</span>
+</span></span></code></pre></div><p>Having the table now, we can dump any amount of data we want. I will use the
 following <a href="https://www.dropbox.com/s/poqimjc03506gac/dummy-users.csv">CSV
 file</a>, which
 contains 1000 user records. Dumping the data in the table is easy using
 PostgreSQL&rsquo;s <code>COPY</code> command. If you are unfamiliar with the command, check out
 <a href="/postgresql-copy">my post</a> which explains it in depth.</p>
 <p>In our case, the actual command is:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#81a1c1;font-weight:bold">COPY</span> users <span style="color:#eceff4">(</span>
-  id<span style="color:#eceff4">,</span>
-  first_name<span style="color:#eceff4">,</span>
-  last_name<span style="color:#eceff4">,</span>
-  email<span style="color:#eceff4">,</span>
-  gender<span style="color:#eceff4">,</span>
-  created_at
-<span style="color:#eceff4">)</span>
-<span style="color:#81a1c1;font-weight:bold">FROM</span> <span style="color:#a3be8c">&#39;/some/path/here/to/dummy-users.csv&#39;</span>
-<span style="color:#81a1c1;font-weight:bold">DELIMITER</span> <span style="color:#a3be8c">&#39;,&#39;</span><span style="color:#eceff4">;</span>
-
-<span style="color:#616e87;font-style:italic">/* Output: COPY 1000 */</span>
-</code></pre></div><p>Having the data in the database now, let&rsquo;s see the real impact of the indexes.</p>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">COPY</span> users <span style="color:#eceff4">(</span>
+</span></span><span style="display:flex;"><span>  id<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>  first_name<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>  last_name<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>  email<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>  gender<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>  created_at
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">FROM</span> <span style="color:#a3be8c">&#39;/some/path/here/to/dummy-users.csv&#39;</span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">DELIMITER</span> <span style="color:#a3be8c">&#39;,&#39;</span><span style="color:#eceff4">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#616e87;font-style:italic">/* Output: COPY 1000 */</span>
+</span></span></code></pre></div><p>Having the data in the database now, let&rsquo;s see the real impact of the indexes.</p>
 <h3 id="analyzing-queries" class="relative group">Analyzing Queries <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#analyzing-queries" aria-label="Anchor">#</a></span></h3>
 <p>PostgreSQL creates a query plan for each query it receives. When writing your
 queries, it is very important to choose the best query plan, which adheres to
@@ -462,13 +461,13 @@ easy to produce in PostgreSQL. It comes with a really neat command called
 <code>EXPLAIN</code>, which shows the query plan, which contains all of the relevant info.</p>
 <p>For example, let&rsquo;s see the query plan for the query that returns all of the
 users:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#81a1c1;font-weight:bold">EXPLAIN</span> <span style="color:#81a1c1;font-weight:bold">SELECT</span> <span style="color:#81a1c1">*</span> <span style="color:#81a1c1;font-weight:bold">FROM</span> users<span style="color:#eceff4">;</span>
-</code></pre></div><p>This will return the following output:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">                          QUERY PLAN
-----------------------------------------------------------
- Seq Scan on users  (cost=0.00..20.00 rows=1000 width=48)
-(1 row)
-</code></pre></div><p>As you can notice, this simple query requires a <strong>Seq</strong>uential <strong>Scan</strong>,
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">EXPLAIN</span> <span style="color:#81a1c1;font-weight:bold">SELECT</span> <span style="color:#81a1c1">*</span> <span style="color:#81a1c1;font-weight:bold">FROM</span> users<span style="color:#eceff4">;</span>
+</span></span></code></pre></div><p>This will return the following output:</p>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>                          QUERY PLAN
+</span></span><span style="display:flex;"><span>----------------------------------------------------------
+</span></span><span style="display:flex;"><span> Seq Scan on users  (cost=0.00..20.00 rows=1000 width=48)
+</span></span><span style="display:flex;"><span>(1 row)
+</span></span></code></pre></div><p>As you can notice, this simple query requires a <strong>Seq</strong>uential <strong>Scan</strong>,
 because there is no <code>WHERE</code> clause in it. This means that it will have to scan
 each row of the table and return it.</p>
 <p>In the parentheses we notice couple of values. The cost is a range of arbitrary
@@ -477,45 +476,45 @@ before the output phase can begin, to the estimated total cost of this query.
 Then, the numbers of rows output that were estimated by the query planner.
 Last, the width represents the average width of the rows, in bytes.</p>
 <p>Let&rsquo;s add a <code>WHERE</code> clause to the query:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#81a1c1;font-weight:bold">SELECT</span> <span style="color:#81a1c1">*</span> <span style="color:#81a1c1;font-weight:bold">FROM</span> users <span style="color:#81a1c1;font-weight:bold">WHERE</span> email <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;phughes5m@nbcnews.com&#39;</span><span style="color:#eceff4">;</span>
-</code></pre></div><p>The query will return the user whose email is <code>phughes5m@nbcnews.com</code> . Perfect.
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">SELECT</span> <span style="color:#81a1c1">*</span> <span style="color:#81a1c1;font-weight:bold">FROM</span> users <span style="color:#81a1c1;font-weight:bold">WHERE</span> email <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;phughes5m@nbcnews.com&#39;</span><span style="color:#eceff4">;</span>
+</span></span></code></pre></div><p>The query will return the user whose email is <code>phughes5m@nbcnews.com</code> . Perfect.
 Let&rsquo;s <code>EXPLAIN</code> the query, and see its query plan:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#81a1c1;font-weight:bold">EXPLAIN</span> <span style="color:#81a1c1;font-weight:bold">SELECT</span> <span style="color:#81a1c1">*</span> <span style="color:#81a1c1;font-weight:bold">FROM</span> users <span style="color:#81a1c1;font-weight:bold">WHERE</span> email <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;phughes5m@nbcnews.com&#39;</span><span style="color:#eceff4">;</span>
-</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">                          QUERY PLAN
-----------------------------------------------------------
- Seq Scan on users  (cost=0.00..22.50 rows=1 width=48)
-   Filter: ((email)::text = &#39;phughes5m@nbcnews.com&#39;::text)
-</code></pre></div><p>As you can see, although the <code>WHERE</code> clause was added, and the result set was
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">EXPLAIN</span> <span style="color:#81a1c1;font-weight:bold">SELECT</span> <span style="color:#81a1c1">*</span> <span style="color:#81a1c1;font-weight:bold">FROM</span> users <span style="color:#81a1c1;font-weight:bold">WHERE</span> email <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;phughes5m@nbcnews.com&#39;</span><span style="color:#eceff4">;</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>                          QUERY PLAN
+</span></span><span style="display:flex;"><span>----------------------------------------------------------
+</span></span><span style="display:flex;"><span> Seq Scan on users  (cost=0.00..22.50 rows=1 width=48)
+</span></span><span style="display:flex;"><span>   Filter: ((email)::text = &#39;phughes5m@nbcnews.com&#39;::text)
+</span></span></code></pre></div><p>As you can see, although the <code>WHERE</code> clause was added, and the result set was
 reduced to only one row, the time didn&rsquo;t go down. Actually, it increased. This
 happens because the query will issue a <strong>Seq</strong>uential <strong>Scan</strong> on the table.
 Let&rsquo;s see if adding an index to the <code>email</code> column will decrease the cost of
 the query.</p>
 <h3 id="adding-an-index" class="relative group">Adding an Index <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#adding-an-index" aria-label="Anchor">#</a></span></h3>
 <p>Adding an index in PostgreSQL is done via the <code>CREATE INDEX</code> command:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#81a1c1;font-weight:bold">CREATE</span> <span style="color:#81a1c1;font-weight:bold">INDEX</span> <span style="color:#81a1c1">&lt;</span><span style="color:#81a1c1;font-weight:bold">index</span> name<span style="color:#81a1c1">&gt;</span> <span style="color:#81a1c1;font-weight:bold">ON</span> <span style="color:#81a1c1">&lt;</span><span style="color:#81a1c1;font-weight:bold">table</span> name<span style="color:#81a1c1">&gt;</span> <span style="color:#81a1c1;font-weight:bold">USING</span> <span style="color:#81a1c1">&lt;</span><span style="color:#81a1c1;font-weight:bold">method</span><span style="color:#81a1c1">&gt;</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">&lt;</span><span style="color:#81a1c1;font-weight:bold">column</span> name<span style="color:#81a1c1">&gt;</span><span style="color:#eceff4">);</span>
-</code></pre></div><p>Or, in our specific case:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#81a1c1;font-weight:bold">CREATE</span> <span style="color:#81a1c1;font-weight:bold">INDEX</span> email_idx <span style="color:#81a1c1;font-weight:bold">ON</span> users <span style="color:#81a1c1;font-weight:bold">USING</span> btree<span style="color:#eceff4">(</span>email<span style="color:#eceff4">);</span>
-</code></pre></div><p>After we run this command, let&rsquo;s see a description of the table:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">              Table &#34;public.users&#34;
-   Column   |          Type          | Modifiers
-------------+------------------------+-----------
- id         | integer                | not null
- first_name | character varying(60)  |
- last_name  | character varying(60)  |
- email      | character varying(120) |
- gender     | character varying(6)   |
- created_at | date                   |
-Indexes:
-    &#34;users_pkey&#34; PRIMARY KEY, btree (id)
-    &#34;email_idx&#34; btree (email)
-</code></pre></div><p>You can see in the &ldquo;Indexes&rdquo; section, the new index appears. After we added the
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">CREATE</span> <span style="color:#81a1c1;font-weight:bold">INDEX</span> <span style="color:#81a1c1">&lt;</span><span style="color:#81a1c1;font-weight:bold">index</span> name<span style="color:#81a1c1">&gt;</span> <span style="color:#81a1c1;font-weight:bold">ON</span> <span style="color:#81a1c1">&lt;</span><span style="color:#81a1c1;font-weight:bold">table</span> name<span style="color:#81a1c1">&gt;</span> <span style="color:#81a1c1;font-weight:bold">USING</span> <span style="color:#81a1c1">&lt;</span><span style="color:#81a1c1;font-weight:bold">method</span><span style="color:#81a1c1">&gt;</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">&lt;</span><span style="color:#81a1c1;font-weight:bold">column</span> name<span style="color:#81a1c1">&gt;</span><span style="color:#eceff4">);</span>
+</span></span></code></pre></div><p>Or, in our specific case:</p>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">CREATE</span> <span style="color:#81a1c1;font-weight:bold">INDEX</span> email_idx <span style="color:#81a1c1;font-weight:bold">ON</span> users <span style="color:#81a1c1;font-weight:bold">USING</span> btree<span style="color:#eceff4">(</span>email<span style="color:#eceff4">);</span>
+</span></span></code></pre></div><p>After we run this command, let&rsquo;s see a description of the table:</p>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>              Table &#34;public.users&#34;
+</span></span><span style="display:flex;"><span>   Column   |          Type          | Modifiers
+</span></span><span style="display:flex;"><span>------------+------------------------+-----------
+</span></span><span style="display:flex;"><span> id         | integer                | not null
+</span></span><span style="display:flex;"><span> first_name | character varying(60)  |
+</span></span><span style="display:flex;"><span> last_name  | character varying(60)  |
+</span></span><span style="display:flex;"><span> email      | character varying(120) |
+</span></span><span style="display:flex;"><span> gender     | character varying(6)   |
+</span></span><span style="display:flex;"><span> created_at | date                   |
+</span></span><span style="display:flex;"><span>Indexes:
+</span></span><span style="display:flex;"><span>    &#34;users_pkey&#34; PRIMARY KEY, btree (id)
+</span></span><span style="display:flex;"><span>    &#34;email_idx&#34; btree (email)
+</span></span></code></pre></div><p>You can see in the &ldquo;Indexes&rdquo; section, the new index appears. After we added the
 index, let&rsquo;s see the query plan for the <code>SELECT</code> query:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#81a1c1;font-weight:bold">EXPLAIN</span> <span style="color:#81a1c1;font-weight:bold">SELECT</span> <span style="color:#81a1c1">*</span> <span style="color:#81a1c1;font-weight:bold">FROM</span> users <span style="color:#81a1c1;font-weight:bold">WHERE</span> email <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;phughes5m@nbcnews.com&#39;</span><span style="color:#eceff4">;</span>
-</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">                              QUERY PLAN
-----------------------------------------------------------------------
-Index Scan using email_idx on users  (cost=0.28..8.29 rows=1 width=48)
-  Index Cond: ((email)::text = &#39;phughes5m@nbcnews.com&#39;::text)
-</code></pre></div><p>Whoa! The projected query cost dropped from the original 22.50 to 8.29. So,
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">EXPLAIN</span> <span style="color:#81a1c1;font-weight:bold">SELECT</span> <span style="color:#81a1c1">*</span> <span style="color:#81a1c1;font-weight:bold">FROM</span> users <span style="color:#81a1c1;font-weight:bold">WHERE</span> email <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;phughes5m@nbcnews.com&#39;</span><span style="color:#eceff4">;</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>                              QUERY PLAN
+</span></span><span style="display:flex;"><span>----------------------------------------------------------------------
+</span></span><span style="display:flex;"><span>Index Scan using email_idx on users  (cost=0.28..8.29 rows=1 width=48)
+</span></span><span style="display:flex;"><span>  Index Cond: ((email)::text = &#39;phughes5m@nbcnews.com&#39;::text)
+</span></span></code></pre></div><p>Whoa! The projected query cost dropped from the original 22.50 to 8.29. So,
 what changed? As you can notice, instead of a Sequential Scan, now PostgreSQL
 will issue a <strong>Index Scan</strong>. We won&rsquo;t go into details here, because types and
 approaches of scanning is topic for another blogpost. Simply said, Postgres
@@ -525,22 +524,22 @@ operation then using a sequential scan.</p>
 <h2 id="sequential-isnt-always-the-worst" class="relative group">Sequential isn&rsquo;t Always the Worst <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#sequential-isnt-always-the-worst" aria-label="Anchor">#</a></span></h2>
 <p>Let&rsquo;s see a different example. Let&rsquo;s say, we want to return all of the users
 that have the <code>id</code> between 100 and 200:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#81a1c1;font-weight:bold">EXPLAIN</span> <span style="color:#81a1c1;font-weight:bold">SELECT</span> <span style="color:#81a1c1">*</span> <span style="color:#81a1c1;font-weight:bold">FROM</span> users <span style="color:#81a1c1;font-weight:bold">WHERE</span> id <span style="color:#81a1c1">&gt;</span> <span style="color:#b48ead">100</span> <span style="color:#81a1c1;font-weight:bold">AND</span> id <span style="color:#81a1c1">&lt;</span> <span style="color:#b48ead">200</span><span style="color:#eceff4">;</span>
-</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">                          QUERY PLAN
-----------------------------------------------------------------------
-Index Scan using users_pkey on users (cost=0.28..11.28 rows=100 width=48)
-  Index Cond: ((id &gt; 100) AND (id &lt; 200))
-(2 rows)
-</code></pre></div><p>Looks about right, right? It uses a Index Scan, with an Index Cond(itional)
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">EXPLAIN</span> <span style="color:#81a1c1;font-weight:bold">SELECT</span> <span style="color:#81a1c1">*</span> <span style="color:#81a1c1;font-weight:bold">FROM</span> users <span style="color:#81a1c1;font-weight:bold">WHERE</span> id <span style="color:#81a1c1">&gt;</span> <span style="color:#b48ead">100</span> <span style="color:#81a1c1;font-weight:bold">AND</span> id <span style="color:#81a1c1">&lt;</span> <span style="color:#b48ead">200</span><span style="color:#eceff4">;</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>                          QUERY PLAN
+</span></span><span style="display:flex;"><span>----------------------------------------------------------------------
+</span></span><span style="display:flex;"><span>Index Scan using users_pkey on users (cost=0.28..11.28 rows=100 width=48)
+</span></span><span style="display:flex;"><span>  Index Cond: ((id &gt; 100) AND (id &lt; 200))
+</span></span><span style="display:flex;"><span>(2 rows)
+</span></span></code></pre></div><p>Looks about right, right? It uses a Index Scan, with an Index Cond(itional)
 searching for all <code>id</code>s between 100 and 200. Good enough.</p>
 <p>How about we try to return all users with <code>id</code>s between 200 and 800?</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#81a1c1;font-weight:bold">EXPLAIN</span> <span style="color:#81a1c1;font-weight:bold">SELECT</span> <span style="color:#81a1c1">*</span> <span style="color:#81a1c1;font-weight:bold">FROM</span> users <span style="color:#81a1c1;font-weight:bold">WHERE</span> id <span style="color:#81a1c1">&gt;</span> <span style="color:#b48ead">200</span> <span style="color:#81a1c1;font-weight:bold">AND</span> id <span style="color:#81a1c1">&lt;</span> <span style="color:#b48ead">800</span><span style="color:#eceff4">;</span>
-</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">                          QUERY PLAN
--------------------------------------------------------
-Seq Scan on users  (cost=0.00..25.00 rows=600 width=48)
-  Filter: ((id &gt; 200) AND (id &lt; 800))
-(2 rows)
-</code></pre></div><p>Hold on, what happened here? Although there is an index on the primary key
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">EXPLAIN</span> <span style="color:#81a1c1;font-weight:bold">SELECT</span> <span style="color:#81a1c1">*</span> <span style="color:#81a1c1;font-weight:bold">FROM</span> users <span style="color:#81a1c1;font-weight:bold">WHERE</span> id <span style="color:#81a1c1">&gt;</span> <span style="color:#b48ead">200</span> <span style="color:#81a1c1;font-weight:bold">AND</span> id <span style="color:#81a1c1">&lt;</span> <span style="color:#b48ead">800</span><span style="color:#eceff4">;</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>                          QUERY PLAN
+</span></span><span style="display:flex;"><span>-------------------------------------------------------
+</span></span><span style="display:flex;"><span>Seq Scan on users  (cost=0.00..25.00 rows=600 width=48)
+</span></span><span style="display:flex;"><span>  Filter: ((id &gt; 200) AND (id &lt; 800))
+</span></span><span style="display:flex;"><span>(2 rows)
+</span></span></code></pre></div><p>Hold on, what happened here? Although there is an index on the primary key
 column, PostgreSQL decides that doing a sequential scan on the <code>user</code> table is
 more performant than an index scan. An index scan would require finding 600
 indexes and returning each and every one of those records whose index were

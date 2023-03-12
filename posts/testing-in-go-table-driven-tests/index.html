@@ -43,7 +43,7 @@
   />
   
   
-  <script type="text/javascript" src="/js/appearance.min.4df8309499991be53c71b2b39ba0f5d5e77ea7d411d0710ce48c24218e7cc24ded28f19e85838fdc56db2306195cb001f049f577be0cf0ffb2dd6e2037ede1b9.js" integrity="sha512-TfgwlJmZG&#43;U8cbKzm6D11ed&#43;p9QR0HEM5IwkIY58wk3tKPGehYOP3FbbIwYZXLAB8En1d74M8P&#43;y3W4gN&#43;3huQ=="></script>
+  <script type="text/javascript" src="/js/appearance.min.badab316c9287a5a42a843e4eb45da65bb3d194a5a0f5fa4a3e516160e67df0b8c65f4f19a8e146436e29d583699e6cb41d6bbe99e05e1dbaa877763bad9f8e2.js" integrity="sha512-utqzFskoelpCqEPk60XaZbs9GUpaD1&#43;ko&#43;UWFg5n3wuMZfTxmo4UZDbinVg2mebLQda76Z4F4duqh3djutn44g=="></script>
   
     
     
@@ -56,7 +56,7 @@
   
   
     
-    <script defer type="text/javascript" id="script-bundle" src="/js/main.bundle.min.bbbc21fe00162ca986299c3aa2587e88662408cef57709874b7c316048a5ff80b7e342fc03812cff1393cb2be2ce65593299494d88df71ec6eb48ee261fc0fd6.js" integrity="sha512-u7wh/gAWLKmGKZw6olh&#43;iGYkCM71dwmHS3wxYEil/4C340L8A4Es/xOTyyvizmVZMplJTYjfcexutI7iYfwP1g==" data-copy="Copy" data-copied="Copied"></script>
+    <script defer type="text/javascript" id="script-bundle" src="/js/main.bundle.min.15ae6e2c9b1ac24a9ccf40003fa689efb1a18db1ee9b73d780b01a6c31b150441415862513e93184f68fe385759e4698b8763cba6a0f79493c1fed99ad5868d4.js" integrity="sha512-Fa5uLJsawkqcz0AAP6aJ77GhjbHum3PXgLAabDGxUEQUFYYlE&#43;kxhPaP44V1nkaYuHY8umoPeUk8H&#43;2ZrVho1A==" data-copy="Copy" data-copied="Copied"></script>
   
   
   
@@ -77,7 +77,6 @@
 <meta property="og:url" content="https://ieftimov.com/posts/testing-in-go-table-driven-tests/" /><meta property="og:image" content="https://ieftimov.com/cards/testing-in-go-table-driven-tests.png" /><meta property="article:section" content="posts" />
 <meta property="article:published_time" content="2019-07-10T00:00:00+00:00" />
 <meta property="article:modified_time" content="2021-06-12T00:00:00+00:00" /><meta property="og:site_name" content="Ilija Eftimov 👨‍🚀" />
-
 
   <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://ieftimov.com/cards/testing-in-go-table-driven-tests.png"/>
@@ -434,90 +433,90 @@ constant, we can put it in a table:</p>
 </table>
 <p>Following this idea, what if we would try to express this table in a very
 simple Go structure?</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> TestCase <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
-	arg1     <span style="color:#81a1c1">float64</span>
-	arg2     <span style="color:#81a1c1">float64</span>
-	expected <span style="color:#81a1c1">float64</span>
-<span style="color:#eceff4">}</span>
-</code></pre></div><p>That should do the trick: it has three attributes of type <code>float64</code>: <code>arg1</code>,
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> TestCase <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	arg1     <span style="color:#81a1c1">float64</span>
+</span></span><span style="display:flex;"><span>	arg2     <span style="color:#81a1c1">float64</span>
+</span></span><span style="display:flex;"><span>	expected <span style="color:#81a1c1">float64</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span></code></pre></div><p>That should do the trick: it has three attributes of type <code>float64</code>: <code>arg1</code>,
 <code>arg2</code> and <code>expected</code>. We are going to skip the third column as that is only
 there for more clarity.</p>
 <p>What about the data? Could we next add the data to a slice of <code>TestCase</code>? Let&rsquo;s
 give it a shot:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestMax</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	cases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span>TestCase<span style="color:#eceff4">{</span>
-		TestCase<span style="color:#eceff4">{</span>
-			arg1<span style="color:#eceff4">:</span>     <span style="color:#b48ead">1.0</span><span style="color:#eceff4">,</span>
-			arg2<span style="color:#eceff4">:</span>     <span style="color:#b48ead">2.0</span><span style="color:#eceff4">,</span>
-			expected<span style="color:#eceff4">:</span> <span style="color:#b48ead">2.0</span><span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-		TestCase<span style="color:#eceff4">{</span>
-			arg1<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">-</span><span style="color:#b48ead">100</span><span style="color:#eceff4">,</span>
-			arg2<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">-</span><span style="color:#b48ead">200</span><span style="color:#eceff4">,</span>
-			expected<span style="color:#eceff4">:</span> <span style="color:#81a1c1">-</span><span style="color:#b48ead">100</span><span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-		TestCase<span style="color:#eceff4">{</span>
-			arg1<span style="color:#eceff4">:</span>     <span style="color:#b48ead">0</span><span style="color:#eceff4">,</span>
-			arg2<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">-</span><span style="color:#b48ead">200</span><span style="color:#eceff4">,</span>
-			expected<span style="color:#eceff4">:</span> <span style="color:#b48ead">0</span><span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-		TestCase<span style="color:#eceff4">{</span>
-			arg1<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">-</span><span style="color:#b48ead">8.31373e-02</span><span style="color:#eceff4">,</span>
-			arg2<span style="color:#eceff4">:</span>     <span style="color:#b48ead">1.84273e-02</span><span style="color:#eceff4">,</span>
-			expected<span style="color:#eceff4">:</span> <span style="color:#b48ead">1.84273e-02</span><span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span>
-</code></pre></div><p>We intentionally omitted some of the cases for brevity and because what we have
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestMax</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	cases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span>TestCase<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		TestCase<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			arg1<span style="color:#eceff4">:</span>     <span style="color:#b48ead">1.0</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			arg2<span style="color:#eceff4">:</span>     <span style="color:#b48ead">2.0</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			expected<span style="color:#eceff4">:</span> <span style="color:#b48ead">2.0</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>		TestCase<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			arg1<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">-</span><span style="color:#b48ead">100</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			arg2<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">-</span><span style="color:#b48ead">200</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			expected<span style="color:#eceff4">:</span> <span style="color:#81a1c1">-</span><span style="color:#b48ead">100</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>		TestCase<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			arg1<span style="color:#eceff4">:</span>     <span style="color:#b48ead">0</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			arg2<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">-</span><span style="color:#b48ead">200</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			expected<span style="color:#eceff4">:</span> <span style="color:#b48ead">0</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>		TestCase<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			arg1<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">-</span><span style="color:#b48ead">8.31373e-02</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			arg2<span style="color:#eceff4">:</span>     <span style="color:#b48ead">1.84273e-02</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			expected<span style="color:#eceff4">:</span> <span style="color:#b48ead">1.84273e-02</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span></code></pre></div><p>We intentionally omitted some of the cases for brevity and because what we have
 above clearly painted the picture. We have a test function already and <code>cases</code>
 of type <code>[]TestCase</code>. The last piece of the puzzle is to iterate over the
 slice. For each of the <code>TestCase</code> structs invoke the <code>Max</code> function using the
 two arguments. Then, compare the <code>expected</code> attribute of the <code>TestCase</code> with
 the actual result of the invocation of <code>Max</code>.</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestMax</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	cases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span>TestCase<span style="color:#eceff4">{</span>
-		TestCase<span style="color:#eceff4">{</span>
-			arg1<span style="color:#eceff4">:</span>     <span style="color:#b48ead">1.0</span><span style="color:#eceff4">,</span>
-			arg2<span style="color:#eceff4">:</span>     <span style="color:#b48ead">2.0</span><span style="color:#eceff4">,</span>
-			expected<span style="color:#eceff4">:</span> <span style="color:#b48ead">2.0</span><span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-		TestCase<span style="color:#eceff4">{</span>
-			arg1<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">-</span><span style="color:#b48ead">100</span><span style="color:#eceff4">,</span>
-			arg2<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">-</span><span style="color:#b48ead">200</span><span style="color:#eceff4">,</span>
-			expected<span style="color:#eceff4">:</span> <span style="color:#81a1c1">-</span><span style="color:#b48ead">100</span><span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-		TestCase<span style="color:#eceff4">{</span>
-			arg1<span style="color:#eceff4">:</span>     <span style="color:#b48ead">0</span><span style="color:#eceff4">,</span>
-			arg2<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">-</span><span style="color:#b48ead">200</span><span style="color:#eceff4">,</span>
-			expected<span style="color:#eceff4">:</span> <span style="color:#b48ead">0</span><span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-		TestCase<span style="color:#eceff4">{</span>
-			arg1<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">-</span><span style="color:#b48ead">8.31373e-02</span><span style="color:#eceff4">,</span>
-			arg2<span style="color:#eceff4">:</span>     <span style="color:#b48ead">1.84273e-02</span><span style="color:#eceff4">,</span>
-			expected<span style="color:#eceff4">:</span> <span style="color:#b48ead">1.84273e-02</span><span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-	<span style="color:#eceff4">}</span>
-
-	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> tc <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> cases <span style="color:#eceff4">{</span>
-		got <span style="color:#81a1c1">:=</span> math<span style="color:#eceff4">.</span><span style="color:#88c0d0">Max</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>arg1<span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>arg2<span style="color:#eceff4">)</span>
-		<span style="color:#81a1c1;font-weight:bold">if</span> got <span style="color:#81a1c1">!=</span> tc<span style="color:#eceff4">.</span>expected <span style="color:#eceff4">{</span>
-			t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Max(%f, %f): Expected %f, got %f&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>arg1<span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>arg2<span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>expected<span style="color:#eceff4">,</span> got<span style="color:#eceff4">)</span>
-		<span style="color:#eceff4">}</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span>
-</code></pre></div><p>Let&rsquo;s dissect the <code>for</code> loop:</p>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestMax</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	cases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span>TestCase<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		TestCase<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			arg1<span style="color:#eceff4">:</span>     <span style="color:#b48ead">1.0</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			arg2<span style="color:#eceff4">:</span>     <span style="color:#b48ead">2.0</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			expected<span style="color:#eceff4">:</span> <span style="color:#b48ead">2.0</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>		TestCase<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			arg1<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">-</span><span style="color:#b48ead">100</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			arg2<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">-</span><span style="color:#b48ead">200</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			expected<span style="color:#eceff4">:</span> <span style="color:#81a1c1">-</span><span style="color:#b48ead">100</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>		TestCase<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			arg1<span style="color:#eceff4">:</span>     <span style="color:#b48ead">0</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			arg2<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">-</span><span style="color:#b48ead">200</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			expected<span style="color:#eceff4">:</span> <span style="color:#b48ead">0</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>		TestCase<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			arg1<span style="color:#eceff4">:</span>     <span style="color:#81a1c1">-</span><span style="color:#b48ead">8.31373e-02</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			arg2<span style="color:#eceff4">:</span>     <span style="color:#b48ead">1.84273e-02</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			expected<span style="color:#eceff4">:</span> <span style="color:#b48ead">1.84273e-02</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> tc <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> cases <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		got <span style="color:#81a1c1">:=</span> math<span style="color:#eceff4">.</span><span style="color:#88c0d0">Max</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>arg1<span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>arg2<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#81a1c1;font-weight:bold">if</span> got <span style="color:#81a1c1">!=</span> tc<span style="color:#eceff4">.</span>expected <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Max(%f, %f): Expected %f, got %f&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>arg1<span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>arg2<span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>expected<span style="color:#eceff4">,</span> got<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span></code></pre></div><p>Let&rsquo;s dissect the <code>for</code> loop:</p>
 <p>For each of the <code>cases</code>, we invoke the <code>math.Max</code> function, with <code>tc.arg1</code>
 and<code>tc.arg2</code> as arguments. Then, we compare what the invocation returned with
 the expected value in <code>tc.expected</code>. The comparison will tells us if <code>math.Max</code>
 returned what we expected, and if that&rsquo;s not the case, it will mark the test as
 failed. If any of the tests fail, the error message will look like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#81a1c1">test</span> math_test.go -v
-<span style="color:#81a1c1">===</span> RUN   TestMax
---- FAIL: TestMax <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
-    math_test.go:41: Max<span style="color:#81a1c1">(</span>-0.083137, 0.018427<span style="color:#81a1c1">)</span>: Expected 0.000000, got 0.018427
-FAIL
-FAIL	command-line-arguments	0.004s
-</code></pre></div><p>Having a structured and typed test case is the magic behind table-driven tests.
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>$ go <span style="color:#81a1c1">test</span> math_test.go -v
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1">===</span> RUN   TestMax
+</span></span><span style="display:flex;"><span>--- FAIL: TestMax <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
+</span></span><span style="display:flex;"><span>    math_test.go:41: Max<span style="color:#81a1c1">(</span>-0.083137, 0.018427<span style="color:#81a1c1">)</span>: Expected 0.000000, got 0.018427
+</span></span><span style="display:flex;"><span>FAIL
+</span></span><span style="display:flex;"><span>FAIL	command-line-arguments	0.004s
+</span></span></code></pre></div><p>Having a structured and typed test case is the magic behind table-driven tests.
 It&rsquo;s also the reason for the name: a <code>TestCase</code> represents a row from a table.
 With the <code>for</code> loop we evaluate each of the rows and use its cells as arguments
 and expected values.</p>
@@ -528,150 +527,150 @@ tests. After that, we will convert them to table-driven tests.</p>
 <p>Consider this type <code>Person</code>, which has two functions: <code>older</code> and <code>NewPerson</code>.
 The latter being a constructor, while the former is a function that can decide
 what <code>Person</code> is older between two of them:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">package</span> person
-
-<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#a3be8c">&#34;errors&#34;</span>
-
-<span style="color:#81a1c1;font-weight:bold">var</span> <span style="color:#eceff4">(</span>
-	AgeTooLowError  <span style="color:#eceff4">=</span> errors<span style="color:#eceff4">.</span><span style="color:#88c0d0">New</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;A person must be at least 1 years old&#34;</span><span style="color:#eceff4">)</span>
-	AgeTooHighError <span style="color:#eceff4">=</span> errors<span style="color:#eceff4">.</span><span style="color:#88c0d0">New</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;A person cannot be older than 130 years&#34;</span><span style="color:#eceff4">)</span>
-<span style="color:#eceff4">)</span>
-
-<span style="color:#81a1c1;font-weight:bold">type</span> Person <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
-	age <span style="color:#81a1c1">int</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span>age <span style="color:#81a1c1">int</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">(</span><span style="color:#81a1c1">error</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	<span style="color:#81a1c1;font-weight:bold">if</span> age <span style="color:#eceff4">&lt;</span> <span style="color:#b48ead">1</span> <span style="color:#eceff4">{</span>
-		<span style="color:#81a1c1;font-weight:bold">return</span> AgeTooLowError<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
-	<span style="color:#eceff4">}</span>
-
-	<span style="color:#81a1c1;font-weight:bold">if</span> age <span style="color:#81a1c1">&gt;=</span> <span style="color:#b48ead">130</span> <span style="color:#eceff4">{</span>
-		<span style="color:#81a1c1;font-weight:bold">return</span> AgeTooHighError<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
-	<span style="color:#eceff4">}</span>
-
-	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">nil</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">&amp;</span>Person<span style="color:#eceff4">{</span>
-		age<span style="color:#eceff4">:</span> age<span style="color:#eceff4">,</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>p <span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">)</span> <span style="color:#88c0d0">older</span><span style="color:#eceff4">(</span>other <span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">)</span> <span style="color:#81a1c1">bool</span> <span style="color:#eceff4">{</span>
-	<span style="color:#81a1c1;font-weight:bold">return</span> p<span style="color:#eceff4">.</span>age <span style="color:#eceff4">&gt;</span> other<span style="color:#eceff4">.</span>age
-<span style="color:#eceff4">}</span>
-</code></pre></div><p>Next, let&rsquo;s add some tests for these two functions:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">package</span> person
-
-<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
-	<span style="color:#a3be8c">&#34;testing&#34;</span>
-<span style="color:#eceff4">)</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestNewPersonPositiveAge</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	err<span style="color:#eceff4">,</span> _ <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span>
-	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
-		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected person, received %v&#34;</span><span style="color:#eceff4">,</span> err<span style="color:#eceff4">)</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestNewPersonNegativeAge</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	err<span style="color:#eceff4">,</span> p <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">-</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span>
-	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">==</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
-		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected error, received %v&#34;</span><span style="color:#eceff4">,</span> p<span style="color:#eceff4">)</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestNewPersonHugeAge</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	err<span style="color:#eceff4">,</span> p <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span><span style="color:#b48ead">150</span><span style="color:#eceff4">)</span>
-	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">==</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
-		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected error, received %v&#34;</span><span style="color:#eceff4">,</span> p<span style="color:#eceff4">)</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestOlderFirstOlderThanSecond</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	_<span style="color:#eceff4">,</span> p1 <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span>
-	_<span style="color:#eceff4">,</span> p2 <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span><span style="color:#b48ead">2</span><span style="color:#eceff4">)</span>
-
-	<span style="color:#81a1c1;font-weight:bold">if</span> p1<span style="color:#eceff4">.</span><span style="color:#88c0d0">older</span><span style="color:#eceff4">(</span>p2<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected p1 with age %d to be younger than p2 with age %d&#34;</span><span style="color:#eceff4">,</span> p1<span style="color:#eceff4">.</span>age<span style="color:#eceff4">,</span> p2<span style="color:#eceff4">.</span>age<span style="color:#eceff4">)</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span>
-
-<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestOlderSecondOlderThanFirst</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	_<span style="color:#eceff4">,</span> p1 <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span><span style="color:#b48ead">2</span><span style="color:#eceff4">)</span>
-	_<span style="color:#eceff4">,</span> p2 <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span>
-
-	<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#eceff4">!</span>p1<span style="color:#eceff4">.</span><span style="color:#88c0d0">older</span><span style="color:#eceff4">(</span>p2<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected p1 with age %d to be older than p2 with age %d&#34;</span><span style="color:#eceff4">,</span> p1<span style="color:#eceff4">.</span>age<span style="color:#eceff4">,</span> p2<span style="color:#eceff4">.</span>age<span style="color:#eceff4">)</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span>
-</code></pre></div><p>These tests are conventional. Also, the tests covering the same function
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">package</span> person
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#a3be8c">&#34;errors&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">var</span> <span style="color:#eceff4">(</span>
+</span></span><span style="display:flex;"><span>	AgeTooLowError  <span style="color:#eceff4">=</span> errors<span style="color:#eceff4">.</span><span style="color:#88c0d0">New</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;A person must be at least 1 years old&#34;</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	AgeTooHighError <span style="color:#eceff4">=</span> errors<span style="color:#eceff4">.</span><span style="color:#88c0d0">New</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;A person cannot be older than 130 years&#34;</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">type</span> Person <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	age <span style="color:#81a1c1">int</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span>age <span style="color:#81a1c1">int</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">(</span><span style="color:#81a1c1">error</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">if</span> age <span style="color:#eceff4">&lt;</span> <span style="color:#b48ead">1</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#81a1c1;font-weight:bold">return</span> AgeTooLowError<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">if</span> age <span style="color:#81a1c1">&gt;=</span> <span style="color:#b48ead">130</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#81a1c1;font-weight:bold">return</span> AgeTooHighError<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">nil</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">&amp;</span>Person<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		age<span style="color:#eceff4">:</span> age<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>p <span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">)</span> <span style="color:#88c0d0">older</span><span style="color:#eceff4">(</span>other <span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">)</span> <span style="color:#81a1c1">bool</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">return</span> p<span style="color:#eceff4">.</span>age <span style="color:#eceff4">&gt;</span> other<span style="color:#eceff4">.</span>age
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span></code></pre></div><p>Next, let&rsquo;s add some tests for these two functions:</p>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">package</span> person
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a3be8c">&#34;testing&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestNewPersonPositiveAge</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	err<span style="color:#eceff4">,</span> _ <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected person, received %v&#34;</span><span style="color:#eceff4">,</span> err<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestNewPersonNegativeAge</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	err<span style="color:#eceff4">,</span> p <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">-</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">==</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected error, received %v&#34;</span><span style="color:#eceff4">,</span> p<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestNewPersonHugeAge</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	err<span style="color:#eceff4">,</span> p <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span><span style="color:#b48ead">150</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">==</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected error, received %v&#34;</span><span style="color:#eceff4">,</span> p<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestOlderFirstOlderThanSecond</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	_<span style="color:#eceff4">,</span> p1 <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	_<span style="color:#eceff4">,</span> p2 <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span><span style="color:#b48ead">2</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">if</span> p1<span style="color:#eceff4">.</span><span style="color:#88c0d0">older</span><span style="color:#eceff4">(</span>p2<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected p1 with age %d to be younger than p2 with age %d&#34;</span><span style="color:#eceff4">,</span> p1<span style="color:#eceff4">.</span>age<span style="color:#eceff4">,</span> p2<span style="color:#eceff4">.</span>age<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestOlderSecondOlderThanFirst</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	_<span style="color:#eceff4">,</span> p1 <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span><span style="color:#b48ead">2</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	_<span style="color:#eceff4">,</span> p2 <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#eceff4">!</span>p1<span style="color:#eceff4">.</span><span style="color:#88c0d0">older</span><span style="color:#eceff4">(</span>p2<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected p1 with age %d to be older than p2 with age %d&#34;</span><span style="color:#eceff4">,</span> p1<span style="color:#eceff4">.</span>age<span style="color:#eceff4">,</span> p2<span style="color:#eceff4">.</span>age<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span></code></pre></div><p>These tests are conventional. Also, the tests covering the same function
 typically have the same structure of setup, assertion, and error reporting.
 Having a similar test layout is another reason why table-driven tests are good.
 Table-driven tests eliminate the repetition of boilerplate code and substitute
 it with a simple <code>for</code> loop.</p>
 <p>Let&rsquo;s refactor the tests into table-driven tests. We will begin with a
 <code>TestOlder</code> function:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestOlder</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	cases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
-		age1     <span style="color:#81a1c1">int</span>
-		age2     <span style="color:#81a1c1">int</span>
-		expected <span style="color:#81a1c1">bool</span>
-	<span style="color:#eceff4">}{</span>
-		<span style="color:#eceff4">{</span>
-			age1<span style="color:#eceff4">:</span>     <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
-			age2<span style="color:#eceff4">:</span>     <span style="color:#b48ead">2</span><span style="color:#eceff4">,</span>
-			expected<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">false</span><span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-		<span style="color:#eceff4">{</span>
-
-			age1<span style="color:#eceff4">:</span>     <span style="color:#b48ead">2</span><span style="color:#eceff4">,</span>
-			age2<span style="color:#eceff4">:</span>     <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
-			expected<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">true</span><span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-	<span style="color:#eceff4">}</span>
-
-	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> c <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> cases <span style="color:#eceff4">{</span>
-		_<span style="color:#eceff4">,</span> p1 <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span>c<span style="color:#eceff4">.</span>age1<span style="color:#eceff4">)</span>
-		_<span style="color:#eceff4">,</span> p2 <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span>c<span style="color:#eceff4">.</span>age2<span style="color:#eceff4">)</span>
-
-		got <span style="color:#81a1c1">:=</span> p1<span style="color:#eceff4">.</span><span style="color:#88c0d0">older</span><span style="color:#eceff4">(</span>p2<span style="color:#eceff4">)</span>
-
-		<span style="color:#81a1c1;font-weight:bold">if</span> got <span style="color:#81a1c1">!=</span> c<span style="color:#eceff4">.</span>expected <span style="color:#eceff4">{</span>
-			t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected %v &gt; %v, got %v&#34;</span><span style="color:#eceff4">,</span> p1<span style="color:#eceff4">.</span>age<span style="color:#eceff4">,</span> p2<span style="color:#eceff4">.</span>age<span style="color:#eceff4">,</span> got<span style="color:#eceff4">)</span>
-		<span style="color:#eceff4">}</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span>
-</code></pre></div><p>There isn&rsquo;t much happening here. The only difference compared to the tests we
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestOlder</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	cases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		age1     <span style="color:#81a1c1">int</span>
+</span></span><span style="display:flex;"><span>		age2     <span style="color:#81a1c1">int</span>
+</span></span><span style="display:flex;"><span>		expected <span style="color:#81a1c1">bool</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			age1<span style="color:#eceff4">:</span>     <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			age2<span style="color:#eceff4">:</span>     <span style="color:#b48ead">2</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			expected<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">false</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>			age1<span style="color:#eceff4">:</span>     <span style="color:#b48ead">2</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			age2<span style="color:#eceff4">:</span>     <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			expected<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">true</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> c <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> cases <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		_<span style="color:#eceff4">,</span> p1 <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span>c<span style="color:#eceff4">.</span>age1<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>		_<span style="color:#eceff4">,</span> p2 <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span>c<span style="color:#eceff4">.</span>age2<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		got <span style="color:#81a1c1">:=</span> p1<span style="color:#eceff4">.</span><span style="color:#88c0d0">older</span><span style="color:#eceff4">(</span>p2<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#81a1c1;font-weight:bold">if</span> got <span style="color:#81a1c1">!=</span> c<span style="color:#eceff4">.</span>expected <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected %v &gt; %v, got %v&#34;</span><span style="color:#eceff4">,</span> p1<span style="color:#eceff4">.</span>age<span style="color:#eceff4">,</span> p2<span style="color:#eceff4">.</span>age<span style="color:#eceff4">,</span> got<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span></code></pre></div><p>There isn&rsquo;t much happening here. The only difference compared to the tests we
 saw before is the inline definition and initialization of the <code>cases</code> slice.
 We define the type with its attributes and add values to it right away instead
 of first defining the type and initializing a slice of it after.</p>
 <p>Next, we will create a <code>TestNewPerson</code> function:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestNewPerson</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	cases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
-		age <span style="color:#81a1c1">int</span>
-		err <span style="color:#81a1c1">error</span>
-	<span style="color:#eceff4">}{</span>
-		<span style="color:#eceff4">{</span>
-			age<span style="color:#eceff4">:</span> <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
-			err<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">nil</span><span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-		<span style="color:#eceff4">{</span>
-			age<span style="color:#eceff4">:</span> <span style="color:#81a1c1">-</span><span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
-			err<span style="color:#eceff4">:</span> AgeTooLowError<span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-		<span style="color:#eceff4">{</span>
-			age<span style="color:#eceff4">:</span> <span style="color:#b48ead">150</span><span style="color:#eceff4">,</span>
-			err<span style="color:#eceff4">:</span> AgeTooHighError<span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-	<span style="color:#eceff4">}</span>
-
-	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> c <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> cases <span style="color:#eceff4">{</span>
-		err<span style="color:#eceff4">,</span> _ <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span>c<span style="color:#eceff4">.</span>age<span style="color:#eceff4">)</span>
-		<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> c<span style="color:#eceff4">.</span>err <span style="color:#eceff4">{</span>
-			t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected %v, got %v&#34;</span><span style="color:#eceff4">,</span> c<span style="color:#eceff4">.</span>err<span style="color:#eceff4">,</span> err<span style="color:#eceff4">)</span>
-		<span style="color:#eceff4">}</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span>
-</code></pre></div><p>This test follows the same structure: defining the <code>cases</code> slice by
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestNewPerson</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	cases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		age <span style="color:#81a1c1">int</span>
+</span></span><span style="display:flex;"><span>		err <span style="color:#81a1c1">error</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			age<span style="color:#eceff4">:</span> <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			err<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">nil</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			age<span style="color:#eceff4">:</span> <span style="color:#81a1c1">-</span><span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			err<span style="color:#eceff4">:</span> AgeTooLowError<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			age<span style="color:#eceff4">:</span> <span style="color:#b48ead">150</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			err<span style="color:#eceff4">:</span> AgeTooHighError<span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> c <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> cases <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		err<span style="color:#eceff4">,</span> _ <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span>c<span style="color:#eceff4">.</span>age<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> c<span style="color:#eceff4">.</span>err <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected %v, got %v&#34;</span><span style="color:#eceff4">,</span> c<span style="color:#eceff4">.</span>err<span style="color:#eceff4">,</span> err<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span></code></pre></div><p>This test follows the same structure: defining the <code>cases</code> slice by
 initializing the slice inline. Then, in the loop, we assert that the errors
 that we expect are the same as the ones returned by the invocation of the
 <code>NewPerson</code> function.</p>
@@ -708,44 +707,44 @@ to the quality of our test inputs. For example, are we trying to use arbitrary
 big or small numbers as inputs, or very long and very short strings, etc.? You
 get the idea.</p>
 <p>Let&rsquo;s take a quick look at the <code>TestOlder</code> test function again:</p>
-<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestOlder</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
-	cases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
-		age1     <span style="color:#81a1c1">int</span>
-		age2     <span style="color:#81a1c1">int</span>
-		expected <span style="color:#81a1c1">bool</span>
-	<span style="color:#eceff4">}{</span>
-		<span style="color:#eceff4">{</span>
-			age1<span style="color:#eceff4">:</span>     <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
-			age2<span style="color:#eceff4">:</span>     <span style="color:#b48ead">2</span><span style="color:#eceff4">,</span>
-			expected<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">false</span><span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-		<span style="color:#eceff4">{</span>
-
-			age1<span style="color:#eceff4">:</span>     <span style="color:#b48ead">2</span><span style="color:#eceff4">,</span>
-			age2<span style="color:#eceff4">:</span>     <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
-			expected<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">true</span><span style="color:#eceff4">,</span>
-		<span style="color:#eceff4">},</span>
-	<span style="color:#eceff4">}</span>
-
-	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> c <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> cases <span style="color:#eceff4">{</span>
-		_<span style="color:#eceff4">,</span> p1 <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span>c<span style="color:#eceff4">.</span>age1<span style="color:#eceff4">)</span>
-		_<span style="color:#eceff4">,</span> p2 <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span>c<span style="color:#eceff4">.</span>age2<span style="color:#eceff4">)</span>
-
-		got <span style="color:#81a1c1">:=</span> p1<span style="color:#eceff4">.</span><span style="color:#88c0d0">older</span><span style="color:#eceff4">(</span>p2<span style="color:#eceff4">)</span>
-
-		<span style="color:#81a1c1;font-weight:bold">if</span> got <span style="color:#81a1c1">!=</span> c<span style="color:#eceff4">.</span>expected <span style="color:#eceff4">{</span>
-			t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected %v &gt; %v, got %v&#34;</span><span style="color:#eceff4">,</span> p1<span style="color:#eceff4">.</span>age<span style="color:#eceff4">,</span> p2<span style="color:#eceff4">.</span>age<span style="color:#eceff4">,</span> got<span style="color:#eceff4">)</span>
-		<span style="color:#eceff4">}</span>
-	<span style="color:#eceff4">}</span>
-<span style="color:#eceff4">}</span>
-</code></pre></div><p>If I ask you: only by looking at the <code>cases</code> slice, what kind of other test
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestOlder</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>	cases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		age1     <span style="color:#81a1c1">int</span>
+</span></span><span style="display:flex;"><span>		age2     <span style="color:#81a1c1">int</span>
+</span></span><span style="display:flex;"><span>		expected <span style="color:#81a1c1">bool</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}{</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			age1<span style="color:#eceff4">:</span>     <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			age2<span style="color:#eceff4">:</span>     <span style="color:#b48ead">2</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			expected<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">false</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>			age1<span style="color:#eceff4">:</span>     <span style="color:#b48ead">2</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			age2<span style="color:#eceff4">:</span>     <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>			expected<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">true</span><span style="color:#eceff4">,</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">},</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> c <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> cases <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>		_<span style="color:#eceff4">,</span> p1 <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span>c<span style="color:#eceff4">.</span>age1<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>		_<span style="color:#eceff4">,</span> p2 <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewPerson</span><span style="color:#eceff4">(</span>c<span style="color:#eceff4">.</span>age2<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		got <span style="color:#81a1c1">:=</span> p1<span style="color:#eceff4">.</span><span style="color:#88c0d0">older</span><span style="color:#eceff4">(</span>p2<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#81a1c1;font-weight:bold">if</span> got <span style="color:#81a1c1">!=</span> c<span style="color:#eceff4">.</span>expected <span style="color:#eceff4">{</span>
+</span></span><span style="display:flex;"><span>			t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected %v &gt; %v, got %v&#34;</span><span style="color:#eceff4">,</span> p1<span style="color:#eceff4">.</span>age<span style="color:#eceff4">,</span> p2<span style="color:#eceff4">.</span>age<span style="color:#eceff4">,</span> got<span style="color:#eceff4">)</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#eceff4">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#eceff4">}</span>
+</span></span></code></pre></div><p>If I ask you: only by looking at the <code>cases</code> slice, what kind of other test
 cases can you come up with, what would you answer? One case that immediately
 comes to mind is testing when the two age <code>int</code>&rsquo;s are the same. We can add more
 cases, but I&rsquo;ll let you think that one through. (Hint: think about edge cases.
 😉)</p>
 <p>It&rsquo;s not all rainbows and unicorns. This approach has some downsides. For
 example, <a href="/post/testing-in-go-go-test">running a specific test case</a> (via `go
-test -run foo') is more difficult - we cannot target a single case; we have to
+test -run foo&rsquo;) is more difficult - we cannot target a single case; we have to
 run the whole function. But, there&rsquo;s a trick to achieve both: it&rsquo;s called
 <em>subtests</em> and we&rsquo;ll look into them in another article.</p>
 <iframe src="https://quadratic.fm/embed" width="100%" height="320" style="margin-top:2em" frameborder="0" scrolling="no"></iframe>
