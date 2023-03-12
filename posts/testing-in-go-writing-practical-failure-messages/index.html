@@ -361,54 +361,54 @@ create a function that we can test. When talking about test failures without
 having some actual code to test would be a waste of our time. Let&rsquo;s start
 simple - a very small function <code>Max</code> that receives a slice of <code>int</code>s as
 arguments and returns the biggest <code>int</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// max.go
-</span><span class="c1"></span><span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#616e87;font-style:italic">// max.go
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#81a1c1;font-weight:bold">package</span> main
 
-<span class="kd">func</span> <span class="nf">Max</span><span class="p">(</span><span class="nx">numbers</span> <span class="p">[]</span><span class="kt">int</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
-	<span class="kd">var</span> <span class="nx">max</span> <span class="kt">int</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">Max</span><span style="color:#eceff4">(</span>numbers <span style="color:#eceff4">[]</span><span style="color:#81a1c1">int</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">int</span> <span style="color:#eceff4">{</span>
+	<span style="color:#81a1c1;font-weight:bold">var</span> max <span style="color:#81a1c1">int</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">number</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">numbers</span> <span class="p">{</span>
-		<span class="k">if</span> <span class="nx">number</span> <span class="p">&gt;</span> <span class="nx">max</span> <span class="p">{</span>
-			<span class="nx">max</span> <span class="p">=</span> <span class="nx">number</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> number <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> numbers <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">if</span> number <span style="color:#eceff4">&gt;</span> max <span style="color:#eceff4">{</span>
+			max <span style="color:#eceff4">=</span> number
+		<span style="color:#eceff4">}</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">return</span> <span class="nx">max</span>
-<span class="p">}</span></code></pre></div>
+	<span style="color:#81a1c1;font-weight:bold">return</span> max
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>The function traverses the slice of <code>int</code>s and it compares each of its
 elements, assigning the larger one to the <code>max</code> variable. At the end, it
 returns the <code>max</code> as the result. We will use table-driven tests to test this
 function. After that, we can disuss its anatomy.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestMax</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">cases</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span><span class="p">{</span>
-                <span class="nx">input</span> <span class="p">[]</span><span class="kt">int</span>
-                <span class="nx">expected</span> <span class="kt">int</span>
-        <span class="p">}{</span>
-		<span class="p">{</span>
-			<span class="nx">input</span><span class="p">:</span>    <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">},</span>
-			<span class="nx">expected</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">input</span><span class="p">:</span>    <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">},</span>
-			<span class="nx">expected</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">input</span><span class="p">:</span>    <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">0</span><span class="p">},</span>
-			<span class="nx">expected</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestMax</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	cases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span><span style="color:#eceff4">{</span>
+                input <span style="color:#eceff4">[]</span><span style="color:#81a1c1">int</span>
+                expected <span style="color:#81a1c1">int</span>
+        <span style="color:#eceff4">}{</span>
+		<span style="color:#eceff4">{</span>
+			input<span style="color:#eceff4">:</span>    <span style="color:#eceff4">[]</span><span style="color:#81a1c1">int</span><span style="color:#eceff4">{</span><span style="color:#b48ead">1</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">2</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">3</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">4</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">5</span><span style="color:#eceff4">},</span>
+			expected<span style="color:#eceff4">:</span> <span style="color:#b48ead">100</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			input<span style="color:#eceff4">:</span>    <span style="color:#eceff4">[]</span><span style="color:#81a1c1">int</span><span style="color:#eceff4">{</span><span style="color:#81a1c1">-</span><span style="color:#b48ead">1</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">-</span><span style="color:#b48ead">2</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">-</span><span style="color:#b48ead">3</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">-</span><span style="color:#b48ead">4</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">-</span><span style="color:#b48ead">5</span><span style="color:#eceff4">},</span>
+			expected<span style="color:#eceff4">:</span> <span style="color:#b48ead">100</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			input<span style="color:#eceff4">:</span>    <span style="color:#eceff4">[]</span><span style="color:#81a1c1">int</span><span style="color:#eceff4">{</span><span style="color:#b48ead">0</span><span style="color:#eceff4">},</span>
+			expected<span style="color:#eceff4">:</span> <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">c</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">cases</span> <span class="p">{</span>
-		<span class="nx">actual</span> <span class="o">:=</span> <span class="nf">Max</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">input</span><span class="p">)</span>
-		<span class="nx">expected</span> <span class="o">:=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> c <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> cases <span style="color:#eceff4">{</span>
+		actual <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">Max</span><span style="color:#eceff4">(</span>c<span style="color:#eceff4">.</span>input<span style="color:#eceff4">)</span>
+		expected <span style="color:#81a1c1">:=</span> c<span style="color:#eceff4">.</span>expected
 
-		<span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="nx">expected</span> <span class="p">{</span>
-			<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Expected %d, got %d&#34;</span><span class="p">,</span> <span class="nx">expected</span><span class="p">,</span> <span class="nx">actual</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+		<span style="color:#81a1c1;font-weight:bold">if</span> actual <span style="color:#81a1c1">!=</span> expected <span style="color:#eceff4">{</span>
+			t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatalf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected %d, got %d&#34;</span><span style="color:#eceff4">,</span> expected<span style="color:#eceff4">,</span> actual<span style="color:#eceff4">)</span>
+		<span style="color:#eceff4">}</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>Running the tests will produce the following output:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">› go test
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">› go test
 --- FAIL: TestMax (0.00s)
     max_test.go:31: Expected 100, got 5
 FAIL
@@ -445,7 +445,7 @@ discussion of what are the traits of a good and a bad test failure message.</p>
 <h2 id="traits-of-an-failure-message" class="relative group">Traits of an failure message <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#traits-of-an-failure-message" aria-label="Anchor">#</a></span></h2>
 <p>To define the traits of an test failure message, let&rsquo;s examine the output of
 the failed test from the previous section:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">› go test -v
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">› go test -v
 === RUN   TestMax
 --- FAIL: TestMax (0.00s)
     max_test.go:31: Expected 100, got 5
@@ -502,20 +502,20 @@ and <code>Println</code> functions. <code>Sprintf</code> requires a format verb,
 (stands for <code>value</code>).</p>
 <p>Here&rsquo;s a simple program that inspects a few primitive types, priting their
 values:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">package</span> main
 
-<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
+<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#a3be8c">&#34;fmt&#34;</span>
 
-<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Boolean: %v&#34;</span><span class="p">,</span> <span class="kc">true</span><span class="p">))</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Integer: %v&#34;</span><span class="p">,</span> <span class="mi">42</span><span class="p">))</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;String: %v&#34;</span><span class="p">,</span> <span class="s">&#34;Hello world&#34;</span><span class="p">))</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Float: %v&#34;</span><span class="p">,</span> <span class="mf">3.14</span><span class="p">))</span>
-<span class="p">}</span></code></pre></div>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">main</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+	fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Println</span><span style="color:#eceff4">(</span>fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Boolean: %v&#34;</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">true</span><span style="color:#eceff4">))</span>
+	fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Println</span><span style="color:#eceff4">(</span>fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Integer: %v&#34;</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">42</span><span style="color:#eceff4">))</span>
+	fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Println</span><span style="color:#eceff4">(</span>fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;String: %v&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Hello world&#34;</span><span style="color:#eceff4">))</span>
+	fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Println</span><span style="color:#eceff4">(</span>fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Float: %v&#34;</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">3.14</span><span style="color:#eceff4">))</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>The <code>main</code> function prints four different values, each of them of a primitive
 type. We&rsquo;ve added the type names in the printing statements to aid visual
 inspection. If we would run it, the program would produce the following output:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">› go run whatever.go
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">› go run whatever.go
 Boolean: true
 Integer: 42
 String: Hello world
@@ -524,24 +524,24 @@ Float: 3.14</code></pre></div>
 to <code>Sprintf</code> (with the <code>%v</code> formatting verb) and send its output to <code>Println</code>.
 If we look at our tests from earlier, you will notice that we actually already
 use it:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// Snipped...
-</span><span class="c1"></span><span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">c</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">cases</span> <span class="p">{</span>
-	<span class="nx">actual</span> <span class="o">:=</span> <span class="nf">Max</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">input</span><span class="p">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#616e87;font-style:italic">// Snipped...
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> c <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> cases <span style="color:#eceff4">{</span>
+	actual <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">Max</span><span style="color:#eceff4">(</span>c<span style="color:#eceff4">.</span>input<span style="color:#eceff4">)</span>
 
-	<span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span> <span class="p">{</span>
-		<span class="nx">out</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Running: Max(%v)\n&#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">input</span><span class="p">)</span> <span class="o">+</span>
-			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Argument: %v \n&#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">input</span><span class="p">)</span> <span class="o">+</span>
-			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Expected result: %d\n&#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span><span class="p">)</span> <span class="o">+</span>
-			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Actual result: %d\n&#34;</span><span class="p">,</span> <span class="nx">actual</span><span class="p">)</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="nx">out</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+	<span style="color:#81a1c1;font-weight:bold">if</span> actual <span style="color:#81a1c1">!=</span> c<span style="color:#eceff4">.</span>expected <span style="color:#eceff4">{</span>
+		out <span style="color:#81a1c1">:=</span> fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Running: Max(%v)\n&#34;</span><span style="color:#eceff4">,</span> c<span style="color:#eceff4">.</span>input<span style="color:#eceff4">)</span> <span style="color:#81a1c1">+</span>
+			fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Argument: %v \n&#34;</span><span style="color:#eceff4">,</span> c<span style="color:#eceff4">.</span>input<span style="color:#eceff4">)</span> <span style="color:#81a1c1">+</span>
+			fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected result: %d\n&#34;</span><span style="color:#eceff4">,</span> c<span style="color:#eceff4">.</span>expected<span style="color:#eceff4">)</span> <span style="color:#81a1c1">+</span>
+			fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Actual result: %d\n&#34;</span><span style="color:#eceff4">,</span> actual<span style="color:#eceff4">)</span>
+		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatalf</span><span style="color:#eceff4">(</span>out<span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>We print the input and the argument using the <code>%v</code> verb and we print the
 expected and actual results using the <code>%d</code> – denoting a base 10 integer
 representation of the value. Using this approach we are able to send any output
 to the person battling the failed specs. Here are some other formatting verbs
 that we can use:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">Boolean:
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Boolean:
 - %t	the word true or false
 
 Integer:
@@ -585,76 +585,76 @@ a simple exercise in Go - using the <code>fmt</code> package&rsquo;s <code>Sprin
 <p>To look at <code>Sprintf</code>&rsquo;s workings in combination with structs, we will create a
 type <code>Person</code>. It has two attributes <code>age</code> (with type <code>int64</code>) and <code>name</code> (with
 type <code>string</code>):</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">Person</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">age</span>  <span class="kt">int64</span>
-	<span class="nx">name</span> <span class="kt">string</span>
-<span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> Person <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+	age  <span style="color:#81a1c1">int64</span>
+	name <span style="color:#81a1c1">string</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>The <code>Person</code> will implement a function <code>older</code> which will return a <code>bool</code>ean,
 when a <code>Person</code> is older than another <code>Person</code>. It will do that by comparing
 the ages of the two <code>Person</code> structs:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">p</span> <span class="o">*</span><span class="nx">Person</span><span class="p">)</span> <span class="nf">older</span><span class="p">(</span><span class="nx">other</span> <span class="o">*</span><span class="nx">Person</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-	<span class="k">return</span> <span class="nx">p</span><span class="p">.</span><span class="nx">age</span> <span class="p">&gt;</span> <span class="nx">other</span><span class="p">.</span><span class="nx">age</span>
-<span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>p <span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">)</span> <span style="color:#88c0d0">older</span><span style="color:#eceff4">(</span>other <span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">)</span> <span style="color:#81a1c1">bool</span> <span style="color:#eceff4">{</span>
+	<span style="color:#81a1c1;font-weight:bold">return</span> p<span style="color:#eceff4">.</span>age <span style="color:#eceff4">&gt;</span> other<span style="color:#eceff4">.</span>age
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>Having the topic of testing in the focus here, let&rsquo;s also add a test function
 for the <code>older</code> function:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestOlder</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">cases</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
-		<span class="nx">person1</span>  <span class="o">*</span><span class="nx">Person</span>
-		<span class="nx">person2</span>  <span class="o">*</span><span class="nx">Person</span>
-		<span class="nx">expected</span> <span class="kt">bool</span>
-	<span class="p">}{</span>
-		<span class="p">{</span>
-			<span class="nx">person1</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">Person</span><span class="p">{</span>
-				<span class="nx">name</span><span class="p">:</span> <span class="s">&#34;Jane&#34;</span><span class="p">,</span>
-				<span class="nx">age</span><span class="p">:</span>  <span class="mi">22</span><span class="p">,</span>
-			<span class="p">},</span>
-			<span class="nx">person2</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">Person</span><span class="p">{</span>
-				<span class="nx">name</span><span class="p">:</span> <span class="s">&#34;John&#34;</span><span class="p">,</span>
-				<span class="nx">age</span><span class="p">:</span>  <span class="mi">23</span><span class="p">,</span>
-			<span class="p">},</span>
-			<span class="nx">expected</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">person1</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">Person</span><span class="p">{</span>
-				<span class="nx">name</span><span class="p">:</span> <span class="s">&#34;Michelle&#34;</span><span class="p">,</span>
-				<span class="nx">age</span><span class="p">:</span>  <span class="mi">55</span><span class="p">,</span>
-			<span class="p">},</span>
-			<span class="nx">person2</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">Person</span><span class="p">{</span>
-				<span class="nx">name</span><span class="p">:</span> <span class="s">&#34;Michael&#34;</span><span class="p">,</span>
-				<span class="nx">age</span><span class="p">:</span>  <span class="mi">40</span><span class="p">,</span>
-			<span class="p">},</span>
-			<span class="nx">expected</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">person1</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">Person</span><span class="p">{</span>
-				<span class="nx">name</span><span class="p">:</span> <span class="s">&#34;Ellen&#34;</span><span class="p">,</span>
-				<span class="nx">age</span><span class="p">:</span>  <span class="mi">80</span><span class="p">,</span>
-			<span class="p">},</span>
-			<span class="nx">person2</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">Person</span><span class="p">{</span>
-				<span class="nx">name</span><span class="p">:</span> <span class="s">&#34;Elliot&#34;</span><span class="p">,</span>
-				<span class="nx">age</span><span class="p">:</span>  <span class="mi">80</span><span class="p">,</span>
-			<span class="p">},</span>
-			<span class="nx">expected</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestOlder</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	cases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+		person1  <span style="color:#81a1c1">*</span>Person
+		person2  <span style="color:#81a1c1">*</span>Person
+		expected <span style="color:#81a1c1">bool</span>
+	<span style="color:#eceff4">}{</span>
+		<span style="color:#eceff4">{</span>
+			person1<span style="color:#eceff4">:</span> <span style="color:#81a1c1">&amp;</span>Person<span style="color:#eceff4">{</span>
+				name<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Jane&#34;</span><span style="color:#eceff4">,</span>
+				age<span style="color:#eceff4">:</span>  <span style="color:#b48ead">22</span><span style="color:#eceff4">,</span>
+			<span style="color:#eceff4">},</span>
+			person2<span style="color:#eceff4">:</span> <span style="color:#81a1c1">&amp;</span>Person<span style="color:#eceff4">{</span>
+				name<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;John&#34;</span><span style="color:#eceff4">,</span>
+				age<span style="color:#eceff4">:</span>  <span style="color:#b48ead">23</span><span style="color:#eceff4">,</span>
+			<span style="color:#eceff4">},</span>
+			expected<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">false</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			person1<span style="color:#eceff4">:</span> <span style="color:#81a1c1">&amp;</span>Person<span style="color:#eceff4">{</span>
+				name<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Michelle&#34;</span><span style="color:#eceff4">,</span>
+				age<span style="color:#eceff4">:</span>  <span style="color:#b48ead">55</span><span style="color:#eceff4">,</span>
+			<span style="color:#eceff4">},</span>
+			person2<span style="color:#eceff4">:</span> <span style="color:#81a1c1">&amp;</span>Person<span style="color:#eceff4">{</span>
+				name<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Michael&#34;</span><span style="color:#eceff4">,</span>
+				age<span style="color:#eceff4">:</span>  <span style="color:#b48ead">40</span><span style="color:#eceff4">,</span>
+			<span style="color:#eceff4">},</span>
+			expected<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">true</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			person1<span style="color:#eceff4">:</span> <span style="color:#81a1c1">&amp;</span>Person<span style="color:#eceff4">{</span>
+				name<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Ellen&#34;</span><span style="color:#eceff4">,</span>
+				age<span style="color:#eceff4">:</span>  <span style="color:#b48ead">80</span><span style="color:#eceff4">,</span>
+			<span style="color:#eceff4">},</span>
+			person2<span style="color:#eceff4">:</span> <span style="color:#81a1c1">&amp;</span>Person<span style="color:#eceff4">{</span>
+				name<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Elliot&#34;</span><span style="color:#eceff4">,</span>
+				age<span style="color:#eceff4">:</span>  <span style="color:#b48ead">80</span><span style="color:#eceff4">,</span>
+			<span style="color:#eceff4">},</span>
+			expected<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">true</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">c</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">cases</span> <span class="p">{</span>
-		<span class="nx">actual</span> <span class="o">:=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">person1</span><span class="p">.</span><span class="nf">older</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">person2</span><span class="p">)</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> c <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> cases <span style="color:#eceff4">{</span>
+		actual <span style="color:#81a1c1">:=</span> c<span style="color:#eceff4">.</span>person1<span style="color:#eceff4">.</span><span style="color:#88c0d0">older</span><span style="color:#eceff4">(</span>c<span style="color:#eceff4">.</span>person2<span style="color:#eceff4">)</span>
 
-		<span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span> <span class="p">{</span>
-			<span class="nx">out</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Running: older(%v)\n&#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">person2</span><span class="p">)</span> <span class="o">+</span>
-				<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Argument: %v \n&#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">person2</span><span class="p">)</span> <span class="o">+</span>
-				<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Expected result: %t\n&#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span><span class="p">)</span> <span class="o">+</span>
-				<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Actual result: %t\n&#34;</span><span class="p">,</span> <span class="nx">actual</span><span class="p">)</span>
-			<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="nx">out</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+		<span style="color:#81a1c1;font-weight:bold">if</span> actual <span style="color:#81a1c1">!=</span> c<span style="color:#eceff4">.</span>expected <span style="color:#eceff4">{</span>
+			out <span style="color:#81a1c1">:=</span> fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Running: older(%v)\n&#34;</span><span style="color:#eceff4">,</span> c<span style="color:#eceff4">.</span>person2<span style="color:#eceff4">)</span> <span style="color:#81a1c1">+</span>
+				fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Argument: %v \n&#34;</span><span style="color:#eceff4">,</span> c<span style="color:#eceff4">.</span>person2<span style="color:#eceff4">)</span> <span style="color:#81a1c1">+</span>
+				fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected result: %t\n&#34;</span><span style="color:#eceff4">,</span> c<span style="color:#eceff4">.</span>expected<span style="color:#eceff4">)</span> <span style="color:#81a1c1">+</span>
+				fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Actual result: %t\n&#34;</span><span style="color:#eceff4">,</span> actual<span style="color:#eceff4">)</span>
+			t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatalf</span><span style="color:#eceff4">(</span>out<span style="color:#eceff4">)</span>
+		<span style="color:#eceff4">}</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>As you can see, we use the same table-driven tests approach and similar
 formatting for the failure output. If we run the test, we should expect the
 last test case to fail, because the two persons that we will compare are not
 older than the other.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">› go test
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">› go test
 --- FAIL: TestOlder (0.00s)
     person_test.go:57: Running: older(&amp;{80 Elliot})
         Argument: &amp;{80 Elliot}
@@ -668,7 +668,7 @@ examples. The only difference is in the way the struct is formatted: while we
 see the values of its attributes, we cannot see the names of the attributes. To
 fix this, we can apply the <code>%+v</code> formatting verb, which will produce the
 following output:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">› go test
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">› go test
 --- FAIL: TestOlder (0.00s)
     person_test.go:57: Running: older(&amp;{age:80 name:Elliot})
         Argument: &amp;{age:80 name:Elliot}
@@ -691,25 +691,25 @@ able to describe itself. The cool part is that we could have the <code>String</c
 function in the test file itself (<code>person_test.go</code>), or in the file with the
 type definition (<code>person.go</code>). Wherever Golang finds the function it will use
 it when printing the struct.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// person_test.go
-</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">p</span> <span class="o">*</span><span class="nx">Person</span><span class="p">)</span> <span class="nf">String</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
-	<span class="nx">out</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;\nAge: %d\n&#34;</span><span class="p">,</span> <span class="nx">p</span><span class="p">.</span><span class="nx">age</span><span class="p">)</span> <span class="o">+</span>
-		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Name: %s\n&#34;</span><span class="p">,</span> <span class="nx">p</span><span class="p">.</span><span class="nx">name</span><span class="p">)</span>
-	<span class="k">return</span> <span class="nx">out</span>
-<span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#616e87;font-style:italic">// person_test.go
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>p <span style="color:#81a1c1">*</span>Person<span style="color:#eceff4">)</span> <span style="color:#88c0d0">String</span><span style="color:#eceff4">()</span> <span style="color:#81a1c1">string</span> <span style="color:#eceff4">{</span>
+	out <span style="color:#81a1c1">:=</span> fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;\nAge: %d\n&#34;</span><span style="color:#eceff4">,</span> p<span style="color:#eceff4">.</span>age<span style="color:#eceff4">)</span> <span style="color:#81a1c1">+</span>
+		fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Name: %s\n&#34;</span><span style="color:#eceff4">,</span> p<span style="color:#eceff4">.</span>name<span style="color:#eceff4">)</span>
+	<span style="color:#81a1c1;font-weight:bold">return</span> out
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>By having the <code>String</code> function, we can change the approach we use in the
 failure reporting in the test itself:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span> <span class="p">{</span>
-        <span class="nx">out</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprint</span><span class="p">(</span><span class="s">&#34;Argument: &#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">person2</span><span class="p">)</span> <span class="o">+</span>
-                <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Expected result: %t\n&#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span><span class="p">)</span> <span class="o">+</span>
-                <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Actual result: %t\n&#34;</span><span class="p">,</span> <span class="nx">actual</span><span class="p">)</span>
-        <span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="nx">out</span><span class="p">)</span>
-<span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">if</span> actual <span style="color:#81a1c1">!=</span> c<span style="color:#eceff4">.</span>expected <span style="color:#eceff4">{</span>
+        out <span style="color:#81a1c1">:=</span> fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprint</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Argument: &#34;</span><span style="color:#eceff4">,</span> c<span style="color:#eceff4">.</span>person2<span style="color:#eceff4">)</span> <span style="color:#81a1c1">+</span>
+                fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected result: %t\n&#34;</span><span style="color:#eceff4">,</span> c<span style="color:#eceff4">.</span>expected<span style="color:#eceff4">)</span> <span style="color:#81a1c1">+</span>
+                fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Actual result: %t\n&#34;</span><span style="color:#eceff4">,</span> actual<span style="color:#eceff4">)</span>
+        t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatalf</span><span style="color:#eceff4">(</span>out<span style="color:#eceff4">)</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>Note that in the line where we build the output we use just <code>fmt.Sprint</code> with
 the argument of <code>c.person2</code>, which is the struct itself. We do not specify what
 attributes will be printed, the <code>String</code> function takes care of everything.</p>
 <p>The output will be:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">› go test
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">› go test
 --- FAIL: TestOlder (0.00s)
     person_test.go:62: Argument:
         Age: 80
@@ -726,38 +726,38 @@ build our table-driven tests could actually describe themselves?</p>
 <h3 id="self-describing-test-cases" class="relative group">Self-describing test cases <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#self-describing-test-cases" aria-label="Anchor">#</a></span></h3>
 <p>From our test that we wrote earlier, let&rsquo;s extract a type (<code>TestCase</code>) and use
 it in our <code>TestOlder</code> test function:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">TestCase</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">person1</span>  <span class="o">*</span><span class="nx">Person</span>
-	<span class="nx">person2</span>  <span class="o">*</span><span class="nx">Person</span>
-	<span class="nx">expected</span> <span class="kt">bool</span>
-<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> TestCase <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+	person1  <span style="color:#81a1c1">*</span>Person
+	person2  <span style="color:#81a1c1">*</span>Person
+	expected <span style="color:#81a1c1">bool</span>
+<span style="color:#eceff4">}</span>
 
-<span class="kd">func</span> <span class="nf">TestOlder</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">cases</span> <span class="o">:=</span> <span class="p">[]</span><span class="nx">TestCase</span><span class="p">{</span>
-		<span class="p">{</span>
-			<span class="nx">person1</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">Person</span><span class="p">{</span>
-				<span class="nx">name</span><span class="p">:</span> <span class="s">&#34;Ellen&#34;</span><span class="p">,</span>
-				<span class="nx">age</span><span class="p">:</span>  <span class="mi">80</span><span class="p">,</span>
-			<span class="p">},</span>
-			<span class="nx">person2</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">Person</span><span class="p">{</span>
-				<span class="nx">name</span><span class="p">:</span> <span class="s">&#34;Elliot&#34;</span><span class="p">,</span>
-				<span class="nx">age</span><span class="p">:</span>  <span class="mi">80</span><span class="p">,</span>
-			<span class="p">},</span>
-			<span class="nx">expected</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestOlder</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	cases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span>TestCase<span style="color:#eceff4">{</span>
+		<span style="color:#eceff4">{</span>
+			person1<span style="color:#eceff4">:</span> <span style="color:#81a1c1">&amp;</span>Person<span style="color:#eceff4">{</span>
+				name<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Ellen&#34;</span><span style="color:#eceff4">,</span>
+				age<span style="color:#eceff4">:</span>  <span style="color:#b48ead">80</span><span style="color:#eceff4">,</span>
+			<span style="color:#eceff4">},</span>
+			person2<span style="color:#eceff4">:</span> <span style="color:#81a1c1">&amp;</span>Person<span style="color:#eceff4">{</span>
+				name<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Elliot&#34;</span><span style="color:#eceff4">,</span>
+				age<span style="color:#eceff4">:</span>  <span style="color:#b48ead">80</span><span style="color:#eceff4">,</span>
+			<span style="color:#eceff4">},</span>
+			expected<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">true</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">c</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">cases</span> <span class="p">{</span>
-		<span class="nx">actual</span> <span class="o">:=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">person1</span><span class="p">.</span><span class="nf">older</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">person2</span><span class="p">)</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> c <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> cases <span style="color:#eceff4">{</span>
+		actual <span style="color:#81a1c1">:=</span> c<span style="color:#eceff4">.</span>person1<span style="color:#eceff4">.</span><span style="color:#88c0d0">older</span><span style="color:#eceff4">(</span>c<span style="color:#eceff4">.</span>person2<span style="color:#eceff4">)</span>
 
-		<span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span> <span class="p">{</span>
-			<span class="nx">out</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprint</span><span class="p">(</span><span class="s">&#34;Argument: &#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">person2</span><span class="p">)</span> <span class="o">+</span>
-				<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Expected result: %t\n&#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span><span class="p">)</span> <span class="o">+</span>
-				<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Actual result: %t\n&#34;</span><span class="p">,</span> <span class="nx">actual</span><span class="p">)</span>
-			<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="nx">out</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+		<span style="color:#81a1c1;font-weight:bold">if</span> actual <span style="color:#81a1c1">!=</span> c<span style="color:#eceff4">.</span>expected <span style="color:#eceff4">{</span>
+			out <span style="color:#81a1c1">:=</span> fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprint</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Argument: &#34;</span><span style="color:#eceff4">,</span> c<span style="color:#eceff4">.</span>person2<span style="color:#eceff4">)</span> <span style="color:#81a1c1">+</span>
+				fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected result: %t\n&#34;</span><span style="color:#eceff4">,</span> c<span style="color:#eceff4">.</span>expected<span style="color:#eceff4">)</span> <span style="color:#81a1c1">+</span>
+				fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Actual result: %t\n&#34;</span><span style="color:#eceff4">,</span> actual<span style="color:#eceff4">)</span>
+			t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatalf</span><span style="color:#eceff4">(</span>out<span style="color:#eceff4">)</span>
+		<span style="color:#eceff4">}</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>(I also removed two of the test cases for brewity.)</p>
 <p>This will not change the output of the test - we extracted a type that we
 defined inline in the previous versions of the test. If we think about the
@@ -767,26 +767,26 @@ function on <code>TestCase</code> which will print out every test failure in the
 structured format, standardized across all our test functions in this test
 file?</p>
 <p>Here&rsquo;s an example of a <code>String</code> function that <code>TestCase</code> can implement:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">tc</span> <span class="nx">TestCase</span><span class="p">)</span> <span class="nf">String</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
-	<span class="nx">out</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprint</span><span class="p">(</span><span class="s">&#34;Person 1: &#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">person1</span><span class="p">,</span> <span class="s">&#34;\n&#34;</span><span class="p">)</span> <span class="o">+</span>
-		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprint</span><span class="p">(</span><span class="s">&#34;Person 2: &#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">person2</span><span class="p">,</span> <span class="s">&#34;\n&#34;</span><span class="p">)</span> <span class="o">+</span>
-		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Expected result: %t\n&#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">expected</span><span class="p">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>tc TestCase<span style="color:#eceff4">)</span> <span style="color:#88c0d0">String</span><span style="color:#eceff4">()</span> <span style="color:#81a1c1">string</span> <span style="color:#eceff4">{</span>
+	out <span style="color:#81a1c1">:=</span> fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprint</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Person 1: &#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>person1<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;\n&#34;</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">+</span>
+		fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprint</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Person 2: &#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>person2<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;\n&#34;</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">+</span>
+		fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected result: %t\n&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>expected<span style="color:#eceff4">)</span>
 
-	<span class="k">return</span> <span class="nx">out</span>
-<span class="p">}</span></code></pre></div>
+	<span style="color:#81a1c1;font-weight:bold">return</span> out
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>To put this function in action, we need to make a small modification to the
 assertion in the test function:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">c</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">cases</span> <span class="p">{</span>
-        <span class="nx">actual</span> <span class="o">:=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">person1</span><span class="p">.</span><span class="nf">older</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">person2</span><span class="p">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> c <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> cases <span style="color:#eceff4">{</span>
+        actual <span style="color:#81a1c1">:=</span> c<span style="color:#eceff4">.</span>person1<span style="color:#eceff4">.</span><span style="color:#88c0d0">older</span><span style="color:#eceff4">(</span>c<span style="color:#eceff4">.</span>person2<span style="color:#eceff4">)</span>
 
-        <span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">expected</span> <span class="p">{</span>
-                <span class="nx">out</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprint</span><span class="p">(</span><span class="nx">c</span><span class="p">)</span> <span class="o">+</span>
-                        <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Actual result: %t&#34;</span><span class="p">,</span> <span class="nx">actual</span><span class="p">)</span>
-                <span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="nx">out</span><span class="p">)</span>
-        <span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+        <span style="color:#81a1c1;font-weight:bold">if</span> actual <span style="color:#81a1c1">!=</span> c<span style="color:#eceff4">.</span>expected <span style="color:#eceff4">{</span>
+                out <span style="color:#81a1c1">:=</span> fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprint</span><span style="color:#eceff4">(</span>c<span style="color:#eceff4">)</span> <span style="color:#81a1c1">+</span>
+                        fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Actual result: %t&#34;</span><span style="color:#eceff4">,</span> actual<span style="color:#eceff4">)</span>
+                t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatalf</span><span style="color:#eceff4">(</span>out<span style="color:#eceff4">)</span>
+        <span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>And the output, on failure, will look like:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">› go test
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">› go test
 --- FAIL: TestOlder (0.00s)
     person_test.go:71: Person 1:
         Age: 80
@@ -1241,7 +1241,7 @@ ability of other people to read your code.</p>
       
         <p class="text-sm text-neutral-500 dark:text-neutral-400">
             &copy;
-            2022
+            2023
             Ilija Eftimov
         </p>
       

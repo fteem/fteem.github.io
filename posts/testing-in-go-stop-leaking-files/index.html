@@ -356,15 +356,15 @@ libraries for Go</a>.</p>
 <p>Here&rsquo;s the code that takes a PDF, extracts all rows of text from it, and saves
 them in a TXT file.</p>
 <p>First, the <code>persist</code> function:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">persist</span><span class="p">(</span><span class="nx">content</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">,</span> <span class="nx">w</span> <span class="nx">io</span><span class="p">.</span><span class="nx">Writer</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
-	<span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="nx">content</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nx">log</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Failed to persist contents.&#34;</span><span class="p">)</span>
-		<span class="k">return</span> <span class="nx">err</span>
-	<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">persist</span><span style="color:#eceff4">(</span>content <span style="color:#eceff4">[]</span><span style="color:#81a1c1">byte</span><span style="color:#eceff4">,</span> w io<span style="color:#eceff4">.</span>Writer<span style="color:#eceff4">)</span> <span style="color:#81a1c1">error</span> <span style="color:#eceff4">{</span>
+	_<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> w<span style="color:#eceff4">.</span><span style="color:#88c0d0">Write</span><span style="color:#eceff4">(</span>content<span style="color:#eceff4">)</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Println</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Failed to persist contents.&#34;</span><span style="color:#eceff4">)</span>
+		<span style="color:#81a1c1;font-weight:bold">return</span> err
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">return</span> <span class="kc">nil</span>
-<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>It takes some bytes as <code>content</code> and persists them to a <code>io.Writer</code> - it can be
 a file, a <code>strings.StringBuilder</code> or a different type that implements the
 <code>io.Writer</code> interface. The argument types are generic (interfaces) by design,
@@ -373,59 +373,59 @@ function.</p>
 <p>The <code>slurp</code> function is next. It will take a <code>pdf.Reader</code> type, which is a type
 from the <code>pdf</code> library we use. We will slurp all of the relevant content (text)
 from the PDF and return a slice of bytes.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">slurp</span><span class="p">(</span><span class="nx">r</span> <span class="o">*</span><span class="nx">pdf</span><span class="p">.</span><span class="nx">Reader</span><span class="p">)</span> <span class="p">[]</span><span class="kt">byte</span> <span class="p">{</span>
-	<span class="kd">var</span> <span class="nx">bs</span> <span class="p">[]</span><span class="kt">byte</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">slurp</span><span style="color:#eceff4">(</span>r <span style="color:#81a1c1">*</span>pdf<span style="color:#eceff4">.</span>Reader<span style="color:#eceff4">)</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1">byte</span> <span style="color:#eceff4">{</span>
+	<span style="color:#81a1c1;font-weight:bold">var</span> bs <span style="color:#eceff4">[]</span><span style="color:#81a1c1">byte</span>
 
-	<span class="nx">total</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">NumPage</span><span class="p">()</span>
-	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;=</span> <span class="nx">total</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
-		<span class="nx">p</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">Page</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span>
-		<span class="k">if</span> <span class="nx">p</span><span class="p">.</span><span class="nx">V</span><span class="p">.</span><span class="nf">IsNull</span><span class="p">()</span> <span class="p">{</span>
-			<span class="k">continue</span>
-		<span class="p">}</span>
+	total <span style="color:#81a1c1">:=</span> r<span style="color:#eceff4">.</span><span style="color:#88c0d0">NumPage</span><span style="color:#eceff4">()</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> i <span style="color:#81a1c1">:=</span> <span style="color:#b48ead">1</span><span style="color:#eceff4">;</span> i <span style="color:#81a1c1">&lt;=</span> total<span style="color:#eceff4">;</span> i<span style="color:#81a1c1">++</span> <span style="color:#eceff4">{</span>
+		p <span style="color:#81a1c1">:=</span> r<span style="color:#eceff4">.</span><span style="color:#88c0d0">Page</span><span style="color:#eceff4">(</span>i<span style="color:#eceff4">)</span>
+		<span style="color:#81a1c1;font-weight:bold">if</span> p<span style="color:#eceff4">.</span>V<span style="color:#eceff4">.</span><span style="color:#88c0d0">IsNull</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+			<span style="color:#81a1c1;font-weight:bold">continue</span>
+		<span style="color:#eceff4">}</span>
 
-		<span class="nx">rows</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">p</span><span class="p">.</span><span class="nf">GetTextByRow</span><span class="p">()</span>
-		<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">row</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">rows</span> <span class="p">{</span>
-			<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">word</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">row</span><span class="p">.</span><span class="nx">Content</span> <span class="p">{</span>
-				<span class="nx">bs</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">bs</span><span class="p">,</span> <span class="p">[]</span><span class="nb">byte</span><span class="p">(</span><span class="nx">word</span><span class="p">.</span><span class="nx">S</span><span class="p">)</span><span class="o">...</span><span class="p">)</span>
-			<span class="p">}</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-	<span class="k">return</span> <span class="nx">bs</span>
-<span class="p">}</span>
+		rows<span style="color:#eceff4">,</span> _ <span style="color:#81a1c1">:=</span> p<span style="color:#eceff4">.</span><span style="color:#88c0d0">GetTextByRow</span><span style="color:#eceff4">()</span>
+		<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> row <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> rows <span style="color:#eceff4">{</span>
+			<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> word <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> row<span style="color:#eceff4">.</span>Content <span style="color:#eceff4">{</span>
+				bs <span style="color:#eceff4">=</span> <span style="color:#81a1c1">append</span><span style="color:#eceff4">(</span>bs<span style="color:#eceff4">,</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1">byte</span><span style="color:#eceff4">(</span>word<span style="color:#eceff4">.</span>S<span style="color:#eceff4">)</span><span style="color:#81a1c1">...</span><span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
+		<span style="color:#eceff4">}</span>
+	<span style="color:#eceff4">}</span>
+	<span style="color:#81a1c1;font-weight:bold">return</span> bs
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>By returning a slice of bytes, instead of a string, we can use a generic
 interface such as <a href="https://golang.org/pkg/io/#Writer"><code>io.Writer</code></a> (like in
 <code>persist</code>). The interface is applicable because the <code>Write</code> function it
 implements takes a slice of bytes as an argument - making the arguments of
 <code>slurp</code> and the returned values of <code>persist</code> compatible.</p>
 <p>Next, the function that ties them all together – <code>run</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">run</span><span class="p">(</span><span class="nx">args</span> <span class="p">[]</span><span class="kt">string</span><span class="p">,</span> <span class="nx">out</span> <span class="nx">io</span><span class="p">.</span><span class="nx">Writer</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
-	<span class="nx">log</span><span class="p">.</span><span class="nf">SetOutput</span><span class="p">(</span><span class="nx">out</span><span class="p">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">run</span><span style="color:#eceff4">(</span>args <span style="color:#eceff4">[]</span><span style="color:#81a1c1">string</span><span style="color:#eceff4">,</span> out io<span style="color:#eceff4">.</span>Writer<span style="color:#eceff4">)</span> <span style="color:#81a1c1">error</span> <span style="color:#eceff4">{</span>
+	log<span style="color:#eceff4">.</span><span style="color:#88c0d0">SetOutput</span><span style="color:#eceff4">(</span>out<span style="color:#eceff4">)</span>
 
-	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">args</span><span class="p">)</span> <span class="p">&lt;</span> <span class="mi">3</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected at least 2 arguments, got %d.&#34;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">args</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-	<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#81a1c1">len</span><span style="color:#eceff4">(</span>args<span style="color:#eceff4">)</span> <span style="color:#eceff4">&lt;</span> <span style="color:#b48ead">3</span> <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">return</span> fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected at least 2 arguments, got %d.&#34;</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">len</span><span style="color:#eceff4">(</span>args<span style="color:#eceff4">)</span><span style="color:#81a1c1">-</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="nx">pdfFile</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">pdf</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="nx">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="nx">err</span>
-	<span class="p">}</span>
-	<span class="k">defer</span> <span class="nx">pdfFile</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+	pdfFile<span style="color:#eceff4">,</span> r<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> pdf<span style="color:#eceff4">.</span><span style="color:#88c0d0">Open</span><span style="color:#eceff4">(</span>args<span style="color:#eceff4">[</span><span style="color:#b48ead">1</span><span style="color:#eceff4">])</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">return</span> err
+	<span style="color:#eceff4">}</span>
+	<span style="color:#81a1c1;font-weight:bold">defer</span> pdfFile<span style="color:#eceff4">.</span><span style="color:#88c0d0">Close</span><span style="color:#eceff4">()</span>
 
-	<span class="nx">contents</span> <span class="o">:=</span> <span class="nf">slurp</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+	contents <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">slurp</span><span style="color:#eceff4">(</span>r<span style="color:#eceff4">)</span>
 
-	<span class="nx">txtFile</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="nx">args</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="nx">err</span>
-	<span class="p">}</span>
-	<span class="k">defer</span> <span class="nx">txtFile</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+	txtFile<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Create</span><span style="color:#eceff4">(</span>args<span style="color:#eceff4">[</span><span style="color:#b48ead">2</span><span style="color:#eceff4">])</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">return</span> err
+	<span style="color:#eceff4">}</span>
+	<span style="color:#81a1c1;font-weight:bold">defer</span> txtFile<span style="color:#eceff4">.</span><span style="color:#88c0d0">Close</span><span style="color:#eceff4">()</span>
 
-	<span class="nx">err</span> <span class="p">=</span> <span class="nf">persist</span><span class="p">(</span><span class="nx">contents</span><span class="p">,</span> <span class="nx">txtFile</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="nx">err</span>
-	<span class="p">}</span>
+	err <span style="color:#eceff4">=</span> <span style="color:#88c0d0">persist</span><span style="color:#eceff4">(</span>contents<span style="color:#eceff4">,</span> txtFile<span style="color:#eceff4">)</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">return</span> err
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">return</span> <span class="kc">nil</span>
-<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
+<span style="color:#eceff4">}</span>
 </code></pre></div><p><code>run</code>&rsquo;s role is to check the arguments received from <code>main</code> and the <code>io.Writer</code>
 to where it should send all of its output. Then it opens the PDF file for
 reading and passes the file reference to the <code>slurp</code> function.</p>
@@ -436,19 +436,19 @@ file, it will send the <code>contents</code> and the <code>txtFile</code> to <co
 return any potential errors. If no errors are returned, <code>run</code> successfully
 exits.</p>
 <p>Lastly, the straightforward <code>main</code> function:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">run</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">,</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">main</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">run</span><span style="color:#eceff4">(</span>os<span style="color:#eceff4">.</span>Args<span style="color:#eceff4">,</span> os<span style="color:#eceff4">.</span>Stdout<span style="color:#eceff4">);</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatal</span><span style="color:#eceff4">(</span>err<span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>Locally, I have a simple PDF with some text inside that I&rsquo;ve found online. Its
 contents, according to the author, are popular interview questions. We will run
 the above program with any PDF, and as long as it finds some text inside it
 will save it to an output file.</p>
 <p>Here it is in action:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="err">$</span> <span class="k">go</span> <span class="nx">run</span> <span class="nx">main</span><span class="p">.</span><span class="k">go</span> <span class="nx">input</span><span class="p">.</span><span class="nx">pdf</span> <span class="nx">out</span><span class="p">.</span><span class="nx">txt</span>
-<span class="err">$</span> <span class="nx">cat</span> <span class="nx">out</span><span class="p">.</span><span class="nx">txt</span>
-<span class="mi">50</span> <span class="nx">Common</span> <span class="nx">Interview</span> <span class="nx">Questions</span> <span class="nx">and</span> <span class="nx">Answers1</span><span class="p">.</span> <span class="nx">Tell</span> <span class="nx">me</span> <span class="nx">about</span> <span class="nx">yourself</span><span class="p">:</span> <span class="nx">The</span> <span class="nx">most</span> <span class="nx">often</span> <span class="nx">asked</span> <span class="nx">question</span> <span class="nx">in</span> <span class="nx">interviews</span><span class="p">.</span> <span class="o">...</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#bf616a">$</span> <span style="color:#81a1c1;font-weight:bold">go</span> run main<span style="color:#eceff4">.</span><span style="color:#81a1c1;font-weight:bold">go</span> input<span style="color:#eceff4">.</span>pdf out<span style="color:#eceff4">.</span>txt
+<span style="color:#bf616a">$</span> cat out<span style="color:#eceff4">.</span>txt
+<span style="color:#b48ead">50</span> Common Interview Questions and Answers1<span style="color:#eceff4">.</span> Tell me about yourself<span style="color:#eceff4">:</span> The most often asked question in interviews<span style="color:#eceff4">.</span> <span style="color:#81a1c1">...</span>
 </code></pre></div><p>That&rsquo;s really it. Our program took the contents from <code>input.pdf</code> and stored
 them in <code>out.txt</code>. Let&rsquo;s see how we can test this program.</p>
 <h2 id="testing-persist" class="relative group">Testing <code>persist</code> <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#testing-persist" aria-label="Anchor">#</a></span></h2>
@@ -458,51 +458,51 @@ of the standard library, we do not need to test it. But, given that there&rsquo;
 some error handling, which is a custom implementation, we can add some tests to
 strive to get to that full test coverage.</p>
 <p><code>TestPersist</code>, in all of its glory:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestPersist</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">tt</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
-		<span class="nx">name</span>    <span class="kt">string</span>
-		<span class="nx">content</span> <span class="p">[]</span><span class="kt">byte</span>
-		<span class="nx">out</span>     <span class="kd">func</span><span class="p">()</span> <span class="p">(</span><span class="nx">io</span><span class="p">.</span><span class="nx">ReadWriter</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>
-	<span class="p">}{</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span>    <span class="s">&#34;WithNoContent&#34;</span><span class="p">,</span>
-			<span class="nx">content</span><span class="p">:</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">{},</span>
-			<span class="nx">out</span><span class="p">:</span> <span class="kd">func</span><span class="p">()</span> <span class="p">(</span><span class="nx">io</span><span class="p">.</span><span class="nx">ReadWriter</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
-				<span class="k">return</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="s">&#34;empty.txt&#34;</span><span class="p">)</span>
-			<span class="p">},</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span>    <span class="s">&#34;WithContent&#34;</span><span class="p">,</span>
-			<span class="nx">content</span><span class="p">:</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">{},</span>
-			<span class="nx">out</span><span class="p">:</span> <span class="kd">func</span><span class="p">()</span> <span class="p">(</span><span class="nx">io</span><span class="p">.</span><span class="nx">ReadWriter</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
-				<span class="k">return</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="s">&#34;not-empty.txt&#34;</span><span class="p">)</span>
-			<span class="p">},</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestPersist</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	tt <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+		name    <span style="color:#81a1c1">string</span>
+		content <span style="color:#eceff4">[]</span><span style="color:#81a1c1">byte</span>
+		out     <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">(</span>io<span style="color:#eceff4">.</span>ReadWriter<span style="color:#eceff4">,</span> <span style="color:#81a1c1">error</span><span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}{</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span>    <span style="color:#a3be8c">&#34;WithNoContent&#34;</span><span style="color:#eceff4">,</span>
+			content<span style="color:#eceff4">:</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1">byte</span><span style="color:#eceff4">{},</span>
+			out<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">(</span>io<span style="color:#eceff4">.</span>ReadWriter<span style="color:#eceff4">,</span> <span style="color:#81a1c1">error</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+				<span style="color:#81a1c1;font-weight:bold">return</span> os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Create</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;empty.txt&#34;</span><span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span>    <span style="color:#a3be8c">&#34;WithContent&#34;</span><span style="color:#eceff4">,</span>
+			content<span style="color:#eceff4">:</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1">byte</span><span style="color:#eceff4">{},</span>
+			out<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">(</span>io<span style="color:#eceff4">.</span>ReadWriter<span style="color:#eceff4">,</span> <span style="color:#81a1c1">error</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+				<span style="color:#81a1c1;font-weight:bold">return</span> os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Create</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;not-empty.txt&#34;</span><span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">},</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tt</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-			<span class="nx">f</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">tc</span><span class="p">.</span><span class="nf">out</span><span class="p">()</span>
-			<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Cannot create output file: %s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-			<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> tc <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> tt <span style="color:#eceff4">{</span>
+		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Run</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>name<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+			f<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> tc<span style="color:#eceff4">.</span><span style="color:#88c0d0">out</span><span style="color:#eceff4">()</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatalf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Cannot create output file: %s&#34;</span><span style="color:#eceff4">,</span> err<span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
 
-			<span class="nx">err</span> <span class="p">=</span> <span class="nf">persist</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">content</span><span class="p">,</span> <span class="nx">f</span><span class="p">)</span>
-			<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Cannot persits to output file: %s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-			<span class="p">}</span>
+			err <span style="color:#eceff4">=</span> <span style="color:#88c0d0">persist</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>content<span style="color:#eceff4">,</span> f<span style="color:#eceff4">)</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatalf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Cannot persits to output file: %s&#34;</span><span style="color:#eceff4">,</span> err<span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
 
-			<span class="nx">b</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">{}</span>
-			<span class="k">if</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">io</span><span class="p">.</span><span class="nf">ReadFull</span><span class="p">(</span><span class="nx">f</span><span class="p">,</span> <span class="nx">b</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Cannot read test output file: %s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-			<span class="p">}</span>
+			b <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1">byte</span><span style="color:#eceff4">{}</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> _<span style="color:#eceff4">,</span> err <span style="color:#eceff4">=</span> io<span style="color:#eceff4">.</span><span style="color:#88c0d0">ReadFull</span><span style="color:#eceff4">(</span>f<span style="color:#eceff4">,</span> b<span style="color:#eceff4">);</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatalf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Cannot read test output file: %s&#34;</span><span style="color:#eceff4">,</span> err<span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
 
-			<span class="k">if</span> <span class="p">!</span><span class="nx">bytes</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">b</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">content</span><span class="p">)</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Persisted content is different than saved content.&#34;</span><span class="p">)</span>
-			<span class="p">}</span>
-		<span class="p">})</span>
-	<span class="p">}</span>
-<span class="p">}</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#eceff4">!</span>bytes<span style="color:#eceff4">.</span><span style="color:#88c0d0">Equal</span><span style="color:#eceff4">(</span>b<span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>content<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Persisted content is different than saved content.&#34;</span><span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
+		<span style="color:#eceff4">})</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>Each of the test cases, part of the table-driven tests, contains the <code>name</code> of
 the test case, the <code>content</code> that it will persist, and the <code>out</code> function,
 which will create the output file.</p>
@@ -511,13 +511,13 @@ which will try to write the <code>content</code> to a file, and then it will rea
 the content back from the file. If the persisted content and the test case
 content are the same, then the test successfully passes.</p>
 <p>If we run the tests, this is the output we will see:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ go <span class="nb">test</span> -v -run <span class="nv">TestPersist</span>
-<span class="o">===</span> RUN   <span class="nv">TestPersist</span>
-<span class="o">===</span> RUN   TestPersist/WithNoContent
-<span class="o">===</span> RUN   TestPersist/WithContent
---- PASS: TestPersist <span class="o">(</span>0.00s<span class="o">)</span>
-    --- PASS: TestPersist/WithNoContent <span class="o">(</span>0.00s<span class="o">)</span>
-    --- PASS: TestPersist/WithContent <span class="o">(</span>0.00s<span class="o">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#81a1c1">test</span> -v -run TestPersist
+<span style="color:#81a1c1">===</span> RUN   TestPersist
+<span style="color:#81a1c1">===</span> RUN   TestPersist/WithNoContent
+<span style="color:#81a1c1">===</span> RUN   TestPersist/WithContent
+--- PASS: TestPersist <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
+    --- PASS: TestPersist/WithNoContent <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
+    --- PASS: TestPersist/WithContent <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
 PASS
 ok  	github.com/fteem/go-playground/testing-in-go-leak-test-files	0.250s
 </code></pre></div><p>We ran the two test cases where we try to persist a file with no content and
@@ -528,40 +528,40 @@ some content. Both of them passed, and we can move on!</p>
 two different files to <code>slurp</code>, we can test if extracting the text from the PDF
 works as intended.</p>
 <p>This is the test:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestSlurp</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">tt</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
-		<span class="nx">name</span>    <span class="kt">string</span>
-		<span class="nx">pdfPath</span> <span class="kt">string</span>
-		<span class="nx">size</span>    <span class="kt">int</span>
-	<span class="p">}{</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span>    <span class="s">&#34;PDFWithContent&#34;</span><span class="p">,</span>
-			<span class="nx">pdfPath</span><span class="p">:</span> <span class="s">&#34;testdata/content.pdf&#34;</span><span class="p">,</span>
-			<span class="nx">size</span><span class="p">:</span>    <span class="mi">11463</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span>    <span class="s">&#34;PDFWithoutContent&#34;</span><span class="p">,</span>
-			<span class="nx">pdfPath</span><span class="p">:</span> <span class="s">&#34;testdata/empty.pdf&#34;</span><span class="p">,</span>
-			<span class="nx">size</span><span class="p">:</span>    <span class="mi">0</span><span class="p">,</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestSlurp</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	tt <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+		name    <span style="color:#81a1c1">string</span>
+		pdfPath <span style="color:#81a1c1">string</span>
+		size    <span style="color:#81a1c1">int</span>
+	<span style="color:#eceff4">}{</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span>    <span style="color:#a3be8c">&#34;PDFWithContent&#34;</span><span style="color:#eceff4">,</span>
+			pdfPath<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;testdata/content.pdf&#34;</span><span style="color:#eceff4">,</span>
+			size<span style="color:#eceff4">:</span>    <span style="color:#b48ead">11463</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span>    <span style="color:#a3be8c">&#34;PDFWithoutContent&#34;</span><span style="color:#eceff4">,</span>
+			pdfPath<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;testdata/empty.pdf&#34;</span><span style="color:#eceff4">,</span>
+			size<span style="color:#eceff4">:</span>    <span style="color:#b48ead">0</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tt</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-			<span class="nx">pdfFile</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">pdf</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">pdfPath</span><span class="p">)</span>
-			<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Couldn&#39;t open PDF %s, error: %s&#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">pdfPath</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-			<span class="p">}</span>
-			<span class="k">defer</span> <span class="nx">pdfFile</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> tc <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> tt <span style="color:#eceff4">{</span>
+		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Run</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>name<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+			pdfFile<span style="color:#eceff4">,</span> r<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> pdf<span style="color:#eceff4">.</span><span style="color:#88c0d0">Open</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>pdfPath<span style="color:#eceff4">)</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatalf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Couldn&#39;t open PDF %s, error: %s&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>pdfPath<span style="color:#eceff4">,</span> err<span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
+			<span style="color:#81a1c1;font-weight:bold">defer</span> pdfFile<span style="color:#eceff4">.</span><span style="color:#88c0d0">Close</span><span style="color:#eceff4">()</span>
 
-			<span class="nx">contents</span> <span class="o">:=</span> <span class="nf">slurp</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+			contents <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">slurp</span><span style="color:#eceff4">(</span>r<span style="color:#eceff4">)</span>
 
-			<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">contents</span><span class="p">)</span> <span class="o">!=</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">size</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected contents to be %d bytes, got %d&#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">size</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">contents</span><span class="p">))</span>
-			<span class="p">}</span>
-		<span class="p">})</span>
-	<span class="p">}</span>
-<span class="p">}</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#81a1c1">len</span><span style="color:#eceff4">(</span>contents<span style="color:#eceff4">)</span> <span style="color:#81a1c1">!=</span> tc<span style="color:#eceff4">.</span>size <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected contents to be %d bytes, got %d&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>size<span style="color:#eceff4">,</span> <span style="color:#81a1c1">len</span><span style="color:#eceff4">(</span>contents<span style="color:#eceff4">))</span>
+			<span style="color:#eceff4">}</span>
+		<span style="color:#eceff4">})</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>Each of the test cases from the table-driven tests will have a <code>pdfPath</code>, which
 is an actual PDF file on disk. For each of the test cases, a subtest will be
 run, which will open the PDF using the <code>ledongthuc/pdf</code> library. We will then
@@ -572,13 +572,13 @@ bytes that are expected (<code>tc.size</code>), comparing it against the <code>l
 which is the size of the bytes returned. If the sizes match, we assume that the
 content is correct, and the test will pass.</p>
 <p>Here&rsquo;s the test in action:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ go <span class="nb">test</span> -v -run <span class="nv">TestSlurp</span>
-<span class="o">===</span> RUN   <span class="nv">TestSlurp</span>
-<span class="o">===</span> RUN   TestSlurp/PDFWithContent
-<span class="o">===</span> RUN   TestSlurp/PDFWithoutContent
---- PASS: TestSlurp <span class="o">(</span>0.03s<span class="o">)</span>
-    --- PASS: TestSlurp/PDFWithContent <span class="o">(</span>0.03s<span class="o">)</span>
-    --- PASS: TestSlurp/PDFWithoutContent <span class="o">(</span>0.00s<span class="o">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#81a1c1">test</span> -v -run TestSlurp
+<span style="color:#81a1c1">===</span> RUN   TestSlurp
+<span style="color:#81a1c1">===</span> RUN   TestSlurp/PDFWithContent
+<span style="color:#81a1c1">===</span> RUN   TestSlurp/PDFWithoutContent
+--- PASS: TestSlurp <span style="color:#81a1c1">(</span>0.03s<span style="color:#81a1c1">)</span>
+    --- PASS: TestSlurp/PDFWithContent <span style="color:#81a1c1">(</span>0.03s<span style="color:#81a1c1">)</span>
+    --- PASS: TestSlurp/PDFWithoutContent <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
 PASS
 ok  	github.com/fteem/go-playground/testing-in-go-leak-test-files	0.253s
 </code></pre></div><h2 id="testing-run" class="relative group">Testing <code>run</code> <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#testing-run" aria-label="Anchor">#</a></span></h2>
@@ -587,34 +587,34 @@ arguments, then opens the PDF for reading, slurps all of the contents using
 <code>slurp</code>, and lastly saves all of the text content to the TXT file using
 <code>persist</code>.</p>
 <p>Here&rsquo;s the test:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestRun</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">tt</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span> <span class="nx">name</span>   <span class="kt">string</span> <span class="nx">input</span>  <span class="kt">string</span> <span class="nx">output</span> <span class="kt">string</span>
-	<span class="p">}{</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;WithValidArguments&#34;</span><span class="p">,</span>
-			<span class="nx">input</span><span class="p">:</span>  <span class="s">&#34;testdata/input.pdf&#34;</span><span class="p">,</span>
-			<span class="nx">output</span><span class="p">:</span> <span class="s">&#34;testdata/output.txt&#34;</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;WithEmptyInput&#34;</span><span class="p">,</span>
-			<span class="nx">input</span><span class="p">:</span>  <span class="s">&#34;testdata/empty.pdf&#34;</span><span class="p">,</span>
-			<span class="nx">output</span><span class="p">:</span> <span class="s">&#34;testdata/output.txt&#34;</span><span class="p">,</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestRun</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	tt <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span> name   <span style="color:#81a1c1">string</span> input  <span style="color:#81a1c1">string</span> output <span style="color:#81a1c1">string</span>
+	<span style="color:#eceff4">}{</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;WithValidArguments&#34;</span><span style="color:#eceff4">,</span>
+			input<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;testdata/input.pdf&#34;</span><span style="color:#eceff4">,</span>
+			output<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;testdata/output.txt&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;WithEmptyInput&#34;</span><span style="color:#eceff4">,</span>
+			input<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;testdata/empty.pdf&#34;</span><span style="color:#eceff4">,</span>
+			output<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;testdata/output.txt&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tt</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-			<span class="nx">err</span> <span class="o">:=</span> <span class="nf">run</span><span class="p">([]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;foo&#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">input</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">output</span><span class="p">},</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">)</span>
-			<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Expected no error, got:  %s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-			<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> tc <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> tt <span style="color:#eceff4">{</span>
+		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Run</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>name<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+			err <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">run</span><span style="color:#eceff4">([]</span><span style="color:#81a1c1">string</span><span style="color:#eceff4">{</span><span style="color:#a3be8c">&#34;foo&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>input<span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>output<span style="color:#eceff4">},</span> os<span style="color:#eceff4">.</span>Stdout<span style="color:#eceff4">)</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatalf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected no error, got:  %s&#34;</span><span style="color:#eceff4">,</span> err<span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
 
-			<span class="k">if</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Stat</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">output</span><span class="p">);</span> <span class="nx">os</span><span class="p">.</span><span class="nf">IsNotExist</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected persisted file at %s, did not find it: %s&#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">output</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-			<span class="p">}</span>
-		<span class="p">})</span>
-	<span class="p">}</span>
-<span class="p">}</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> _<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Stat</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>output<span style="color:#eceff4">);</span> os<span style="color:#eceff4">.</span><span style="color:#88c0d0">IsNotExist</span><span style="color:#eceff4">(</span>err<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected persisted file at %s, did not find it: %s&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>output<span style="color:#eceff4">,</span> err<span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
+		<span style="color:#eceff4">})</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>In <code>TestRun</code>, we check if, for each of the test PDFs we provide, the <code>run</code>
 function crates the corresponding TXT file. In <code>TestRun</code>, we do not care about
 the actual contents – we can assume that the rest of the unit tests covers that
@@ -623,51 +623,51 @@ part of the functionality.</p>
 file does not exist. If the file does exist, we consider the <code>run</code> function as
 properly functioning and mark the test as passed.</p>
 <p>Here&rsquo;s the test in action:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ go <span class="nb">test</span> -v -run <span class="nv">TestRun</span>
-<span class="o">===</span> RUN   <span class="nv">TestRun</span>
-<span class="o">===</span> RUN   TestRun/WithValidArguments
-<span class="o">===</span> RUN   TestRun/WithEmptyInput
---- PASS: TestRun <span class="o">(</span>0.03s<span class="o">)</span>
-    --- PASS: TestRun/WithValidArguments <span class="o">(</span>0.03s<span class="o">)</span>
-    --- PASS: TestRun/WithEmptyInput <span class="o">(</span>0.00s<span class="o">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#81a1c1">test</span> -v -run TestRun
+<span style="color:#81a1c1">===</span> RUN   TestRun
+<span style="color:#81a1c1">===</span> RUN   TestRun/WithValidArguments
+<span style="color:#81a1c1">===</span> RUN   TestRun/WithEmptyInput
+--- PASS: TestRun <span style="color:#81a1c1">(</span>0.03s<span style="color:#81a1c1">)</span>
+    --- PASS: TestRun/WithValidArguments <span style="color:#81a1c1">(</span>0.03s<span style="color:#81a1c1">)</span>
+    --- PASS: TestRun/WithEmptyInput <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
 PASS
 ok  	github.com/fteem/go-playground/testing-in-go-leak-test-files	0.106s
 </code></pre></div><p>Another test we can also run is to test the returned errors. We will create
 another function called <code>TestRunErrors</code>, which will cover the potential errors
 returned by <code>run</code>. Here&rsquo;s the test function:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestRunErrors</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">tt</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
-		<span class="nx">name</span>   <span class="kt">string</span>
-		<span class="nx">input</span>  <span class="kt">string</span>
-		<span class="nx">output</span> <span class="kt">string</span>
-	<span class="p">}{</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;WithoutArguments&#34;</span><span class="p">,</span>
-			<span class="nx">input</span><span class="p">:</span>  <span class="s">&#34;&#34;</span><span class="p">,</span>
-			<span class="nx">output</span><span class="p">:</span> <span class="s">&#34;&#34;</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;WithoutOneArgument&#34;</span><span class="p">,</span>
-			<span class="nx">input</span><span class="p">:</span>  <span class="s">&#34;testdata/input.pdf&#34;</span><span class="p">,</span>
-			<span class="nx">output</span><span class="p">:</span> <span class="s">&#34;&#34;</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;WithNonexistentInput&#34;</span><span class="p">,</span>
-			<span class="nx">input</span><span class="p">:</span>  <span class="s">&#34;testdata/nonexistent.pdf&#34;</span><span class="p">,</span>
-			<span class="nx">output</span><span class="p">:</span> <span class="s">&#34;testdata/output.txt&#34;</span><span class="p">,</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestRunErrors</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	tt <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+		name   <span style="color:#81a1c1">string</span>
+		input  <span style="color:#81a1c1">string</span>
+		output <span style="color:#81a1c1">string</span>
+	<span style="color:#eceff4">}{</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;WithoutArguments&#34;</span><span style="color:#eceff4">,</span>
+			input<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span>
+			output<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;WithoutOneArgument&#34;</span><span style="color:#eceff4">,</span>
+			input<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;testdata/input.pdf&#34;</span><span style="color:#eceff4">,</span>
+			output<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;WithNonexistentInput&#34;</span><span style="color:#eceff4">,</span>
+			input<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;testdata/nonexistent.pdf&#34;</span><span style="color:#eceff4">,</span>
+			output<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;testdata/output.txt&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tt</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-			<span class="nx">err</span> <span class="o">:=</span> <span class="nf">run</span><span class="p">([]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;foo&#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">input</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">output</span><span class="p">},</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">)</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> tc <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> tt <span style="color:#eceff4">{</span>
+		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Run</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>name<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+			err <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">run</span><span style="color:#eceff4">([]</span><span style="color:#81a1c1">string</span><span style="color:#eceff4">{</span><span style="color:#a3be8c">&#34;foo&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>input<span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>output<span style="color:#eceff4">},</span> os<span style="color:#eceff4">.</span>Stdout<span style="color:#eceff4">)</span>
 
-			<span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Expected an error, did not get one.&#34;</span><span class="p">)</span>
-			<span class="p">}</span>
-		<span class="p">})</span>
-	<span class="p">}</span>
-<span class="p">}</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">==</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatalf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected an error, did not get one.&#34;</span><span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
+		<span style="color:#eceff4">})</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>The <code>TestRunErrors</code> is similar to <code>TestRun</code>, with having the focus on the
 returned errors. It checks that for each of the bad inputs the <code>run</code> function
 receives, that it returns an error. We could take this a step further by
@@ -696,44 +696,44 @@ wherever we are passing the output file path. Once the tests pass, Go will
 automatically get rid of this directory, without us having to do any clean-up.</p>
 <p>First, let&rsquo;s see how we can change the <code>TestPersist</code> function to clean up the
 <code>empty.txt</code> and <code>non-empty.txt</code> files it creates:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestPersist</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">tt</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
-		<span class="nx">name</span>    <span class="kt">string</span>
-		<span class="nx">content</span> <span class="p">[]</span><span class="kt">byte</span>
-		<span class="nx">out</span>     <span class="kd">func</span><span class="p">()</span> <span class="p">(</span><span class="nx">io</span><span class="p">.</span><span class="nx">ReadWriter</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>
-	<span class="p">}{</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span>    <span class="s">&#34;WithNoContent&#34;</span><span class="p">,</span>
-			<span class="nx">content</span><span class="p">:</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">{},</span>
-			<span class="nx">out</span><span class="p">:</span> <span class="kd">func</span><span class="p">()</span> <span class="p">(</span><span class="nx">io</span><span class="p">.</span><span class="nx">ReadWriter</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
-				<span class="k">return</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="nx">filepath</span><span class="p">.</span><span class="nf">Join</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nf">TempDir</span><span class="p">(),</span> <span class="s">&#34;empty.txt&#34;</span><span class="p">))</span>
-			<span class="p">},</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span>    <span class="s">&#34;WithContent&#34;</span><span class="p">,</span>
-			<span class="nx">content</span><span class="p">:</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">{},</span>
-			<span class="nx">out</span><span class="p">:</span> <span class="kd">func</span><span class="p">()</span> <span class="p">(</span><span class="nx">io</span><span class="p">.</span><span class="nx">ReadWriter</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
-				<span class="k">return</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="nx">filepath</span><span class="p">.</span><span class="nf">Join</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nf">TempDir</span><span class="p">(),</span> <span class="s">&#34;not-empty.txt&#34;</span><span class="p">))</span>
-			<span class="p">},</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestPersist</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	tt <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+		name    <span style="color:#81a1c1">string</span>
+		content <span style="color:#eceff4">[]</span><span style="color:#81a1c1">byte</span>
+		out     <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">(</span>io<span style="color:#eceff4">.</span>ReadWriter<span style="color:#eceff4">,</span> <span style="color:#81a1c1">error</span><span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}{</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span>    <span style="color:#a3be8c">&#34;WithNoContent&#34;</span><span style="color:#eceff4">,</span>
+			content<span style="color:#eceff4">:</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1">byte</span><span style="color:#eceff4">{},</span>
+			out<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">(</span>io<span style="color:#eceff4">.</span>ReadWriter<span style="color:#eceff4">,</span> <span style="color:#81a1c1">error</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+				<span style="color:#81a1c1;font-weight:bold">return</span> os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Create</span><span style="color:#eceff4">(</span>filepath<span style="color:#eceff4">.</span><span style="color:#88c0d0">Join</span><span style="color:#eceff4">(</span>t<span style="color:#eceff4">.</span><span style="color:#88c0d0">TempDir</span><span style="color:#eceff4">(),</span> <span style="color:#a3be8c">&#34;empty.txt&#34;</span><span style="color:#eceff4">))</span>
+			<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span>    <span style="color:#a3be8c">&#34;WithContent&#34;</span><span style="color:#eceff4">,</span>
+			content<span style="color:#eceff4">:</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1">byte</span><span style="color:#eceff4">{},</span>
+			out<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">(</span>io<span style="color:#eceff4">.</span>ReadWriter<span style="color:#eceff4">,</span> <span style="color:#81a1c1">error</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+				<span style="color:#81a1c1;font-weight:bold">return</span> os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Create</span><span style="color:#eceff4">(</span>filepath<span style="color:#eceff4">.</span><span style="color:#88c0d0">Join</span><span style="color:#eceff4">(</span>t<span style="color:#eceff4">.</span><span style="color:#88c0d0">TempDir</span><span style="color:#eceff4">(),</span> <span style="color:#a3be8c">&#34;not-empty.txt&#34;</span><span style="color:#eceff4">))</span>
+			<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">},</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tt</span> <span class="p">{</span>
-		<span class="c1">// Snipped...
-</span><span class="c1"></span>	<span class="p">}</span>
-<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> tc <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> tt <span style="color:#eceff4">{</span>
+		<span style="color:#616e87;font-style:italic">// Snipped...
+</span><span style="color:#616e87;font-style:italic"></span>	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>The only notable change is to use <code>filepath.Join</code> with <code>t.TempDir()</code> and the
 file name as arguments. This combo will compose a valid temporary path, that Go
 will remove once the tests finish. Given that at the time of writing this, Go
 1.15 is still not out, we can use the <code>gotip</code> tool to run Go&rsquo;s latest <code>master</code>
 version:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ gotip <span class="nb">test</span> -v -run <span class="nv">TestPersist</span>
-<span class="o">===</span> RUN   <span class="nv">TestPersist</span>
-<span class="o">===</span> RUN   TestPersist/WithNoContent
-<span class="o">===</span> RUN   TestPersist/WithContent
---- PASS: TestPersist <span class="o">(</span>0.00s<span class="o">)</span>
-    --- PASS: TestPersist/WithNoContent <span class="o">(</span>0.00s<span class="o">)</span>
-    --- PASS: TestPersist/WithContent <span class="o">(</span>0.00s<span class="o">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ gotip <span style="color:#81a1c1">test</span> -v -run TestPersist
+<span style="color:#81a1c1">===</span> RUN   TestPersist
+<span style="color:#81a1c1">===</span> RUN   TestPersist/WithNoContent
+<span style="color:#81a1c1">===</span> RUN   TestPersist/WithContent
+--- PASS: TestPersist <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
+    --- PASS: TestPersist/WithNoContent <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
+    --- PASS: TestPersist/WithContent <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
 PASS
 ok  	github.com/fteem/go-playground/testing-in-go-leak-test-files	0.048s
 </code></pre></div><p>If we inspect the project root, we will see that no new files are being
@@ -758,46 +758,46 @@ details.</span>
 </div>
 
 <p>Next, we can do the same change to the <code>TestRun</code> function:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestRun</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">tt</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
-		<span class="nx">name</span>   <span class="kt">string</span>
-		<span class="nx">input</span>  <span class="kt">string</span>
-		<span class="nx">output</span> <span class="kt">string</span>
-	<span class="p">}{</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;WithValidArguments&#34;</span><span class="p">,</span>
-			<span class="nx">input</span><span class="p">:</span>  <span class="s">&#34;testdata/input.pdf&#34;</span><span class="p">,</span>
-			<span class="nx">output</span><span class="p">:</span> <span class="nx">filepath</span><span class="p">.</span><span class="nf">Join</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nf">TempDir</span><span class="p">(),</span> <span class="s">&#34;output.txt&#34;</span><span class="p">),</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;WithEmptyInput&#34;</span><span class="p">,</span>
-			<span class="nx">input</span><span class="p">:</span>  <span class="s">&#34;testdata/empty.pdf&#34;</span><span class="p">,</span>
-			<span class="nx">output</span><span class="p">:</span> <span class="nx">filepath</span><span class="p">.</span><span class="nf">Join</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nf">TempDir</span><span class="p">(),</span> <span class="s">&#34;output.txt&#34;</span><span class="p">),</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestRun</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	tt <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+		name   <span style="color:#81a1c1">string</span>
+		input  <span style="color:#81a1c1">string</span>
+		output <span style="color:#81a1c1">string</span>
+	<span style="color:#eceff4">}{</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;WithValidArguments&#34;</span><span style="color:#eceff4">,</span>
+			input<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;testdata/input.pdf&#34;</span><span style="color:#eceff4">,</span>
+			output<span style="color:#eceff4">:</span> filepath<span style="color:#eceff4">.</span><span style="color:#88c0d0">Join</span><span style="color:#eceff4">(</span>t<span style="color:#eceff4">.</span><span style="color:#88c0d0">TempDir</span><span style="color:#eceff4">(),</span> <span style="color:#a3be8c">&#34;output.txt&#34;</span><span style="color:#eceff4">),</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;WithEmptyInput&#34;</span><span style="color:#eceff4">,</span>
+			input<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;testdata/empty.pdf&#34;</span><span style="color:#eceff4">,</span>
+			output<span style="color:#eceff4">:</span> filepath<span style="color:#eceff4">.</span><span style="color:#88c0d0">Join</span><span style="color:#eceff4">(</span>t<span style="color:#eceff4">.</span><span style="color:#88c0d0">TempDir</span><span style="color:#eceff4">(),</span> <span style="color:#a3be8c">&#34;output.txt&#34;</span><span style="color:#eceff4">),</span>
+		<span style="color:#eceff4">},</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tt</span> <span class="p">{</span>
-		<span class="c1">// Same as before...
-</span><span class="c1"></span>	<span class="p">}</span>
-<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> tc <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> tt <span style="color:#eceff4">{</span>
+		<span style="color:#616e87;font-style:italic">// Same as before...
+</span><span style="color:#616e87;font-style:italic"></span>	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>In the <code>TestRun</code> function, we use the same trick - we use the <code>T.TempDir</code>
 function to concatenate the path of the <code>output</code> file. Running the test the
 same way, we can see <code>T.TempDir</code> once more in action:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ gotip <span class="nb">test</span> -v -run <span class="nv">TestRun</span>
-<span class="o">===</span> RUN   <span class="nv">TestRun</span>
-<span class="o">===</span> RUN   TestRun/WithValidArguments
-<span class="o">===</span> RUN   TestRun/WithEmptyInput
---- PASS: TestRun <span class="o">(</span>0.03s<span class="o">)</span>
-    --- PASS: TestRun/WithValidArguments <span class="o">(</span>0.03s<span class="o">)</span>
-    --- PASS: TestRun/WithEmptyInput <span class="o">(</span>0.00s<span class="o">)</span>
-<span class="o">===</span> RUN   <span class="nv">TestRunErrors</span>
-<span class="o">===</span> RUN   TestRunErrors/WithoutArguments
-<span class="o">===</span> RUN   TestRunErrors/WithoutOneArgument
-<span class="o">===</span> RUN   TestRunErrors/WithNonexistentInput
---- PASS: TestRunErrors <span class="o">(</span>0.02s<span class="o">)</span>
-    --- PASS: TestRunErrors/WithoutArguments <span class="o">(</span>0.00s<span class="o">)</span>
-    --- PASS: TestRunErrors/WithoutOneArgument <span class="o">(</span>0.02s<span class="o">)</span>
-    --- PASS: TestRunErrors/WithNonexistentInput <span class="o">(</span>0.00s<span class="o">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ gotip <span style="color:#81a1c1">test</span> -v -run TestRun
+<span style="color:#81a1c1">===</span> RUN   TestRun
+<span style="color:#81a1c1">===</span> RUN   TestRun/WithValidArguments
+<span style="color:#81a1c1">===</span> RUN   TestRun/WithEmptyInput
+--- PASS: TestRun <span style="color:#81a1c1">(</span>0.03s<span style="color:#81a1c1">)</span>
+    --- PASS: TestRun/WithValidArguments <span style="color:#81a1c1">(</span>0.03s<span style="color:#81a1c1">)</span>
+    --- PASS: TestRun/WithEmptyInput <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
+<span style="color:#81a1c1">===</span> RUN   TestRunErrors
+<span style="color:#81a1c1">===</span> RUN   TestRunErrors/WithoutArguments
+<span style="color:#81a1c1">===</span> RUN   TestRunErrors/WithoutOneArgument
+<span style="color:#81a1c1">===</span> RUN   TestRunErrors/WithNonexistentInput
+--- PASS: TestRunErrors <span style="color:#81a1c1">(</span>0.02s<span style="color:#81a1c1">)</span>
+    --- PASS: TestRunErrors/WithoutArguments <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
+    --- PASS: TestRunErrors/WithoutOneArgument <span style="color:#81a1c1">(</span>0.02s<span style="color:#81a1c1">)</span>
+    --- PASS: TestRunErrors/WithNonexistentInput <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
 PASS
 ok  	github.com/fteem/go-playground/testing-in-go-leak-test-files	0.265s
 </code></pre></div><p>If you want to check out the motivation and the discussion around this addition
@@ -1186,7 +1186,7 @@ proposal</a>.</p>
       
         <p class="text-sm text-neutral-500 dark:text-neutral-400">
             &copy;
-            2022
+            2023
             Ilija Eftimov
         </p>
       

@@ -356,47 +356,47 @@ be and how you can master them as another tool in your testing tool belt.</p>
 Let&rsquo;s introduce an example representing a grade book populated from a CSV file,
 using a builder function. After, we will create a lookup method per column and
 add some tests for both functions.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">Record</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">student</span> <span class="kt">string</span>
-	<span class="nx">subject</span> <span class="kt">string</span>
-	<span class="nx">grade</span>   <span class="kt">string</span>
-<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> Record <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+	student <span style="color:#81a1c1">string</span>
+	subject <span style="color:#81a1c1">string</span>
+	grade   <span style="color:#81a1c1">string</span>
+<span style="color:#eceff4">}</span>
 
-<span class="kd">type</span> <span class="nx">Gradebook</span> <span class="p">[]</span><span class="nx">Record</span>
+<span style="color:#81a1c1;font-weight:bold">type</span> Gradebook <span style="color:#eceff4">[]</span>Record
 </code></pre></div><p>The <code>Record</code> type will have three attributes: <code>student</code>, <code>subject</code> and <code>grade</code>,
 all three of type <code>string</code>. The <code>Gradebook</code> type is just a slice of <code>Record</code>s,
 nothing more.</p>
 <p>Next, let&rsquo;s create a builder function for a <code>Gradebook</code>. We want the function
 to be simple - receive a path to a CSV file as an argument and return a
 <code>Gradebook</code> with all of the records parsed from the CSV.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">NewGradebook</span><span class="p">(</span><span class="nx">csvFile</span> <span class="nx">io</span><span class="p">.</span><span class="nx">Reader</span><span class="p">)</span> <span class="p">(</span><span class="nx">Gradebook</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
-	<span class="kd">var</span> <span class="nx">gradebook</span> <span class="nx">Gradebook</span>
-	<span class="nx">reader</span> <span class="o">:=</span> <span class="nx">csv</span><span class="p">.</span><span class="nf">NewReader</span><span class="p">(</span><span class="nx">csvFile</span><span class="p">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">NewGradebook</span><span style="color:#eceff4">(</span>csvFile io<span style="color:#eceff4">.</span>Reader<span style="color:#eceff4">)</span> <span style="color:#eceff4">(</span>Gradebook<span style="color:#eceff4">,</span> <span style="color:#81a1c1">error</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	<span style="color:#81a1c1;font-weight:bold">var</span> gradebook Gradebook
+	reader <span style="color:#81a1c1">:=</span> csv<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewReader</span><span style="color:#eceff4">(</span>csvFile<span style="color:#eceff4">)</span>
 
-	<span class="k">for</span> <span class="p">{</span>
-		<span class="nx">line</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">reader</span><span class="p">.</span><span class="nf">Read</span><span class="p">()</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> <span style="color:#eceff4">{</span>
+		line<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> reader<span style="color:#eceff4">.</span><span style="color:#88c0d0">Read</span><span style="color:#eceff4">()</span>
 
-		<span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="nx">io</span><span class="p">.</span><span class="nx">EOF</span> <span class="p">{</span>
-			<span class="k">break</span>
-		<span class="p">}</span>
+		<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">==</span> io<span style="color:#eceff4">.</span>EOF <span style="color:#eceff4">{</span>
+			<span style="color:#81a1c1;font-weight:bold">break</span>
+		<span style="color:#eceff4">}</span>
 
-		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-			<span class="k">return</span> <span class="nx">gradebook</span><span class="p">,</span> <span class="nx">err</span>
-		<span class="p">}</span>
+		<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+			<span style="color:#81a1c1;font-weight:bold">return</span> gradebook<span style="color:#eceff4">,</span> err
+		<span style="color:#eceff4">}</span>
 
-		<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">line</span><span class="p">)</span> <span class="p">&lt;</span> <span class="mi">3</span> <span class="p">{</span>
-			<span class="k">return</span> <span class="nx">gradebook</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Invalid file structure&#34;</span><span class="p">)</span>
-		<span class="p">}</span>
+		<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#81a1c1">len</span><span style="color:#eceff4">(</span>line<span style="color:#eceff4">)</span> <span style="color:#eceff4">&lt;</span> <span style="color:#b48ead">3</span> <span style="color:#eceff4">{</span>
+			<span style="color:#81a1c1;font-weight:bold">return</span> gradebook<span style="color:#eceff4">,</span> fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Invalid file structure&#34;</span><span style="color:#eceff4">)</span>
+		<span style="color:#eceff4">}</span>
 
-		<span class="nx">gradebook</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">gradebook</span><span class="p">,</span> <span class="nx">Record</span><span class="p">{</span>
-			<span class="nx">student</span><span class="p">:</span> <span class="nx">line</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-			<span class="nx">subject</span><span class="p">:</span> <span class="nx">line</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-			<span class="nx">grade</span><span class="p">:</span>   <span class="nx">line</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-		<span class="p">})</span>
-	<span class="p">}</span>
+		gradebook <span style="color:#eceff4">=</span> <span style="color:#81a1c1">append</span><span style="color:#eceff4">(</span>gradebook<span style="color:#eceff4">,</span> Record<span style="color:#eceff4">{</span>
+			student<span style="color:#eceff4">:</span> line<span style="color:#eceff4">[</span><span style="color:#b48ead">0</span><span style="color:#eceff4">],</span>
+			subject<span style="color:#eceff4">:</span> line<span style="color:#eceff4">[</span><span style="color:#b48ead">1</span><span style="color:#eceff4">],</span>
+			grade<span style="color:#eceff4">:</span>   line<span style="color:#eceff4">[</span><span style="color:#b48ead">2</span><span style="color:#eceff4">],</span>
+		<span style="color:#eceff4">})</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">return</span> <span class="nx">gradebook</span><span class="p">,</span> <span class="kc">nil</span>
-<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">return</span> gradebook<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>Although a bit bloated, the function doesn&rsquo;t do much. It receives an
 <code>io.Reader</code> as an argument (which is the file reader), wraps it in a CSV
 reader, and reads it line by line. For each line it reads, it will create a new
@@ -407,39 +407,39 @@ the reading and parsing the file. If there&rsquo;s an error in any scenario, the
 function will return the error along with the empty <code>gradebook</code>.</p>
 <p>The last piece of the puzzle is the function that will find all records in the
 grade book for a particular student:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">gb</span> <span class="o">*</span><span class="nx">Gradebook</span><span class="p">)</span> <span class="nf">FindByStudent</span><span class="p">(</span><span class="nx">student</span> <span class="kt">string</span><span class="p">)</span> <span class="p">[]</span><span class="nx">Record</span> <span class="p">{</span>
-	<span class="kd">var</span> <span class="nx">records</span> <span class="p">[]</span><span class="nx">Record</span>
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">record</span> <span class="o">:=</span> <span class="k">range</span> <span class="o">*</span><span class="nx">gb</span> <span class="p">{</span>
-		<span class="k">if</span> <span class="nx">student</span> <span class="o">==</span> <span class="nx">record</span><span class="p">.</span><span class="nx">student</span> <span class="p">{</span>
-			<span class="nx">records</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">records</span><span class="p">,</span> <span class="nx">record</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-	<span class="k">return</span> <span class="nx">records</span>
-<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>gb <span style="color:#81a1c1">*</span>Gradebook<span style="color:#eceff4">)</span> <span style="color:#88c0d0">FindByStudent</span><span style="color:#eceff4">(</span>student <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">[]</span>Record <span style="color:#eceff4">{</span>
+	<span style="color:#81a1c1;font-weight:bold">var</span> records <span style="color:#eceff4">[]</span>Record
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> record <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> <span style="color:#81a1c1">*</span>gb <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">if</span> student <span style="color:#81a1c1">==</span> record<span style="color:#eceff4">.</span>student <span style="color:#eceff4">{</span>
+			records <span style="color:#eceff4">=</span> <span style="color:#81a1c1">append</span><span style="color:#eceff4">(</span>records<span style="color:#eceff4">,</span> record<span style="color:#eceff4">)</span>
+		<span style="color:#eceff4">}</span>
+	<span style="color:#eceff4">}</span>
+	<span style="color:#81a1c1;font-weight:bold">return</span> records
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>The <code>FindByStudent</code> function takes the <code>student</code> name as argument. First, it
 will loop through the <code>Gradebook</code>&rsquo;s records and collect the records where the
 student name matches. Then, it will return the records found for the particular
 <code>student</code> name.</p>
 <p>To manually test the code, let&rsquo;s create a small CSV file, called <code>grades.csv</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">Jane</span><span class="p">,</span><span class="nx">Chemistry</span><span class="p">,</span><span class="nx">A</span>
-<span class="nx">John</span><span class="p">,</span><span class="nx">Biology</span><span class="p">,</span><span class="nx">A</span>
-<span class="nx">Jane</span><span class="p">,</span><span class="nx">Algebra</span><span class="p">,</span><span class="nx">B</span>
-<span class="nx">Jane</span><span class="p">,</span><span class="nx">Biology</span><span class="p">,</span><span class="nx">A</span>
-<span class="nx">John</span><span class="p">,</span><span class="nx">Algebra</span><span class="p">,</span><span class="nx">B</span>
-<span class="nx">John</span><span class="p">,</span><span class="nx">Chemistry</span><span class="p">,</span><span class="nx">C</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">Jane<span style="color:#eceff4">,</span>Chemistry<span style="color:#eceff4">,</span>A
+John<span style="color:#eceff4">,</span>Biology<span style="color:#eceff4">,</span>A
+Jane<span style="color:#eceff4">,</span>Algebra<span style="color:#eceff4">,</span>B
+Jane<span style="color:#eceff4">,</span>Biology<span style="color:#eceff4">,</span>A
+John<span style="color:#eceff4">,</span>Algebra<span style="color:#eceff4">,</span>B
+John<span style="color:#eceff4">,</span>Chemistry<span style="color:#eceff4">,</span>C
 </code></pre></div><p>In the <code>main</code> function of the file, we will parse it and then get all of Jane&rsquo;s
 grades:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-	<span class="nx">csvFile</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="s">&#34;grades.csv&#34;</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;error opening file: %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">))</span>
-	<span class="p">}</span>
-	<span class="nx">grades</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">NewGradebook</span><span class="p">(</span><span class="nx">csvFile</span><span class="p">)</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">grades</span><span class="p">.</span><span class="nf">FindByStudent</span><span class="p">(</span><span class="s">&#34;Jane&#34;</span><span class="p">))</span>
-<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">main</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+	csvFile<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Open</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;grades.csv&#34;</span><span style="color:#eceff4">)</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Println</span><span style="color:#eceff4">(</span>fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;error opening file: %v&#34;</span><span style="color:#eceff4">,</span> err<span style="color:#eceff4">))</span>
+	<span style="color:#eceff4">}</span>
+	grades<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewGradebook</span><span style="color:#eceff4">(</span>csvFile<span style="color:#eceff4">)</span>
+	fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Printf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;%+v\n&#34;</span><span style="color:#eceff4">,</span> grades<span style="color:#eceff4">.</span><span style="color:#88c0d0">FindByStudent</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Jane&#34;</span><span style="color:#eceff4">))</span>
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>The output of the function will be:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ go run grades.go
-<span class="o">[{</span>student:Jane subject:Chemistry grade:A<span class="o">}</span> <span class="o">{</span>student:Jane subject:Algebra grade:B<span class="o">}</span> <span class="o">{</span>student:Jane subject:Biology grade:A<span class="o">}]</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go run grades.go
+<span style="color:#81a1c1">[{</span>student:Jane subject:Chemistry grade:A<span style="color:#81a1c1">}</span> <span style="color:#81a1c1">{</span>student:Jane subject:Algebra grade:B<span style="color:#81a1c1">}</span> <span style="color:#81a1c1">{</span>student:Jane subject:Biology grade:A<span style="color:#81a1c1">}]</span>
 </code></pre></div><p>From the output, it is clear what are Jane&rsquo;s grades in the grade book we have
 created. Having these two types and two functions is good enough to explain how
 we can use fixtures in the testing we&rsquo;re about to do.</p>
@@ -459,40 +459,40 @@ Go to take care of that. So instead, we are interested in two things: will our
 function handle invalid CSV files gracefully, and will it create a <code>Gradebook</code>
 that we expect from a valid file?</p>
 <p>To test the error handling, we will introduce a test function:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestNewGradebook_ErrorHandling</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">cases</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
-		<span class="nx">fixture</span>   <span class="kt">string</span>
-		<span class="nx">returnErr</span> <span class="kt">bool</span>
-		<span class="nx">name</span>      <span class="kt">string</span>
-	<span class="p">}{</span>
-		<span class="p">{</span>
-			<span class="nx">fixture</span><span class="p">:</span>   <span class="s">&#34;testdata/grades/empty.csv&#34;</span><span class="p">,</span>
-			<span class="nx">returnErr</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-			<span class="nx">name</span><span class="p">:</span>      <span class="s">&#34;EmptyFile&#34;</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">fixture</span><span class="p">:</span>   <span class="s">&#34;testdata/grades/invalid.csv&#34;</span><span class="p">,</span>
-			<span class="nx">returnErr</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-			<span class="nx">name</span><span class="p">:</span>      <span class="s">&#34;InvalidFile&#34;</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">fixture</span><span class="p">:</span>   <span class="s">&#34;testdata/grades/valid.csv&#34;</span><span class="p">,</span>
-			<span class="nx">returnErr</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-			<span class="nx">name</span><span class="p">:</span>      <span class="s">&#34;ValidFile&#34;</span><span class="p">,</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestNewGradebook_ErrorHandling</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	cases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+		fixture   <span style="color:#81a1c1">string</span>
+		returnErr <span style="color:#81a1c1">bool</span>
+		name      <span style="color:#81a1c1">string</span>
+	<span style="color:#eceff4">}{</span>
+		<span style="color:#eceff4">{</span>
+			fixture<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;testdata/grades/empty.csv&#34;</span><span style="color:#eceff4">,</span>
+			returnErr<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">false</span><span style="color:#eceff4">,</span>
+			name<span style="color:#eceff4">:</span>      <span style="color:#a3be8c">&#34;EmptyFile&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			fixture<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;testdata/grades/invalid.csv&#34;</span><span style="color:#eceff4">,</span>
+			returnErr<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">true</span><span style="color:#eceff4">,</span>
+			name<span style="color:#eceff4">:</span>      <span style="color:#a3be8c">&#34;InvalidFile&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			fixture<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;testdata/grades/valid.csv&#34;</span><span style="color:#eceff4">,</span>
+			returnErr<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">false</span><span style="color:#eceff4">,</span>
+			name<span style="color:#eceff4">:</span>      <span style="color:#a3be8c">&#34;ValidFile&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">cases</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-			<span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">NewGradebook</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">fixture</span><span class="p">)</span>
-			<span class="nx">returnedErr</span> <span class="o">:=</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> tc <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> cases <span style="color:#eceff4">{</span>
+		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Run</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>name<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+			_<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewGradebook</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>fixture<span style="color:#eceff4">)</span>
+			returnedErr <span style="color:#81a1c1">:=</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
 
-			<span class="k">if</span> <span class="nx">returnedErr</span> <span class="o">!=</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">returnErr</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Expected returnErr: %v, got: %v&#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">returnErr</span><span class="p">,</span> <span class="nx">returnedErr</span><span class="p">)</span>
-			<span class="p">}</span>
-		<span class="p">})</span>
-	<span class="p">}</span>
-<span class="p">}</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> returnedErr <span style="color:#81a1c1">!=</span> tc<span style="color:#eceff4">.</span>returnErr <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatalf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected returnErr: %v, got: %v&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>returnErr<span style="color:#eceff4">,</span> returnedErr<span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
+		<span style="color:#eceff4">})</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>To run these test cases, we will need three accompanying CSV files in the root
 of our project: <code>empty.csv</code>, <code>invalid.csv</code> and <code>valid.csv</code>. An empty CSV, an
 invalid CSV and a valid CSV file, respectively.</p>
@@ -540,57 +540,57 @@ with a matching <code>Record</code>.</p>
 approach might be preferable, but we will use the second approach to see how we
 can use fixtures. While we already have the fixture files from the previous
 test, we can use them in the test of the <code>FindByStudent</code> function:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestFindByStudent</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">cases</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
-		<span class="nx">fixture</span> <span class="kt">string</span>
-		<span class="nx">student</span> <span class="kt">string</span>
-		<span class="nx">want</span>    <span class="nx">Gradebook</span>
-		<span class="nx">name</span>    <span class="kt">string</span>
-	<span class="p">}{</span>
-		<span class="p">{</span>
-			<span class="nx">fixture</span><span class="p">:</span> <span class="s">&#34;fixtures/grades/empty.csv&#34;</span><span class="p">,</span>
-			<span class="nx">student</span><span class="p">:</span> <span class="s">&#34;Jane&#34;</span><span class="p">,</span>
-			<span class="nx">want</span><span class="p">:</span>    <span class="nx">Gradebook</span><span class="p">{},</span>
-			<span class="nx">name</span><span class="p">:</span>    <span class="s">&#34;EmptyFixture&#34;</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">fixture</span><span class="p">:</span> <span class="s">&#34;fixtures/grades/valid.csv&#34;</span><span class="p">,</span>
-			<span class="nx">student</span><span class="p">:</span> <span class="s">&#34;Jane&#34;</span><span class="p">,</span>
-			<span class="nx">want</span><span class="p">:</span> <span class="nx">Gradebook</span><span class="p">{</span>
-				<span class="nx">Record</span><span class="p">{</span>
-					<span class="nx">student</span><span class="p">:</span> <span class="s">&#34;Jane&#34;</span><span class="p">,</span>
-					<span class="nx">subject</span><span class="p">:</span> <span class="s">&#34;Chemistry&#34;</span><span class="p">,</span>
-					<span class="nx">grade</span><span class="p">:</span>   <span class="s">&#34;A&#34;</span><span class="p">,</span>
-				<span class="p">},</span>
-				<span class="nx">Record</span><span class="p">{</span>
-					<span class="nx">student</span><span class="p">:</span> <span class="s">&#34;Jane&#34;</span><span class="p">,</span>
-					<span class="nx">subject</span><span class="p">:</span> <span class="s">&#34;Algebra&#34;</span><span class="p">,</span>
-					<span class="nx">grade</span><span class="p">:</span>   <span class="s">&#34;A&#34;</span><span class="p">,</span>
-				<span class="p">},</span>
-			<span class="p">},</span>
-                        <span class="nx">name</span><span class="p">:</span> <span class="s">&#34;ValidFixtures&#34;</span><span class="p">,</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestFindByStudent</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	cases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+		fixture <span style="color:#81a1c1">string</span>
+		student <span style="color:#81a1c1">string</span>
+		want    Gradebook
+		name    <span style="color:#81a1c1">string</span>
+	<span style="color:#eceff4">}{</span>
+		<span style="color:#eceff4">{</span>
+			fixture<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;fixtures/grades/empty.csv&#34;</span><span style="color:#eceff4">,</span>
+			student<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Jane&#34;</span><span style="color:#eceff4">,</span>
+			want<span style="color:#eceff4">:</span>    Gradebook<span style="color:#eceff4">{},</span>
+			name<span style="color:#eceff4">:</span>    <span style="color:#a3be8c">&#34;EmptyFixture&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			fixture<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;fixtures/grades/valid.csv&#34;</span><span style="color:#eceff4">,</span>
+			student<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Jane&#34;</span><span style="color:#eceff4">,</span>
+			want<span style="color:#eceff4">:</span> Gradebook<span style="color:#eceff4">{</span>
+				Record<span style="color:#eceff4">{</span>
+					student<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Jane&#34;</span><span style="color:#eceff4">,</span>
+					subject<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Chemistry&#34;</span><span style="color:#eceff4">,</span>
+					grade<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;A&#34;</span><span style="color:#eceff4">,</span>
+				<span style="color:#eceff4">},</span>
+				Record<span style="color:#eceff4">{</span>
+					student<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Jane&#34;</span><span style="color:#eceff4">,</span>
+					subject<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Algebra&#34;</span><span style="color:#eceff4">,</span>
+					grade<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;A&#34;</span><span style="color:#eceff4">,</span>
+				<span style="color:#eceff4">},</span>
+			<span style="color:#eceff4">},</span>
+                        name<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;ValidFixtures&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">cases</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-			<span class="nx">gradebook</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">NewGradebook</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">fixture</span><span class="p">)</span>
-			<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Cannot create gradebook: %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-			<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> tc <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> cases <span style="color:#eceff4">{</span>
+		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Run</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>name<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+			gradebook<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewGradebook</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>fixture<span style="color:#eceff4">)</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatalf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Cannot create gradebook: %v&#34;</span><span style="color:#eceff4">,</span> err<span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
 
-			<span class="nx">got</span> <span class="o">:=</span> <span class="nx">gradebook</span><span class="p">.</span><span class="nf">FindByStudent</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">student</span><span class="p">)</span>
-			<span class="k">for</span> <span class="nx">idx</span><span class="p">,</span> <span class="nx">gotGrade</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">got</span> <span class="p">{</span>
-				<span class="nx">wantedGrade</span> <span class="o">:=</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">want</span><span class="p">[</span><span class="nx">idx</span><span class="p">]</span>
-				<span class="k">if</span> <span class="nx">gotGrade</span> <span class="o">!=</span> <span class="nx">wantedGrade</span> <span class="p">{</span>
-					<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected: %v, got: %v&#34;</span><span class="p">,</span> <span class="nx">wantedGrade</span><span class="p">,</span> <span class="nx">gotGrade</span><span class="p">)</span>
-				<span class="p">}</span>
-			<span class="p">}</span>
+			got <span style="color:#81a1c1">:=</span> gradebook<span style="color:#eceff4">.</span><span style="color:#88c0d0">FindByStudent</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>student<span style="color:#eceff4">)</span>
+			<span style="color:#81a1c1;font-weight:bold">for</span> idx<span style="color:#eceff4">,</span> gotGrade <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> got <span style="color:#eceff4">{</span>
+				wantedGrade <span style="color:#81a1c1">:=</span> tc<span style="color:#eceff4">.</span>want<span style="color:#eceff4">[</span>idx<span style="color:#eceff4">]</span>
+				<span style="color:#81a1c1;font-weight:bold">if</span> gotGrade <span style="color:#81a1c1">!=</span> wantedGrade <span style="color:#eceff4">{</span>
+					t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected: %v, got: %v&#34;</span><span style="color:#eceff4">,</span> wantedGrade<span style="color:#eceff4">,</span> gotGrade<span style="color:#eceff4">)</span>
+				<span style="color:#eceff4">}</span>
+			<span style="color:#eceff4">}</span>
 
-		<span class="p">})</span>
-	<span class="p">}</span>
+		<span style="color:#eceff4">})</span>
+	<span style="color:#eceff4">}</span>
 
-<span class="p">}</span>
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>In this test function, we have defined two test cases: the first one uses the
 <code>empty.csv</code> fixture, while the other uses the <code>valid.csv</code> fixture. By looking
 at the test cases, it is clear what we expect to get from each one. For
@@ -602,13 +602,13 @@ the <code>NewGradebook</code> function and the fixture file. Then, we invoke the
 <code>FindByStudent</code> function on the <code>Gradebook</code>, and we make sure that all of the
 grades that we got are the ones we expected.</p>
 <p>If we run the test, we&rsquo;ll get an output looking like this:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ go <span class="nb">test</span> -v -run<span class="o">=</span><span class="nv">TestFindByStudent</span>
-<span class="o">===</span> RUN   <span class="nv">TestFindByStudent</span>
-<span class="o">===</span> RUN   TestFindByStudent/EmptyFixture
-<span class="o">===</span> RUN   TestFindByStudent/ValidFixture
---- PASS: TestFindByStudent <span class="o">(</span>0.00s<span class="o">)</span>
-    --- PASS: TestFindByStudent/EmptyFixture <span class="o">(</span>0.00s<span class="o">)</span>
-    --- PASS: TestFindByStudent/ValidFixture <span class="o">(</span>0.00s<span class="o">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#81a1c1">test</span> -v -run<span style="color:#81a1c1">=</span>TestFindByStudent
+<span style="color:#81a1c1">===</span> RUN   TestFindByStudent
+<span style="color:#81a1c1">===</span> RUN   TestFindByStudent/EmptyFixture
+<span style="color:#81a1c1">===</span> RUN   TestFindByStudent/ValidFixture
+--- PASS: TestFindByStudent <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
+    --- PASS: TestFindByStudent/EmptyFixture <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
+    --- PASS: TestFindByStudent/ValidFixture <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
 PASS
 ok  	_/Users/Ilija/Documents/fixtures	0.004s
 </code></pre></div><p>The tests pass - building the <code>Gradebook</code>s with the fixtures worked well, so we
@@ -627,14 +627,14 @@ with an error.</p>
 reasons. We can extract all error handling for loading the fixture and test
 setup outside of the test functions. Let&rsquo;s create a small function that will do
 just that:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">buildGradebook</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">,</span> <span class="nx">path</span> <span class="kt">string</span><span class="p">)</span> <span class="o">*</span><span class="nx">Gradebook</span> <span class="p">{</span>
-	<span class="nx">gradebook</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">NewGradebook</span><span class="p">(</span><span class="nx">path</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Cannot create Gradebook: %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-	<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">buildGradebook</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">,</span> path <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">*</span>Gradebook <span style="color:#eceff4">{</span>
+	gradebook<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewGradebook</span><span style="color:#eceff4">(</span>path<span style="color:#eceff4">)</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatalf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Cannot create Gradebook: %v&#34;</span><span style="color:#eceff4">,</span> err<span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">gradebook</span>
-<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">&amp;</span>gradebook
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>The <code>buildGradebook</code> is simply a wrapper around the call to <code>NewGradebook</code>,
 with one key difference: if a <code>Gradebook</code> cannot be produced using
 <code>NewGradebook</code> it will mark the test as failed. Signaling the failure is done
@@ -646,64 +646,64 @@ returned from <code>NewGradebook</code> - that will all be handled by <code>buil
 <p>If we revisit our <code>TestFindByStudent</code> function now, it will not have changed
 much. Still, it will contain the improvements coming from the <code>buildGradebook</code>
 function:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestFindByStudent</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">cases</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
-		<span class="nx">fixture</span> <span class="kt">string</span>
-		<span class="nx">student</span> <span class="kt">string</span>
-		<span class="nx">want</span>    <span class="nx">Gradebook</span>
-		<span class="nx">name</span>    <span class="kt">string</span>
-	<span class="p">}{</span>
-		<span class="p">{</span>
-			<span class="nx">fixture</span><span class="p">:</span> <span class="s">&#34;fixtures/grades/empty.csv&#34;</span><span class="p">,</span>
-			<span class="nx">student</span><span class="p">:</span> <span class="s">&#34;Jane&#34;</span><span class="p">,</span>
-			<span class="nx">want</span><span class="p">:</span>    <span class="nx">Gradebook</span><span class="p">{},</span>
-			<span class="nx">name</span><span class="p">:</span>    <span class="s">&#34;EmptyFixture&#34;</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span> <span class="nx">fixture</span><span class="p">:</span> <span class="s">&#34;fixtures/grades/valid.csv&#34;</span><span class="p">,</span>
-			<span class="nx">student</span><span class="p">:</span> <span class="s">&#34;Jane&#34;</span><span class="p">,</span>
-			<span class="nx">want</span><span class="p">:</span> <span class="nx">Gradebook</span><span class="p">{</span>
-				<span class="nx">Record</span><span class="p">{</span>
-					<span class="nx">student</span><span class="p">:</span> <span class="s">&#34;Jane&#34;</span><span class="p">,</span>
-					<span class="nx">subject</span><span class="p">:</span> <span class="s">&#34;Chemistry&#34;</span><span class="p">,</span>
-					<span class="nx">grade</span><span class="p">:</span>   <span class="s">&#34;A&#34;</span><span class="p">,</span>
-				<span class="p">},</span>
-				<span class="nx">Record</span><span class="p">{</span>
-					<span class="nx">student</span><span class="p">:</span> <span class="s">&#34;Jane&#34;</span><span class="p">,</span>
-					<span class="nx">subject</span><span class="p">:</span> <span class="s">&#34;Algebra&#34;</span><span class="p">,</span>
-					<span class="nx">grade</span><span class="p">:</span>   <span class="s">&#34;A&#34;</span><span class="p">,</span>
-				<span class="p">},</span>
-			<span class="p">},</span>
-			<span class="nx">name</span><span class="p">:</span> <span class="s">&#34;ValidFixture&#34;</span><span class="p">,</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestFindByStudent</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	cases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+		fixture <span style="color:#81a1c1">string</span>
+		student <span style="color:#81a1c1">string</span>
+		want    Gradebook
+		name    <span style="color:#81a1c1">string</span>
+	<span style="color:#eceff4">}{</span>
+		<span style="color:#eceff4">{</span>
+			fixture<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;fixtures/grades/empty.csv&#34;</span><span style="color:#eceff4">,</span>
+			student<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Jane&#34;</span><span style="color:#eceff4">,</span>
+			want<span style="color:#eceff4">:</span>    Gradebook<span style="color:#eceff4">{},</span>
+			name<span style="color:#eceff4">:</span>    <span style="color:#a3be8c">&#34;EmptyFixture&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span> fixture<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;fixtures/grades/valid.csv&#34;</span><span style="color:#eceff4">,</span>
+			student<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Jane&#34;</span><span style="color:#eceff4">,</span>
+			want<span style="color:#eceff4">:</span> Gradebook<span style="color:#eceff4">{</span>
+				Record<span style="color:#eceff4">{</span>
+					student<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Jane&#34;</span><span style="color:#eceff4">,</span>
+					subject<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Chemistry&#34;</span><span style="color:#eceff4">,</span>
+					grade<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;A&#34;</span><span style="color:#eceff4">,</span>
+				<span style="color:#eceff4">},</span>
+				Record<span style="color:#eceff4">{</span>
+					student<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Jane&#34;</span><span style="color:#eceff4">,</span>
+					subject<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Algebra&#34;</span><span style="color:#eceff4">,</span>
+					grade<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;A&#34;</span><span style="color:#eceff4">,</span>
+				<span style="color:#eceff4">},</span>
+			<span style="color:#eceff4">},</span>
+			name<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;ValidFixture&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">cases</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-			<span class="nx">gradebook</span> <span class="o">:=</span> <span class="nf">buildGradebook</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">fixture</span><span class="p">)</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> tc <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> cases <span style="color:#eceff4">{</span>
+		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Run</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>name<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+			gradebook <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">buildGradebook</span><span style="color:#eceff4">(</span>t<span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>fixture<span style="color:#eceff4">)</span>
 
-			<span class="nx">got</span> <span class="o">:=</span> <span class="nx">gradebook</span><span class="p">.</span><span class="nf">FindByStudent</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">student</span><span class="p">)</span>
-			<span class="k">for</span> <span class="nx">idx</span><span class="p">,</span> <span class="nx">gotGrade</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">got</span> <span class="p">{</span>
-				<span class="nx">wantedGrade</span> <span class="o">:=</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">want</span><span class="p">[</span><span class="nx">idx</span><span class="p">]</span>
-				<span class="k">if</span> <span class="nx">gotGrade</span> <span class="o">!=</span> <span class="nx">wantedGrade</span> <span class="p">{</span>
-					<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected: %v, got: %v&#34;</span><span class="p">,</span> <span class="nx">wantedGrade</span><span class="p">,</span> <span class="nx">gotGrade</span><span class="p">)</span>
-				<span class="p">}</span>
-			<span class="p">}</span>
+			got <span style="color:#81a1c1">:=</span> gradebook<span style="color:#eceff4">.</span><span style="color:#88c0d0">FindByStudent</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>student<span style="color:#eceff4">)</span>
+			<span style="color:#81a1c1;font-weight:bold">for</span> idx<span style="color:#eceff4">,</span> gotGrade <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> got <span style="color:#eceff4">{</span>
+				wantedGrade <span style="color:#81a1c1">:=</span> tc<span style="color:#eceff4">.</span>want<span style="color:#eceff4">[</span>idx<span style="color:#eceff4">]</span>
+				<span style="color:#81a1c1;font-weight:bold">if</span> gotGrade <span style="color:#81a1c1">!=</span> wantedGrade <span style="color:#eceff4">{</span>
+					t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Expected: %v, got: %v&#34;</span><span style="color:#eceff4">,</span> wantedGrade<span style="color:#eceff4">,</span> gotGrade<span style="color:#eceff4">)</span>
+				<span style="color:#eceff4">}</span>
+			<span style="color:#eceff4">}</span>
 
-		<span class="p">})</span>
-	<span class="p">}</span>
-<span class="p">}</span>
+		<span style="color:#eceff4">})</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>If we would remove any of the fixture files, we will see how the test will be
 marked as failed due to the <code>t.Fatal</code> invocation:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ rm testdata/grades/valid.csv <span class="c1"># We remove the fixture</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ rm testdata/grades/valid.csv <span style="color:#616e87;font-style:italic"># We remove the fixture</span>
 
-$ go <span class="nb">test</span> ./... -count<span class="o">=</span><span class="m">1</span> -v -run<span class="o">=</span><span class="nv">TestFindByStudent</span>
-<span class="o">===</span> RUN   <span class="nv">TestFindByStudent</span>
-<span class="o">===</span> RUN   TestFindByStudent/ValidFixture
-<span class="o">===</span> RUN   TestFindByStudent/EmptyFixture
---- FAIL: TestFindByStudent <span class="o">(</span>0.00s<span class="o">)</span>
-    --- FAIL: TestFindByStudent/ValidFixture <span class="o">(</span>0.00s<span class="o">)</span>
+$ go <span style="color:#81a1c1">test</span> ./... -count<span style="color:#81a1c1">=</span><span style="color:#b48ead">1</span> -v -run<span style="color:#81a1c1">=</span>TestFindByStudent
+<span style="color:#81a1c1">===</span> RUN   TestFindByStudent
+<span style="color:#81a1c1">===</span> RUN   TestFindByStudent/ValidFixture
+<span style="color:#81a1c1">===</span> RUN   TestFindByStudent/EmptyFixture
+--- FAIL: TestFindByStudent <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
+    --- FAIL: TestFindByStudent/ValidFixture <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
         grades_test.go:8: Cannot create Gradebook: open testdata/grades/valid.csv: no such file or directory
-    --- PASS: TestFindByStudent/EmptyFixture <span class="o">(</span>0.00s<span class="o">)</span>
+    --- PASS: TestFindByStudent/EmptyFixture <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
 FAIL
 FAIL	_/Users/Ilija/Documents/fixtures	0.004s
 </code></pre></div><p>By having another function that takes care of building the <code>Gradebook</code>, we can
@@ -1098,7 +1098,7 @@ article to reflect that. Thanks Andreas!</p>
       
         <p class="text-sm text-neutral-500 dark:text-neutral-400">
             &copy;
-            2022
+            2023
             Ilija Eftimov
         </p>
       

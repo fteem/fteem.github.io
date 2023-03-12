@@ -350,13 +350,13 @@ register but they do not finish the registration process. Often, the database
 can be polluted with records of unfinished user registration.</p>
 <p>The application has a Rake task that deletes users that haven&rsquo;t finished their
 registration process.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># lib/tasks/users/remove_unconfirmed.rb</span>
-<span class="n">namespace</span> <span class="ss">:users</span> <span class="k">do</span>
-  <span class="n">desc</span> <span class="s2">&#34;Delete users that have not finished the registration process&#34;</span>
-  <span class="n">task</span> <span class="ss">:remove_unconfirmed</span> <span class="k">do</span>
-    <span class="no">User</span><span class="o">.</span><span class="n">unconfirmed</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span><span class="o">|</span><span class="n">user</span><span class="o">|</span> <span class="n">user</span><span class="o">.</span><span class="n">delete</span> <span class="p">}</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#616e87;font-style:italic"># lib/tasks/users/remove_unconfirmed.rb</span>
+namespace <span style="color:#a3be8c">:users</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  desc <span style="color:#a3be8c">&#34;Delete users that have not finished the registration process&#34;</span>
+  task <span style="color:#a3be8c">:remove_unconfirmed</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#8fbcbb">User</span><span style="color:#81a1c1">.</span>unconfirmed<span style="color:#81a1c1">.</span>each <span style="color:#eceff4">{</span><span style="color:#81a1c1">|</span>user<span style="color:#81a1c1">|</span> user<span style="color:#81a1c1">.</span>delete <span style="color:#eceff4">}</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>This task is run with as a cron job. Let&rsquo;s see how we can test it.</p>
 <p>Lately, I prefer testing with Minitest. I like it because it&rsquo;s really tiny,
 quite verbose, magic-less and it&rsquo;s pure Ruby. Now, since Test::Unit is
@@ -372,34 +372,34 @@ database.</p>
 application itself. Note that in your tests you should change <code>MyApplication</code>
 to the name of your application.</p>
 <p>The test will look like this:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># test/lib/user_notify_test.rb</span>
-<span class="nb">require</span> <span class="s1">&#39;test_helper&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#616e87;font-style:italic"># test/lib/user_notify_test.rb</span>
+<span style="color:#81a1c1">require</span> <span style="color:#a3be8c">&#39;test_helper&#39;</span>
 
-<span class="k">class</span> <span class="nc">RemoveUnconfirmedTaskTest</span> <span class="o">&lt;</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">TestCase</span>
-  <span class="n">setup</span> <span class="k">do</span>
-    <span class="vi">@confirmed_user</span> <span class="o">=</span> <span class="no">User</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="ss">email</span><span class="p">:</span> <span class="s2">&#34;john@appleseed.com&#34;</span><span class="p">,</span> <span class="ss">confirmed_at</span><span class="p">:</span> <span class="no">Time</span><span class="o">.</span><span class="n">now</span><span class="p">)</span>
-    <span class="vi">@unconfirmed_user</span> <span class="o">=</span> <span class="no">User</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="ss">email</span><span class="p">:</span> <span class="s2">&#34;jane@doe.com&#34;</span><span class="p">,</span> <span class="ss">confirmed_at</span><span class="p">:</span> <span class="kp">nil</span><span class="p">)</span>
-    <span class="no">MyApplication</span><span class="o">::</span><span class="no">Application</span><span class="o">.</span><span class="n">load_tasks</span>
-    <span class="no">Rake</span><span class="o">::</span><span class="no">Task</span><span class="o">[</span><span class="s1">&#39;users:remove_unconfirmed&#39;</span><span class="o">].</span><span class="n">invoke</span>
-  <span class="k">end</span>
+<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">RemoveUnconfirmedTaskTest</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">ActiveSupport</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">TestCase</span>
+  setup <span style="color:#81a1c1;font-weight:bold">do</span>
+    @confirmed_user <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">User</span><span style="color:#81a1c1">.</span>create<span style="color:#eceff4">(</span><span style="color:#a3be8c">email</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;john@appleseed.com&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">confirmed_at</span><span style="color:#eceff4">:</span> <span style="color:#8fbcbb">Time</span><span style="color:#81a1c1">.</span>now<span style="color:#eceff4">)</span>
+    @unconfirmed_user <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">User</span><span style="color:#81a1c1">.</span>create<span style="color:#eceff4">(</span><span style="color:#a3be8c">email</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;jane@doe.com&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">confirmed_at</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">nil</span><span style="color:#eceff4">)</span>
+    <span style="color:#8fbcbb">MyApplication</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Application</span><span style="color:#81a1c1">.</span>load_tasks
+    <span style="color:#8fbcbb">Rake</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Task</span><span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;users:remove_unconfirmed&#39;</span><span style="color:#81a1c1">].</span>invoke
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="nb">test</span> <span class="s2">&#34;unconfirmed user is deleted&#34;</span> <span class="k">do</span>
-    <span class="n">assert_nil</span> <span class="no">User</span><span class="o">.</span><span class="n">find_by</span><span class="p">(</span><span class="ss">email</span><span class="p">:</span> <span class="s2">&#34;jane@doe.com&#34;</span><span class="p">)</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1">test</span> <span style="color:#a3be8c">&#34;unconfirmed user is deleted&#34;</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    assert_nil <span style="color:#8fbcbb">User</span><span style="color:#81a1c1">.</span>find_by<span style="color:#eceff4">(</span><span style="color:#a3be8c">email</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;jane@doe.com&#34;</span><span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="nb">test</span> <span class="s2">&#34;confimed user is not deleted&#34;</span> <span class="k">do</span>
-    <span class="n">assert_equal</span> <span class="vi">@confimed_user</span><span class="p">,</span> <span class="no">User</span><span class="o">.</span><span class="n">find_by</span><span class="p">(</span><span class="ss">email</span><span class="p">:</span> <span class="s2">&#34;john@appleseed.com&#34;</span><span class="p">)</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+  <span style="color:#81a1c1">test</span> <span style="color:#a3be8c">&#34;confimed user is not deleted&#34;</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    assert_equal @confimed_user<span style="color:#eceff4">,</span> <span style="color:#8fbcbb">User</span><span style="color:#81a1c1">.</span>find_by<span style="color:#eceff4">(</span><span style="color:#a3be8c">email</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;john@appleseed.com&#34;</span><span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>Now, in the <code>setup</code> step, we create two users - one which will be confirmed and
 one unconfirmed. Then, we load the tasks from the application. This is done by
 adding:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="no">MyApplication</span><span class="o">::</span><span class="no">Application</span><span class="o">.</span><span class="n">load_tasks</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#8fbcbb">MyApplication</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Application</span><span style="color:#81a1c1">.</span>load_tasks</code></pre></div>
 <p>This task basically requires rake and loads each file in the <code>lib/tasks</code> path.
 You can see it&rsquo;s source
 <a href="https://github.com/rails/rails/blob/0450642c27af3af35b449208b21695fd55c30f90/railties/lib/rails/engine.rb#L455">here</a>.
 Next, we invoke the task itself. We do this by adding this in our test:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="no">Rake</span><span class="o">::</span><span class="no">Task</span><span class="o">[</span><span class="s1">&#39;users:remove_unconfirmed&#39;</span><span class="o">].</span><span class="n">invoke</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#8fbcbb">Rake</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Task</span><span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;users:remove_unconfirmed&#39;</span><span style="color:#81a1c1">].</span>invoke</code></pre></div>
 <p>This line locates the task by it&rsquo;s name and returns a <code>Rake::Task</code> object.
 Then, we call <code>invoke</code> on it, which executes the task. After that we make
 assertions on the data in the database, expecting the unconfirmed user to be
@@ -410,41 +410,41 @@ a utility class. Then, we would call the method from the class that contains
 the logic in the Rake task.</p>
 <p>Let&rsquo;s create a <code>UserRemoval</code> class, with a class method called
 <code>remove_unconfirmed</code>.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">UserRemoval</span>
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">remove_unconfirmed!</span>
-    <span class="no">User</span><span class="o">.</span><span class="n">unconfirmed</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span><span class="o">|</span><span class="n">user</span><span class="o">|</span> <span class="n">user</span><span class="o">.</span><span class="n">delete</span> <span class="p">}</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">UserRemoval</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#8fbcbb">self</span><span style="color:#81a1c1">.</span><span style="color:#88c0d0">remove_unconfirmed!</span>
+    <span style="color:#8fbcbb">User</span><span style="color:#81a1c1">.</span>unconfirmed<span style="color:#81a1c1">.</span>each <span style="color:#eceff4">{</span><span style="color:#81a1c1">|</span>user<span style="color:#81a1c1">|</span> user<span style="color:#81a1c1">.</span>delete <span style="color:#eceff4">}</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>Then, our Rake task would look like:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># lib/tasks/users/remove_unconfirmed.rb</span>
-<span class="n">namespace</span> <span class="ss">:users</span> <span class="k">do</span>
-  <span class="n">desc</span> <span class="s2">&#34;Delete users that have not finished the registration process&#34;</span>
-  <span class="n">task</span> <span class="ss">:remove_unconfirmed</span> <span class="k">do</span>
-    <span class="no">UserRemoval</span><span class="o">.</span><span class="n">remove_unconfirmed!</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#616e87;font-style:italic"># lib/tasks/users/remove_unconfirmed.rb</span>
+namespace <span style="color:#a3be8c">:users</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  desc <span style="color:#a3be8c">&#34;Delete users that have not finished the registration process&#34;</span>
+  task <span style="color:#a3be8c">:remove_unconfirmed</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#8fbcbb">UserRemoval</span><span style="color:#81a1c1">.</span>remove_unconfirmed!
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>Since all of the logic in the rake task is contained in another class, we can
 test the class itself, instead of testing the task. This is quite trivial,
 since we can pretty much use the same test, with some small changes.</p>
 <p>The test would look like this:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># test/lib/user_notify_test.rb</span>
-<span class="nb">require</span> <span class="s1">&#39;test_helper&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#616e87;font-style:italic"># test/lib/user_notify_test.rb</span>
+<span style="color:#81a1c1">require</span> <span style="color:#a3be8c">&#39;test_helper&#39;</span>
 
-<span class="k">class</span> <span class="nc">UserRemovalTest</span> <span class="o">&lt;</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">TestCase</span>
-  <span class="n">setup</span> <span class="k">do</span>
-    <span class="vi">@confirmed_user</span> <span class="o">=</span> <span class="no">User</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="ss">email</span><span class="p">:</span> <span class="s2">&#34;john@appleseed.com&#34;</span><span class="p">,</span> <span class="ss">confirmed_at</span><span class="p">:</span> <span class="no">Time</span><span class="o">.</span><span class="n">now</span><span class="p">)</span>
-    <span class="vi">@unconfirmed_user</span> <span class="o">=</span> <span class="no">User</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="ss">email</span><span class="p">:</span> <span class="s2">&#34;jane@doe.com&#34;</span><span class="p">,</span> <span class="ss">confirmed_at</span><span class="p">:</span> <span class="kp">nil</span><span class="p">)</span>
-    <span class="no">UserRemoval</span><span class="o">.</span><span class="n">remove_unconfirmed!</span>
-  <span class="k">end</span>
+<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">UserRemovalTest</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">ActiveSupport</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">TestCase</span>
+  setup <span style="color:#81a1c1;font-weight:bold">do</span>
+    @confirmed_user <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">User</span><span style="color:#81a1c1">.</span>create<span style="color:#eceff4">(</span><span style="color:#a3be8c">email</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;john@appleseed.com&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">confirmed_at</span><span style="color:#eceff4">:</span> <span style="color:#8fbcbb">Time</span><span style="color:#81a1c1">.</span>now<span style="color:#eceff4">)</span>
+    @unconfirmed_user <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">User</span><span style="color:#81a1c1">.</span>create<span style="color:#eceff4">(</span><span style="color:#a3be8c">email</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;jane@doe.com&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">confirmed_at</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">nil</span><span style="color:#eceff4">)</span>
+    <span style="color:#8fbcbb">UserRemoval</span><span style="color:#81a1c1">.</span>remove_unconfirmed!
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="nb">test</span> <span class="s2">&#34;unconfirmed user is deleted&#34;</span> <span class="k">do</span>
-    <span class="n">assert_nil</span> <span class="no">User</span><span class="o">.</span><span class="n">find_by</span><span class="p">(</span><span class="ss">email</span><span class="p">:</span> <span class="s2">&#34;jane@doe.com&#34;</span><span class="p">)</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1">test</span> <span style="color:#a3be8c">&#34;unconfirmed user is deleted&#34;</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    assert_nil <span style="color:#8fbcbb">User</span><span style="color:#81a1c1">.</span>find_by<span style="color:#eceff4">(</span><span style="color:#a3be8c">email</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;jane@doe.com&#34;</span><span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="nb">test</span> <span class="s2">&#34;confimed user is not deleted&#34;</span> <span class="k">do</span>
-    <span class="n">assert_equal</span> <span class="vi">@confimed_user</span><span class="p">,</span> <span class="no">User</span><span class="o">.</span><span class="n">find_by</span><span class="p">(</span><span class="ss">email</span><span class="p">:</span> <span class="s2">&#34;john@appleseed.com&#34;</span><span class="p">)</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+  <span style="color:#81a1c1">test</span> <span style="color:#a3be8c">&#34;confimed user is not deleted&#34;</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    assert_equal @confimed_user<span style="color:#eceff4">,</span> <span style="color:#8fbcbb">User</span><span style="color:#81a1c1">.</span>find_by<span style="color:#eceff4">(</span><span style="color:#a3be8c">email</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;john@appleseed.com&#34;</span><span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>As you can notice, the test is basically the same, without loading/invoking the
 Rake task. Instead, we just call the <code>UserRemoval.remove_unconfirmed!</code> method.</p>
 <p>Now, we could stub out the calls to the database and isolate the tests from
@@ -843,7 +843,7 @@ you take another approach?</p>
       
         <p class="text-sm text-neutral-500 dark:text-neutral-400">
             &copy;
-            2022
+            2023
             Ilija Eftimov
         </p>
       

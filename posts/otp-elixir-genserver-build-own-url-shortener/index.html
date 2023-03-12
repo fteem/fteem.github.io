@@ -419,35 +419,35 @@ receive multiple commands:</p>
 <li><code>flush</code> – erase the URL shortener memory</li>
 <li><code>stop</code> – stop the process</li>
 </ul>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="kd">defmodule</span> <span class="nc">URLShortener</span> <span class="k">do</span>
-  <span class="kd">def</span> <span class="n">start</span> <span class="k">do</span>
-    <span class="n">spawn</span><span class="p">(</span><span class="n">__MODULE__</span><span class="p">,</span> <span class="ss">:loop</span><span class="p">,</span> <span class="p">[%{}])</span>
-  <span class="k">end</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir"><span style="color:#81a1c1;font-weight:bold">defmodule</span> <span style="color:#8fbcbb">URLShortener</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> start <span style="color:#81a1c1;font-weight:bold">do</span>
+    spawn<span style="color:#eceff4">(</span>__MODULE__<span style="color:#eceff4">,</span> <span style="color:#a3be8c">:loop</span><span style="color:#eceff4">,</span> <span style="color:#eceff4">[%{}])</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="kd">def</span> <span class="n">loop</span><span class="p">(</span><span class="n">state</span><span class="p">)</span> <span class="k">do</span>
-    <span class="k">receive</span> <span class="k">do</span>
-      <span class="p">{</span><span class="ss">:stop</span><span class="p">,</span> <span class="n">caller</span><span class="p">}</span> <span class="o">-&gt;</span>
-        <span class="n">send</span> <span class="n">caller</span><span class="p">,</span> <span class="s2">&#34;Shutting down.&#34;</span>
-      <span class="p">{</span><span class="ss">:shorten</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">caller</span><span class="p">}</span> <span class="o">-&gt;</span>
-        <span class="n">url_md5</span> <span class="o">=</span> <span class="n">md5</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-        <span class="n">new_state</span> <span class="o">=</span> <span class="nc">Map</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">url_md5</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
-        <span class="n">send</span> <span class="n">caller</span><span class="p">,</span> <span class="n">url_md5</span>
-        <span class="n">loop</span><span class="p">(</span><span class="n">new_state</span><span class="p">)</span>
-      <span class="p">{</span><span class="ss">:get</span><span class="p">,</span> <span class="n">md5</span><span class="p">,</span> <span class="n">caller</span><span class="p">}</span> <span class="o">-&gt;</span>
-        <span class="n">send</span> <span class="n">caller</span><span class="p">,</span> <span class="nc">Map</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">md5</span><span class="p">)</span>
-        <span class="n">loop</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
-      <span class="ss">:flush</span> <span class="o">-&gt;</span>
-        <span class="n">loop</span><span class="p">(%{})</span>
-      <span class="n">_</span> <span class="o">-&gt;</span>
-        <span class="n">loop</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> loop<span style="color:#eceff4">(</span>state<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#81a1c1;font-weight:bold">receive</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+      <span style="color:#eceff4">{</span><span style="color:#a3be8c">:stop</span><span style="color:#eceff4">,</span> caller<span style="color:#eceff4">}</span> <span style="color:#81a1c1">-&gt;</span>
+        send caller<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Shutting down.&#34;</span>
+      <span style="color:#eceff4">{</span><span style="color:#a3be8c">:shorten</span><span style="color:#eceff4">,</span> url<span style="color:#eceff4">,</span> caller<span style="color:#eceff4">}</span> <span style="color:#81a1c1">-&gt;</span>
+        url_md5 <span style="color:#81a1c1">=</span> md5<span style="color:#eceff4">(</span>url<span style="color:#eceff4">)</span>
+        new_state <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Map</span><span style="color:#81a1c1">.</span>put<span style="color:#eceff4">(</span>state<span style="color:#eceff4">,</span> url_md5<span style="color:#eceff4">,</span> url<span style="color:#eceff4">)</span>
+        send caller<span style="color:#eceff4">,</span> url_md5
+        loop<span style="color:#eceff4">(</span>new_state<span style="color:#eceff4">)</span>
+      <span style="color:#eceff4">{</span><span style="color:#a3be8c">:get</span><span style="color:#eceff4">,</span> md5<span style="color:#eceff4">,</span> caller<span style="color:#eceff4">}</span> <span style="color:#81a1c1">-&gt;</span>
+        send caller<span style="color:#eceff4">,</span> <span style="color:#8fbcbb">Map</span><span style="color:#81a1c1">.</span>fetch<span style="color:#eceff4">(</span>state<span style="color:#eceff4">,</span> md5<span style="color:#eceff4">)</span>
+        loop<span style="color:#eceff4">(</span>state<span style="color:#eceff4">)</span>
+      <span style="color:#a3be8c">:flush</span> <span style="color:#81a1c1">-&gt;</span>
+        loop<span style="color:#eceff4">(%{})</span>
+      _ <span style="color:#81a1c1">-&gt;</span>
+        loop<span style="color:#eceff4">(</span>state<span style="color:#eceff4">)</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="kd">defp</span> <span class="n">md5</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">do</span>
-    <span class="ss">:crypto</span><span class="o">.</span><span class="n">hash</span><span class="p">(</span><span class="ss">:md5</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
-    <span class="o">|&gt;</span> <span class="nc">Base</span><span class="o">.</span><span class="n">encode16</span><span class="p">(</span><span class="ss">case</span><span class="p">:</span> <span class="ss">:lower</span><span class="p">)</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+  <span style="color:#81a1c1;font-weight:bold">defp</span> md5<span style="color:#eceff4">(</span>url<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#a3be8c">:crypto</span><span style="color:#81a1c1">.</span>hash<span style="color:#eceff4">(</span><span style="color:#a3be8c">:md5</span><span style="color:#eceff4">,</span> url<span style="color:#eceff4">)</span>
+    <span style="color:#81a1c1">|&gt;</span> <span style="color:#8fbcbb">Base</span><span style="color:#81a1c1">.</span>encode16<span style="color:#eceff4">(</span><span style="color:#a3be8c">case</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">:lower</span><span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>What the module does is when the process starts it will recursively call the
 <code>URLShortener.loop/1</code> function, until it receives the <code>{:stop, caller}</code>
 message.</p>
@@ -456,12 +456,12 @@ message.</p>
 new map (called <code>new_state</code>). Once we get the digest we store it in a map with
 the key being the MD5 and the value is the actual URL. The <code>state</code> map will
 look like:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="p">%{</span>
-  <span class="s2">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span> <span class="o">=&gt;</span> <span class="s2">&#34;https://google.com&#34;</span><span class="p">,</span>
-  <span class="s2">&#34;76100d6f27db53fddb6c8fce320f5d21&#34;</span> <span class="o">=&gt;</span> <span class="s2">&#34;https://elixir-lang.org&#34;</span><span class="p">,</span>
-  <span class="s2">&#34;3097fca9b1ec8942c4305e550ef1b50a&#34;</span> <span class="o">=&gt;</span> <span class="s2">&#34;https://github.com&#34;</span><span class="p">,</span>
-  <span class="n">...</span>
-<span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir"><span style="color:#eceff4">%{</span>
+  <span style="color:#a3be8c">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#34;https://google.com&#34;</span><span style="color:#eceff4">,</span>
+  <span style="color:#a3be8c">&#34;76100d6f27db53fddb6c8fce320f5d21&#34;</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#34;https://elixir-lang.org&#34;</span><span style="color:#eceff4">,</span>
+  <span style="color:#a3be8c">&#34;3097fca9b1ec8942c4305e550ef1b50a&#34;</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#34;https://github.com&#34;</span><span style="color:#eceff4">,</span>
+  ...
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>Then, we send the MD5 value back to the caller. Obviously, this is not how
 bit.ly or the likes work, as their links are much shorter. (For those
 interested,
@@ -473,44 +473,44 @@ only a single value from the <code>state</code> map, while <code>flush</code> in
 an empty map, effectively removing all the shortened links from the process'
 state (memory).</p>
 <p>Let&rsquo;s run our shortener in an <code>IEx</code> session:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">iex</span><span class="p">(</span><span class="mi">22</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">shortener</span> <span class="o">=</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">start</span>
-<span class="c1">#PID&lt;0.141.0&gt;</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">iex<span style="color:#eceff4">(</span><span style="color:#b48ead">22</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> shortener <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">URLShortener</span><span style="color:#81a1c1">.</span>start
+<span style="color:#616e87;font-style:italic">#PID&lt;0.141.0&gt;</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">23</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">send</span> <span class="n">shortener</span><span class="p">,</span> <span class="p">{</span><span class="ss">:shorten</span><span class="p">,</span> <span class="s2">&#34;https://ieftimov.com&#34;</span><span class="p">,</span> <span class="n">self</span><span class="p">()}</span>
-<span class="p">{</span><span class="ss">:shorten</span><span class="p">,</span> <span class="s2">&#34;https://ieftimov.com&#34;</span><span class="p">,</span> <span class="c1">#PID&lt;0.102.0&gt;}</span>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">23</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> send shortener<span style="color:#eceff4">,</span> <span style="color:#eceff4">{</span><span style="color:#a3be8c">:shorten</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;https://ieftimov.com&#34;</span><span style="color:#eceff4">,</span> self<span style="color:#eceff4">()}</span>
+<span style="color:#eceff4">{</span><span style="color:#a3be8c">:shorten</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;https://ieftimov.com&#34;</span><span style="color:#eceff4">,</span> <span style="color:#616e87;font-style:italic">#PID&lt;0.102.0&gt;}</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">send</span> <span class="n">shortener</span><span class="p">,</span> <span class="p">{</span><span class="ss">:shorten</span><span class="p">,</span> <span class="s2">&#34;https://google.com&#34;</span><span class="p">,</span> <span class="n">self</span><span class="p">()}</span>
-<span class="p">{</span><span class="ss">:shorten</span><span class="p">,</span> <span class="s2">&#34;https://google.com&#34;</span><span class="p">,</span> <span class="c1">#PID&lt;0.102.0&gt;}</span>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">24</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> send shortener<span style="color:#eceff4">,</span> <span style="color:#eceff4">{</span><span style="color:#a3be8c">:shorten</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;https://google.com&#34;</span><span style="color:#eceff4">,</span> self<span style="color:#eceff4">()}</span>
+<span style="color:#eceff4">{</span><span style="color:#a3be8c">:shorten</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;https://google.com&#34;</span><span style="color:#eceff4">,</span> <span style="color:#616e87;font-style:italic">#PID&lt;0.102.0&gt;}</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">send</span> <span class="n">shortener</span><span class="p">,</span> <span class="p">{</span><span class="ss">:shorten</span><span class="p">,</span> <span class="s2">&#34;https://github.com&#34;</span><span class="p">,</span> <span class="n">self</span><span class="p">()}</span>
-<span class="p">{</span><span class="ss">:shorten</span><span class="p">,</span> <span class="s2">&#34;https://github.com&#34;</span><span class="p">,</span> <span class="c1">#PID&lt;0.102.0&gt;}</span>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">25</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> send shortener<span style="color:#eceff4">,</span> <span style="color:#eceff4">{</span><span style="color:#a3be8c">:shorten</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;https://github.com&#34;</span><span style="color:#eceff4">,</span> self<span style="color:#eceff4">()}</span>
+<span style="color:#eceff4">{</span><span style="color:#a3be8c">:shorten</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;https://github.com&#34;</span><span style="color:#eceff4">,</span> <span style="color:#616e87;font-style:italic">#PID&lt;0.102.0&gt;}</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">26</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">flush</span>
-<span class="s2">&#34;8c4c7fbc57b08d379da5b1312690be04&#34;</span>
-<span class="s2">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span>
-<span class="s2">&#34;3097fca9b1ec8942c4305e550ef1b50a&#34;</span>
-<span class="ss">:ok</span>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">26</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> flush
+<span style="color:#a3be8c">&#34;8c4c7fbc57b08d379da5b1312690be04&#34;</span>
+<span style="color:#a3be8c">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span>
+<span style="color:#a3be8c">&#34;3097fca9b1ec8942c4305e550ef1b50a&#34;</span>
+<span style="color:#a3be8c">:ok</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">27</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">send</span> <span class="n">shortener</span><span class="p">,</span> <span class="p">{</span><span class="ss">:get</span><span class="p">,</span> <span class="s2">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span><span class="p">,</span> <span class="n">self</span><span class="p">()}</span>
-<span class="p">{</span><span class="ss">:get</span><span class="p">,</span> <span class="s2">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span><span class="p">,</span> <span class="c1">#PID&lt;0.102.0&gt;}</span>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">27</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> send shortener<span style="color:#eceff4">,</span> <span style="color:#eceff4">{</span><span style="color:#a3be8c">:get</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span><span style="color:#eceff4">,</span> self<span style="color:#eceff4">()}</span>
+<span style="color:#eceff4">{</span><span style="color:#a3be8c">:get</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span><span style="color:#eceff4">,</span> <span style="color:#616e87;font-style:italic">#PID&lt;0.102.0&gt;}</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">28</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">flush</span>
-<span class="s2">&#34;https://google.com&#34;</span>
-<span class="ss">:ok</span>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">28</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> flush
+<span style="color:#a3be8c">&#34;https://google.com&#34;</span>
+<span style="color:#a3be8c">:ok</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">29</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">send</span> <span class="n">shortener</span><span class="p">,</span> <span class="p">{</span><span class="ss">:get</span><span class="p">,</span> <span class="s2">&#34;8c4c7fbc57b08d379da5b1312690be04&#34;</span><span class="p">,</span> <span class="n">self</span><span class="p">()}</span>
-<span class="p">{</span><span class="ss">:get</span><span class="p">,</span> <span class="s2">&#34;8c4c7fbc57b08d379da5b1312690be04&#34;</span><span class="p">,</span> <span class="c1">#PID&lt;0.102.0&gt;}</span>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">29</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> send shortener<span style="color:#eceff4">,</span> <span style="color:#eceff4">{</span><span style="color:#a3be8c">:get</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;8c4c7fbc57b08d379da5b1312690be04&#34;</span><span style="color:#eceff4">,</span> self<span style="color:#eceff4">()}</span>
+<span style="color:#eceff4">{</span><span style="color:#a3be8c">:get</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;8c4c7fbc57b08d379da5b1312690be04&#34;</span><span style="color:#eceff4">,</span> <span style="color:#616e87;font-style:italic">#PID&lt;0.102.0&gt;}</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">flush</span>
-<span class="s2">&#34;https://ieftimov.com&#34;</span>
-<span class="ss">:ok</span>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">30</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> flush
+<span style="color:#a3be8c">&#34;https://ieftimov.com&#34;</span>
+<span style="color:#a3be8c">:ok</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">31</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">send</span> <span class="n">shortener</span><span class="p">,</span> <span class="p">{</span><span class="ss">:get</span><span class="p">,</span> <span class="s2">&#34;3097fca9b1ec8942c4305e550ef1b50a&#34;</span><span class="p">,</span> <span class="n">self</span><span class="p">()}</span>
-<span class="p">{</span><span class="ss">:get</span><span class="p">,</span> <span class="s2">&#34;3097fca9b1ec8942c4305e550ef1b50a&#34;</span><span class="p">,</span> <span class="c1">#PID&lt;0.102.0&gt;}</span>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">31</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> send shortener<span style="color:#eceff4">,</span> <span style="color:#eceff4">{</span><span style="color:#a3be8c">:get</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;3097fca9b1ec8942c4305e550ef1b50a&#34;</span><span style="color:#eceff4">,</span> self<span style="color:#eceff4">()}</span>
+<span style="color:#eceff4">{</span><span style="color:#a3be8c">:get</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;3097fca9b1ec8942c4305e550ef1b50a&#34;</span><span style="color:#eceff4">,</span> <span style="color:#616e87;font-style:italic">#PID&lt;0.102.0&gt;}</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">flush</span>
-<span class="s2">&#34;https://github.com&#34;</span>
-<span class="ss">:ok</span></code></pre></div>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">32</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> flush
+<span style="color:#a3be8c">&#34;https://github.com&#34;</span>
+<span style="color:#a3be8c">:ok</span></code></pre></div>
 <p>Working as expected – we send three different URLs for shortening, we receive
 their MD5 digests back in the process mailbox and when we query for them we get
 each of them back.</p>
@@ -550,16 +550,16 @@ of holding state. In fact, <code>GenServer</code>s must implement a <code>init/1
 which will set the initial state of the server (see the <code>init/1</code> documentation
 <a href="https://hexdocs.pm/elixir/GenServer.html#c:init/1">here</a> for more details).</p>
 <p>To start the server we can run:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="nc">GenServer</span><span class="o">.</span><span class="n">start_link</span><span class="p">(</span><span class="n">__MODULE__</span><span class="p">,</span> <span class="ss">:ok</span><span class="p">,</span> <span class="p">[])</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir"><span style="color:#8fbcbb">GenServer</span><span style="color:#81a1c1">.</span>start_link<span style="color:#eceff4">(</span>__MODULE__<span style="color:#eceff4">,</span> <span style="color:#a3be8c">:ok</span><span style="color:#eceff4">,</span> <span style="color:#eceff4">[])</span></code></pre></div>
 <p><code>GenServer.start_link/3</code> will invoke the <code>init/1</code> function of the <code>__MODULE__</code>,
 passing in <code>:ok</code> as an argument to <code>init/1</code>. This function call will block
 until <code>init/1</code> returns, so usually in this function, we do any required setup
 of the server process (that might be needed). For example, in our case, to
 rebuild <code>URLShortener</code> using a <code>GenServer</code> behaviour, we will need an <code>init/1</code>
 function to set the initial state (empty map) of the server:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="kd">def</span> <span class="n">init</span><span class="p">(</span><span class="ss">:ok</span><span class="p">)</span> <span class="k">do</span>
-  <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="p">%{}}</span>
-<span class="k">end</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir"><span style="color:#81a1c1;font-weight:bold">def</span> init<span style="color:#eceff4">(</span><span style="color:#a3be8c">:ok</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  <span style="color:#eceff4">{</span><span style="color:#a3be8c">:ok</span><span style="color:#eceff4">,</span> <span style="color:#eceff4">%{}}</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>That&rsquo;s all. <code>start_link/3</code> will call <code>init/1</code> with the <code>:ok</code> argument, which
 will return an <code>:ok</code> and set the state of the process to an empty map.</p>
 <h3 id="sync--async-messages-" class="relative group">Sync &amp; async messages 📨 <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#sync--async-messages-" aria-label="Anchor">#</a></span></h3>
@@ -573,47 +573,47 @@ don&rsquo;t (<code>cast</code>). Therefore, <code>GenServer</code>s define two c
 <p>Let&rsquo;s look at how we can flip the implementation to use <code>GenServer</code>.</p>
 <p>First, let&rsquo;s add the shell of the module, the <code>start_link/1</code> function and the
 <code>init/1</code> function that <code>start_link/1</code> will invoke:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="kd">defmodule</span> <span class="nc">URLShortener</span> <span class="k">do</span>
-  <span class="kn">use</span> <span class="nc">GenServer</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir"><span style="color:#81a1c1;font-weight:bold">defmodule</span> <span style="color:#8fbcbb">URLShortener</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  <span style="color:#81a1c1;font-weight:bold">use</span> <span style="color:#8fbcbb">GenServer</span>
 
-  <span class="kd">def</span> <span class="n">start_link</span><span class="p">(</span><span class="n">opts</span> <span class="p">\\</span> <span class="p">[])</span> <span class="k">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">start_link</span><span class="p">(</span><span class="n">__MODULE__</span><span class="p">,</span> <span class="ss">:ok</span><span class="p">,</span> <span class="n">opts</span><span class="p">)</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> start_link<span style="color:#eceff4">(</span>opts <span style="color:#eceff4">\\</span> <span style="color:#eceff4">[])</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#8fbcbb">GenServer</span><span style="color:#81a1c1">.</span>start_link<span style="color:#eceff4">(</span>__MODULE__<span style="color:#eceff4">,</span> <span style="color:#a3be8c">:ok</span><span style="color:#eceff4">,</span> opts<span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="kd">def</span> <span class="n">init</span><span class="p">(</span><span class="ss">:ok</span><span class="p">)</span> <span class="k">do</span>
-    <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="p">%{}}</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+  <span style="color:#81a1c1;font-weight:bold">def</span> init<span style="color:#eceff4">(</span><span style="color:#a3be8c">:ok</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#eceff4">{</span><span style="color:#a3be8c">:ok</span><span style="color:#eceff4">,</span> <span style="color:#eceff4">%{}}</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>The notable changes here are the <code>use</code> of the <code>GenServer</code> behaviour in the
 module, the <code>start_link/1</code> function which invokes <code>GenServer.start_link/3</code> which
 would, in fact, call the <code>init/1</code> function with the <code>:ok</code> atom as an argument.
 Also, it&rsquo;s worth noting that the empty map that the <code>init/1</code> function returns in
 the tuple is the actual initial state of the <code>URLShortener</code> process.</p>
 <p>Let&rsquo;s give it a spin in <code>IEx</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">iex</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="n">pid</span><span class="p">}</span> <span class="o">=</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">start_link</span>
-<span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="c1">#PID&lt;0.108.0&gt;}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">iex<span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> <span style="color:#eceff4">{</span><span style="color:#a3be8c">:ok</span><span style="color:#eceff4">,</span> pid<span style="color:#eceff4">}</span> <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">URLShortener</span><span style="color:#81a1c1">.</span>start_link
+<span style="color:#eceff4">{</span><span style="color:#a3be8c">:ok</span><span style="color:#eceff4">,</span> <span style="color:#616e87;font-style:italic">#PID&lt;0.108.0&gt;}</span></code></pre></div>
 <p>That&rsquo;s all we can do at this moment. The difference here is that the
 <code>GenServer.start_link/3</code> function will return a tuple with an atom (<code>:ok</code>) and
 the PID of the server.</p>
 <h3 id="stopping-the-server-" class="relative group">Stopping the server ✋ <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#stopping-the-server-" aria-label="Anchor">#</a></span></h3>
 <p>Let&rsquo;s add the <code>stop</code> command:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="kd">defmodule</span> <span class="nc">URLShortener</span> <span class="k">do</span>
-  <span class="kn">use</span> <span class="nc">GenServer</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir"><span style="color:#81a1c1;font-weight:bold">defmodule</span> <span style="color:#8fbcbb">URLShortener</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  <span style="color:#81a1c1;font-weight:bold">use</span> <span style="color:#8fbcbb">GenServer</span>
 
-  <span class="c1"># Client API</span>
-  <span class="kd">def</span> <span class="n">start_link</span><span class="p">(</span><span class="n">opts</span> <span class="p">\\</span> <span class="p">[]),</span> <span class="ss">do</span><span class="p">:</span> <span class="nc">GenServer</span><span class="o">.</span><span class="n">start_link</span><span class="p">(</span><span class="n">__MODULE__</span><span class="p">,</span> <span class="ss">:ok</span><span class="p">,</span> <span class="n">opts</span><span class="p">)</span>
+  <span style="color:#616e87;font-style:italic"># Client API</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> start_link<span style="color:#eceff4">(</span>opts <span style="color:#eceff4">\\</span> <span style="color:#eceff4">[]),</span> <span style="color:#a3be8c">do</span><span style="color:#eceff4">:</span> <span style="color:#8fbcbb">GenServer</span><span style="color:#81a1c1">.</span>start_link<span style="color:#eceff4">(</span>__MODULE__<span style="color:#eceff4">,</span> <span style="color:#a3be8c">:ok</span><span style="color:#eceff4">,</span> opts<span style="color:#eceff4">)</span>
 
-  <span class="kd">def</span> <span class="n">stop</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span> <span class="k">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="ss">:stop</span><span class="p">)</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> stop<span style="color:#eceff4">(</span>pid<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#8fbcbb">GenServer</span><span style="color:#81a1c1">.</span>cast<span style="color:#eceff4">(</span>pid<span style="color:#eceff4">,</span> <span style="color:#a3be8c">:stop</span><span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="c1"># GenServer callbacks</span>
-  <span class="kd">def</span> <span class="n">init</span><span class="p">(</span><span class="ss">:ok</span><span class="p">),</span> <span class="ss">do</span><span class="p">:</span> <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="p">%{}}</span>
+  <span style="color:#616e87;font-style:italic"># GenServer callbacks</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> init<span style="color:#eceff4">(</span><span style="color:#a3be8c">:ok</span><span style="color:#eceff4">),</span> <span style="color:#a3be8c">do</span><span style="color:#eceff4">:</span> <span style="color:#eceff4">{</span><span style="color:#a3be8c">:ok</span><span style="color:#eceff4">,</span> <span style="color:#eceff4">%{}}</span>
 
-  <span class="kd">def</span> <span class="n">handle_cast</span><span class="p">(</span><span class="ss">:stop</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> <span class="k">do</span>
-    <span class="p">{</span><span class="ss">:stop</span><span class="p">,</span> <span class="ss">:normal</span><span class="p">,</span> <span class="n">state</span><span class="p">}</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+  <span style="color:#81a1c1;font-weight:bold">def</span> handle_cast<span style="color:#eceff4">(</span><span style="color:#a3be8c">:stop</span><span style="color:#eceff4">,</span> state<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#eceff4">{</span><span style="color:#a3be8c">:stop</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:normal</span><span style="color:#eceff4">,</span> state<span style="color:#eceff4">}</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>Yes, I know I said we&rsquo;ll add one command but ended up adding two functions:
 <code>stop/1</code> and <code>handle_cast/2</code>. Bear with me now:</p>
 <p>Because we do not want to get a response back on the <code>stop</code> command, we will use
@@ -636,47 +636,47 @@ acknowledge <code>PID</code>s presence – we accept that it&rsquo;s mandatory f
 <code>URLShortener</code> to work. Later we will look at ways we can skip passing the
 <code>PID</code>s as arguments.</p>
 <p>Let&rsquo;s jump back in <code>IEx</code> and start and stop a <code>URLShortener</code> server:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">iex</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="n">pid</span><span class="p">}</span> <span class="o">=</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">start_link</span>
-<span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="c1">#PID&lt;0.109.0&gt;}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">iex<span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> <span style="color:#eceff4">{</span><span style="color:#a3be8c">:ok</span><span style="color:#eceff4">,</span> pid<span style="color:#eceff4">}</span> <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">URLShortener</span><span style="color:#81a1c1">.</span>start_link
+<span style="color:#eceff4">{</span><span style="color:#a3be8c">:ok</span><span style="color:#eceff4">,</span> <span style="color:#616e87;font-style:italic">#PID&lt;0.109.0&gt;}</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">Process</span><span class="o">.</span><span class="n">alive?</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
-<span class="no">true</span>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">2</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> <span style="color:#8fbcbb">Process</span><span style="color:#81a1c1">.</span>alive?<span style="color:#eceff4">(</span>pid<span style="color:#eceff4">)</span>
+<span style="color:#8fbcbb">true</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
-<span class="ss">:ok</span>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">3</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> <span style="color:#8fbcbb">URLShortener</span><span style="color:#81a1c1">.</span>stop<span style="color:#eceff4">(</span>pid<span style="color:#eceff4">)</span>
+<span style="color:#a3be8c">:ok</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">Process</span><span class="o">.</span><span class="n">alive?</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
-<span class="no">false</span></code></pre></div>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">4</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> <span style="color:#8fbcbb">Process</span><span style="color:#81a1c1">.</span>alive?<span style="color:#eceff4">(</span>pid<span style="color:#eceff4">)</span>
+<span style="color:#8fbcbb">false</span></code></pre></div>
 <p>That&rsquo;s starting and stopping in all of it&rsquo;s glory.</p>
 <h3 id="shortening-a-url" class="relative group">Shortening a URL <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#shortening-a-url" aria-label="Anchor">#</a></span></h3>
 <p>Another thing we wanted our server to have is the ability to shorten URLs, by
 using their MD5 digest as the short variant of the URL. Let&rsquo;s do that using
 <code>GenServer</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="kd">defmodule</span> <span class="nc">URLShortener</span> <span class="k">do</span>
-  <span class="kn">use</span> <span class="nc">GenServer</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir"><span style="color:#81a1c1;font-weight:bold">defmodule</span> <span style="color:#8fbcbb">URLShortener</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  <span style="color:#81a1c1;font-weight:bold">use</span> <span style="color:#8fbcbb">GenServer</span>
 
-  <span class="c1"># Client API</span>
-  <span class="kd">def</span> <span class="n">start_link</span><span class="p">(</span><span class="n">opts</span> <span class="p">\\</span> <span class="p">[]),</span> <span class="ss">do</span><span class="p">:</span> <span class="nc">GenServer</span><span class="o">.</span><span class="n">start_link</span><span class="p">(</span><span class="n">__MODULE__</span><span class="p">,</span> <span class="ss">:ok</span><span class="p">,</span> <span class="n">opts</span><span class="p">)</span>
-  <span class="kd">def</span> <span class="n">stop</span><span class="p">(</span><span class="n">pid</span><span class="p">),</span> <span class="ss">do</span><span class="p">:</span> <span class="nc">GenServer</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="ss">:stop</span><span class="p">)</span>
+  <span style="color:#616e87;font-style:italic"># Client API</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> start_link<span style="color:#eceff4">(</span>opts <span style="color:#eceff4">\\</span> <span style="color:#eceff4">[]),</span> <span style="color:#a3be8c">do</span><span style="color:#eceff4">:</span> <span style="color:#8fbcbb">GenServer</span><span style="color:#81a1c1">.</span>start_link<span style="color:#eceff4">(</span>__MODULE__<span style="color:#eceff4">,</span> <span style="color:#a3be8c">:ok</span><span style="color:#eceff4">,</span> opts<span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> stop<span style="color:#eceff4">(</span>pid<span style="color:#eceff4">),</span> <span style="color:#a3be8c">do</span><span style="color:#eceff4">:</span> <span style="color:#8fbcbb">GenServer</span><span style="color:#81a1c1">.</span>cast<span style="color:#eceff4">(</span>pid<span style="color:#eceff4">,</span> <span style="color:#a3be8c">:stop</span><span style="color:#eceff4">)</span>
 
-  <span class="kd">def</span> <span class="n">shorten</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span> <span class="k">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="p">{</span><span class="ss">:shorten</span><span class="p">,</span> <span class="n">url</span><span class="p">})</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> shorten<span style="color:#eceff4">(</span>pid<span style="color:#eceff4">,</span> url<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#8fbcbb">GenServer</span><span style="color:#81a1c1">.</span>call<span style="color:#eceff4">(</span>pid<span style="color:#eceff4">,</span> <span style="color:#eceff4">{</span><span style="color:#a3be8c">:shorten</span><span style="color:#eceff4">,</span> url<span style="color:#eceff4">})</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="c1"># GenServer callbacks</span>
-  <span class="kd">def</span> <span class="n">init</span><span class="p">(</span><span class="ss">:ok</span><span class="p">),</span> <span class="ss">do</span><span class="p">:</span> <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="p">%{}}</span>
-  <span class="kd">def</span> <span class="n">handle_cast</span><span class="p">(</span><span class="ss">:stop</span><span class="p">,</span> <span class="n">state</span><span class="p">),</span> <span class="ss">do</span><span class="p">:</span> <span class="p">{</span><span class="ss">:stop</span><span class="p">,</span> <span class="ss">:normal</span><span class="p">,</span> <span class="n">state</span><span class="p">}</span>
+  <span style="color:#616e87;font-style:italic"># GenServer callbacks</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> init<span style="color:#eceff4">(</span><span style="color:#a3be8c">:ok</span><span style="color:#eceff4">),</span> <span style="color:#a3be8c">do</span><span style="color:#eceff4">:</span> <span style="color:#eceff4">{</span><span style="color:#a3be8c">:ok</span><span style="color:#eceff4">,</span> <span style="color:#eceff4">%{}}</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> handle_cast<span style="color:#eceff4">(</span><span style="color:#a3be8c">:stop</span><span style="color:#eceff4">,</span> state<span style="color:#eceff4">),</span> <span style="color:#a3be8c">do</span><span style="color:#eceff4">:</span> <span style="color:#eceff4">{</span><span style="color:#a3be8c">:stop</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:normal</span><span style="color:#eceff4">,</span> state<span style="color:#eceff4">}</span>
 
-  <span class="kd">def</span> <span class="n">handle_call</span><span class="p">({</span><span class="ss">:shorten</span><span class="p">,</span> <span class="n">url</span><span class="p">},</span> <span class="n">_from</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> <span class="k">do</span>
-    <span class="n">short</span> <span class="o">=</span> <span class="n">md5</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-    <span class="p">{</span><span class="ss">:reply</span><span class="p">,</span> <span class="n">short</span><span class="p">,</span> <span class="nc">Map</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">short</span><span class="p">,</span> <span class="n">url</span><span class="p">)}</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> handle_call<span style="color:#eceff4">({</span><span style="color:#a3be8c">:shorten</span><span style="color:#eceff4">,</span> url<span style="color:#eceff4">},</span> _from<span style="color:#eceff4">,</span> state<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    short <span style="color:#81a1c1">=</span> md5<span style="color:#eceff4">(</span>url<span style="color:#eceff4">)</span>
+    <span style="color:#eceff4">{</span><span style="color:#a3be8c">:reply</span><span style="color:#eceff4">,</span> short<span style="color:#eceff4">,</span> <span style="color:#8fbcbb">Map</span><span style="color:#81a1c1">.</span>put<span style="color:#eceff4">(</span>state<span style="color:#eceff4">,</span> short<span style="color:#eceff4">,</span> url<span style="color:#eceff4">)}</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="kd">defp</span> <span class="n">md5</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">do</span>
-    <span class="ss">:crypto</span><span class="o">.</span><span class="n">hash</span><span class="p">(</span><span class="ss">:md5</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
-    <span class="o">|&gt;</span> <span class="nc">Base</span><span class="o">.</span><span class="n">encode16</span><span class="p">(</span><span class="ss">case</span><span class="p">:</span> <span class="ss">:lower</span><span class="p">)</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+  <span style="color:#81a1c1;font-weight:bold">defp</span> md5<span style="color:#eceff4">(</span>url<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#a3be8c">:crypto</span><span style="color:#81a1c1">.</span>hash<span style="color:#eceff4">(</span><span style="color:#a3be8c">:md5</span><span style="color:#eceff4">,</span> url<span style="color:#eceff4">)</span>
+    <span style="color:#81a1c1">|&gt;</span> <span style="color:#8fbcbb">Base</span><span style="color:#81a1c1">.</span>encode16<span style="color:#eceff4">(</span><span style="color:#a3be8c">case</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">:lower</span><span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>Three functions this time, but at least the <code>md5/1</code> is a replica of the one we
 had previously. So, let&rsquo;s look at the other two.</p>
 <p>You might be seeing a pattern - we have a function that will be used by the
@@ -703,23 +703,23 @@ learn more.</p>
 <h3 id="fetching-a-shortened-url-" class="relative group">Fetching a shortened URL 🔗 <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#fetching-a-shortened-url-" aria-label="Anchor">#</a></span></h3>
 <p>Let&rsquo;s implement the <code>get</code> command, which when provided with a <code>short</code> version of
 the link it will return the full URL:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="kd">defmodule</span> <span class="nc">URLShortener</span> <span class="k">do</span>
-  <span class="kn">use</span> <span class="nc">GenServer</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir"><span style="color:#81a1c1;font-weight:bold">defmodule</span> <span style="color:#8fbcbb">URLShortener</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  <span style="color:#81a1c1;font-weight:bold">use</span> <span style="color:#8fbcbb">GenServer</span>
 
-  <span class="c1"># Client API</span>
-  <span class="c1"># ...</span>
+  <span style="color:#616e87;font-style:italic"># Client API</span>
+  <span style="color:#616e87;font-style:italic"># ...</span>
 
-  <span class="kd">def</span> <span class="n">get</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">short_link</span><span class="p">)</span> <span class="k">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="p">{</span><span class="ss">:get</span><span class="p">,</span> <span class="n">short_link</span><span class="p">})</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> get<span style="color:#eceff4">(</span>pid<span style="color:#eceff4">,</span> short_link<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#8fbcbb">GenServer</span><span style="color:#81a1c1">.</span>call<span style="color:#eceff4">(</span>pid<span style="color:#eceff4">,</span> <span style="color:#eceff4">{</span><span style="color:#a3be8c">:get</span><span style="color:#eceff4">,</span> short_link<span style="color:#eceff4">})</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="c1"># GenServer callbacks</span>
-  <span class="c1"># ...</span>
+  <span style="color:#616e87;font-style:italic"># GenServer callbacks</span>
+  <span style="color:#616e87;font-style:italic"># ...</span>
 
-  <span class="kd">def</span> <span class="n">handle_call</span><span class="p">({</span><span class="ss">:get</span><span class="p">,</span> <span class="n">short_link</span><span class="p">},</span> <span class="n">_from</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> <span class="k">do</span>
-    <span class="p">{</span><span class="ss">:reply</span><span class="p">,</span> <span class="nc">Map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">short_link</span><span class="p">),</span> <span class="n">state</span><span class="p">}</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+  <span style="color:#81a1c1;font-weight:bold">def</span> handle_call<span style="color:#eceff4">({</span><span style="color:#a3be8c">:get</span><span style="color:#eceff4">,</span> short_link<span style="color:#eceff4">},</span> _from<span style="color:#eceff4">,</span> state<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#eceff4">{</span><span style="color:#a3be8c">:reply</span><span style="color:#eceff4">,</span> <span style="color:#8fbcbb">Map</span><span style="color:#81a1c1">.</span>get<span style="color:#eceff4">(</span>state<span style="color:#eceff4">,</span> short_link<span style="color:#eceff4">),</span> state<span style="color:#eceff4">}</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>The double-function entry pattern again - we add <code>URLShortener.get/2</code> and
 another head of the <code>URLShortener.handle_call/3</code> function.</p>
 <p>The <code>URLShortener.get/2</code> will call <code>GenServer.call/2</code> under the hood, which when
@@ -765,49 +765,49 @@ one configuration we could use right now: <code>:name</code>.</p>
 and test it in <code>IEx</code>. Additionally, since every <code>URLShortener</code> process will have
 a name, we can refer to the process by name instead of <code>PID</code> - let&rsquo;s see how that
 would work in code:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">defmodule</span> <span class="nx">URLShortener</span> <span class="nx">do</span>
-  <span class="nx">use</span> <span class="nx">GenServer</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">defmodule URLShortener do
+  use GenServer
 
-  <span class="err">#</span> <span class="nx">Client</span> <span class="nx">API</span>
-  <span class="nx">def</span> <span class="nf">start_link</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">opts</span> <span class="err">\\</span> <span class="p">[])</span> <span class="nx">do</span>
-    <span class="nx">GenServer</span><span class="p">.</span><span class="nf">start_link</span><span class="p">(</span><span class="nx">__MODULE__</span><span class="p">,</span> <span class="p">:</span><span class="nx">ok</span><span class="p">,</span> <span class="nx">opts</span> <span class="o">++</span> <span class="p">[</span><span class="nx">name</span><span class="p">:</span> <span class="nx">name</span><span class="p">])</span>
-  <span class="nx">end</span>
+  <span style="color:#bf616a">#</span> Client API
+  def <span style="color:#88c0d0">start_link</span><span style="color:#eceff4">(</span>name<span style="color:#eceff4">,</span> opts <span style="color:#bf616a">\\</span> <span style="color:#eceff4">[])</span> do
+    GenServer<span style="color:#eceff4">.</span><span style="color:#88c0d0">start_link</span><span style="color:#eceff4">(</span>__MODULE__<span style="color:#eceff4">,</span> <span style="color:#eceff4">:</span>ok<span style="color:#eceff4">,</span> opts <span style="color:#81a1c1">++</span> <span style="color:#eceff4">[</span>name<span style="color:#eceff4">:</span> name<span style="color:#eceff4">])</span>
+  end
 
-  <span class="nx">def</span> <span class="nf">stop</span><span class="p">(</span><span class="nx">name</span><span class="p">),</span> <span class="nx">do</span><span class="p">:</span> <span class="nx">GenServer</span><span class="p">.</span><span class="nf">cast</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="p">:</span><span class="nx">stop</span><span class="p">)</span>
-  <span class="nx">def</span> <span class="nf">shorten</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">url</span><span class="p">),</span> <span class="nx">do</span><span class="p">:</span> <span class="nx">GenServer</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="p">{:</span><span class="nx">shorten</span><span class="p">,</span> <span class="nx">url</span><span class="p">})</span>
+  def <span style="color:#88c0d0">stop</span><span style="color:#eceff4">(</span>name<span style="color:#eceff4">),</span> do<span style="color:#eceff4">:</span> GenServer<span style="color:#eceff4">.</span><span style="color:#88c0d0">cast</span><span style="color:#eceff4">(</span>name<span style="color:#eceff4">,</span> <span style="color:#eceff4">:</span>stop<span style="color:#eceff4">)</span>
+  def <span style="color:#88c0d0">shorten</span><span style="color:#eceff4">(</span>name<span style="color:#eceff4">,</span> url<span style="color:#eceff4">),</span> do<span style="color:#eceff4">:</span> GenServer<span style="color:#eceff4">.</span><span style="color:#88c0d0">call</span><span style="color:#eceff4">(</span>name<span style="color:#eceff4">,</span> <span style="color:#eceff4">{:</span>shorten<span style="color:#eceff4">,</span> url<span style="color:#eceff4">})</span>
 
-  <span class="nx">def</span> <span class="nf">get</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">short_link</span><span class="p">)</span> <span class="nx">do</span>
-    <span class="nx">GenServer</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="p">{:</span><span class="nx">get</span><span class="p">,</span> <span class="nx">short_link</span><span class="p">})</span>
-  <span class="nx">end</span>
+  def <span style="color:#88c0d0">get</span><span style="color:#eceff4">(</span>name<span style="color:#eceff4">,</span> short_link<span style="color:#eceff4">)</span> do
+    GenServer<span style="color:#eceff4">.</span><span style="color:#88c0d0">call</span><span style="color:#eceff4">(</span>name<span style="color:#eceff4">,</span> <span style="color:#eceff4">{:</span>get<span style="color:#eceff4">,</span> short_link<span style="color:#eceff4">})</span>
+  end
 
-  <span class="err">#</span> <span class="nx">GenServer</span> <span class="nx">callbacks</span>
-  <span class="nx">def</span> <span class="nf">init</span><span class="p">(:</span><span class="nx">ok</span><span class="p">),</span> <span class="nx">do</span><span class="p">:</span> <span class="p">{:</span><span class="nx">ok</span><span class="p">,</span> <span class="o">%</span><span class="p">{}}</span>
-  <span class="nx">def</span> <span class="nf">handle_cast</span><span class="p">(:</span><span class="nx">stop</span><span class="p">,</span> <span class="nx">state</span><span class="p">),</span> <span class="nx">do</span><span class="p">:</span> <span class="p">{:</span><span class="nx">stop</span><span class="p">,</span> <span class="p">:</span><span class="nx">normal</span><span class="p">,</span> <span class="nx">state</span><span class="p">}</span>
-  <span class="nx">def</span> <span class="nf">handle_call</span><span class="p">({:</span><span class="nx">shorten</span><span class="p">,</span> <span class="nx">url</span><span class="p">},</span> <span class="nx">_from</span><span class="p">,</span> <span class="nx">state</span><span class="p">),</span> <span class="nx">do</span><span class="p">:</span> <span class="p">{:</span><span class="nx">reply</span><span class="p">,</span> <span class="nf">md5</span><span class="p">(</span><span class="nx">url</span><span class="p">),</span> <span class="nx">Map</span><span class="p">.</span><span class="nf">put</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nf">md5</span><span class="p">(</span><span class="nx">url</span><span class="p">),</span> <span class="nx">url</span><span class="p">)}</span>
+  <span style="color:#bf616a">#</span> GenServer callbacks
+  def <span style="color:#88c0d0">init</span><span style="color:#eceff4">(:</span>ok<span style="color:#eceff4">),</span> do<span style="color:#eceff4">:</span> <span style="color:#eceff4">{:</span>ok<span style="color:#eceff4">,</span> <span style="color:#81a1c1">%</span><span style="color:#eceff4">{}}</span>
+  def <span style="color:#88c0d0">handle_cast</span><span style="color:#eceff4">(:</span>stop<span style="color:#eceff4">,</span> state<span style="color:#eceff4">),</span> do<span style="color:#eceff4">:</span> <span style="color:#eceff4">{:</span>stop<span style="color:#eceff4">,</span> <span style="color:#eceff4">:</span>normal<span style="color:#eceff4">,</span> state<span style="color:#eceff4">}</span>
+  def <span style="color:#88c0d0">handle_call</span><span style="color:#eceff4">({:</span>shorten<span style="color:#eceff4">,</span> url<span style="color:#eceff4">},</span> _from<span style="color:#eceff4">,</span> state<span style="color:#eceff4">),</span> do<span style="color:#eceff4">:</span> <span style="color:#eceff4">{:</span>reply<span style="color:#eceff4">,</span> <span style="color:#88c0d0">md5</span><span style="color:#eceff4">(</span>url<span style="color:#eceff4">),</span> Map<span style="color:#eceff4">.</span><span style="color:#88c0d0">put</span><span style="color:#eceff4">(</span>state<span style="color:#eceff4">,</span> <span style="color:#88c0d0">md5</span><span style="color:#eceff4">(</span>url<span style="color:#eceff4">),</span> url<span style="color:#eceff4">)}</span>
 
-  <span class="nx">def</span> <span class="nf">handle_call</span><span class="p">({:</span><span class="nx">get</span><span class="p">,</span> <span class="nx">short_link</span><span class="p">},</span> <span class="nx">_from</span><span class="p">,</span> <span class="nx">state</span><span class="p">)</span> <span class="nx">do</span>
-    <span class="p">{:</span><span class="nx">reply</span><span class="p">,</span> <span class="nx">Map</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">short_link</span><span class="p">),</span> <span class="nx">state</span><span class="p">}</span>
-  <span class="nx">end</span>
+  def <span style="color:#88c0d0">handle_call</span><span style="color:#eceff4">({:</span>get<span style="color:#eceff4">,</span> short_link<span style="color:#eceff4">},</span> _from<span style="color:#eceff4">,</span> state<span style="color:#eceff4">)</span> do
+    <span style="color:#eceff4">{:</span>reply<span style="color:#eceff4">,</span> Map<span style="color:#eceff4">.</span><span style="color:#88c0d0">get</span><span style="color:#eceff4">(</span>state<span style="color:#eceff4">,</span> short_link<span style="color:#eceff4">),</span> state<span style="color:#eceff4">}</span>
+  end
 
-  <span class="nx">defp</span> <span class="nf">md5</span><span class="p">(</span><span class="nx">url</span><span class="p">),</span> <span class="nx">do</span><span class="p">:</span> <span class="p">:</span><span class="nx">crypto</span><span class="p">.</span><span class="nf">hash</span><span class="p">(:</span><span class="nx">md5</span><span class="p">,</span> <span class="nx">url</span><span class="p">)</span> <span class="p">|&gt;</span> <span class="nx">Base</span><span class="p">.</span><span class="nf">encode16</span><span class="p">(</span><span class="k">case</span><span class="p">:</span> <span class="p">:</span><span class="nx">lower</span><span class="p">)</span>
-<span class="nx">end</span></code></pre></div>
+  defp <span style="color:#88c0d0">md5</span><span style="color:#eceff4">(</span>url<span style="color:#eceff4">),</span> do<span style="color:#eceff4">:</span> <span style="color:#eceff4">:</span>crypto<span style="color:#eceff4">.</span><span style="color:#88c0d0">hash</span><span style="color:#eceff4">(:</span>md5<span style="color:#eceff4">,</span> url<span style="color:#eceff4">)</span> <span style="color:#eceff4">|&gt;</span> Base<span style="color:#eceff4">.</span><span style="color:#88c0d0">encode16</span><span style="color:#eceff4">(</span><span style="color:#81a1c1;font-weight:bold">case</span><span style="color:#eceff4">:</span> <span style="color:#eceff4">:</span>lower<span style="color:#eceff4">)</span>
+end</code></pre></div>
 <p>That&rsquo;s all. We added a new argument to <code>URLShortener.start_link/2</code> and we dropped
 all usage of <code>PID</code> and replaced it with <code>name</code>.</p>
 <p>Let&rsquo;s take it for a spin in <code>IEx</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">iex</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="n">pid</span><span class="p">}</span> <span class="o">=</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">start_link</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span>
-<span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="c1">#PID&lt;0.109.0&gt;}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">iex<span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> <span style="color:#eceff4">{</span><span style="color:#a3be8c">:ok</span><span style="color:#eceff4">,</span> pid<span style="color:#eceff4">}</span> <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">URLShortener</span><span style="color:#81a1c1">.</span>start_link<span style="color:#eceff4">(</span><span style="color:#a3be8c">:foo</span><span style="color:#eceff4">)</span>
+<span style="color:#eceff4">{</span><span style="color:#a3be8c">:ok</span><span style="color:#eceff4">,</span> <span style="color:#616e87;font-style:italic">#PID&lt;0.109.0&gt;}</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">shorten</span><span class="p">(</span><span class="ss">:foo</span><span class="p">,</span> <span class="s2">&#34;https://google.com&#34;</span><span class="p">)</span>
-<span class="s2">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">2</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> <span style="color:#8fbcbb">URLShortener</span><span style="color:#81a1c1">.</span>shorten<span style="color:#eceff4">(</span><span style="color:#a3be8c">:foo</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;https://google.com&#34;</span><span style="color:#eceff4">)</span>
+<span style="color:#a3be8c">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="ss">:foo</span><span class="p">,</span> <span class="s2">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span><span class="p">)</span>
-<span class="s2">&#34;https://google.com&#34;</span>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">3</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> <span style="color:#8fbcbb">URLShortener</span><span style="color:#81a1c1">.</span>get<span style="color:#eceff4">(</span><span style="color:#a3be8c">:foo</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span><span style="color:#eceff4">)</span>
+<span style="color:#a3be8c">&#34;https://google.com&#34;</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span>
-<span class="ss">:ok</span>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">4</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> <span style="color:#8fbcbb">URLShortener</span><span style="color:#81a1c1">.</span>stop<span style="color:#eceff4">(</span><span style="color:#a3be8c">:foo</span><span style="color:#eceff4">)</span>
+<span style="color:#a3be8c">:ok</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">Process</span><span class="o">.</span><span class="n">alive?</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
-<span class="no">false</span></code></pre></div>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">5</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> <span style="color:#8fbcbb">Process</span><span style="color:#81a1c1">.</span>alive?<span style="color:#eceff4">(</span>pid<span style="color:#eceff4">)</span>
+<span style="color:#8fbcbb">false</span></code></pre></div>
 <p>You can see that this is pretty cool - instead of using <code>PID</code> we added a name
 <code>:foo</code> to the process which allowed us to refer to it using the name instead of
 the <code>PID</code>. Obviously, you can see that to inspect the BEAM process in any
@@ -821,49 +821,49 @@ that the <a href="/singleton-pattern">singleton pattern</a> that&rsquo;s infamou
 programming has. We&rsquo;re merely stating that we could change the <code>URLShortener</code>
 to have one and only one process running at a certain time, by setting a static
 name to it:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="kd">defmodule</span> <span class="nc">URLShortener</span> <span class="k">do</span>
-  <span class="kn">use</span> <span class="nc">GenServer</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir"><span style="color:#81a1c1;font-weight:bold">defmodule</span> <span style="color:#8fbcbb">URLShortener</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  <span style="color:#81a1c1;font-weight:bold">use</span> <span style="color:#8fbcbb">GenServer</span>
 
-  <span class="na">@name</span> <span class="ss">:url_shortener_server</span>
+  <span style="color:#8fbcbb">@name</span> <span style="color:#a3be8c">:url_shortener_server</span>
 
-  <span class="c1"># Client API</span>
-  <span class="kd">def</span> <span class="n">start_link</span><span class="p">(</span><span class="n">opts</span> <span class="p">\\</span> <span class="p">[])</span> <span class="k">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">start_link</span><span class="p">(</span><span class="n">__MODULE__</span><span class="p">,</span> <span class="ss">:ok</span><span class="p">,</span> <span class="n">opts</span> <span class="o">++</span> <span class="p">[</span><span class="ss">name</span><span class="p">:</span> <span class="na">@name</span><span class="p">])</span>
-  <span class="k">end</span>
+  <span style="color:#616e87;font-style:italic"># Client API</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> start_link<span style="color:#eceff4">(</span>opts <span style="color:#eceff4">\\</span> <span style="color:#eceff4">[])</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#8fbcbb">GenServer</span><span style="color:#81a1c1">.</span>start_link<span style="color:#eceff4">(</span>__MODULE__<span style="color:#eceff4">,</span> <span style="color:#a3be8c">:ok</span><span style="color:#eceff4">,</span> opts <span style="color:#81a1c1">++</span> <span style="color:#eceff4">[</span><span style="color:#a3be8c">name</span><span style="color:#eceff4">:</span> <span style="color:#8fbcbb">@name</span><span style="color:#eceff4">])</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="kd">def</span> <span class="n">stop</span><span class="p">,</span> <span class="ss">do</span><span class="p">:</span> <span class="nc">GenServer</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="na">@name</span><span class="p">,</span> <span class="ss">:stop</span><span class="p">)</span>
-  <span class="kd">def</span> <span class="n">shorten</span><span class="p">(</span><span class="n">url</span><span class="p">),</span> <span class="ss">do</span><span class="p">:</span> <span class="nc">GenServer</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="na">@name</span><span class="p">,</span> <span class="p">{</span><span class="ss">:shorten</span><span class="p">,</span> <span class="n">url</span><span class="p">})</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> stop<span style="color:#eceff4">,</span> <span style="color:#a3be8c">do</span><span style="color:#eceff4">:</span> <span style="color:#8fbcbb">GenServer</span><span style="color:#81a1c1">.</span>cast<span style="color:#eceff4">(</span><span style="color:#8fbcbb">@name</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:stop</span><span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> shorten<span style="color:#eceff4">(</span>url<span style="color:#eceff4">),</span> <span style="color:#a3be8c">do</span><span style="color:#eceff4">:</span> <span style="color:#8fbcbb">GenServer</span><span style="color:#81a1c1">.</span>call<span style="color:#eceff4">(</span><span style="color:#8fbcbb">@name</span><span style="color:#eceff4">,</span> <span style="color:#eceff4">{</span><span style="color:#a3be8c">:shorten</span><span style="color:#eceff4">,</span> url<span style="color:#eceff4">})</span>
 
-  <span class="kd">def</span> <span class="n">get</span><span class="p">(</span><span class="n">short_link</span><span class="p">)</span> <span class="k">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="na">@name</span><span class="p">,</span> <span class="p">{</span><span class="ss">:get</span><span class="p">,</span> <span class="n">short_link</span><span class="p">})</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> get<span style="color:#eceff4">(</span>short_link<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#8fbcbb">GenServer</span><span style="color:#81a1c1">.</span>call<span style="color:#eceff4">(</span><span style="color:#8fbcbb">@name</span><span style="color:#eceff4">,</span> <span style="color:#eceff4">{</span><span style="color:#a3be8c">:get</span><span style="color:#eceff4">,</span> short_link<span style="color:#eceff4">})</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="c1"># GenServer callbacks</span>
-  <span class="c1"># ...</span>
-<span class="k">end</span></code></pre></div>
+  <span style="color:#616e87;font-style:italic"># GenServer callbacks</span>
+  <span style="color:#616e87;font-style:italic"># ...</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>You can notice that we added a module attribute <code>@name</code> that holds the name of
 the process. In all the functions from the client API, we dropped the <code>name</code>
 from the arguments lists and we simply use <code>@name</code> as a reference to the
 process. This means that there&rsquo;s going to be only one process for
 <code>URLShortener</code> with the name <code>:url_shortener_server</code>.</p>
 <p>Let&rsquo;s take it for a spin in <code>IEx</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="n">iex</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">&gt;</span> <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="n">pid</span><span class="p">}</span> <span class="o">=</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">start_link</span>
-<span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="c1">#PID&lt;0.108.0&gt;}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir">iex<span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> <span style="color:#eceff4">{</span><span style="color:#a3be8c">:ok</span><span style="color:#eceff4">,</span> pid<span style="color:#eceff4">}</span> <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">URLShortener</span><span style="color:#81a1c1">.</span>start_link
+<span style="color:#eceff4">{</span><span style="color:#a3be8c">:ok</span><span style="color:#eceff4">,</span> <span style="color:#616e87;font-style:italic">#PID&lt;0.108.0&gt;}</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">shorten</span><span class="p">(</span><span class="s2">&#34;https://google.com&#34;</span><span class="p">)</span>
-<span class="s2">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">2</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> <span style="color:#8fbcbb">URLShortener</span><span style="color:#81a1c1">.</span>shorten<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;https://google.com&#34;</span><span style="color:#eceff4">)</span>
+<span style="color:#a3be8c">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">shorten</span><span class="p">(</span><span class="s2">&#34;https://yahoo.com&#34;</span><span class="p">)</span>
-<span class="s2">&#34;c88f320dec138ba5ab0a5f990ff082ba&#34;</span>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">3</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> <span style="color:#8fbcbb">URLShortener</span><span style="color:#81a1c1">.</span>shorten<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;https://yahoo.com&#34;</span><span style="color:#eceff4">)</span>
+<span style="color:#a3be8c">&#34;c88f320dec138ba5ab0a5f990ff082ba&#34;</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span><span class="p">)</span>
-<span class="s2">&#34;https://google.com&#34;</span>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">4</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> <span style="color:#8fbcbb">URLShortener</span><span style="color:#81a1c1">.</span>get<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;99999ebcfdb78df077ad2727fd00969f&#34;</span><span style="color:#eceff4">)</span>
+<span style="color:#a3be8c">&#34;https://google.com&#34;</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">URLShortener</span><span class="o">.</span><span class="n">stop</span>
-<span class="ss">:ok</span>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">5</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> <span style="color:#8fbcbb">URLShortener</span><span style="color:#81a1c1">.</span>stop
+<span style="color:#a3be8c">:ok</span>
 
-<span class="n">iex</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">&gt;</span> <span class="nc">Process</span><span class="o">.</span><span class="n">alive?</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
-<span class="no">false</span></code></pre></div>
+iex<span style="color:#eceff4">(</span><span style="color:#b48ead">6</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">&gt;</span> <span style="color:#8fbcbb">Process</span><span style="color:#81a1c1">.</span>alive?<span style="color:#eceff4">(</span>pid<span style="color:#eceff4">)</span>
+<span style="color:#8fbcbb">false</span></code></pre></div>
 <p>You can notice that although we captured the <code>PID</code> on the first line, we do not
 need it at all - all of the work is done for us by <code>URLShortener</code>.</p>
 <p>In this section, you saw how you can utilise names to more easily work with
@@ -871,67 +871,67 @@ processes. Let&rsquo;s review our full implementation of the <code>URLShortener<
 <h2 id="outro-" class="relative group">Outro 🖖 <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#outro-" aria-label="Anchor">#</a></span></h2>
 <p>Before we wrap up this long tutorial, let&rsquo;s have a final look at our new
 <code>URLShortener</code> module, including the <code>count/1</code> and <code>flush/1</code> functions:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="kd">defmodule</span> <span class="nc">URLShortener</span> <span class="k">do</span>
-  <span class="kn">use</span> <span class="nc">GenServer</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir"><span style="color:#81a1c1;font-weight:bold">defmodule</span> <span style="color:#8fbcbb">URLShortener</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  <span style="color:#81a1c1;font-weight:bold">use</span> <span style="color:#8fbcbb">GenServer</span>
 
-  <span class="c1"># Client API</span>
-  <span class="kd">def</span> <span class="n">start_link</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">opts</span> <span class="p">\\</span> <span class="p">[])</span> <span class="k">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">start_link</span><span class="p">(</span><span class="n">__MODULE__</span><span class="p">,</span> <span class="ss">:ok</span><span class="p">,</span> <span class="n">opts</span> <span class="o">++</span> <span class="p">[</span><span class="ss">name</span><span class="p">:</span> <span class="n">name</span><span class="p">])</span>
-  <span class="k">end</span>
+  <span style="color:#616e87;font-style:italic"># Client API</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> start_link<span style="color:#eceff4">(</span>name<span style="color:#eceff4">,</span> opts <span style="color:#eceff4">\\</span> <span style="color:#eceff4">[])</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#8fbcbb">GenServer</span><span style="color:#81a1c1">.</span>start_link<span style="color:#eceff4">(</span>__MODULE__<span style="color:#eceff4">,</span> <span style="color:#a3be8c">:ok</span><span style="color:#eceff4">,</span> opts <span style="color:#81a1c1">++</span> <span style="color:#eceff4">[</span><span style="color:#a3be8c">name</span><span style="color:#eceff4">:</span> name<span style="color:#eceff4">])</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="kd">def</span> <span class="n">shorten</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span> <span class="k">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">{</span><span class="ss">:shorten</span><span class="p">,</span> <span class="n">url</span><span class="p">})</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> shorten<span style="color:#eceff4">(</span>name<span style="color:#eceff4">,</span> url<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#8fbcbb">GenServer</span><span style="color:#81a1c1">.</span>call<span style="color:#eceff4">(</span>name<span style="color:#eceff4">,</span> <span style="color:#eceff4">{</span><span style="color:#a3be8c">:shorten</span><span style="color:#eceff4">,</span> url<span style="color:#eceff4">})</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="kd">def</span> <span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">short</span><span class="p">)</span> <span class="k">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">{</span><span class="ss">:get</span><span class="p">,</span> <span class="n">short</span><span class="p">})</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> get<span style="color:#eceff4">(</span>name<span style="color:#eceff4">,</span> short<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#8fbcbb">GenServer</span><span style="color:#81a1c1">.</span>call<span style="color:#eceff4">(</span>name<span style="color:#eceff4">,</span> <span style="color:#eceff4">{</span><span style="color:#a3be8c">:get</span><span style="color:#eceff4">,</span> short<span style="color:#eceff4">})</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="kd">def</span> <span class="n">flush</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="ss">:flush</span><span class="p">)</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> flush<span style="color:#eceff4">(</span>name<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#8fbcbb">GenServer</span><span style="color:#81a1c1">.</span>cast<span style="color:#eceff4">(</span>name<span style="color:#eceff4">,</span> <span style="color:#a3be8c">:flush</span><span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="kd">def</span> <span class="n">stop</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="ss">:stop</span><span class="p">)</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> stop<span style="color:#eceff4">(</span>name<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#8fbcbb">GenServer</span><span style="color:#81a1c1">.</span>cast<span style="color:#eceff4">(</span>name<span style="color:#eceff4">,</span> <span style="color:#a3be8c">:stop</span><span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="kd">def</span> <span class="n">count</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">do</span>
-    <span class="nc">GenServer</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="ss">:count</span><span class="p">)</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> count<span style="color:#eceff4">(</span>name<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#8fbcbb">GenServer</span><span style="color:#81a1c1">.</span>call<span style="color:#eceff4">(</span>name<span style="color:#eceff4">,</span> <span style="color:#a3be8c">:count</span><span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="c1"># Callbacks</span>
-  <span class="kd">def</span> <span class="n">init</span><span class="p">(</span><span class="ss">:ok</span><span class="p">)</span> <span class="k">do</span>
-    <span class="p">{</span><span class="ss">:ok</span><span class="p">,</span> <span class="p">%{}}</span>
-  <span class="k">end</span>
+  <span style="color:#616e87;font-style:italic"># Callbacks</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> init<span style="color:#eceff4">(</span><span style="color:#a3be8c">:ok</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#eceff4">{</span><span style="color:#a3be8c">:ok</span><span style="color:#eceff4">,</span> <span style="color:#eceff4">%{}}</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="kd">def</span> <span class="n">handle_cast</span><span class="p">(</span><span class="ss">:flush</span><span class="p">,</span> <span class="n">_state</span><span class="p">)</span> <span class="k">do</span>
-    <span class="p">{</span><span class="ss">:noreply</span><span class="p">,</span> <span class="p">%{}}</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> handle_cast<span style="color:#eceff4">(</span><span style="color:#a3be8c">:flush</span><span style="color:#eceff4">,</span> _state<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#eceff4">{</span><span style="color:#a3be8c">:noreply</span><span style="color:#eceff4">,</span> <span style="color:#eceff4">%{}}</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="kd">def</span> <span class="n">handle_cast</span><span class="p">(</span><span class="ss">:stop</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> <span class="k">do</span>
-    <span class="p">{</span><span class="ss">:stop</span><span class="p">,</span> <span class="ss">:normal</span><span class="p">,</span> <span class="n">state</span><span class="p">}</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> handle_cast<span style="color:#eceff4">(</span><span style="color:#a3be8c">:stop</span><span style="color:#eceff4">,</span> state<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#eceff4">{</span><span style="color:#a3be8c">:stop</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:normal</span><span style="color:#eceff4">,</span> state<span style="color:#eceff4">}</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="kd">def</span> <span class="n">handle_call</span><span class="p">({</span><span class="ss">:shorten</span><span class="p">,</span> <span class="n">url</span><span class="p">},</span> <span class="n">_from</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> <span class="k">do</span>
-    <span class="n">shortened</span> <span class="o">=</span> <span class="n">md5</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-    <span class="n">new_state</span> <span class="o">=</span> <span class="nc">Map</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">shortened</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
-    <span class="p">{</span><span class="ss">:reply</span><span class="p">,</span> <span class="n">shortened</span><span class="p">,</span> <span class="n">new_state</span><span class="p">}</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> handle_call<span style="color:#eceff4">({</span><span style="color:#a3be8c">:shorten</span><span style="color:#eceff4">,</span> url<span style="color:#eceff4">},</span> _from<span style="color:#eceff4">,</span> state<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    shortened <span style="color:#81a1c1">=</span> md5<span style="color:#eceff4">(</span>url<span style="color:#eceff4">)</span>
+    new_state <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Map</span><span style="color:#81a1c1">.</span>put<span style="color:#eceff4">(</span>state<span style="color:#eceff4">,</span> shortened<span style="color:#eceff4">,</span> url<span style="color:#eceff4">)</span>
+    <span style="color:#eceff4">{</span><span style="color:#a3be8c">:reply</span><span style="color:#eceff4">,</span> shortened<span style="color:#eceff4">,</span> new_state<span style="color:#eceff4">}</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="kd">def</span> <span class="n">handle_call</span><span class="p">({</span><span class="ss">:get</span><span class="p">,</span> <span class="n">short</span><span class="p">},</span> <span class="n">_from</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> <span class="k">do</span>
-    <span class="p">{</span><span class="ss">:reply</span><span class="p">,</span> <span class="nc">Map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">short</span><span class="p">),</span> <span class="n">state</span><span class="p">}</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> handle_call<span style="color:#eceff4">({</span><span style="color:#a3be8c">:get</span><span style="color:#eceff4">,</span> short<span style="color:#eceff4">},</span> _from<span style="color:#eceff4">,</span> state<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#eceff4">{</span><span style="color:#a3be8c">:reply</span><span style="color:#eceff4">,</span> <span style="color:#8fbcbb">Map</span><span style="color:#81a1c1">.</span>get<span style="color:#eceff4">(</span>state<span style="color:#eceff4">,</span> short<span style="color:#eceff4">),</span> state<span style="color:#eceff4">}</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="kd">def</span> <span class="n">handle_call</span><span class="p">(</span><span class="ss">:count</span><span class="p">,</span> <span class="n">_from</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> <span class="k">do</span>
-    <span class="n">count</span> <span class="o">=</span> <span class="nc">Map</span><span class="o">.</span><span class="n">keys</span><span class="p">(</span><span class="n">state</span><span class="p">)</span> <span class="o">|&gt;</span> <span class="nc">Enum</span><span class="o">.</span><span class="n">count</span>
-    <span class="p">{</span><span class="ss">:reply</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">state</span><span class="p">}</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> handle_call<span style="color:#eceff4">(</span><span style="color:#a3be8c">:count</span><span style="color:#eceff4">,</span> _from<span style="color:#eceff4">,</span> state<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    count <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Map</span><span style="color:#81a1c1">.</span>keys<span style="color:#eceff4">(</span>state<span style="color:#eceff4">)</span> <span style="color:#81a1c1">|&gt;</span> <span style="color:#8fbcbb">Enum</span><span style="color:#81a1c1">.</span>count
+    <span style="color:#eceff4">{</span><span style="color:#a3be8c">:reply</span><span style="color:#eceff4">,</span> count<span style="color:#eceff4">,</span> state<span style="color:#eceff4">}</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="kd">defp</span> <span class="n">md5</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">do</span>
-    <span class="ss">:crypto</span><span class="o">.</span><span class="n">hash</span><span class="p">(</span><span class="ss">:md5</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
-    <span class="o">|&gt;</span> <span class="nc">Base</span><span class="o">.</span><span class="n">encode16</span><span class="p">(</span><span class="ss">case</span><span class="p">:</span> <span class="ss">:lower</span><span class="p">)</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+  <span style="color:#81a1c1;font-weight:bold">defp</span> md5<span style="color:#eceff4">(</span>url<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#a3be8c">:crypto</span><span style="color:#81a1c1">.</span>hash<span style="color:#eceff4">(</span><span style="color:#a3be8c">:md5</span><span style="color:#eceff4">,</span> url<span style="color:#eceff4">)</span>
+    <span style="color:#81a1c1">|&gt;</span> <span style="color:#8fbcbb">Base</span><span style="color:#81a1c1">.</span>encode16<span style="color:#eceff4">(</span><span style="color:#a3be8c">case</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">:lower</span><span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>The two callbacks are faily simple - <code>flush</code> will just send a <code>noreply</code> and set
 the state to an empty map. <code>count</code> on the other hand will have a <code>reply</code> with
 the count of the items of the map, which is simply the numbers of keys there
@@ -1330,7 +1330,7 @@ experience with it, where do you see yourself using it in the future?</p>
       
         <p class="text-sm text-neutral-500 dark:text-neutral-400">
             &copy;
-            2022
+            2023
             Ilija Eftimov
         </p>
       

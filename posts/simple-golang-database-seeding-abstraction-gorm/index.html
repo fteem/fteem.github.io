@@ -337,95 +337,95 @@ database.</li>
 </ol>
 <p>First, to define a small <code>Seed</code> type that would be coupled to the <code>gorm.DB</code>
 connection instance:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// pkg/seed/seed.go
-</span><span class="c1"></span><span class="kn">package</span> <span class="nx">seed</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#616e87;font-style:italic">// pkg/seed/seed.go
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#81a1c1;font-weight:bold">package</span> seed
 
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;github.com/jinzhu/gorm&#34;</span>
-<span class="p">)</span>
+<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+	<span style="color:#a3be8c">&#34;github.com/jinzhu/gorm&#34;</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">type</span> <span class="nx">Seed</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">Name</span> <span class="kt">string</span>
-	<span class="nx">Run</span>  <span class="kd">func</span><span class="p">(</span><span class="o">*</span><span class="nx">gorm</span><span class="p">.</span><span class="nx">DB</span><span class="p">)</span> <span class="kt">error</span>
-<span class="p">}</span></code></pre></div>
+<span style="color:#81a1c1;font-weight:bold">type</span> Seed <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+	Name <span style="color:#81a1c1">string</span>
+	Run  <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">*</span>gorm<span style="color:#eceff4">.</span>DB<span style="color:#eceff4">)</span> <span style="color:#81a1c1">error</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>Next, we need to define a path where we&rsquo;ll store the seeds and how to collect
 them:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// pkg/seeds/seeds.go
-</span><span class="c1"></span><span class="kn">package</span> <span class="nx">seeds</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#616e87;font-style:italic">// pkg/seeds/seeds.go
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#81a1c1;font-weight:bold">package</span> seeds
 
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;github.com/fteem/seeding/pkg/seed&#34;</span>
-<span class="p">)</span>
+<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/seeding/pkg/seed&#34;</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">func</span> <span class="nf">All</span><span class="p">()</span> <span class="p">[]</span><span class="nx">seed</span><span class="p">.</span><span class="nx">Seed</span> <span class="p">{</span>
-	<span class="k">return</span> <span class="p">[]</span><span class="nx">seed</span><span class="p">.</span><span class="nx">Seed</span><span class="p">{}</span>
-<span class="p">}</span></code></pre></div>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">All</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">[]</span>seed<span style="color:#eceff4">.</span>Seed <span style="color:#eceff4">{</span>
+	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#eceff4">[]</span>seed<span style="color:#eceff4">.</span>Seed<span style="color:#eceff4">{}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>The <code>seeds</code> package will contain all instances of <code>seed.Seed</code> and collect them
 in the <code>All</code> function. This will allow the third component, a CLI tool, to
 iterate over them and execute them against a database. Additionally, in the same
 <code>seeds</code> package we can have separate files for seeding various types of data.</p>
 <p>For example:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// pkg/seeds/users.go
-</span><span class="c1"></span><span class="kn">package</span> <span class="nx">seeds</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#616e87;font-style:italic">// pkg/seeds/users.go
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#81a1c1;font-weight:bold">package</span> seeds
 
-<span class="kd">func</span> <span class="nf">CreateUser</span><span class="p">(</span><span class="nx">db</span> <span class="o">*</span><span class="nx">gorm</span><span class="p">.</span><span class="nx">DB</span><span class="p">,</span> <span class="nx">name</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">age</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">users</span><span class="p">.</span><span class="nx">User</span><span class="p">{</span><span class="nx">Name</span><span class="p">:</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">Age</span><span class="p">:</span> <span class="nx">age</span><span class="p">}).</span><span class="nx">Error</span>
-<span class="p">}</span></code></pre></div>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">CreateUser</span><span style="color:#eceff4">(</span>db <span style="color:#81a1c1">*</span>gorm<span style="color:#eceff4">.</span>DB<span style="color:#eceff4">,</span> name <span style="color:#81a1c1">string</span><span style="color:#eceff4">,</span> age <span style="color:#81a1c1">int</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">error</span> <span style="color:#eceff4">{</span>
+        <span style="color:#81a1c1;font-weight:bold">return</span> db<span style="color:#eceff4">.</span><span style="color:#88c0d0">Create</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">&amp;</span>users<span style="color:#eceff4">.</span>User<span style="color:#eceff4">{</span>Name<span style="color:#eceff4">:</span> name<span style="color:#eceff4">,</span> Age<span style="color:#eceff4">:</span> age<span style="color:#eceff4">}).</span>Error
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>The usage of the function in <code>All</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// pkg/seeds/seeds.go
-</span><span class="c1"></span><span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;github.com/fteem/seeding/pkg/seed&#34;</span>
-<span class="p">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#616e87;font-style:italic">// pkg/seeds/seeds.go
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/seeding/pkg/seed&#34;</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">func</span> <span class="nf">All</span><span class="p">()</span> <span class="p">[]</span><span class="nx">seed</span><span class="p">.</span><span class="nx">Seed</span> <span class="p">{</span>
-	<span class="k">return</span> <span class="p">[]</span><span class="nx">seed</span><span class="p">.</span><span class="nx">Seed</span><span class="p">{</span>
-        	<span class="nx">seed</span><span class="p">.</span><span class="nx">Seed</span><span class="p">{</span>
-                        <span class="nx">Name</span><span class="p">:</span> <span class="s">&#34;CreateJane&#34;</span><span class="p">,</span>
-                        <span class="nx">Run</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">db</span> <span class="o">*</span><span class="nx">gorm</span><span class="p">.</span><span class="nx">DB</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
-                              <span class="nf">CreateUser</span><span class="p">(</span><span class="nx">db</span><span class="p">,</span> <span class="s">&#34;Jane&#34;</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
-                        <span class="p">},</span>
-                <span class="p">},</span>
-        	<span class="nx">seed</span><span class="p">.</span><span class="nx">Seed</span><span class="p">{</span>
-                        <span class="nx">Name</span><span class="p">:</span> <span class="s">&#34;CreateJohn&#34;</span><span class="p">,</span>
-                        <span class="nx">Run</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">db</span> <span class="o">*</span><span class="nx">gorm</span><span class="p">.</span><span class="nx">DB</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
-                              <span class="nf">CreateUser</span><span class="p">(</span><span class="nx">db</span><span class="p">,</span> <span class="s">&#34;John&#34;</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
-                        <span class="p">},</span>
-                <span class="p">},</span>
-        <span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">All</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">[]</span>seed<span style="color:#eceff4">.</span>Seed <span style="color:#eceff4">{</span>
+	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#eceff4">[]</span>seed<span style="color:#eceff4">.</span>Seed<span style="color:#eceff4">{</span>
+        	seed<span style="color:#eceff4">.</span>Seed<span style="color:#eceff4">{</span>
+                        Name<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;CreateJane&#34;</span><span style="color:#eceff4">,</span>
+                        Run<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>db <span style="color:#81a1c1">*</span>gorm<span style="color:#eceff4">.</span>DB<span style="color:#eceff4">)</span> <span style="color:#81a1c1">error</span> <span style="color:#eceff4">{</span>
+                              <span style="color:#88c0d0">CreateUser</span><span style="color:#eceff4">(</span>db<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Jane&#34;</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">30</span><span style="color:#eceff4">)</span>
+                        <span style="color:#eceff4">},</span>
+                <span style="color:#eceff4">},</span>
+        	seed<span style="color:#eceff4">.</span>Seed<span style="color:#eceff4">{</span>
+                        Name<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;CreateJohn&#34;</span><span style="color:#eceff4">,</span>
+                        Run<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>db <span style="color:#81a1c1">*</span>gorm<span style="color:#eceff4">.</span>DB<span style="color:#eceff4">)</span> <span style="color:#81a1c1">error</span> <span style="color:#eceff4">{</span>
+                              <span style="color:#88c0d0">CreateUser</span><span style="color:#eceff4">(</span>db<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;John&#34;</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">30</span><span style="color:#eceff4">)</span>
+                        <span style="color:#eceff4">},</span>
+                <span style="color:#eceff4">},</span>
+        <span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>The example above is contrived, but it can work really well if you have to compose
 seeds using multiple such functions.</p>
 <p>Last, a very simple command line tool that can running the seeds we defined:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// pkg/seeder/seeder.go
-</span><span class="c1"></span><span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#616e87;font-style:italic">// pkg/seeder/seeder.go
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#81a1c1;font-weight:bold">package</span> main
 
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;log&#34;</span>
+<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+	<span style="color:#a3be8c">&#34;log&#34;</span>
 
-	<span class="s">&#34;github.com/fteem/seeding/pkg/seeds&#34;</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/seeding/pkg/seeds&#34;</span>
 
-	<span class="s">&#34;github.com/jinzhu/gorm&#34;</span>
-	<span class="nx">_</span> <span class="s">&#34;github.com/jinzhu/gorm/dialects/mysql&#34;</span>
-<span class="p">)</span>
+	<span style="color:#a3be8c">&#34;github.com/jinzhu/gorm&#34;</span>
+	_ <span style="color:#a3be8c">&#34;github.com/jinzhu/gorm/dialects/mysql&#34;</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-	<span class="nx">dbConn</span> <span class="o">:=</span> <span class="nf">openConnection</span><span class="p">()</span>
-	<span class="k">defer</span> <span class="nx">dbConn</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">main</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+	dbConn <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">openConnection</span><span style="color:#eceff4">()</span>
+	<span style="color:#81a1c1;font-weight:bold">defer</span> dbConn<span style="color:#eceff4">.</span><span style="color:#88c0d0">Close</span><span style="color:#eceff4">()</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">seed</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">seeds</span><span class="p">.</span><span class="nf">All</span><span class="p">()</span> <span class="p">{</span>
-		<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">seed</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">dbConn</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-			<span class="nx">log</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Running seed &#39;%s&#39;, failed with error: %s&#34;</span><span class="p">,</span> <span class="nx">seed</span><span class="p">.</span><span class="nx">Name</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> seed <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> seeds<span style="color:#eceff4">.</span><span style="color:#88c0d0">All</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">:=</span> seed<span style="color:#eceff4">.</span><span style="color:#88c0d0">Run</span><span style="color:#eceff4">(</span>dbConn<span style="color:#eceff4">);</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+			log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatalf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Running seed &#39;%s&#39;, failed with error: %s&#34;</span><span style="color:#eceff4">,</span> seed<span style="color:#eceff4">.</span>Name<span style="color:#eceff4">,</span> err<span style="color:#eceff4">)</span>
+		<span style="color:#eceff4">}</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span>
 
-<span class="kd">func</span> <span class="nf">openConnection</span><span class="p">()</span> <span class="o">*</span><span class="nx">gorm</span><span class="p">.</span><span class="nx">DB</span> <span class="p">{</span>
-        <span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">gorm</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="s">&#34;mysql&#34;</span><span class="p">,</span> <span class="s">&#34;user:password@/dbname?charset=utf8&amp;parseTime=True&amp;loc=Local&#34;</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Couldn&#39;t establish database connection: %s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-	<span class="p">}</span>
-	<span class="k">return</span> <span class="nx">db</span>
-<span class="p">}</span></code></pre></div>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">openConnection</span><span style="color:#eceff4">()</span> <span style="color:#81a1c1">*</span>gorm<span style="color:#eceff4">.</span>DB <span style="color:#eceff4">{</span>
+        db<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> gorm<span style="color:#eceff4">.</span><span style="color:#88c0d0">Open</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;mysql&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;user:password@/dbname?charset=utf8&amp;parseTime=True&amp;loc=Local&#34;</span><span style="color:#eceff4">)</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatalf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Couldn&#39;t establish database connection: %s&#34;</span><span style="color:#eceff4">,</span> err<span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}</span>
+	<span style="color:#81a1c1;font-weight:bold">return</span> db
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>The binary produced by this is quite a simple one: loads all of the seeds using
 the <code>seeds.All</code> function, iterates over the collection and executes their <code>Run</code>
 function. If an error occurs, the whole program bombs.</p>
@@ -815,7 +815,7 @@ seeding.</p>
       
         <p class="text-sm text-neutral-500 dark:text-neutral-400">
             &copy;
-            2022
+            2023
             Ilija Eftimov
         </p>
       

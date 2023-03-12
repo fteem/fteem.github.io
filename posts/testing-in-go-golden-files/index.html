@@ -345,103 +345,103 @@ a program that will take all that data and format it in a Markdown table. Maybe
 you want to print this table or send it to your accountant. The possibilities
 are endless!</p>
 <p>Let&rsquo;s see a simulation of such a program:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// report/report.go
-</span><span class="c1"></span>
-<span class="kn">package</span> <span class="nx">report</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#616e87;font-style:italic">// report/report.go
+</span><span style="color:#616e87;font-style:italic"></span>
+<span style="color:#81a1c1;font-weight:bold">package</span> report
 
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;bytes&#34;</span>
-	<span class="s">&#34;log&#34;</span>
-	<span class="s">&#34;text/template&#34;</span>
+<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+	<span style="color:#a3be8c">&#34;bytes&#34;</span>
+	<span style="color:#a3be8c">&#34;log&#34;</span>
+	<span style="color:#a3be8c">&#34;text/template&#34;</span>
 
-	<span class="s">&#34;github.com/fteem/go-playground/golden-files/books&#34;</span>
-<span class="p">)</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/go-playground/golden-files/books&#34;</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">const</span> <span class="p">(</span>
-	<span class="nx">header</span> <span class="kt">string</span> <span class="p">=</span> <span class="s">`
-</span><span class="s">| Title         | Author        | Publisher |  Pages  |  ISBN  |  Price  |
-</span><span class="s">| ------------- | ------------- | --------- | ------- | ------ | ------- |
-</span><span class="s">`</span>
-	<span class="nx">rowTemplate</span> <span class="kt">string</span> <span class="p">=</span> <span class="s">&#34;|  {{ .Title }}  |  {{ .Author }}  |  {{ .Publisher }}  |  {{ .Pages }}  |  {{ .ISBN }}  |  {{ .Price }}  |\n&#34;</span>
-<span class="p">)</span>
+<span style="color:#81a1c1;font-weight:bold">const</span> <span style="color:#eceff4">(</span>
+	header <span style="color:#81a1c1">string</span> <span style="color:#eceff4">=</span> <span style="color:#a3be8c">`
+</span><span style="color:#a3be8c">| Title         | Author        | Publisher |  Pages  |  ISBN  |  Price  |
+</span><span style="color:#a3be8c">| ------------- | ------------- | --------- | ------- | ------ | ------- |
+</span><span style="color:#a3be8c">`</span>
+	rowTemplate <span style="color:#81a1c1">string</span> <span style="color:#eceff4">=</span> <span style="color:#a3be8c">&#34;|  {{ .Title }}  |  {{ .Author }}  |  {{ .Publisher }}  |  {{ .Pages }}  |  {{ .ISBN }}  |  {{ .Price }}  |\n&#34;</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">func</span> <span class="nf">Generate</span><span class="p">(</span><span class="nx">books</span> <span class="p">[]</span><span class="nx">books</span><span class="p">.</span><span class="nx">Book</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
-	<span class="nx">buf</span> <span class="o">:=</span> <span class="nx">bytes</span><span class="p">.</span><span class="nf">NewBufferString</span><span class="p">(</span><span class="nx">header</span><span class="p">)</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">Generate</span><span style="color:#eceff4">(</span>books <span style="color:#eceff4">[]</span>books<span style="color:#eceff4">.</span>Book<span style="color:#eceff4">)</span> <span style="color:#81a1c1">string</span> <span style="color:#eceff4">{</span>
+	buf <span style="color:#81a1c1">:=</span> bytes<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewBufferString</span><span style="color:#eceff4">(</span>header<span style="color:#eceff4">)</span>
 
-	<span class="nx">t</span> <span class="o">:=</span> <span class="nx">template</span><span class="p">.</span><span class="nf">Must</span><span class="p">(</span><span class="nx">template</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">&#34;table&#34;</span><span class="p">).</span><span class="nf">Parse</span><span class="p">(</span><span class="nx">rowTemplate</span><span class="p">))</span>
+	t <span style="color:#81a1c1">:=</span> template<span style="color:#eceff4">.</span><span style="color:#88c0d0">Must</span><span style="color:#eceff4">(</span>template<span style="color:#eceff4">.</span><span style="color:#88c0d0">New</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;table&#34;</span><span style="color:#eceff4">).</span><span style="color:#88c0d0">Parse</span><span style="color:#eceff4">(</span>rowTemplate<span style="color:#eceff4">))</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">book</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">books</span> <span class="p">{</span>
-		<span class="nx">err</span> <span class="o">:=</span> <span class="nx">t</span><span class="p">.</span><span class="nf">Execute</span><span class="p">(</span><span class="nx">buf</span><span class="p">,</span> <span class="nx">book</span><span class="p">)</span>
-		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-			<span class="nx">log</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Error executing template:&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> book <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> books <span style="color:#eceff4">{</span>
+		err <span style="color:#81a1c1">:=</span> t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Execute</span><span style="color:#eceff4">(</span>buf<span style="color:#eceff4">,</span> book<span style="color:#eceff4">)</span>
+		<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+			log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Println</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Error executing template:&#34;</span><span style="color:#eceff4">,</span> err<span style="color:#eceff4">)</span>
+		<span style="color:#eceff4">}</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">return</span> <span class="nx">buf</span><span class="p">.</span><span class="nf">String</span><span class="p">()</span>
-<span class="p">}</span></code></pre></div>
+	<span style="color:#81a1c1;font-weight:bold">return</span> buf<span style="color:#eceff4">.</span><span style="color:#88c0d0">String</span><span style="color:#eceff4">()</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>In the <code>report</code> package, we have a single function <code>Generate</code> which generates
 the report Markdown table. It gets all the books from the <code>books.Books</code>
 package, iterates over them and uses the <code>rowTemplate</code> to generate each of the
 rows of the table. In the end, it returns the whole Markdown table as in a
 single string.</p>
 <p>Let&rsquo;s take a quick peek at the <code>books</code> package:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// books/books.go
-</span><span class="c1"></span>
-<span class="kn">package</span> <span class="nx">books</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#616e87;font-style:italic">// books/books.go
+</span><span style="color:#616e87;font-style:italic"></span>
+<span style="color:#81a1c1;font-weight:bold">package</span> books
 
-<span class="kd">type</span> <span class="nx">Book</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">ISBN</span>      <span class="kt">string</span>
-	<span class="nx">Title</span>     <span class="kt">string</span>
-	<span class="nx">Author</span>    <span class="kt">string</span>
-	<span class="nx">Pages</span>     <span class="kt">int</span>
-	<span class="nx">Publisher</span> <span class="kt">string</span>
-	<span class="nx">Price</span>     <span class="kt">int</span>
-<span class="p">}</span>
+<span style="color:#81a1c1;font-weight:bold">type</span> Book <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+	ISBN      <span style="color:#81a1c1">string</span>
+	Title     <span style="color:#81a1c1">string</span>
+	Author    <span style="color:#81a1c1">string</span>
+	Pages     <span style="color:#81a1c1">int</span>
+	Publisher <span style="color:#81a1c1">string</span>
+	Price     <span style="color:#81a1c1">int</span>
+<span style="color:#eceff4">}</span>
 
-<span class="kd">var</span> <span class="nx">Books</span> <span class="p">[]</span><span class="nx">Book</span> <span class="p">=</span> <span class="p">[]</span><span class="nx">Book</span><span class="p">{</span>
-	<span class="nx">Book</span><span class="p">{</span>
-		<span class="nx">ISBN</span><span class="p">:</span>      <span class="s">&#34;978-1591847786&#34;</span><span class="p">,</span>
-		<span class="nx">Title</span><span class="p">:</span>     <span class="s">&#34;Hooked&#34;</span><span class="p">,</span>
-		<span class="nx">Author</span><span class="p">:</span>    <span class="s">&#34;Nir Eyal&#34;</span><span class="p">,</span>
-		<span class="nx">Pages</span><span class="p">:</span>     <span class="mi">256</span><span class="p">,</span>
-		<span class="nx">Publisher</span><span class="p">:</span> <span class="s">&#34;Portfolio&#34;</span><span class="p">,</span>
-		<span class="nx">Price</span><span class="p">:</span>     <span class="mi">19</span><span class="p">,</span>
-	<span class="p">},</span>
-	<span class="nx">Book</span><span class="p">{</span>
-		<span class="nx">ISBN</span><span class="p">:</span>      <span class="s">&#34;978-1434442017&#34;</span><span class="p">,</span>
-		<span class="nx">Title</span><span class="p">:</span>     <span class="s">&#34;The Great Gatsby&#34;</span><span class="p">,</span>
-		<span class="nx">Author</span><span class="p">:</span>    <span class="s">&#34;F. Scott Fitzgerald&#34;</span><span class="p">,</span>
-		<span class="nx">Pages</span><span class="p">:</span>     <span class="mi">140</span><span class="p">,</span>
-		<span class="nx">Publisher</span><span class="p">:</span> <span class="s">&#34;Wildside Press&#34;</span><span class="p">,</span>
-		<span class="nx">Price</span><span class="p">:</span>     <span class="mi">12</span><span class="p">,</span>
-	<span class="p">},</span>
-	<span class="nx">Book</span><span class="p">{</span>
-		<span class="nx">ISBN</span><span class="p">:</span>      <span class="s">&#34;978-1784756260&#34;</span><span class="p">,</span>
-		<span class="nx">Title</span><span class="p">:</span>     <span class="s">&#34;Then She Was Gone: A Novel&#34;</span><span class="p">,</span>
-		<span class="nx">Author</span><span class="p">:</span>    <span class="s">&#34;Lisa Jewell&#34;</span><span class="p">,</span>
-		<span class="nx">Pages</span><span class="p">:</span>     <span class="mi">448</span><span class="p">,</span>
-		<span class="nx">Publisher</span><span class="p">:</span> <span class="s">&#34;Arrow&#34;</span><span class="p">,</span>
-		<span class="nx">Price</span><span class="p">:</span>     <span class="mi">29</span><span class="p">,</span>
-	<span class="p">},</span>
-	<span class="nx">Book</span><span class="p">{</span>
-		<span class="nx">ISBN</span><span class="p">:</span>      <span class="s">&#34;978-1094400648&#34;</span><span class="p">,</span>
-		<span class="nx">Title</span><span class="p">:</span>     <span class="s">&#34;Think Like a Billionaire&#34;</span><span class="p">,</span>
-		<span class="nx">Author</span><span class="p">:</span>    <span class="s">&#34;James Altucher&#34;</span><span class="p">,</span>
-		<span class="nx">Pages</span><span class="p">:</span>     <span class="mi">852</span><span class="p">,</span>
-		<span class="nx">Publisher</span><span class="p">:</span> <span class="s">&#34;Scribd, Inc.&#34;</span><span class="p">,</span>
-		<span class="nx">Price</span><span class="p">:</span>     <span class="mi">9</span><span class="p">,</span>
-	<span class="p">},</span>
-<span class="p">}</span></code></pre></div>
+<span style="color:#81a1c1;font-weight:bold">var</span> Books <span style="color:#eceff4">[]</span>Book <span style="color:#eceff4">=</span> <span style="color:#eceff4">[]</span>Book<span style="color:#eceff4">{</span>
+	Book<span style="color:#eceff4">{</span>
+		ISBN<span style="color:#eceff4">:</span>      <span style="color:#a3be8c">&#34;978-1591847786&#34;</span><span style="color:#eceff4">,</span>
+		Title<span style="color:#eceff4">:</span>     <span style="color:#a3be8c">&#34;Hooked&#34;</span><span style="color:#eceff4">,</span>
+		Author<span style="color:#eceff4">:</span>    <span style="color:#a3be8c">&#34;Nir Eyal&#34;</span><span style="color:#eceff4">,</span>
+		Pages<span style="color:#eceff4">:</span>     <span style="color:#b48ead">256</span><span style="color:#eceff4">,</span>
+		Publisher<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Portfolio&#34;</span><span style="color:#eceff4">,</span>
+		Price<span style="color:#eceff4">:</span>     <span style="color:#b48ead">19</span><span style="color:#eceff4">,</span>
+	<span style="color:#eceff4">},</span>
+	Book<span style="color:#eceff4">{</span>
+		ISBN<span style="color:#eceff4">:</span>      <span style="color:#a3be8c">&#34;978-1434442017&#34;</span><span style="color:#eceff4">,</span>
+		Title<span style="color:#eceff4">:</span>     <span style="color:#a3be8c">&#34;The Great Gatsby&#34;</span><span style="color:#eceff4">,</span>
+		Author<span style="color:#eceff4">:</span>    <span style="color:#a3be8c">&#34;F. Scott Fitzgerald&#34;</span><span style="color:#eceff4">,</span>
+		Pages<span style="color:#eceff4">:</span>     <span style="color:#b48ead">140</span><span style="color:#eceff4">,</span>
+		Publisher<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Wildside Press&#34;</span><span style="color:#eceff4">,</span>
+		Price<span style="color:#eceff4">:</span>     <span style="color:#b48ead">12</span><span style="color:#eceff4">,</span>
+	<span style="color:#eceff4">},</span>
+	Book<span style="color:#eceff4">{</span>
+		ISBN<span style="color:#eceff4">:</span>      <span style="color:#a3be8c">&#34;978-1784756260&#34;</span><span style="color:#eceff4">,</span>
+		Title<span style="color:#eceff4">:</span>     <span style="color:#a3be8c">&#34;Then She Was Gone: A Novel&#34;</span><span style="color:#eceff4">,</span>
+		Author<span style="color:#eceff4">:</span>    <span style="color:#a3be8c">&#34;Lisa Jewell&#34;</span><span style="color:#eceff4">,</span>
+		Pages<span style="color:#eceff4">:</span>     <span style="color:#b48ead">448</span><span style="color:#eceff4">,</span>
+		Publisher<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Arrow&#34;</span><span style="color:#eceff4">,</span>
+		Price<span style="color:#eceff4">:</span>     <span style="color:#b48ead">29</span><span style="color:#eceff4">,</span>
+	<span style="color:#eceff4">},</span>
+	Book<span style="color:#eceff4">{</span>
+		ISBN<span style="color:#eceff4">:</span>      <span style="color:#a3be8c">&#34;978-1094400648&#34;</span><span style="color:#eceff4">,</span>
+		Title<span style="color:#eceff4">:</span>     <span style="color:#a3be8c">&#34;Think Like a Billionaire&#34;</span><span style="color:#eceff4">,</span>
+		Author<span style="color:#eceff4">:</span>    <span style="color:#a3be8c">&#34;James Altucher&#34;</span><span style="color:#eceff4">,</span>
+		Pages<span style="color:#eceff4">:</span>     <span style="color:#b48ead">852</span><span style="color:#eceff4">,</span>
+		Publisher<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Scribd, Inc.&#34;</span><span style="color:#eceff4">,</span>
+		Price<span style="color:#eceff4">:</span>     <span style="color:#b48ead">9</span><span style="color:#eceff4">,</span>
+	<span style="color:#eceff4">},</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>The <code>books</code> package contains just the list of the books in our fake inventory.</p>
 <p>If we ran the code we would get the following output:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ go run main.go
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go run main.go
 
-<span class="p">|</span> Title         <span class="p">|</span> Author        <span class="p">|</span> Publisher <span class="p">|</span>  Pages  <span class="p">|</span>  ISBN  <span class="p">|</span>  Price  <span class="p">|</span>
-<span class="p">|</span> ------------- <span class="p">|</span> ------------- <span class="p">|</span> --------- <span class="p">|</span> ------- <span class="p">|</span> ------ <span class="p">|</span> ------- <span class="p">|</span>
-<span class="p">|</span>  Hooked  <span class="p">|</span>  Nir Eyal  <span class="p">|</span>  Portfolio  <span class="p">|</span>  <span class="m">256</span>  <span class="p">|</span>  978-1591847786  <span class="p">|</span>  <span class="m">19</span>  <span class="p">|</span>
-<span class="p">|</span>  The Great Gatsby  <span class="p">|</span>  F. Scott Fitzgerald  <span class="p">|</span>  Wildside Press  <span class="p">|</span>  <span class="m">140</span>  <span class="p">|</span>  978-1434442017  <span class="p">|</span>  <span class="m">12</span>  <span class="p">|</span>
-<span class="p">|</span>  Then She Was Gone: A Novel  <span class="p">|</span>  Lisa Jewell  <span class="p">|</span>  Arrow  <span class="p">|</span>  <span class="m">448</span>  <span class="p">|</span>  978-1784756260  <span class="p">|</span>  <span class="m">29</span>  <span class="p">|</span>
-<span class="p">|</span>  Think Like a Billionaire  <span class="p">|</span>  James Altucher  <span class="p">|</span>  Scribd, Inc.  <span class="p">|</span>  <span class="m">852</span>  <span class="p">|</span>  978-1094400648  <span class="p">|</span>  <span class="m">9</span>  <span class="p">|</span></code></pre></div>
+<span style="color:#eceff4">|</span> Title         <span style="color:#eceff4">|</span> Author        <span style="color:#eceff4">|</span> Publisher <span style="color:#eceff4">|</span>  Pages  <span style="color:#eceff4">|</span>  ISBN  <span style="color:#eceff4">|</span>  Price  <span style="color:#eceff4">|</span>
+<span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> --------- <span style="color:#eceff4">|</span> ------- <span style="color:#eceff4">|</span> ------ <span style="color:#eceff4">|</span> ------- <span style="color:#eceff4">|</span>
+<span style="color:#eceff4">|</span>  Hooked  <span style="color:#eceff4">|</span>  Nir Eyal  <span style="color:#eceff4">|</span>  Portfolio  <span style="color:#eceff4">|</span>  <span style="color:#b48ead">256</span>  <span style="color:#eceff4">|</span>  978-1591847786  <span style="color:#eceff4">|</span>  <span style="color:#b48ead">19</span>  <span style="color:#eceff4">|</span>
+<span style="color:#eceff4">|</span>  The Great Gatsby  <span style="color:#eceff4">|</span>  F. Scott Fitzgerald  <span style="color:#eceff4">|</span>  Wildside Press  <span style="color:#eceff4">|</span>  <span style="color:#b48ead">140</span>  <span style="color:#eceff4">|</span>  978-1434442017  <span style="color:#eceff4">|</span>  <span style="color:#b48ead">12</span>  <span style="color:#eceff4">|</span>
+<span style="color:#eceff4">|</span>  Then She Was Gone: A Novel  <span style="color:#eceff4">|</span>  Lisa Jewell  <span style="color:#eceff4">|</span>  Arrow  <span style="color:#eceff4">|</span>  <span style="color:#b48ead">448</span>  <span style="color:#eceff4">|</span>  978-1784756260  <span style="color:#eceff4">|</span>  <span style="color:#b48ead">29</span>  <span style="color:#eceff4">|</span>
+<span style="color:#eceff4">|</span>  Think Like a Billionaire  <span style="color:#eceff4">|</span>  James Altucher  <span style="color:#eceff4">|</span>  Scribd, Inc.  <span style="color:#eceff4">|</span>  <span style="color:#b48ead">852</span>  <span style="color:#eceff4">|</span>  978-1094400648  <span style="color:#eceff4">|</span>  <span style="color:#b48ead">9</span>  <span style="color:#eceff4">|</span></code></pre></div>
 <p>Given that this blog is generated using Markdown, here&rsquo;s the table rendered:</p>
 <table>
 <thead>
@@ -494,86 +494,86 @@ Now that we have the report in place let&rsquo;s see how we can test it.</p>
 <h2 id="testing-our-reports" class="relative group">Testing our reports <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#testing-our-reports" aria-label="Anchor">#</a></span></h2>
 <p>Testing the <code>Generate</code> function is straightforward, using the <a href="/post/testing-in-go-table-driven-tests/">table-driven
 approach</a>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">report</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">package</span> report
 
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;strings&#34;</span>
-	<span class="s">&#34;testing&#34;</span>
+<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+	<span style="color:#a3be8c">&#34;strings&#34;</span>
+	<span style="color:#a3be8c">&#34;testing&#34;</span>
 
-	<span class="s">&#34;github.com/fteem/go-playground/golden-files/books&#34;</span>
-<span class="p">)</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/go-playground/golden-files/books&#34;</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">func</span> <span class="nf">TestGenerate</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">testcases</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
-		<span class="nx">name</span>  <span class="kt">string</span>
-		<span class="nx">books</span> <span class="p">[]</span><span class="nx">books</span><span class="p">.</span><span class="nx">Book</span>
-		<span class="nx">want</span>  <span class="kt">string</span>
-	<span class="p">}{</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span> <span class="s">&#34;WithInventory&#34;</span><span class="p">,</span>
-			<span class="nx">books</span><span class="p">:</span> <span class="p">[]</span><span class="nx">books</span><span class="p">.</span><span class="nx">Book</span><span class="p">{</span>
-				<span class="nx">books</span><span class="p">.</span><span class="nx">Book</span><span class="p">{</span>
-					<span class="nx">Title</span><span class="p">:</span>  <span class="s">&#34;The Da Vinci Code&#34;</span><span class="p">,</span>
-					<span class="nx">Author</span><span class="p">:</span> <span class="s">&#34;Dan Brown&#34;</span><span class="p">,</span>
-					<span class="nx">Pages</span><span class="p">:</span>  <span class="mi">592</span><span class="p">,</span>
-					<span class="nx">ISBN</span><span class="p">:</span>   <span class="s">&#34;978-0552161275&#34;</span><span class="p">,</span>
-					<span class="nx">Price</span><span class="p">:</span>  <span class="mi">7</span><span class="p">,</span>
-				<span class="p">},</span>
-				<span class="nx">books</span><span class="p">.</span><span class="nx">Book</span><span class="p">{</span>
-					<span class="nx">Title</span><span class="p">:</span>  <span class="s">&#34;American on Purpose&#34;</span><span class="p">,</span>
-					<span class="nx">Author</span><span class="p">:</span> <span class="s">&#34;Craig Ferguson&#34;</span><span class="p">,</span>
-					<span class="nx">Pages</span><span class="p">:</span>  <span class="mi">288</span><span class="p">,</span>
-					<span class="nx">ISBN</span><span class="p">:</span>   <span class="s">&#34;978-0061959158&#34;</span><span class="p">,</span>
-					<span class="nx">Price</span><span class="p">:</span>  <span class="mi">19</span><span class="p">,</span>
-				<span class="p">},</span>
-			<span class="p">},</span>
-			<span class="nx">want</span><span class="p">:</span> <span class="s">`
-</span><span class="s">| Title         | Author        | Pages  | ISBN  | Price  |
-</span><span class="s">| ------------- | ------------- | ------ | ----- | ------ |
-</span><span class="s">| The Da Vinci Code | Dan Brown | 592 | 978-0552161275 | 7 |
-</span><span class="s">| American on Purpose | Craig Ferguson | 288 | 978-0061959158 | 19 |
-</span><span class="s">`</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span>  <span class="s">&#34;EmptyInventory&#34;</span><span class="p">,</span>
-			<span class="nx">books</span><span class="p">:</span> <span class="p">[]</span><span class="nx">books</span><span class="p">.</span><span class="nx">Book</span><span class="p">{},</span>
-			<span class="nx">want</span><span class="p">:</span> <span class="s">`
-</span><span class="s">| Title         | Author        | Pages  | ISBN  | Price  |
-</span><span class="s">| ------------- | ------------- | ------ | ----- | ------ |
-</span><span class="s">`</span><span class="p">,</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestGenerate</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	testcases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+		name  <span style="color:#81a1c1">string</span>
+		books <span style="color:#eceff4">[]</span>books<span style="color:#eceff4">.</span>Book
+		want  <span style="color:#81a1c1">string</span>
+	<span style="color:#eceff4">}{</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;WithInventory&#34;</span><span style="color:#eceff4">,</span>
+			books<span style="color:#eceff4">:</span> <span style="color:#eceff4">[]</span>books<span style="color:#eceff4">.</span>Book<span style="color:#eceff4">{</span>
+				books<span style="color:#eceff4">.</span>Book<span style="color:#eceff4">{</span>
+					Title<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;The Da Vinci Code&#34;</span><span style="color:#eceff4">,</span>
+					Author<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Dan Brown&#34;</span><span style="color:#eceff4">,</span>
+					Pages<span style="color:#eceff4">:</span>  <span style="color:#b48ead">592</span><span style="color:#eceff4">,</span>
+					ISBN<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;978-0552161275&#34;</span><span style="color:#eceff4">,</span>
+					Price<span style="color:#eceff4">:</span>  <span style="color:#b48ead">7</span><span style="color:#eceff4">,</span>
+				<span style="color:#eceff4">},</span>
+				books<span style="color:#eceff4">.</span>Book<span style="color:#eceff4">{</span>
+					Title<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;American on Purpose&#34;</span><span style="color:#eceff4">,</span>
+					Author<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Craig Ferguson&#34;</span><span style="color:#eceff4">,</span>
+					Pages<span style="color:#eceff4">:</span>  <span style="color:#b48ead">288</span><span style="color:#eceff4">,</span>
+					ISBN<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;978-0061959158&#34;</span><span style="color:#eceff4">,</span>
+					Price<span style="color:#eceff4">:</span>  <span style="color:#b48ead">19</span><span style="color:#eceff4">,</span>
+				<span style="color:#eceff4">},</span>
+			<span style="color:#eceff4">},</span>
+			want<span style="color:#eceff4">:</span> <span style="color:#a3be8c">`
+</span><span style="color:#a3be8c">| Title         | Author        | Pages  | ISBN  | Price  |
+</span><span style="color:#a3be8c">| ------------- | ------------- | ------ | ----- | ------ |
+</span><span style="color:#a3be8c">| The Da Vinci Code | Dan Brown | 592 | 978-0552161275 | 7 |
+</span><span style="color:#a3be8c">| American on Purpose | Craig Ferguson | 288 | 978-0061959158 | 19 |
+</span><span style="color:#a3be8c">`</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;EmptyInventory&#34;</span><span style="color:#eceff4">,</span>
+			books<span style="color:#eceff4">:</span> <span style="color:#eceff4">[]</span>books<span style="color:#eceff4">.</span>Book<span style="color:#eceff4">{},</span>
+			want<span style="color:#eceff4">:</span> <span style="color:#a3be8c">`
+</span><span style="color:#a3be8c">| Title         | Author        | Pages  | ISBN  | Price  |
+</span><span style="color:#a3be8c">| ------------- | ------------- | ------ | ----- | ------ |
+</span><span style="color:#a3be8c">`</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">testcase</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">testcases</span> <span class="p">{</span>
-		<span class="nx">got</span> <span class="o">:=</span> <span class="nf">Generate</span><span class="p">(</span><span class="nx">testcase</span><span class="p">.</span><span class="nx">books</span><span class="p">)</span>
-		<span class="k">if</span> <span class="nx">got</span> <span class="o">!=</span> <span class="nx">testcase</span><span class="p">.</span><span class="nx">want</span> <span class="p">{</span>
-			<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Want:\n%s\nGot:%s&#34;</span><span class="p">,</span> <span class="nx">testcase</span><span class="p">.</span><span class="nx">want</span><span class="p">,</span> <span class="nx">got</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> testcase <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> testcases <span style="color:#eceff4">{</span>
+		got <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">Generate</span><span style="color:#eceff4">(</span>testcase<span style="color:#eceff4">.</span>books<span style="color:#eceff4">)</span>
+		<span style="color:#81a1c1;font-weight:bold">if</span> got <span style="color:#81a1c1">!=</span> testcase<span style="color:#eceff4">.</span>want <span style="color:#eceff4">{</span>
+			t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want:\n%s\nGot:%s&#34;</span><span style="color:#eceff4">,</span> testcase<span style="color:#eceff4">.</span>want<span style="color:#eceff4">,</span> got<span style="color:#eceff4">)</span>
+		<span style="color:#eceff4">}</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>The formatting of the expected output is rather hard to scan. That&rsquo;s because
 our test cases test the actual output of the table, which is a string with a
 particular format.</p>
 <p>Even worse, in cases when these inconvenient strings are hardcoded, a failing
 test can be hard to debug if there&rsquo;s a mismatch in leading or trailing
 whitespace. Consider this case, for example:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ go <span class="nb">test</span> -v
-<span class="o">===</span> RUN   TestGenerate
---- FAIL: TestGenerate <span class="o">(</span>0.00s<span class="o">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#81a1c1">test</span> -v
+<span style="color:#81a1c1">===</span> RUN   TestGenerate
+--- FAIL: TestGenerate <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
     report_test.go:54: Want:
 
-        <span class="p">|</span> Title         <span class="p">|</span> Author        <span class="p">|</span> Pages  <span class="p">|</span> ISBN  <span class="p">|</span> Price  <span class="p">|</span>
-        <span class="p">|</span> ------------- <span class="p">|</span> ------------- <span class="p">|</span> ------ <span class="p">|</span> ----- <span class="p">|</span> ------ <span class="p">|</span>
-        <span class="p">|</span> The Da Vinci Code <span class="p">|</span> Dan Brown <span class="p">|</span> <span class="m">592</span> <span class="p">|</span> 978-0552161275 <span class="p">|</span> <span class="m">7</span> <span class="p">|</span>
-        <span class="p">|</span> American on Purpose <span class="p">|</span> Craig Ferguson <span class="p">|</span> <span class="m">288</span> <span class="p">|</span> 978-0061959158 <span class="p">|</span> <span class="m">19</span> <span class="p">|</span>
+        <span style="color:#eceff4">|</span> Title         <span style="color:#eceff4">|</span> Author        <span style="color:#eceff4">|</span> Pages  <span style="color:#eceff4">|</span> ISBN  <span style="color:#eceff4">|</span> Price  <span style="color:#eceff4">|</span>
+        <span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> ------ <span style="color:#eceff4">|</span> ----- <span style="color:#eceff4">|</span> ------ <span style="color:#eceff4">|</span>
+        <span style="color:#eceff4">|</span> The Da Vinci Code <span style="color:#eceff4">|</span> Dan Brown <span style="color:#eceff4">|</span> <span style="color:#b48ead">592</span> <span style="color:#eceff4">|</span> 978-0552161275 <span style="color:#eceff4">|</span> <span style="color:#b48ead">7</span> <span style="color:#eceff4">|</span>
+        <span style="color:#eceff4">|</span> American on Purpose <span style="color:#eceff4">|</span> Craig Ferguson <span style="color:#eceff4">|</span> <span style="color:#b48ead">288</span> <span style="color:#eceff4">|</span> 978-0061959158 <span style="color:#eceff4">|</span> <span style="color:#b48ead">19</span> <span style="color:#eceff4">|</span>
 
         Got:
-        <span class="p">|</span> Title         <span class="p">|</span> Author        <span class="p">|</span> Pages  <span class="p">|</span> ISBN  <span class="p">|</span> Price  <span class="p">|</span>
-        <span class="p">|</span> ------------- <span class="p">|</span> ------------- <span class="p">|</span> ------ <span class="p">|</span> ----- <span class="p">|</span> ------ <span class="p">|</span>
-        <span class="p">|</span> The Da Vinci Code <span class="p">|</span> Dan Brown <span class="p">|</span> <span class="m">592</span> <span class="p">|</span> 978-0552161275 <span class="p">|</span> <span class="m">7</span> <span class="p">|</span>
-        <span class="p">|</span> American on Purpose <span class="p">|</span> Craig Ferguson <span class="p">|</span> <span class="m">288</span> <span class="p">|</span> 978-0061959158 <span class="p">|</span> <span class="m">19</span> <span class="p">|</span>
+        <span style="color:#eceff4">|</span> Title         <span style="color:#eceff4">|</span> Author        <span style="color:#eceff4">|</span> Pages  <span style="color:#eceff4">|</span> ISBN  <span style="color:#eceff4">|</span> Price  <span style="color:#eceff4">|</span>
+        <span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> ------ <span style="color:#eceff4">|</span> ----- <span style="color:#eceff4">|</span> ------ <span style="color:#eceff4">|</span>
+        <span style="color:#eceff4">|</span> The Da Vinci Code <span style="color:#eceff4">|</span> Dan Brown <span style="color:#eceff4">|</span> <span style="color:#b48ead">592</span> <span style="color:#eceff4">|</span> 978-0552161275 <span style="color:#eceff4">|</span> <span style="color:#b48ead">7</span> <span style="color:#eceff4">|</span>
+        <span style="color:#eceff4">|</span> American on Purpose <span style="color:#eceff4">|</span> Craig Ferguson <span style="color:#eceff4">|</span> <span style="color:#b48ead">288</span> <span style="color:#eceff4">|</span> 978-0061959158 <span style="color:#eceff4">|</span> <span style="color:#b48ead">19</span> <span style="color:#eceff4">|</span>
 FAIL
-<span class="nb">exit</span> status <span class="m">1</span>
+<span style="color:#81a1c1">exit</span> status <span style="color:#b48ead">1</span>
 FAIL	github.com/fteem/go-playground/golden-files/report-verbose	0.005s</code></pre></div>
 <p>While the <code>want</code>ed and the <code>got</code>ten values look identical, the test is failing
 because one of the values has trailing whitespace. To avoid hardcoding such
@@ -591,74 +591,74 @@ files:</p>
 <li><code>testdata/with_inventory.golden</code></li>
 </ol>
 <p>Both of them will have the corresponding output of the test cases:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ cat report/testdata/empty_inventory.golden
-<span class="p">|</span> Title         <span class="p">|</span> Author        <span class="p">|</span> Publisher <span class="p">|</span>  Pages  <span class="p">|</span>  ISBN  <span class="p">|</span>  Price  <span class="p">|</span>
-<span class="p">|</span> ------------- <span class="p">|</span> ------------- <span class="p">|</span> --------- <span class="p">|</span> ------- <span class="p">|</span> ------ <span class="p">|</span> ------- <span class="p">|</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ cat report/testdata/empty_inventory.golden
+<span style="color:#eceff4">|</span> Title         <span style="color:#eceff4">|</span> Author        <span style="color:#eceff4">|</span> Publisher <span style="color:#eceff4">|</span>  Pages  <span style="color:#eceff4">|</span>  ISBN  <span style="color:#eceff4">|</span>  Price  <span style="color:#eceff4">|</span>
+<span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> --------- <span style="color:#eceff4">|</span> ------- <span style="color:#eceff4">|</span> ------ <span style="color:#eceff4">|</span> ------- <span style="color:#eceff4">|</span>
 
 $ cat report/testdata/with_inventory.golden
-<span class="p">|</span> Title         <span class="p">|</span> Author        <span class="p">|</span> Publisher <span class="p">|</span>  Pages  <span class="p">|</span>  ISBN  <span class="p">|</span>  Price  <span class="p">|</span>
-<span class="p">|</span> ------------- <span class="p">|</span> ------------- <span class="p">|</span> --------- <span class="p">|</span> ------- <span class="p">|</span> ------ <span class="p">|</span> ------- <span class="p">|</span>
-<span class="p">|</span> The Da Vinci Code <span class="p">|</span> Dan Brown <span class="p">|</span> Corgi <span class="p">|</span> <span class="m">592</span> <span class="p">|</span> 978-0552161275 <span class="p">|</span> <span class="m">7</span> <span class="p">|</span>
-<span class="p">|</span> American on Purpose <span class="p">|</span> Craig Ferguson <span class="p">|</span> Harper Collins <span class="p">|</span> <span class="m">288</span> <span class="p">|</span> 978-0061959158 <span class="p">|</span> <span class="m">19</span> <span class="p">|</span></code></pre></div>
+<span style="color:#eceff4">|</span> Title         <span style="color:#eceff4">|</span> Author        <span style="color:#eceff4">|</span> Publisher <span style="color:#eceff4">|</span>  Pages  <span style="color:#eceff4">|</span>  ISBN  <span style="color:#eceff4">|</span>  Price  <span style="color:#eceff4">|</span>
+<span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> --------- <span style="color:#eceff4">|</span> ------- <span style="color:#eceff4">|</span> ------ <span style="color:#eceff4">|</span> ------- <span style="color:#eceff4">|</span>
+<span style="color:#eceff4">|</span> The Da Vinci Code <span style="color:#eceff4">|</span> Dan Brown <span style="color:#eceff4">|</span> Corgi <span style="color:#eceff4">|</span> <span style="color:#b48ead">592</span> <span style="color:#eceff4">|</span> 978-0552161275 <span style="color:#eceff4">|</span> <span style="color:#b48ead">7</span> <span style="color:#eceff4">|</span>
+<span style="color:#eceff4">|</span> American on Purpose <span style="color:#eceff4">|</span> Craig Ferguson <span style="color:#eceff4">|</span> Harper Collins <span style="color:#eceff4">|</span> <span style="color:#b48ead">288</span> <span style="color:#eceff4">|</span> 978-0061959158 <span style="color:#eceff4">|</span> <span style="color:#b48ead">19</span> <span style="color:#eceff4">|</span></code></pre></div>
 <p>Now, let&rsquo;s change up our test cases to use the golden files to compare the
 outputs:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">report</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">package</span> report
 
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;io/ioutil&#34;</span>
-	<span class="s">&#34;testing&#34;</span>
+<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+	<span style="color:#a3be8c">&#34;io/ioutil&#34;</span>
+	<span style="color:#a3be8c">&#34;testing&#34;</span>
 
-	<span class="s">&#34;github.com/fteem/go-playground/golden-files/books&#34;</span>
-<span class="p">)</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/go-playground/golden-files/books&#34;</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">func</span> <span class="nf">TestGenerate</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">testcases</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
-		<span class="nx">name</span>   <span class="kt">string</span>
-		<span class="nx">books</span>  <span class="p">[]</span><span class="nx">books</span><span class="p">.</span><span class="nx">Book</span>
-<span class="hl">		<span class="nx">golden</span> <span class="kt">string</span>
-</span>	<span class="p">}{</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span> <span class="s">&#34;WithInventory&#34;</span><span class="p">,</span>
-			<span class="nx">books</span><span class="p">:</span> <span class="p">[]</span><span class="nx">books</span><span class="p">.</span><span class="nx">Book</span><span class="p">{</span>
-				<span class="nx">books</span><span class="p">.</span><span class="nx">Book</span><span class="p">{</span>
-					<span class="nx">Title</span><span class="p">:</span>     <span class="s">&#34;The Da Vinci Code&#34;</span><span class="p">,</span>
-					<span class="nx">Author</span><span class="p">:</span>    <span class="s">&#34;Dan Brown&#34;</span><span class="p">,</span>
-					<span class="nx">Publisher</span><span class="p">:</span> <span class="s">&#34;Corgi&#34;</span><span class="p">,</span>
-					<span class="nx">Pages</span><span class="p">:</span>     <span class="mi">592</span><span class="p">,</span>
-					<span class="nx">ISBN</span><span class="p">:</span>      <span class="s">&#34;978-0552161275&#34;</span><span class="p">,</span>
-					<span class="nx">Price</span><span class="p">:</span>     <span class="mi">7</span><span class="p">,</span>
-				<span class="p">},</span>
-				<span class="nx">books</span><span class="p">.</span><span class="nx">Book</span><span class="p">{</span>
-					<span class="nx">Title</span><span class="p">:</span>     <span class="s">&#34;American on Purpose&#34;</span><span class="p">,</span>
-					<span class="nx">Author</span><span class="p">:</span>    <span class="s">&#34;Craig Ferguson&#34;</span><span class="p">,</span>
-					<span class="nx">Publisher</span><span class="p">:</span> <span class="s">&#34;Harper Collins&#34;</span><span class="p">,</span>
-					<span class="nx">Pages</span><span class="p">:</span>     <span class="mi">288</span><span class="p">,</span>
-					<span class="nx">ISBN</span><span class="p">:</span>      <span class="s">&#34;978-0061959158&#34;</span><span class="p">,</span>
-					<span class="nx">Price</span><span class="p">:</span>     <span class="mi">19</span><span class="p">,</span>
-				<span class="p">},</span>
-			<span class="p">},</span>
-<span class="hl">			<span class="nx">golden</span><span class="p">:</span> <span class="s">&#34;with_inventory&#34;</span><span class="p">,</span>
-</span>		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;EmptyInventory&#34;</span><span class="p">,</span>
-			<span class="nx">books</span><span class="p">:</span>  <span class="p">[]</span><span class="nx">books</span><span class="p">.</span><span class="nx">Book</span><span class="p">{},</span>
-<span class="hl">			<span class="nx">golden</span><span class="p">:</span> <span class="s">&#34;empty_inventory&#34;</span><span class="p">,</span>
-</span>		<span class="p">},</span>
-	<span class="p">}</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestGenerate</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	testcases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+		name   <span style="color:#81a1c1">string</span>
+		books  <span style="color:#eceff4">[]</span>books<span style="color:#eceff4">.</span>Book
+<span style="display:block;width:100%;background-color:#424853">		golden <span style="color:#81a1c1">string</span>
+</span>	<span style="color:#eceff4">}{</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;WithInventory&#34;</span><span style="color:#eceff4">,</span>
+			books<span style="color:#eceff4">:</span> <span style="color:#eceff4">[]</span>books<span style="color:#eceff4">.</span>Book<span style="color:#eceff4">{</span>
+				books<span style="color:#eceff4">.</span>Book<span style="color:#eceff4">{</span>
+					Title<span style="color:#eceff4">:</span>     <span style="color:#a3be8c">&#34;The Da Vinci Code&#34;</span><span style="color:#eceff4">,</span>
+					Author<span style="color:#eceff4">:</span>    <span style="color:#a3be8c">&#34;Dan Brown&#34;</span><span style="color:#eceff4">,</span>
+					Publisher<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Corgi&#34;</span><span style="color:#eceff4">,</span>
+					Pages<span style="color:#eceff4">:</span>     <span style="color:#b48ead">592</span><span style="color:#eceff4">,</span>
+					ISBN<span style="color:#eceff4">:</span>      <span style="color:#a3be8c">&#34;978-0552161275&#34;</span><span style="color:#eceff4">,</span>
+					Price<span style="color:#eceff4">:</span>     <span style="color:#b48ead">7</span><span style="color:#eceff4">,</span>
+				<span style="color:#eceff4">},</span>
+				books<span style="color:#eceff4">.</span>Book<span style="color:#eceff4">{</span>
+					Title<span style="color:#eceff4">:</span>     <span style="color:#a3be8c">&#34;American on Purpose&#34;</span><span style="color:#eceff4">,</span>
+					Author<span style="color:#eceff4">:</span>    <span style="color:#a3be8c">&#34;Craig Ferguson&#34;</span><span style="color:#eceff4">,</span>
+					Publisher<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Harper Collins&#34;</span><span style="color:#eceff4">,</span>
+					Pages<span style="color:#eceff4">:</span>     <span style="color:#b48ead">288</span><span style="color:#eceff4">,</span>
+					ISBN<span style="color:#eceff4">:</span>      <span style="color:#a3be8c">&#34;978-0061959158&#34;</span><span style="color:#eceff4">,</span>
+					Price<span style="color:#eceff4">:</span>     <span style="color:#b48ead">19</span><span style="color:#eceff4">,</span>
+				<span style="color:#eceff4">},</span>
+			<span style="color:#eceff4">},</span>
+<span style="display:block;width:100%;background-color:#424853">			golden<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;with_inventory&#34;</span><span style="color:#eceff4">,</span>
+</span>		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;EmptyInventory&#34;</span><span style="color:#eceff4">,</span>
+			books<span style="color:#eceff4">:</span>  <span style="color:#eceff4">[]</span>books<span style="color:#eceff4">.</span>Book<span style="color:#eceff4">{},</span>
+<span style="display:block;width:100%;background-color:#424853">			golden<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;empty_inventory&#34;</span><span style="color:#eceff4">,</span>
+</span>		<span style="color:#eceff4">},</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">testcase</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">testcases</span> <span class="p">{</span>
-		<span class="nx">got</span> <span class="o">:=</span> <span class="nf">Generate</span><span class="p">(</span><span class="nx">testcase</span><span class="p">.</span><span class="nx">books</span><span class="p">)</span>
-<span class="hl">		<span class="nx">content</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">ioutil</span><span class="p">.</span><span class="nf">ReadFile</span><span class="p">(</span><span class="s">&#34;testdata/&#34;</span> <span class="o">+</span> <span class="nx">testcase</span><span class="p">.</span><span class="nx">golden</span> <span class="o">+</span> <span class="s">&#34;.golden&#34;</span><span class="p">)</span>
-</span><span class="hl">		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span><span class="hl">			<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Error loading golden file: %s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span><span class="hl">		<span class="p">}</span>
-</span><span class="hl">		<span class="nx">want</span> <span class="o">:=</span> <span class="nb">string</span><span class="p">(</span><span class="nx">content</span><span class="p">)</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> testcase <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> testcases <span style="color:#eceff4">{</span>
+		got <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">Generate</span><span style="color:#eceff4">(</span>testcase<span style="color:#eceff4">.</span>books<span style="color:#eceff4">)</span>
+<span style="display:block;width:100%;background-color:#424853">		content<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> ioutil<span style="color:#eceff4">.</span><span style="color:#88c0d0">ReadFile</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;testdata/&#34;</span> <span style="color:#81a1c1">+</span> testcase<span style="color:#eceff4">.</span>golden <span style="color:#81a1c1">+</span> <span style="color:#a3be8c">&#34;.golden&#34;</span><span style="color:#eceff4">)</span>
+</span><span style="display:block;width:100%;background-color:#424853">		<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+</span><span style="display:block;width:100%;background-color:#424853">			t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatalf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Error loading golden file: %s&#34;</span><span style="color:#eceff4">,</span> err<span style="color:#eceff4">)</span>
+</span><span style="display:block;width:100%;background-color:#424853">		<span style="color:#eceff4">}</span>
+</span><span style="display:block;width:100%;background-color:#424853">		want <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">string</span><span style="color:#eceff4">(</span>content<span style="color:#eceff4">)</span>
 </span>
-		<span class="k">if</span> <span class="nx">got</span> <span class="o">!=</span> <span class="nx">want</span> <span class="p">{</span>
-			<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Want:\n%s\nGot:\n%s&#34;</span><span class="p">,</span> <span class="nx">want</span><span class="p">,</span> <span class="nx">got</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+		<span style="color:#81a1c1;font-weight:bold">if</span> got <span style="color:#81a1c1">!=</span> want <span style="color:#eceff4">{</span>
+			t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want:\n%s\nGot:\n%s&#34;</span><span style="color:#eceff4">,</span> want<span style="color:#eceff4">,</span> got<span style="color:#eceff4">)</span>
+		<span style="color:#eceff4">}</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>The notable changes are on the highlighted lines above:</p>
 <ul>
 <li>we add a <code>golden</code> attribute to each test case, representing the name of its
@@ -691,15 +691,15 @@ inputs, to update the golden files saving ourselves time from copy-pasting
 outputs to files.</p>
 <p>The usual approach in the wild is to provide a command-line flag, usually
 <code>-update</code>, which you can use with the <code>go test</code> tool:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">// report/report_test.go
-</span><span class="c1"></span><span class="kd">var</span> <span class="p">(</span>
-	<span class="nx">update</span> <span class="p">=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">Bool</span><span class="p">(</span><span class="s">&#34;update&#34;</span><span class="p">,</span> <span class="kc">false</span><span class="p">,</span> <span class="s">&#34;update the golden files of this test&#34;</span><span class="p">)</span>
-<span class="p">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#616e87;font-style:italic">// report/report_test.go
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#81a1c1;font-weight:bold">var</span> <span style="color:#eceff4">(</span>
+	update <span style="color:#eceff4">=</span> flag<span style="color:#eceff4">.</span><span style="color:#88c0d0">Bool</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;update&#34;</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">false</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;update the golden files of this test&#34;</span><span style="color:#eceff4">)</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">func</span> <span class="nf">TestMain</span><span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">M</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">flag</span><span class="p">.</span><span class="nf">Parse</span><span class="p">()</span>
-	<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="nx">m</span><span class="p">.</span><span class="nf">Run</span><span class="p">())</span>
-<span class="p">}</span></code></pre></div>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestMain</span><span style="color:#eceff4">(</span>m <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>M<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	flag<span style="color:#eceff4">.</span><span style="color:#88c0d0">Parse</span><span style="color:#eceff4">()</span>
+	os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Exit</span><span style="color:#eceff4">(</span>m<span style="color:#eceff4">.</span><span style="color:#88c0d0">Run</span><span style="color:#eceff4">())</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>The <code>update</code> flag will be a <code>bool</code> that we will use in our function that will
 read and write to the golden files.</p>
 <p>Before Go v1.13, the test&rsquo;s <code>init</code> function invoked <code>flag.Parse()</code>. Since Go
@@ -714,73 +714,73 @@ issue</a>.)</p>
 more about it in my article on the topic
 <a href="/post/testing-in-go-subtests/#testmain">here</a>.</p>
 <p>Let&rsquo;s see the rest of the test file and the notable changes:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">TestGenerate</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">testcases</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
-		<span class="nx">name</span>   <span class="kt">string</span>
-		<span class="nx">books</span>  <span class="p">[]</span><span class="nx">books</span><span class="p">.</span><span class="nx">Book</span>
-		<span class="nx">golden</span> <span class="kt">string</span>
-	<span class="p">}{</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span> <span class="s">&#34;WithInventory&#34;</span><span class="p">,</span>
-			<span class="nx">books</span><span class="p">:</span> <span class="p">[]</span><span class="nx">books</span><span class="p">.</span><span class="nx">Book</span><span class="p">{</span>
-				<span class="nx">books</span><span class="p">.</span><span class="nx">Book</span><span class="p">{</span>
-					<span class="nx">Title</span><span class="p">:</span>     <span class="s">&#34;The Da Vinci Code&#34;</span><span class="p">,</span>
-					<span class="nx">Author</span><span class="p">:</span>    <span class="s">&#34;Dan Brown&#34;</span><span class="p">,</span>
-					<span class="nx">Publisher</span><span class="p">:</span> <span class="s">&#34;Corgi&#34;</span><span class="p">,</span>
-					<span class="nx">Pages</span><span class="p">:</span>     <span class="mi">592</span><span class="p">,</span>
-					<span class="nx">ISBN</span><span class="p">:</span>      <span class="s">&#34;978-0552161275&#34;</span><span class="p">,</span>
-					<span class="nx">Price</span><span class="p">:</span>     <span class="mi">7</span><span class="p">,</span>
-				<span class="p">},</span>
-				<span class="nx">books</span><span class="p">.</span><span class="nx">Book</span><span class="p">{</span>
-					<span class="nx">Title</span><span class="p">:</span>     <span class="s">&#34;American on Purpose&#34;</span><span class="p">,</span>
-					<span class="nx">Author</span><span class="p">:</span>    <span class="s">&#34;Craig Ferguson&#34;</span><span class="p">,</span>
-					<span class="nx">Publisher</span><span class="p">:</span> <span class="s">&#34;Harper Collins&#34;</span><span class="p">,</span>
-					<span class="nx">Pages</span><span class="p">:</span>     <span class="mi">288</span><span class="p">,</span>
-					<span class="nx">ISBN</span><span class="p">:</span>      <span class="s">&#34;978-0061959158&#34;</span><span class="p">,</span>
-					<span class="nx">Price</span><span class="p">:</span>     <span class="mi">19</span><span class="p">,</span>
-				<span class="p">},</span>
-			<span class="p">},</span>
-			<span class="nx">golden</span><span class="p">:</span> <span class="s">&#34;with_inventory&#34;</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;EmptyInventory&#34;</span><span class="p">,</span>
-			<span class="nx">books</span><span class="p">:</span>  <span class="p">[]</span><span class="nx">books</span><span class="p">.</span><span class="nx">Book</span><span class="p">{},</span>
-			<span class="nx">golden</span><span class="p">:</span> <span class="s">&#34;empty_inventory&#34;</span><span class="p">,</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestGenerate</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	testcases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+		name   <span style="color:#81a1c1">string</span>
+		books  <span style="color:#eceff4">[]</span>books<span style="color:#eceff4">.</span>Book
+		golden <span style="color:#81a1c1">string</span>
+	<span style="color:#eceff4">}{</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;WithInventory&#34;</span><span style="color:#eceff4">,</span>
+			books<span style="color:#eceff4">:</span> <span style="color:#eceff4">[]</span>books<span style="color:#eceff4">.</span>Book<span style="color:#eceff4">{</span>
+				books<span style="color:#eceff4">.</span>Book<span style="color:#eceff4">{</span>
+					Title<span style="color:#eceff4">:</span>     <span style="color:#a3be8c">&#34;The Da Vinci Code&#34;</span><span style="color:#eceff4">,</span>
+					Author<span style="color:#eceff4">:</span>    <span style="color:#a3be8c">&#34;Dan Brown&#34;</span><span style="color:#eceff4">,</span>
+					Publisher<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Corgi&#34;</span><span style="color:#eceff4">,</span>
+					Pages<span style="color:#eceff4">:</span>     <span style="color:#b48ead">592</span><span style="color:#eceff4">,</span>
+					ISBN<span style="color:#eceff4">:</span>      <span style="color:#a3be8c">&#34;978-0552161275&#34;</span><span style="color:#eceff4">,</span>
+					Price<span style="color:#eceff4">:</span>     <span style="color:#b48ead">7</span><span style="color:#eceff4">,</span>
+				<span style="color:#eceff4">},</span>
+				books<span style="color:#eceff4">.</span>Book<span style="color:#eceff4">{</span>
+					Title<span style="color:#eceff4">:</span>     <span style="color:#a3be8c">&#34;American on Purpose&#34;</span><span style="color:#eceff4">,</span>
+					Author<span style="color:#eceff4">:</span>    <span style="color:#a3be8c">&#34;Craig Ferguson&#34;</span><span style="color:#eceff4">,</span>
+					Publisher<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Harper Collins&#34;</span><span style="color:#eceff4">,</span>
+					Pages<span style="color:#eceff4">:</span>     <span style="color:#b48ead">288</span><span style="color:#eceff4">,</span>
+					ISBN<span style="color:#eceff4">:</span>      <span style="color:#a3be8c">&#34;978-0061959158&#34;</span><span style="color:#eceff4">,</span>
+					Price<span style="color:#eceff4">:</span>     <span style="color:#b48ead">19</span><span style="color:#eceff4">,</span>
+				<span style="color:#eceff4">},</span>
+			<span style="color:#eceff4">},</span>
+			golden<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;with_inventory&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;EmptyInventory&#34;</span><span style="color:#eceff4">,</span>
+			books<span style="color:#eceff4">:</span>  <span style="color:#eceff4">[]</span>books<span style="color:#eceff4">.</span>Book<span style="color:#eceff4">{},</span>
+			golden<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;empty_inventory&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">testcase</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">testcases</span> <span class="p">{</span>
-		<span class="nx">got</span> <span class="o">:=</span> <span class="nf">Generate</span><span class="p">(</span><span class="nx">testcase</span><span class="p">.</span><span class="nx">books</span><span class="p">)</span>
-<span class="hl">		<span class="nx">want</span> <span class="o">:=</span> <span class="nf">goldenValue</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">testcase</span><span class="p">.</span><span class="nx">golden</span><span class="p">,</span> <span class="nx">got</span><span class="p">,</span> <span class="o">*</span><span class="nx">update</span><span class="p">)</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> testcase <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> testcases <span style="color:#eceff4">{</span>
+		got <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">Generate</span><span style="color:#eceff4">(</span>testcase<span style="color:#eceff4">.</span>books<span style="color:#eceff4">)</span>
+<span style="display:block;width:100%;background-color:#424853">		want <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">goldenValue</span><span style="color:#eceff4">(</span>t<span style="color:#eceff4">,</span> testcase<span style="color:#eceff4">.</span>golden<span style="color:#eceff4">,</span> got<span style="color:#eceff4">,</span> <span style="color:#81a1c1">*</span>update<span style="color:#eceff4">)</span>
 </span>
-		<span class="k">if</span> <span class="nx">got</span> <span class="o">!=</span> <span class="nx">want</span> <span class="p">{</span>
-			<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Want:\n%s\nGot:\n%s&#34;</span><span class="p">,</span> <span class="nx">want</span><span class="p">,</span> <span class="nx">got</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-<span class="p">}</span>
+		<span style="color:#81a1c1;font-weight:bold">if</span> got <span style="color:#81a1c1">!=</span> want <span style="color:#eceff4">{</span>
+			t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want:\n%s\nGot:\n%s&#34;</span><span style="color:#eceff4">,</span> want<span style="color:#eceff4">,</span> got<span style="color:#eceff4">)</span>
+		<span style="color:#eceff4">}</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span>
 
-<span class="hl"><span class="kd">func</span> <span class="nf">goldenValue</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">,</span> <span class="nx">goldenFile</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">actual</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">update</span> <span class="kt">bool</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
-</span><span class="hl">	<span class="nx">t</span><span class="p">.</span><span class="nf">Helper</span><span class="p">()</span>
-</span><span class="hl">	<span class="nx">goldenPath</span> <span class="o">:=</span> <span class="s">&#34;testdata/&#34;</span> <span class="o">+</span> <span class="nx">goldenFile</span> <span class="o">+</span> <span class="s">&#34;.golden&#34;</span>
-</span><span class="hl">
-</span><span class="hl">	<span class="nx">f</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">OpenFile</span><span class="p">(</span><span class="nx">goldenPath</span><span class="p">,</span> <span class="nx">os</span><span class="p">.</span><span class="nx">O_RDWR</span><span class="p">,</span> <span class="mo">0644</span><span class="p">)</span>
-</span><span class="hl">	<span class="k">defer</span> <span class="nx">f</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
-</span><span class="hl">
-</span><span class="hl">	<span class="k">if</span> <span class="nx">update</span> <span class="p">{</span>
-</span><span class="hl">		<span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">f</span><span class="p">.</span><span class="nf">WriteString</span><span class="p">(</span><span class="nx">actual</span><span class="p">)</span>
-</span><span class="hl">		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span><span class="hl">			<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Error writing to file %s: %s&#34;</span><span class="p">,</span> <span class="nx">goldenPath</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span><span class="hl">		<span class="p">}</span>
-</span><span class="hl">
-</span><span class="hl">		<span class="k">return</span> <span class="nx">actual</span>
-</span><span class="hl">	<span class="p">}</span>
-</span><span class="hl">
-</span><span class="hl">	<span class="nx">content</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">ioutil</span><span class="p">.</span><span class="nf">ReadAll</span><span class="p">(</span><span class="nx">f</span><span class="p">)</span>
-</span><span class="hl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span><span class="hl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Error opening file %s: %s&#34;</span><span class="p">,</span> <span class="nx">goldenPath</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span><span class="hl">	<span class="p">}</span>
-</span><span class="hl">	<span class="k">return</span> <span class="nb">string</span><span class="p">(</span><span class="nx">content</span><span class="p">)</span>
-</span><span class="hl"><span class="p">}</span></span></code></pre></div>
+<span style="display:block;width:100%;background-color:#424853"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">goldenValue</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">,</span> goldenFile <span style="color:#81a1c1">string</span><span style="color:#eceff4">,</span> actual <span style="color:#81a1c1">string</span><span style="color:#eceff4">,</span> update <span style="color:#81a1c1">bool</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">string</span> <span style="color:#eceff4">{</span>
+</span><span style="display:block;width:100%;background-color:#424853">	t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Helper</span><span style="color:#eceff4">()</span>
+</span><span style="display:block;width:100%;background-color:#424853">	goldenPath <span style="color:#81a1c1">:=</span> <span style="color:#a3be8c">&#34;testdata/&#34;</span> <span style="color:#81a1c1">+</span> goldenFile <span style="color:#81a1c1">+</span> <span style="color:#a3be8c">&#34;.golden&#34;</span>
+</span><span style="display:block;width:100%;background-color:#424853">
+</span><span style="display:block;width:100%;background-color:#424853">	f<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> os<span style="color:#eceff4">.</span><span style="color:#88c0d0">OpenFile</span><span style="color:#eceff4">(</span>goldenPath<span style="color:#eceff4">,</span> os<span style="color:#eceff4">.</span>O_RDWR<span style="color:#eceff4">,</span> <span style="color:#b48ead">0644</span><span style="color:#eceff4">)</span>
+</span><span style="display:block;width:100%;background-color:#424853">	<span style="color:#81a1c1;font-weight:bold">defer</span> f<span style="color:#eceff4">.</span><span style="color:#88c0d0">Close</span><span style="color:#eceff4">()</span>
+</span><span style="display:block;width:100%;background-color:#424853">
+</span><span style="display:block;width:100%;background-color:#424853">	<span style="color:#81a1c1;font-weight:bold">if</span> update <span style="color:#eceff4">{</span>
+</span><span style="display:block;width:100%;background-color:#424853">		_<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> f<span style="color:#eceff4">.</span><span style="color:#88c0d0">WriteString</span><span style="color:#eceff4">(</span>actual<span style="color:#eceff4">)</span>
+</span><span style="display:block;width:100%;background-color:#424853">		<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+</span><span style="display:block;width:100%;background-color:#424853">			t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatalf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Error writing to file %s: %s&#34;</span><span style="color:#eceff4">,</span> goldenPath<span style="color:#eceff4">,</span> err<span style="color:#eceff4">)</span>
+</span><span style="display:block;width:100%;background-color:#424853">		<span style="color:#eceff4">}</span>
+</span><span style="display:block;width:100%;background-color:#424853">
+</span><span style="display:block;width:100%;background-color:#424853">		<span style="color:#81a1c1;font-weight:bold">return</span> actual
+</span><span style="display:block;width:100%;background-color:#424853">	<span style="color:#eceff4">}</span>
+</span><span style="display:block;width:100%;background-color:#424853">
+</span><span style="display:block;width:100%;background-color:#424853">	content<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> ioutil<span style="color:#eceff4">.</span><span style="color:#88c0d0">ReadAll</span><span style="color:#eceff4">(</span>f<span style="color:#eceff4">)</span>
+</span><span style="display:block;width:100%;background-color:#424853">	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+</span><span style="display:block;width:100%;background-color:#424853">		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatalf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Error opening file %s: %s&#34;</span><span style="color:#eceff4">,</span> goldenPath<span style="color:#eceff4">,</span> err<span style="color:#eceff4">)</span>
+</span><span style="display:block;width:100%;background-color:#424853">	<span style="color:#eceff4">}</span>
+</span><span style="display:block;width:100%;background-color:#424853">	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">string</span><span style="color:#eceff4">(</span>content<span style="color:#eceff4">)</span>
+</span><span style="display:block;width:100%;background-color:#424853"><span style="color:#eceff4">}</span></span></code></pre></div>
 <p>The significant changes are in the highlighted lines above.</p>
 <p>The <code>goldenValue</code> function takes the <code>goldenFile</code> name as an argument, with the
 <code>actual</code> value of the test returned by the function under test and with the
@@ -796,64 +796,64 @@ the golden file and return them as a string.</li>
 <p>If any of the reading or writing steps fail, it will crash the test and stop
 further test execution.</p>
 <p>Let&rsquo;s test this in action. First, the usual, flag-less run of <code>go test</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ go <span class="nb">test</span> -v ./report/...
-<span class="o">===</span> RUN   TestGenerate
---- PASS: TestGenerate <span class="o">(</span>0.00s<span class="o">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#81a1c1">test</span> -v ./report/...
+<span style="color:#81a1c1">===</span> RUN   TestGenerate
+--- PASS: TestGenerate <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
 PASS
-ok  	github.com/fteem/go-playground/golden-files/report0.005s &gt;<span class="o">}}</span></code></pre></div>
+ok  	github.com/fteem/go-playground/golden-files/report0.005s &gt;<span style="color:#81a1c1">}}</span></code></pre></div>
 <p>Now, let&rsquo;s change our implementation. We will remove the publisher column from
 the report that will make our tests fail because the golden file expects the
 Publisher column to be present:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ go <span class="nb">test</span> -v ./report/...
-<span class="o">===</span> RUN   TestGenerate
---- FAIL: TestGenerate <span class="o">(</span>0.00s<span class="o">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#81a1c1">test</span> -v ./report/...
+<span style="color:#81a1c1">===</span> RUN   TestGenerate
+--- FAIL: TestGenerate <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
     report_test.go:61: Want:
 
-        <span class="p">|</span> Title         <span class="p">|</span> Author        <span class="p">|</span> Publisher <span class="p">|</span>  Pages  <span class="p">|</span>  ISBN  <span class="p">|</span>  Price  <span class="p">|</span>
-        <span class="p">|</span> ------------- <span class="p">|</span> ------------- <span class="p">|</span> --------- <span class="p">|</span> ------- <span class="p">|</span> ------ <span class="p">|</span> ------- <span class="p">|</span>
-        <span class="p">|</span> The Da Vinci Code <span class="p">|</span> Dan Brown <span class="p">|</span> Corgi <span class="p">|</span> <span class="m">592</span> <span class="p">|</span> 978-0552161275 <span class="p">|</span> <span class="m">7</span> <span class="p">|</span>
-        <span class="p">|</span> American on Purpose <span class="p">|</span> Craig Ferguson <span class="p">|</span> Harper Collins <span class="p">|</span> <span class="m">288</span> <span class="p">|</span> 978-0061959158 <span class="p">|</span> <span class="m">19</span> <span class="p">|</span>
+        <span style="color:#eceff4">|</span> Title         <span style="color:#eceff4">|</span> Author        <span style="color:#eceff4">|</span> Publisher <span style="color:#eceff4">|</span>  Pages  <span style="color:#eceff4">|</span>  ISBN  <span style="color:#eceff4">|</span>  Price  <span style="color:#eceff4">|</span>
+        <span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> --------- <span style="color:#eceff4">|</span> ------- <span style="color:#eceff4">|</span> ------ <span style="color:#eceff4">|</span> ------- <span style="color:#eceff4">|</span>
+        <span style="color:#eceff4">|</span> The Da Vinci Code <span style="color:#eceff4">|</span> Dan Brown <span style="color:#eceff4">|</span> Corgi <span style="color:#eceff4">|</span> <span style="color:#b48ead">592</span> <span style="color:#eceff4">|</span> 978-0552161275 <span style="color:#eceff4">|</span> <span style="color:#b48ead">7</span> <span style="color:#eceff4">|</span>
+        <span style="color:#eceff4">|</span> American on Purpose <span style="color:#eceff4">|</span> Craig Ferguson <span style="color:#eceff4">|</span> Harper Collins <span style="color:#eceff4">|</span> <span style="color:#b48ead">288</span> <span style="color:#eceff4">|</span> 978-0061959158 <span style="color:#eceff4">|</span> <span style="color:#b48ead">19</span> <span style="color:#eceff4">|</span>
 
         Got:
 
-        <span class="p">|</span> Title         <span class="p">|</span> Author        <span class="p">|</span>  Pages  <span class="p">|</span>  ISBN  <span class="p">|</span>  Price  <span class="p">|</span>
-        <span class="p">|</span> ------------- <span class="p">|</span> ------------- <span class="p">|</span> ------- <span class="p">|</span> ------ <span class="p">|</span> ------- <span class="p">|</span>
-        <span class="p">|</span> The Da Vinci Code <span class="p">|</span> Dan Brown <span class="p">|</span> <span class="m">592</span> <span class="p">|</span> 978-0552161275 <span class="p">|</span> <span class="m">7</span> <span class="p">|</span>
-        <span class="p">|</span> American on Purpose <span class="p">|</span> Craig Ferguson <span class="p">|</span> <span class="m">288</span> <span class="p">|</span> 978-0061959158 <span class="p">|</span> <span class="m">19</span> <span class="p">|</span>
+        <span style="color:#eceff4">|</span> Title         <span style="color:#eceff4">|</span> Author        <span style="color:#eceff4">|</span>  Pages  <span style="color:#eceff4">|</span>  ISBN  <span style="color:#eceff4">|</span>  Price  <span style="color:#eceff4">|</span>
+        <span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> ------- <span style="color:#eceff4">|</span> ------ <span style="color:#eceff4">|</span> ------- <span style="color:#eceff4">|</span>
+        <span style="color:#eceff4">|</span> The Da Vinci Code <span style="color:#eceff4">|</span> Dan Brown <span style="color:#eceff4">|</span> <span style="color:#b48ead">592</span> <span style="color:#eceff4">|</span> 978-0552161275 <span style="color:#eceff4">|</span> <span style="color:#b48ead">7</span> <span style="color:#eceff4">|</span>
+        <span style="color:#eceff4">|</span> American on Purpose <span style="color:#eceff4">|</span> Craig Ferguson <span style="color:#eceff4">|</span> <span style="color:#b48ead">288</span> <span style="color:#eceff4">|</span> 978-0061959158 <span style="color:#eceff4">|</span> <span style="color:#b48ead">19</span> <span style="color:#eceff4">|</span>
     report_test.go:61: Want:
 
-        <span class="p">|</span> Title         <span class="p">|</span> Author        <span class="p">|</span> Publisher <span class="p">|</span>  Pages  <span class="p">|</span>  ISBN  <span class="p">|</span>  Price  <span class="p">|</span>
-        <span class="p">|</span> ------------- <span class="p">|</span> ------------- <span class="p">|</span> --------- <span class="p">|</span> ------- <span class="p">|</span> ------ <span class="p">|</span> ------- <span class="p">|</span>
+        <span style="color:#eceff4">|</span> Title         <span style="color:#eceff4">|</span> Author        <span style="color:#eceff4">|</span> Publisher <span style="color:#eceff4">|</span>  Pages  <span style="color:#eceff4">|</span>  ISBN  <span style="color:#eceff4">|</span>  Price  <span style="color:#eceff4">|</span>
+        <span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> --------- <span style="color:#eceff4">|</span> ------- <span style="color:#eceff4">|</span> ------ <span style="color:#eceff4">|</span> ------- <span style="color:#eceff4">|</span>
 
         Got:
 
-        <span class="p">|</span> Title         <span class="p">|</span> Author        <span class="p">|</span>  Pages  <span class="p">|</span>  ISBN  <span class="p">|</span>  Price  <span class="p">|</span>
-        <span class="p">|</span> ------------- <span class="p">|</span> ------------- <span class="p">|</span> ------- <span class="p">|</span> ------ <span class="p">|</span> ------- <span class="p">|</span>
+        <span style="color:#eceff4">|</span> Title         <span style="color:#eceff4">|</span> Author        <span style="color:#eceff4">|</span>  Pages  <span style="color:#eceff4">|</span>  ISBN  <span style="color:#eceff4">|</span>  Price  <span style="color:#eceff4">|</span>
+        <span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> ------- <span style="color:#eceff4">|</span> ------ <span style="color:#eceff4">|</span> ------- <span style="color:#eceff4">|</span>
 FAIL
 FAIL	github.com/fteem/go-playground/golden-files/report	0.006s
 FAIL</code></pre></div>
 <p>The difference in the two failing tests is noticeable – we&rsquo;re missing the
 column. Since we know that this is the new behavior of the report going
 forward, we only want to update the golden files. Let&rsquo;s add the <code>-update</code> flag:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ go <span class="nb">test</span> -v ./report/... -update
-<span class="o">===</span> RUN   TestGenerate
---- PASS: TestGenerate <span class="o">(</span>0.00s<span class="o">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#81a1c1">test</span> -v ./report/... -update
+<span style="color:#81a1c1">===</span> RUN   TestGenerate
+--- PASS: TestGenerate <span style="color:#81a1c1">(</span>0.00s<span style="color:#81a1c1">)</span>
 PASS
 ok  	github.com/fteem/go-playground/golden-files/report	0.006s</code></pre></div>
 <p>Nothing special, only passing tests? Let&rsquo;s inspect the contents of the golden
 files:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ cat report/testdata/with_inventory.golden report/testdata/empty_inventory.golden
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ cat report/testdata/with_inventory.golden report/testdata/empty_inventory.golden
 
 report/testdata/with_inventory.golden
-<span class="p">|</span> Title         <span class="p">|</span> Author        <span class="p">|</span>  Pages  <span class="p">|</span>  ISBN  <span class="p">|</span>  Price  <span class="p">|</span>
-<span class="p">|</span> ------------- <span class="p">|</span> ------------- <span class="p">|</span> ------- <span class="p">|</span> ------ <span class="p">|</span> ------- <span class="p">|</span>
-<span class="p">|</span> The Da Vinci Code <span class="p">|</span> Dan Brown <span class="p">|</span> <span class="m">592</span> <span class="p">|</span> 978-0552161275 <span class="p">|</span> <span class="m">7</span> <span class="p">|</span>
-<span class="p">|</span> American on Purpose <span class="p">|</span> Craig Ferguson <span class="p">|</span> <span class="m">288</span> <span class="p">|</span> 978-0061959158 <span class="p">|</span> <span class="m">19</span> <span class="p">|</span>
+<span style="color:#eceff4">|</span> Title         <span style="color:#eceff4">|</span> Author        <span style="color:#eceff4">|</span>  Pages  <span style="color:#eceff4">|</span>  ISBN  <span style="color:#eceff4">|</span>  Price  <span style="color:#eceff4">|</span>
+<span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> ------- <span style="color:#eceff4">|</span> ------ <span style="color:#eceff4">|</span> ------- <span style="color:#eceff4">|</span>
+<span style="color:#eceff4">|</span> The Da Vinci Code <span style="color:#eceff4">|</span> Dan Brown <span style="color:#eceff4">|</span> <span style="color:#b48ead">592</span> <span style="color:#eceff4">|</span> 978-0552161275 <span style="color:#eceff4">|</span> <span style="color:#b48ead">7</span> <span style="color:#eceff4">|</span>
+<span style="color:#eceff4">|</span> American on Purpose <span style="color:#eceff4">|</span> Craig Ferguson <span style="color:#eceff4">|</span> <span style="color:#b48ead">288</span> <span style="color:#eceff4">|</span> 978-0061959158 <span style="color:#eceff4">|</span> <span style="color:#b48ead">19</span> <span style="color:#eceff4">|</span>
 
 report/testdata/empty_inventory.golden
 
-<span class="p">|</span> Title         <span class="p">|</span> Author        <span class="p">|</span>  Pages  <span class="p">|</span>  ISBN  <span class="p">|</span>  Price  <span class="p">|</span>
-<span class="p">|</span> ------------- <span class="p">|</span> ------------- <span class="p">|</span> ------- <span class="p">|</span> ------ <span class="p">|</span> ------- <span class="p">|</span></code></pre></div>
+<span style="color:#eceff4">|</span> Title         <span style="color:#eceff4">|</span> Author        <span style="color:#eceff4">|</span>  Pages  <span style="color:#eceff4">|</span>  ISBN  <span style="color:#eceff4">|</span>  Price  <span style="color:#eceff4">|</span>
+<span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> ------------- <span style="color:#eceff4">|</span> ------- <span style="color:#eceff4">|</span> ------ <span style="color:#eceff4">|</span> ------- <span style="color:#eceff4">|</span></code></pre></div>
 <p>Voilà! The using the <code>-update</code> flag, we removed the &ldquo;Publisher&rdquo; from our golden
 files, and the tests pass.</p>
 <h2 id="few-words-of-caution" class="relative group">Few words of caution <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#few-words-of-caution" aria-label="Anchor">#</a></span></h2>
@@ -880,8 +880,8 @@ all packages</strong> of your project to function. If you would like to be able 
 packages in the project must know of <code>-update</code>.</p>
 <p>Even if there&rsquo;s one package that is not aware of <code>-update</code>, running the tests will
 error out:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">❯ go <span class="nb">test</span> ./... -v -update
-?   	github.com/fteem/go-playground/golden-files	<span class="o">[</span>no <span class="nb">test</span> files<span class="o">]</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">❯ go <span style="color:#81a1c1">test</span> ./... -v -update
+?   	github.com/fteem/go-playground/golden-files	<span style="color:#81a1c1">[</span>no <span style="color:#81a1c1">test</span> files<span style="color:#81a1c1">]</span>
 flag provided but not defined: -update</code></pre></div>
 <p>Such a behavior is because my Go module has more than one package in it, while
 only one of them (<code>report</code>) knows of <code>-update</code>&rsquo;s existence.</p>
@@ -1270,7 +1270,7 @@ treading carefully, given the caveats mentioned above.</p>
       
         <p class="text-sm text-neutral-500 dark:text-neutral-400">
             &copy;
-            2022
+            2023
             Ilija Eftimov
         </p>
       

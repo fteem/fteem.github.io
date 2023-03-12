@@ -341,61 +341,61 @@ ship them the goods. When their order ships, we want to inform them through a
 notification.</p>
 <p>Let&rsquo;s look at a very simple simulation of sending an SMS notification over an
 API:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">notifications</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">package</span> notifications
 
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;fmt&#34;</span>
+<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+	<span style="color:#a3be8c">&#34;fmt&#34;</span>
 
-	<span class="s">&#34;github.com/fteem/order-notifications/sms&#34;</span>
-	<span class="s">&#34;github.com/fteem/order-notifications/user&#34;</span>
-<span class="p">)</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/order-notifications/sms&#34;</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/order-notifications/user&#34;</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">func</span> <span class="nf">InformOrderShipped</span><span class="p">(</span><span class="nx">receiver</span> <span class="nx">user</span><span class="p">.</span><span class="nx">User</span><span class="p">,</span> <span class="nx">orderID</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-	<span class="nx">message</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Your order #%s is shipped!&#34;</span><span class="p">,</span> <span class="nx">orderID</span><span class="p">)</span>
-	<span class="nx">err</span> <span class="o">:=</span> <span class="nx">sms</span><span class="p">.</span><span class="nf">Send</span><span class="p">(</span><span class="nx">receiver</span><span class="p">,</span> <span class="nx">message</span><span class="p">)</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">InformOrderShipped</span><span style="color:#eceff4">(</span>receiver user<span style="color:#eceff4">.</span>User<span style="color:#eceff4">,</span> orderID <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">bool</span> <span style="color:#eceff4">{</span>
+	message <span style="color:#81a1c1">:=</span> fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Your order #%s is shipped!&#34;</span><span style="color:#eceff4">,</span> orderID<span style="color:#eceff4">)</span>
+	err <span style="color:#81a1c1">:=</span> sms<span style="color:#eceff4">.</span><span style="color:#88c0d0">Send</span><span style="color:#eceff4">(</span>receiver<span style="color:#eceff4">,</span> message<span style="color:#eceff4">)</span>
 
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="kc">false</span>
-	<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">false</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">return</span> <span class="kc">true</span>
-<span class="p">}</span></code></pre></div>
+	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">true</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>For the sake of the example, we&rsquo;ll simulate a network call in the <code>sms.Send</code>
 with arbitrary sleep time, so the function takes a few seconds to execute:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">sms</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">package</span> sms
 
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;time&#34;</span>
+<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+	<span style="color:#a3be8c">&#34;time&#34;</span>
 
-	<span class="s">&#34;github.com/fteem/order-notifications/user&#34;</span>
-<span class="p">)</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/order-notifications/user&#34;</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">func</span> <span class="nf">Send</span><span class="p">(</span><span class="nx">receiver</span> <span class="nx">user</span><span class="p">.</span><span class="nx">User</span><span class="p">,</span> <span class="nx">message</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
-	<span class="c1">// Simulating API call...
-</span><span class="c1"></span>	<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">Send</span><span style="color:#eceff4">(</span>receiver user<span style="color:#eceff4">.</span>User<span style="color:#eceff4">,</span> message <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">error</span> <span style="color:#eceff4">{</span>
+	<span style="color:#616e87;font-style:italic">// Simulating API call...
+</span><span style="color:#616e87;font-style:italic"></span>	time<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sleep</span><span style="color:#eceff4">(</span><span style="color:#b48ead">3</span> <span style="color:#81a1c1">*</span> time<span style="color:#eceff4">.</span>Second<span style="color:#eceff4">)</span>
 
-	<span class="k">return</span> <span class="kc">nil</span>
-<span class="p">}</span></code></pre></div>
+	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>Let us see a simple test for the <code>InformOrderShipped</code> function and what kind of
 challenges it brings:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">notifications</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">package</span> notifications
 
-<span class="kn">import</span> <span class="s">&#34;testing&#34;</span>
+<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#a3be8c">&#34;testing&#34;</span>
 
-<span class="kd">func</span> <span class="nf">TestInformOrderShipped</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">user</span> <span class="o">:=</span> <span class="nx">User</span><span class="p">{</span>
-		<span class="nx">Name</span><span class="p">:</span>  <span class="s">&#34;Peggy&#34;</span><span class="p">,</span>
-		<span class="nx">Phone</span><span class="p">:</span> <span class="s">&#34;+12 345 678 999&#34;</span><span class="p">,</span>
-	<span class="p">}</span>
-	<span class="nx">orderID</span> <span class="o">:=</span> <span class="s">&#34;12345&#34;</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestInformOrderShipped</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	user <span style="color:#81a1c1">:=</span> User<span style="color:#eceff4">{</span>
+		Name<span style="color:#eceff4">:</span>  <span style="color:#a3be8c">&#34;Peggy&#34;</span><span style="color:#eceff4">,</span>
+		Phone<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;+12 345 678 999&#34;</span><span style="color:#eceff4">,</span>
+	<span style="color:#eceff4">}</span>
+	orderID <span style="color:#81a1c1">:=</span> <span style="color:#a3be8c">&#34;12345&#34;</span>
 
-	<span class="nx">got</span> <span class="o">:=</span> <span class="nf">InformOrderShipped</span><span class="p">(</span><span class="nx">user</span><span class="p">,</span> <span class="nx">orderID</span><span class="p">)</span>
-	<span class="nx">want</span> <span class="o">:=</span> <span class="kc">true</span>
+	got <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">InformOrderShipped</span><span style="color:#eceff4">(</span>user<span style="color:#eceff4">,</span> orderID<span style="color:#eceff4">)</span>
+	want <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">true</span>
 
-	<span class="k">if</span> <span class="nx">want</span> <span class="o">!=</span> <span class="nx">got</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Want &#39;%t&#39;, got &#39;%t&#39;&#34;</span><span class="p">,</span> <span class="nx">want</span><span class="p">,</span> <span class="nx">got</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+	<span style="color:#81a1c1;font-weight:bold">if</span> want <span style="color:#81a1c1">!=</span> got <span style="color:#eceff4">{</span>
+		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want &#39;%t&#39;, got &#39;%t&#39;&#34;</span><span style="color:#eceff4">,</span> want<span style="color:#eceff4">,</span> got<span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>While these tests do test the functionality of <code>InformOrderShipped</code>, it already
 has two issues:</p>
 <ol>
@@ -411,24 +411,24 @@ to mock <code>sms.Send</code>, is larger so we will address it first.</p>
 <p>The simplest maneuver we can do in <code>InformOrderShipped</code>, instead of depending
 on the <code>sms</code> package, is to pass in the <code>Send</code> function as a function closure
 argument:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">notifications</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">package</span> notifications
 
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;fmt&#34;</span>
+<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+	<span style="color:#a3be8c">&#34;fmt&#34;</span>
 
-	<span class="s">&#34;github.com/fteem/order-notifications/user&#34;</span>
-<span class="p">)</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/order-notifications/user&#34;</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">func</span> <span class="nf">InformOrderShipped</span><span class="p">(</span><span class="nx">receiver</span> <span class="nx">user</span><span class="p">.</span><span class="nx">User</span><span class="p">,</span> <span class="nx">orderID</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">sendSMS</span> <span class="kd">func</span><span class="p">(</span><span class="nx">user</span><span class="p">.</span><span class="nx">User</span><span class="p">,</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">error</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-	<span class="nx">message</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Your order #%s is shipped!&#34;</span><span class="p">,</span> <span class="nx">orderID</span><span class="p">)</span>
-	<span class="nx">err</span> <span class="o">:=</span> <span class="nf">sendSMS</span><span class="p">(</span><span class="nx">receiver</span><span class="p">,</span> <span class="nx">message</span><span class="p">)</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">InformOrderShipped</span><span style="color:#eceff4">(</span>receiver user<span style="color:#eceff4">.</span>User<span style="color:#eceff4">,</span> orderID <span style="color:#81a1c1">string</span><span style="color:#eceff4">,</span> sendSMS <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>user<span style="color:#eceff4">.</span>User<span style="color:#eceff4">,</span> <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">error</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">bool</span> <span style="color:#eceff4">{</span>
+	message <span style="color:#81a1c1">:=</span> fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Your order #%s is shipped!&#34;</span><span style="color:#eceff4">,</span> orderID<span style="color:#eceff4">)</span>
+	err <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">sendSMS</span><span style="color:#eceff4">(</span>receiver<span style="color:#eceff4">,</span> message<span style="color:#eceff4">)</span>
 
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="kc">false</span>
-	<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">false</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">return</span> <span class="kc">true</span>
-<span class="p">}</span></code></pre></div>
+	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">true</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>Because Go allows us to provide the function as an argument, all we need to do
 is to specify its arguments and return types and invoke it in the main
 function.
@@ -441,53 +441,53 @@ then importing the actual function.</li>
 </ol>
 <p>To prove these points, we will modify the test to include the two scenarios,
 when the SMS is successfully sent and when it returns an error:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">notifications</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">package</span> notifications
 
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;errors&#34;</span>
-	<span class="s">&#34;testing&#34;</span>
+<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+	<span style="color:#a3be8c">&#34;errors&#34;</span>
+	<span style="color:#a3be8c">&#34;testing&#34;</span>
 
-	<span class="s">&#34;github.com/fteem/order-notifications/user&#34;</span>
-<span class="p">)</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/order-notifications/user&#34;</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">func</span> <span class="nf">TestInformOrderShipped</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">cases</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
-		<span class="nx">user</span>         <span class="nx">user</span><span class="p">.</span><span class="nx">User</span>
-		<span class="nx">orderID</span>      <span class="kt">string</span>
-		<span class="nx">sendingError</span> <span class="kt">error</span>
-		<span class="nx">name</span>         <span class="kt">string</span>
-		<span class="nx">want</span>         <span class="kt">bool</span>
-	<span class="p">}{</span>
-		<span class="p">{</span>
-			<span class="nx">user</span><span class="p">:</span>         <span class="nx">user</span><span class="p">.</span><span class="nx">User</span><span class="p">{</span><span class="s">&#34;Peggy&#34;</span><span class="p">,</span> <span class="s">&#34;+12 345 678 999&#34;</span><span class="p">},</span>
-			<span class="nx">orderID</span><span class="p">:</span>      <span class="s">&#34;12345&#34;</span><span class="p">,</span>
-			<span class="nx">sendingError</span><span class="p">:</span> <span class="kc">nil</span><span class="p">,</span>
-			<span class="nx">want</span><span class="p">:</span>         <span class="kc">true</span><span class="p">,</span>
-			<span class="nx">name</span><span class="p">:</span>         <span class="s">&#34;Successful send&#34;</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">user</span><span class="p">:</span>         <span class="nx">user</span><span class="p">.</span><span class="nx">User</span><span class="p">{</span><span class="s">&#34;Peggy&#34;</span><span class="p">,</span> <span class="s">&#34;+12 345 678 999&#34;</span><span class="p">},</span>
-			<span class="nx">orderID</span><span class="p">:</span>      <span class="s">&#34;12345&#34;</span><span class="p">,</span>
-			<span class="nx">sendingError</span><span class="p">:</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">&#34;Sending failed&#34;</span><span class="p">),</span>
-			<span class="nx">want</span><span class="p">:</span>         <span class="kc">false</span><span class="p">,</span>
-			<span class="nx">name</span><span class="p">:</span>         <span class="s">&#34;Unsuccessful send&#34;</span><span class="p">,</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestInformOrderShipped</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	cases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+		user         user<span style="color:#eceff4">.</span>User
+		orderID      <span style="color:#81a1c1">string</span>
+		sendingError <span style="color:#81a1c1">error</span>
+		name         <span style="color:#81a1c1">string</span>
+		want         <span style="color:#81a1c1">bool</span>
+	<span style="color:#eceff4">}{</span>
+		<span style="color:#eceff4">{</span>
+			user<span style="color:#eceff4">:</span>         user<span style="color:#eceff4">.</span>User<span style="color:#eceff4">{</span><span style="color:#a3be8c">&#34;Peggy&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;+12 345 678 999&#34;</span><span style="color:#eceff4">},</span>
+			orderID<span style="color:#eceff4">:</span>      <span style="color:#a3be8c">&#34;12345&#34;</span><span style="color:#eceff4">,</span>
+			sendingError<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">nil</span><span style="color:#eceff4">,</span>
+			want<span style="color:#eceff4">:</span>         <span style="color:#81a1c1;font-weight:bold">true</span><span style="color:#eceff4">,</span>
+			name<span style="color:#eceff4">:</span>         <span style="color:#a3be8c">&#34;Successful send&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			user<span style="color:#eceff4">:</span>         user<span style="color:#eceff4">.</span>User<span style="color:#eceff4">{</span><span style="color:#a3be8c">&#34;Peggy&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;+12 345 678 999&#34;</span><span style="color:#eceff4">},</span>
+			orderID<span style="color:#eceff4">:</span>      <span style="color:#a3be8c">&#34;12345&#34;</span><span style="color:#eceff4">,</span>
+			sendingError<span style="color:#eceff4">:</span> errors<span style="color:#eceff4">.</span><span style="color:#88c0d0">New</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Sending failed&#34;</span><span style="color:#eceff4">),</span>
+			want<span style="color:#eceff4">:</span>         <span style="color:#81a1c1;font-weight:bold">false</span><span style="color:#eceff4">,</span>
+			name<span style="color:#eceff4">:</span>         <span style="color:#a3be8c">&#34;Unsuccessful send&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">cases</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-			<span class="nx">mockSend</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">user</span><span class="p">.</span><span class="nx">User</span><span class="p">,</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
-				<span class="k">return</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">sendingError</span>
-			<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> tc <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> cases <span style="color:#eceff4">{</span>
+		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Run</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>name<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+			mockSend <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>user<span style="color:#eceff4">.</span>User<span style="color:#eceff4">,</span> <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">error</span> <span style="color:#eceff4">{</span>
+				<span style="color:#81a1c1;font-weight:bold">return</span> tc<span style="color:#eceff4">.</span>sendingError
+			<span style="color:#eceff4">}</span>
 
-			<span class="nx">got</span> <span class="o">:=</span> <span class="nf">InformOrderShipped</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">user</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">orderID</span><span class="p">,</span> <span class="nx">mockSend</span><span class="p">)</span>
+			got <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">InformOrderShipped</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>user<span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>orderID<span style="color:#eceff4">,</span> mockSend<span style="color:#eceff4">)</span>
 
-			<span class="k">if</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">want</span> <span class="o">!=</span> <span class="nx">got</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Want &#39;%t&#39;, got &#39;%t&#39;&#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">want</span><span class="p">,</span> <span class="nx">got</span><span class="p">)</span>
-			<span class="p">}</span>
-		<span class="p">})</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+			<span style="color:#81a1c1;font-weight:bold">if</span> tc<span style="color:#eceff4">.</span>want <span style="color:#81a1c1">!=</span> got <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want &#39;%t&#39;, got &#39;%t&#39;&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>want<span style="color:#eceff4">,</span> got<span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
+		<span style="color:#eceff4">})</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>In the test we use the <a href="/testing-in-go-table-driven-tests">table-driven
 approach</a>, where we define two different
 test cases: when the SMS sending fails and when it does not.</p>
@@ -515,116 +515,116 @@ implements an interface by implementing the functions specified in the
 interface. No need for explicit <code>implements</code> statements. (Yes, like yours
 Java.)</p>
 <p>Let&rsquo;s introduce an interface called <code>Sender</code>, which defines a <code>Send</code> function:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">Sender</span> <span class="kd">interface</span> <span class="p">{</span>
-	<span class="nf">Send</span><span class="p">(</span><span class="nx">user</span><span class="p">.</span><span class="nx">User</span><span class="p">,</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">error</span>
-<span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> Sender <span style="color:#81a1c1;font-weight:bold">interface</span> <span style="color:#eceff4">{</span>
+	<span style="color:#88c0d0">Send</span><span style="color:#eceff4">(</span>user<span style="color:#eceff4">.</span>User<span style="color:#eceff4">,</span> <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">error</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>Those of you that are very attentive will notice that the <code>Send</code> function in
 <code>Sender</code> has the same signature as the <code>sms.Send</code> function from the earlier
 example. That&rsquo;s intentional - we want any implementor of the <code>Sender</code> interface
 to be able to send a notification to a <code>User</code>.</p>
 <p>Let&rsquo;s make a <code>sms.Dispatcher</code> type which will implement the <code>Sender</code> interface
 and use it in our code:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">sms</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">package</span> sms
 
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;time&#34;</span>
+<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+	<span style="color:#a3be8c">&#34;time&#34;</span>
 
-	<span class="s">&#34;github.com/fteem/order-notifications/user&#34;</span>
-<span class="p">)</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/order-notifications/user&#34;</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">type</span> <span class="nx">Dispatcher</span> <span class="kd">struct</span><span class="p">{}</span>
+<span style="color:#81a1c1;font-weight:bold">type</span> Dispatcher <span style="color:#81a1c1;font-weight:bold">struct</span><span style="color:#eceff4">{}</span>
 
-<span class="kd">func</span> <span class="p">(</span><span class="nx">d</span> <span class="nx">Dispatcher</span><span class="p">)</span> <span class="nf">Send</span><span class="p">(</span><span class="nx">receiver</span> <span class="nx">user</span><span class="p">.</span><span class="nx">User</span><span class="p">,</span> <span class="nx">message</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
-	<span class="c1">// Simulating API call...
-</span><span class="c1"></span>	<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>d Dispatcher<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Send</span><span style="color:#eceff4">(</span>receiver user<span style="color:#eceff4">.</span>User<span style="color:#eceff4">,</span> message <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">error</span> <span style="color:#eceff4">{</span>
+	<span style="color:#616e87;font-style:italic">// Simulating API call...
+</span><span style="color:#616e87;font-style:italic"></span>	time<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sleep</span><span style="color:#eceff4">(</span><span style="color:#b48ead">3</span> <span style="color:#81a1c1">*</span> time<span style="color:#eceff4">.</span>Second<span style="color:#eceff4">)</span>
 
-	<span class="k">return</span> <span class="kc">nil</span>
-<span class="p">}</span></code></pre></div>
+	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>Now, we can pass an instance of the <code>Dispatcher</code> type in the
 <code>InformOrderShipped</code> function, which will invoke its <code>Send</code> function. Given that
 we already have the <code>Sender</code> interface defined, we can use it as an argument:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">InformOrderShipped</span><span class="p">(</span><span class="nx">receiver</span> <span class="nx">user</span><span class="p">.</span><span class="nx">User</span><span class="p">,</span> <span class="nx">orderID</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">sender</span> <span class="nx">Sender</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-	<span class="nx">message</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Your order #%s is shipped!&#34;</span><span class="p">,</span> <span class="nx">orderID</span><span class="p">)</span>
-	<span class="nx">err</span> <span class="o">:=</span> <span class="nx">sender</span><span class="p">.</span><span class="nf">Send</span><span class="p">(</span><span class="nx">receiver</span><span class="p">,</span> <span class="nx">message</span><span class="p">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">InformOrderShipped</span><span style="color:#eceff4">(</span>receiver user<span style="color:#eceff4">.</span>User<span style="color:#eceff4">,</span> orderID <span style="color:#81a1c1">string</span><span style="color:#eceff4">,</span> sender Sender<span style="color:#eceff4">)</span> <span style="color:#81a1c1">bool</span> <span style="color:#eceff4">{</span>
+	message <span style="color:#81a1c1">:=</span> fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Your order #%s is shipped!&#34;</span><span style="color:#eceff4">,</span> orderID<span style="color:#eceff4">)</span>
+	err <span style="color:#81a1c1">:=</span> sender<span style="color:#eceff4">.</span><span style="color:#88c0d0">Send</span><span style="color:#eceff4">(</span>receiver<span style="color:#eceff4">,</span> message<span style="color:#eceff4">)</span>
 
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="kc">false</span>
-	<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">false</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">return</span> <span class="kc">true</span>
-<span class="p">}</span></code></pre></div>
+	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">true</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>Why? Well, <code>Dispatcher</code> already implements the <code>Sender</code> function, which means
 that we can pass an instance and it will work. Here&rsquo;s an example:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">package</span> main
 
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;github.com/fteem/order-notifications/orders&#34;</span>
-	<span class="s">&#34;github.com/fteem/order-notifications/sms&#34;</span>
-	<span class="s">&#34;github.com/fteem/order-notifications/user&#34;</span>
-<span class="p">)</span>
+<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/order-notifications/orders&#34;</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/order-notifications/sms&#34;</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/order-notifications/user&#34;</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-	<span class="nx">u</span> <span class="o">:=</span> <span class="nx">user</span><span class="p">.</span><span class="nx">User</span><span class="p">{</span><span class="s">&#34;Peggy&#34;</span><span class="p">,</span> <span class="s">&#34;+123 456 789&#34;</span><span class="p">}</span>
-	<span class="nx">orderID</span> <span class="o">:=</span> <span class="s">&#34;123&#34;</span>
-	<span class="nx">dispatcher</span> <span class="o">:=</span> <span class="nx">sms</span><span class="p">.</span><span class="nx">Dispatcher</span><span class="p">{}</span>
-	<span class="nx">orders</span><span class="p">.</span><span class="nf">InformOrderShipped</span><span class="p">(</span><span class="nx">u</span><span class="p">,</span> <span class="nx">orderID</span><span class="p">,</span> <span class="nx">dispatcher</span><span class="p">)</span>
-<span class="p">}</span></code></pre></div>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">main</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+	u <span style="color:#81a1c1">:=</span> user<span style="color:#eceff4">.</span>User<span style="color:#eceff4">{</span><span style="color:#a3be8c">&#34;Peggy&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;+123 456 789&#34;</span><span style="color:#eceff4">}</span>
+	orderID <span style="color:#81a1c1">:=</span> <span style="color:#a3be8c">&#34;123&#34;</span>
+	dispatcher <span style="color:#81a1c1">:=</span> sms<span style="color:#eceff4">.</span>Dispatcher<span style="color:#eceff4">{}</span>
+	orders<span style="color:#eceff4">.</span><span style="color:#88c0d0">InformOrderShipped</span><span style="color:#eceff4">(</span>u<span style="color:#eceff4">,</span> orderID<span style="color:#eceff4">,</span> dispatcher<span style="color:#eceff4">)</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>How does such a change influence our tests? Interestingly, it doesn&rsquo;t. While we
 lose the ability to pass in a function closure as an argument, we can still
 create a mock type that implements the <code>Sender</code> interface and use it as
 argument to the <code>InformOrderShipped</code> function:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">orders</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">package</span> orders
 
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;errors&#34;</span>
-	<span class="s">&#34;testing&#34;</span>
+<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+	<span style="color:#a3be8c">&#34;errors&#34;</span>
+	<span style="color:#a3be8c">&#34;testing&#34;</span>
 
-	<span class="s">&#34;github.com/fteem/order-notifications/user&#34;</span>
-<span class="p">)</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/order-notifications/user&#34;</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">type</span> <span class="nx">mockSender</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">sendingError</span> <span class="kt">error</span>
-<span class="p">}</span>
+<span style="color:#81a1c1;font-weight:bold">type</span> mockSender <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+	sendingError <span style="color:#81a1c1">error</span>
+<span style="color:#eceff4">}</span>
 
-<span class="kd">func</span> <span class="p">(</span><span class="nx">ms</span> <span class="nx">mockSender</span><span class="p">)</span> <span class="nf">Send</span><span class="p">(</span><span class="nx">u</span> <span class="nx">user</span><span class="p">.</span><span class="nx">User</span><span class="p">,</span> <span class="nx">m</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
-	<span class="k">return</span> <span class="nx">ms</span><span class="p">.</span><span class="nx">sendingError</span>
-<span class="p">}</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>ms mockSender<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Send</span><span style="color:#eceff4">(</span>u user<span style="color:#eceff4">.</span>User<span style="color:#eceff4">,</span> m <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">error</span> <span style="color:#eceff4">{</span>
+	<span style="color:#81a1c1;font-weight:bold">return</span> ms<span style="color:#eceff4">.</span>sendingError
+<span style="color:#eceff4">}</span>
 
-<span class="kd">func</span> <span class="nf">TestInformOrderShipped</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">cases</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
-		<span class="nx">user</span>         <span class="nx">user</span><span class="p">.</span><span class="nx">User</span>
-		<span class="nx">orderID</span>      <span class="kt">string</span>
-		<span class="nx">sendingError</span> <span class="kt">error</span>
-		<span class="nx">name</span>         <span class="kt">string</span>
-		<span class="nx">want</span>         <span class="kt">bool</span>
-	<span class="p">}{</span>
-		<span class="p">{</span>
-			<span class="nx">user</span><span class="p">:</span>         <span class="nx">user</span><span class="p">.</span><span class="nx">User</span><span class="p">{</span><span class="s">&#34;Peggy&#34;</span><span class="p">,</span> <span class="s">&#34;+12 345 678 999&#34;</span><span class="p">},</span>
-			<span class="nx">orderID</span><span class="p">:</span>      <span class="s">&#34;12345&#34;</span><span class="p">,</span>
-			<span class="nx">sendingError</span><span class="p">:</span> <span class="kc">nil</span><span class="p">,</span>
-			<span class="nx">want</span><span class="p">:</span>         <span class="kc">true</span><span class="p">,</span>
-			<span class="nx">name</span><span class="p">:</span>         <span class="s">&#34;Successful send&#34;</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">user</span><span class="p">:</span>         <span class="nx">user</span><span class="p">.</span><span class="nx">User</span><span class="p">{</span><span class="s">&#34;Peggy&#34;</span><span class="p">,</span> <span class="s">&#34;+12 345 678 999&#34;</span><span class="p">},</span>
-			<span class="nx">orderID</span><span class="p">:</span>      <span class="s">&#34;12345&#34;</span><span class="p">,</span>
-			<span class="nx">sendingError</span><span class="p">:</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">&#34;Sending failed&#34;</span><span class="p">),</span>
-			<span class="nx">want</span><span class="p">:</span>         <span class="kc">false</span><span class="p">,</span>
-			<span class="nx">name</span><span class="p">:</span>         <span class="s">&#34;Unsuccessful send&#34;</span><span class="p">,</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestInformOrderShipped</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	cases <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+		user         user<span style="color:#eceff4">.</span>User
+		orderID      <span style="color:#81a1c1">string</span>
+		sendingError <span style="color:#81a1c1">error</span>
+		name         <span style="color:#81a1c1">string</span>
+		want         <span style="color:#81a1c1">bool</span>
+	<span style="color:#eceff4">}{</span>
+		<span style="color:#eceff4">{</span>
+			user<span style="color:#eceff4">:</span>         user<span style="color:#eceff4">.</span>User<span style="color:#eceff4">{</span><span style="color:#a3be8c">&#34;Peggy&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;+12 345 678 999&#34;</span><span style="color:#eceff4">},</span>
+			orderID<span style="color:#eceff4">:</span>      <span style="color:#a3be8c">&#34;12345&#34;</span><span style="color:#eceff4">,</span>
+			sendingError<span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">nil</span><span style="color:#eceff4">,</span>
+			want<span style="color:#eceff4">:</span>         <span style="color:#81a1c1;font-weight:bold">true</span><span style="color:#eceff4">,</span>
+			name<span style="color:#eceff4">:</span>         <span style="color:#a3be8c">&#34;Successful send&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			user<span style="color:#eceff4">:</span>         user<span style="color:#eceff4">.</span>User<span style="color:#eceff4">{</span><span style="color:#a3be8c">&#34;Peggy&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;+12 345 678 999&#34;</span><span style="color:#eceff4">},</span>
+			orderID<span style="color:#eceff4">:</span>      <span style="color:#a3be8c">&#34;12345&#34;</span><span style="color:#eceff4">,</span>
+			sendingError<span style="color:#eceff4">:</span> errors<span style="color:#eceff4">.</span><span style="color:#88c0d0">New</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Sending failed&#34;</span><span style="color:#eceff4">),</span>
+			want<span style="color:#eceff4">:</span>         <span style="color:#81a1c1;font-weight:bold">false</span><span style="color:#eceff4">,</span>
+			name<span style="color:#eceff4">:</span>         <span style="color:#a3be8c">&#34;Unsuccessful send&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">cases</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-			<span class="nx">ms</span> <span class="o">:=</span> <span class="nx">mockSender</span><span class="p">{</span><span class="nx">tc</span><span class="p">.</span><span class="nx">sendingError</span><span class="p">}</span>
-			<span class="nx">got</span> <span class="o">:=</span> <span class="nf">InformOrderShipped</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">user</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">orderID</span><span class="p">,</span> <span class="nx">ms</span><span class="p">)</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> tc <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> cases <span style="color:#eceff4">{</span>
+		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Run</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>name<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+			ms <span style="color:#81a1c1">:=</span> mockSender<span style="color:#eceff4">{</span>tc<span style="color:#eceff4">.</span>sendingError<span style="color:#eceff4">}</span>
+			got <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">InformOrderShipped</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>user<span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>orderID<span style="color:#eceff4">,</span> ms<span style="color:#eceff4">)</span>
 
-			<span class="k">if</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">want</span> <span class="o">!=</span> <span class="nx">got</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Want &#39;%t&#39;, got &#39;%t&#39;&#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">want</span><span class="p">,</span> <span class="nx">got</span><span class="p">)</span>
-			<span class="p">}</span>
-		<span class="p">})</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+			<span style="color:#81a1c1;font-weight:bold">if</span> tc<span style="color:#eceff4">.</span>want <span style="color:#81a1c1">!=</span> got <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want &#39;%t&#39;, got &#39;%t&#39;&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>want<span style="color:#eceff4">,</span> got<span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
+		<span style="color:#eceff4">})</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>Just a simple <code>mockSender</code> type does the trick. Because it implements the
 <code>Send</code> function and due to Go&rsquo;s implicitly implementing interfaces <code>mockSender</code>
 is also a <code>Sender</code>. That means we can use it as an argument to the
@@ -632,43 +632,43 @@ is also a <code>Sender</code>. That means we can use it as an argument to the
 <p>The flexibility that the <code>Sender</code> interface provides us cannot be overstated.
 Although the example is small and trivial, introducing another type of notification
 for the <code>InformOrderShipped</code> is simple:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">push</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">package</span> push
 
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;time&#34;</span>
+<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+	<span style="color:#a3be8c">&#34;time&#34;</span>
 
-	<span class="s">&#34;github.com/fteem/order-notifications/user&#34;</span>
-<span class="p">)</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/order-notifications/user&#34;</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">type</span> <span class="nx">Notifier</span> <span class="kd">struct</span><span class="p">{}</span>
+<span style="color:#81a1c1;font-weight:bold">type</span> Notifier <span style="color:#81a1c1;font-weight:bold">struct</span><span style="color:#eceff4">{}</span>
 
-<span class="kd">func</span> <span class="p">(</span><span class="nx">n</span> <span class="nx">Notifier</span><span class="p">)</span> <span class="nf">Send</span><span class="p">(</span><span class="nx">receiver</span> <span class="nx">user</span><span class="p">.</span><span class="nx">User</span><span class="p">,</span> <span class="nx">message</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
-	<span class="c1">// Simulating API call...
-</span><span class="c1"></span>	<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="mi">1</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>n Notifier<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Send</span><span style="color:#eceff4">(</span>receiver user<span style="color:#eceff4">.</span>User<span style="color:#eceff4">,</span> message <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">error</span> <span style="color:#eceff4">{</span>
+	<span style="color:#616e87;font-style:italic">// Simulating API call...
+</span><span style="color:#616e87;font-style:italic"></span>	time<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sleep</span><span style="color:#eceff4">(</span><span style="color:#b48ead">1</span> <span style="color:#81a1c1">*</span> time<span style="color:#eceff4">.</span>Second<span style="color:#eceff4">)</span>
 
-	<span class="k">return</span> <span class="kc">nil</span>
-<span class="p">}</span></code></pre></div>
+	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>This would result in no changes in the <code>InformOrderShipped</code> function, while the
 <code>Notifier</code>&rsquo;s <code>Send</code> method can be used as the one of the <code>Dispatcher</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">package</span> main
 
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;github.com/fteem/order-notifications/orders&#34;</span>
-	<span class="s">&#34;github.com/fteem/order-notifications/push&#34;</span>
-	<span class="s">&#34;github.com/fteem/order-notifications/sms&#34;</span>
-	<span class="s">&#34;github.com/fteem/order-notifications/user&#34;</span>
-<span class="p">)</span>
+<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/order-notifications/orders&#34;</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/order-notifications/push&#34;</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/order-notifications/sms&#34;</span>
+	<span style="color:#a3be8c">&#34;github.com/fteem/order-notifications/user&#34;</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-	<span class="nx">dispatcher</span> <span class="o">:=</span> <span class="nx">sms</span><span class="p">.</span><span class="nx">Dispatcher</span><span class="p">{}</span>
-	<span class="nx">notifier</span> <span class="o">:=</span> <span class="nx">push</span><span class="p">.</span><span class="nx">Notifier</span><span class="p">{}</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">main</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+	dispatcher <span style="color:#81a1c1">:=</span> sms<span style="color:#eceff4">.</span>Dispatcher<span style="color:#eceff4">{}</span>
+	notifier <span style="color:#81a1c1">:=</span> push<span style="color:#eceff4">.</span>Notifier<span style="color:#eceff4">{}</span>
 
-	<span class="nx">u</span> <span class="o">:=</span> <span class="nx">user</span><span class="p">.</span><span class="nx">User</span><span class="p">{</span><span class="s">&#34;Peggy&#34;</span><span class="p">,</span> <span class="s">&#34;+123 456 789&#34;</span><span class="p">}</span>
-	<span class="nx">orderID</span> <span class="o">:=</span> <span class="s">&#34;123&#34;</span>
+	u <span style="color:#81a1c1">:=</span> user<span style="color:#eceff4">.</span>User<span style="color:#eceff4">{</span><span style="color:#a3be8c">&#34;Peggy&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;+123 456 789&#34;</span><span style="color:#eceff4">}</span>
+	orderID <span style="color:#81a1c1">:=</span> <span style="color:#a3be8c">&#34;123&#34;</span>
 
-	<span class="nx">orders</span><span class="p">.</span><span class="nf">InformOrderShipped</span><span class="p">(</span><span class="nx">u</span><span class="p">,</span> <span class="nx">orderID</span><span class="p">,</span> <span class="nx">dispatcher</span><span class="p">)</span>
-	<span class="nx">orders</span><span class="p">.</span><span class="nf">InformOrderShipped</span><span class="p">(</span><span class="nx">u</span><span class="p">,</span> <span class="nx">orderID</span><span class="p">,</span> <span class="nx">notifier</span><span class="p">)</span>
-<span class="p">}</span></code></pre></div>
+	orders<span style="color:#eceff4">.</span><span style="color:#88c0d0">InformOrderShipped</span><span style="color:#eceff4">(</span>u<span style="color:#eceff4">,</span> orderID<span style="color:#eceff4">,</span> dispatcher<span style="color:#eceff4">)</span>
+	orders<span style="color:#eceff4">.</span><span style="color:#88c0d0">InformOrderShipped</span><span style="color:#eceff4">(</span>u<span style="color:#eceff4">,</span> orderID<span style="color:#eceff4">,</span> notifier<span style="color:#eceff4">)</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>With dependency injection in action, we were able not only to decouple our
 <code>InformOrderShipped</code> function from the <code>sms</code> package, but also by using an
 interface for dependency injection we got to use polymorphism. Simply put,
@@ -1057,7 +1057,7 @@ in the same <code>InformOrderShipped</code> function.</p>
       
         <p class="text-sm text-neutral-500 dark:text-neutral-400">
             &copy;
-            2022
+            2023
             Ilija Eftimov
         </p>
       

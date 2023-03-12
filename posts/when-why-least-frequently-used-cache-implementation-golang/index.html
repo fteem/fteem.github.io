@@ -453,11 +453,11 @@ establish the basic types that we would need to make this work.</p>
 backbone of our cache.</p>
 <p>The first <code>struct</code> will be the <code>CacheItem</code>. This will be the actual item that
 will be stored in the cache:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">CacheItem</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">key</span>      	<span class="kt">string</span>        <span class="c1">// Key of entry
-</span><span class="c1"></span>	<span class="nx">value</span>    	<span class="kd">interface</span><span class="p">{}</span>   <span class="c1">// Value of item
-</span><span class="c1"></span>	<span class="nx">frequencyParent</span> <span class="o">*</span><span class="nx">list</span><span class="p">.</span><span class="nx">Element</span> <span class="c1">// Pointer to parent in cacheList
-</span><span class="c1"></span><span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> CacheItem <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+	key      	<span style="color:#81a1c1">string</span>        <span style="color:#616e87;font-style:italic">// Key of entry
+</span><span style="color:#616e87;font-style:italic"></span>	value    	<span style="color:#81a1c1;font-weight:bold">interface</span><span style="color:#eceff4">{}</span>   <span style="color:#616e87;font-style:italic">// Value of item
+</span><span style="color:#616e87;font-style:italic"></span>	frequencyParent <span style="color:#81a1c1">*</span>list<span style="color:#eceff4">.</span>Element <span style="color:#616e87;font-style:italic">// Pointer to parent in cacheList
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#eceff4">}</span></code></pre></div>
 <p>It contains the <code>key</code> by which we can look it up in the hash table, the <code>value</code>
 which is the actual cached item and a <code>frequencyParent</code> pointer to the pointer
 in the frequency list.</p>
@@ -465,18 +465,18 @@ in the frequency list.</p>
 the frequency list. It contains a set of entries which will be a set of
 <code>CacheItem</code> pointers. We will use a <code>map</code> to store it so we can treat it as a
 set, which contains only unique items:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">FrequencyItem</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">entries</span> <span class="kd">map</span><span class="p">[</span><span class="o">*</span><span class="nx">CacheItem</span><span class="p">]</span><span class="kt">byte</span> <span class="c1">// Set of entries
-</span><span class="c1"></span>	<span class="nx">freq</span>    <span class="kt">int</span>                  <span class="c1">// Access frequency
-</span><span class="c1"></span><span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> FrequencyItem <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+	entries <span style="color:#81a1c1;font-weight:bold">map</span><span style="color:#eceff4">[</span><span style="color:#81a1c1">*</span>CacheItem<span style="color:#eceff4">]</span><span style="color:#81a1c1">byte</span> <span style="color:#616e87;font-style:italic">// Set of entries
+</span><span style="color:#616e87;font-style:italic"></span>	freq    <span style="color:#81a1c1">int</span>                  <span style="color:#616e87;font-style:italic">// Access frequency
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#eceff4">}</span></code></pre></div>
 <p>The last <code>struct</code> that we will need to have a smooth running cache is, well, the
 <code>Cache</code> itself:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">Cache</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">bykey</span>       <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">CacheItem</span> <span class="c1">// Hashmap containing *CacheItems for O(1) access
-</span><span class="c1"></span>	<span class="nx">freqs</span>       <span class="o">*</span><span class="nx">list</span><span class="p">.</span><span class="nx">List</span>            <span class="c1">// Linked list of frequencies
-</span><span class="c1"></span>	<span class="nx">capacity</span>    <span class="kt">int</span>                   <span class="c1">// Max number of items
-</span><span class="c1"></span>	<span class="nx">size</span>        <span class="kt">int</span>                   <span class="c1">// Current size of cache
-</span><span class="c1"></span><span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> Cache <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+	bykey       <span style="color:#81a1c1;font-weight:bold">map</span><span style="color:#eceff4">[</span><span style="color:#81a1c1">string</span><span style="color:#eceff4">]</span><span style="color:#81a1c1">*</span>CacheItem <span style="color:#616e87;font-style:italic">// Hashmap containing *CacheItems for O(1) access
+</span><span style="color:#616e87;font-style:italic"></span>	freqs       <span style="color:#81a1c1">*</span>list<span style="color:#eceff4">.</span>List            <span style="color:#616e87;font-style:italic">// Linked list of frequencies
+</span><span style="color:#616e87;font-style:italic"></span>	capacity    <span style="color:#81a1c1">int</span>                   <span style="color:#616e87;font-style:italic">// Max number of items
+</span><span style="color:#616e87;font-style:italic"></span>	size        <span style="color:#81a1c1">int</span>                   <span style="color:#616e87;font-style:italic">// Current size of cache
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#eceff4">}</span></code></pre></div>
 <p>The <code>Cache</code> will contain the hashmap, called <code>bykey</code> (the naming comes from the
 paper linked above), the frequency list called <code>freqs</code>, the maximum capacity of
 the cache called <code>capacity</code> and the <code>size</code> of the cache which represents the
@@ -484,15 +484,15 @@ count of items cached at any given moment.</p>
 <h3 id="new-set--get" class="relative group">New, set &amp; get <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#new-set--get" aria-label="Anchor">#</a></span></h3>
 <p>Let&rsquo;s look at the first three functions needed to make our cache work. The first
 one is a little constructor function:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">New</span><span class="p">()</span> <span class="o">*</span><span class="nx">Cache</span> <span class="p">{</span>
-	<span class="nx">cache</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">Cache</span><span class="p">)</span>
-	<span class="nx">cache</span><span class="p">.</span><span class="nx">bykey</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">CacheItem</span><span class="p">)</span>
-	<span class="nx">cache</span><span class="p">.</span><span class="nx">freqs</span> <span class="p">=</span> <span class="nx">list</span><span class="p">.</span><span class="nf">New</span><span class="p">()</span>
-	<span class="nx">cache</span><span class="p">.</span><span class="nx">size</span> <span class="p">=</span> <span class="mi">0</span>
-	<span class="nx">cache</span><span class="p">.</span><span class="nx">capacity</span> <span class="p">=</span> <span class="mi">100</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">New</span><span style="color:#eceff4">()</span> <span style="color:#81a1c1">*</span>Cache <span style="color:#eceff4">{</span>
+	cache <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">new</span><span style="color:#eceff4">(</span>Cache<span style="color:#eceff4">)</span>
+	cache<span style="color:#eceff4">.</span>bykey <span style="color:#eceff4">=</span> <span style="color:#81a1c1">make</span><span style="color:#eceff4">(</span><span style="color:#81a1c1;font-weight:bold">map</span><span style="color:#eceff4">[</span><span style="color:#81a1c1">string</span><span style="color:#eceff4">]</span><span style="color:#81a1c1">*</span>CacheItem<span style="color:#eceff4">)</span>
+	cache<span style="color:#eceff4">.</span>freqs <span style="color:#eceff4">=</span> list<span style="color:#eceff4">.</span><span style="color:#88c0d0">New</span><span style="color:#eceff4">()</span>
+	cache<span style="color:#eceff4">.</span>size <span style="color:#eceff4">=</span> <span style="color:#b48ead">0</span>
+	cache<span style="color:#eceff4">.</span>capacity <span style="color:#eceff4">=</span> <span style="color:#b48ead">100</span>
 
-	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">c</span>
-<span class="p">}</span></code></pre></div>
+	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1">&amp;</span>c
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>The constructor <code>New</code> will create a new <code>Cache</code> struct and will set all the
 defaults to it. In case you&rsquo;re wondering how <code>list.New()</code> works: for the
 frequency list, we will use Go&rsquo;s <code>container/list</code> package, which contains a neat
@@ -500,20 +500,20 @@ linked-list implementation. You can check
 <a href="https://golang.org/pkg/container/list/">its documentation</a> for more details.</p>
 <p>The second function, which will be implemented on the <code>Cache</code>, is the <code>Set</code>
 function:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">cache</span> <span class="o">*</span><span class="nx">Cache</span><span class="p">)</span> <span class="nf">Set</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">value</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
-	<span class="k">if</span> <span class="nx">item</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">bykey</span><span class="p">[</span><span class="nx">key</span><span class="p">];</span> <span class="nx">ok</span> <span class="p">{</span>
-		<span class="nx">item</span><span class="p">.</span><span class="nx">value</span> <span class="p">=</span> <span class="nx">value</span>
-		<span class="c1">// Increment item access frequency here
-</span><span class="c1"></span>	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-		<span class="nx">item</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">CacheItem</span><span class="p">)</span>
-		<span class="nx">item</span><span class="p">.</span><span class="nx">key</span> <span class="p">=</span> <span class="nx">key</span>
-		<span class="nx">item</span><span class="p">.</span><span class="nx">value</span> <span class="p">=</span> <span class="nx">value</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nx">bykey</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="p">=</span> <span class="nx">item</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nx">size</span><span class="o">++</span>
-		<span class="c1">// Eviction, if needed
-</span><span class="c1"></span>		<span class="c1">// Increment item access frequency
-</span><span class="c1"></span>	<span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>cache <span style="color:#81a1c1">*</span>Cache<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Set</span><span style="color:#eceff4">(</span>key <span style="color:#81a1c1">string</span><span style="color:#eceff4">,</span> value <span style="color:#81a1c1;font-weight:bold">interface</span><span style="color:#eceff4">{})</span> <span style="color:#eceff4">{</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> item<span style="color:#eceff4">,</span> ok <span style="color:#81a1c1">:=</span> cache<span style="color:#eceff4">.</span>bykey<span style="color:#eceff4">[</span>key<span style="color:#eceff4">];</span> ok <span style="color:#eceff4">{</span>
+		item<span style="color:#eceff4">.</span>value <span style="color:#eceff4">=</span> value
+		<span style="color:#616e87;font-style:italic">// Increment item access frequency here
+</span><span style="color:#616e87;font-style:italic"></span>	<span style="color:#eceff4">}</span> <span style="color:#81a1c1;font-weight:bold">else</span> <span style="color:#eceff4">{</span>
+		item <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">new</span><span style="color:#eceff4">(</span>CacheItem<span style="color:#eceff4">)</span>
+		item<span style="color:#eceff4">.</span>key <span style="color:#eceff4">=</span> key
+		item<span style="color:#eceff4">.</span>value <span style="color:#eceff4">=</span> value
+		cache<span style="color:#eceff4">.</span>bykey<span style="color:#eceff4">[</span>key<span style="color:#eceff4">]</span> <span style="color:#eceff4">=</span> item
+		cache<span style="color:#eceff4">.</span>size<span style="color:#81a1c1">++</span>
+		<span style="color:#616e87;font-style:italic">// Eviction, if needed
+</span><span style="color:#616e87;font-style:italic"></span>		<span style="color:#616e87;font-style:italic">// Increment item access frequency
+</span><span style="color:#616e87;font-style:italic"></span>	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>The function will take the cache key and the actual value/item to be cached as
 arguments. Then, it checks if the item is already cached or not. If it is cached,
 it will just update the value on the item. Otherwise, it will create a new
@@ -531,14 +531,14 @@ if the <code>size</code> reaches the <code>capacity</code>.</li>
 functions.</p>
 <p>The third function that <code>Cache</code> will receive is <code>Get</code> - accessing the item by
 the key from the hashtable and returning it:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">cache</span> <span class="o">*</span><span class="nx">Cache</span><span class="p">)</span> <span class="nf">Get</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">)</span> <span class="kd">interface</span><span class="p">{}</span> <span class="p">{</span>
-	<span class="k">if</span> <span class="nx">e</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">bykey</span><span class="p">[</span><span class="nx">key</span><span class="p">];</span> <span class="nx">ok</span> <span class="p">{</span>
-		<span class="c1">// Increment acess frequency here
-</span><span class="c1"></span>		<span class="k">return</span> <span class="nx">e</span><span class="p">.</span><span class="nx">value</span>
-	<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>cache <span style="color:#81a1c1">*</span>Cache<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Get</span><span style="color:#eceff4">(</span>key <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">interface</span><span style="color:#eceff4">{}</span> <span style="color:#eceff4">{</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> e<span style="color:#eceff4">,</span> ok <span style="color:#81a1c1">:=</span> cache<span style="color:#eceff4">.</span>bykey<span style="color:#eceff4">[</span>key<span style="color:#eceff4">];</span> ok <span style="color:#eceff4">{</span>
+		<span style="color:#616e87;font-style:italic">// Increment acess frequency here
+</span><span style="color:#616e87;font-style:italic"></span>		<span style="color:#81a1c1;font-weight:bold">return</span> e<span style="color:#eceff4">.</span>value
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">return</span> <span class="kc">nil</span>
-<span class="p">}</span></code></pre></div>
+	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>There&rsquo;s no magic here as well - we check if the <code>bykey</code> hashtable contains a
 value with the <code>key</code> argument and we return it if present. Otherwise, we return
 <code>nil</code>. Here, just like in <code>Set</code>, we will leave the placeholder comment where we
@@ -563,36 +563,36 @@ list of <code>entries</code>.</p>
 <p>As the final step, the <code>increment</code> function will remove the item from the
 <code>entries</code> of the old frequency node (<code>frequencyParent</code>).</p>
 <p>Here&rsquo;s the code in Golang:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">cache</span> <span class="o">*</span><span class="nx">Cache</span><span class="p">)</span> <span class="nf">increment</span><span class="p">(</span><span class="nx">item</span> <span class="o">*</span><span class="nx">CacheItem</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">currentFrequency</span> <span class="o">:=</span> <span class="nx">item</span><span class="p">.</span><span class="nx">frequencyParent</span>
-	<span class="kd">var</span> <span class="nx">nextFrequencyAmount</span> <span class="kt">int</span>
-	<span class="kd">var</span> <span class="nx">nextFrequency</span> <span class="o">*</span><span class="nx">list</span><span class="p">.</span><span class="nx">Element</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>cache <span style="color:#81a1c1">*</span>Cache<span style="color:#eceff4">)</span> <span style="color:#88c0d0">increment</span><span style="color:#eceff4">(</span>item <span style="color:#81a1c1">*</span>CacheItem<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	currentFrequency <span style="color:#81a1c1">:=</span> item<span style="color:#eceff4">.</span>frequencyParent
+	<span style="color:#81a1c1;font-weight:bold">var</span> nextFrequencyAmount <span style="color:#81a1c1">int</span>
+	<span style="color:#81a1c1;font-weight:bold">var</span> nextFrequency <span style="color:#81a1c1">*</span>list<span style="color:#eceff4">.</span>Element
 
-	<span class="k">if</span> <span class="nx">currentFrequency</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nx">nextFrequencyAmount</span> <span class="p">=</span> <span class="mi">1</span>
-		<span class="nx">nextFrequency</span> <span class="p">=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">freqs</span><span class="p">.</span><span class="nf">Front</span><span class="p">()</span>
-	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-		<span class="nx">nextFrequencyAmount</span> <span class="p">=</span> <span class="nx">currentFrequency</span><span class="p">.</span><span class="nx">Value</span><span class="p">.(</span><span class="o">*</span><span class="nx">FrequencyItem</span><span class="p">).</span><span class="nx">freq</span> <span class="o">+</span> <span class="mi">1</span>
-		<span class="nx">nextFrequency</span> <span class="p">=</span> <span class="nx">currentFrequency</span><span class="p">.</span><span class="nf">Next</span><span class="p">()</span>
-	<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> currentFrequency <span style="color:#81a1c1">==</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		nextFrequencyAmount <span style="color:#eceff4">=</span> <span style="color:#b48ead">1</span>
+		nextFrequency <span style="color:#eceff4">=</span> cache<span style="color:#eceff4">.</span>freqs<span style="color:#eceff4">.</span><span style="color:#88c0d0">Front</span><span style="color:#eceff4">()</span>
+	<span style="color:#eceff4">}</span> <span style="color:#81a1c1;font-weight:bold">else</span> <span style="color:#eceff4">{</span>
+		nextFrequencyAmount <span style="color:#eceff4">=</span> currentFrequency<span style="color:#eceff4">.</span>Value<span style="color:#eceff4">.(</span><span style="color:#81a1c1">*</span>FrequencyItem<span style="color:#eceff4">).</span>freq <span style="color:#81a1c1">+</span> <span style="color:#b48ead">1</span>
+		nextFrequency <span style="color:#eceff4">=</span> currentFrequency<span style="color:#eceff4">.</span><span style="color:#88c0d0">Next</span><span style="color:#eceff4">()</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">if</span> <span class="nx">nextFrequency</span> <span class="o">==</span> <span class="kc">nil</span> <span class="o">||</span> <span class="nx">nextFrequency</span><span class="p">.</span><span class="nx">Value</span><span class="p">.(</span><span class="o">*</span><span class="nx">FrequencyItem</span><span class="p">).</span><span class="nx">freq</span> <span class="o">!=</span> <span class="nx">nextFrequencyAmount</span> <span class="p">{</span>
-		<span class="nx">newFrequencyItem</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">FrequencyItem</span><span class="p">)</span>
-		<span class="nx">newFrequencyItem</span><span class="p">.</span><span class="nx">freq</span> <span class="p">=</span> <span class="nx">nextFrequencyAmount</span>
-		<span class="nx">newFrequencyItem</span><span class="p">.</span><span class="nx">entries</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="o">*</span><span class="nx">CacheItem</span><span class="p">]</span><span class="kt">byte</span><span class="p">)</span>
-		<span class="k">if</span> <span class="nx">currentFrequency</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
-			<span class="nx">nextFrequency</span> <span class="p">=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">freqs</span><span class="p">.</span><span class="nf">PushFront</span><span class="p">(</span><span class="nx">newFrequencyItem</span><span class="p">)</span>
-		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-			<span class="nx">nextFrequency</span> <span class="p">=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">freqs</span><span class="p">.</span><span class="nf">InsertAfter</span><span class="p">(</span><span class="nx">newFrequencyItem</span><span class="p">,</span> <span class="nx">currentFrequency</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> nextFrequency <span style="color:#81a1c1">==</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#81a1c1">||</span> nextFrequency<span style="color:#eceff4">.</span>Value<span style="color:#eceff4">.(</span><span style="color:#81a1c1">*</span>FrequencyItem<span style="color:#eceff4">).</span>freq <span style="color:#81a1c1">!=</span> nextFrequencyAmount <span style="color:#eceff4">{</span>
+		newFrequencyItem <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">new</span><span style="color:#eceff4">(</span>FrequencyItem<span style="color:#eceff4">)</span>
+		newFrequencyItem<span style="color:#eceff4">.</span>freq <span style="color:#eceff4">=</span> nextFrequencyAmount
+		newFrequencyItem<span style="color:#eceff4">.</span>entries <span style="color:#eceff4">=</span> <span style="color:#81a1c1">make</span><span style="color:#eceff4">(</span><span style="color:#81a1c1;font-weight:bold">map</span><span style="color:#eceff4">[</span><span style="color:#81a1c1">*</span>CacheItem<span style="color:#eceff4">]</span><span style="color:#81a1c1">byte</span><span style="color:#eceff4">)</span>
+		<span style="color:#81a1c1;font-weight:bold">if</span> currentFrequency <span style="color:#81a1c1">==</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+			nextFrequency <span style="color:#eceff4">=</span> cache<span style="color:#eceff4">.</span>freqs<span style="color:#eceff4">.</span><span style="color:#88c0d0">PushFront</span><span style="color:#eceff4">(</span>newFrequencyItem<span style="color:#eceff4">)</span>
+		<span style="color:#eceff4">}</span> <span style="color:#81a1c1;font-weight:bold">else</span> <span style="color:#eceff4">{</span>
+			nextFrequency <span style="color:#eceff4">=</span> cache<span style="color:#eceff4">.</span>freqs<span style="color:#eceff4">.</span><span style="color:#88c0d0">InsertAfter</span><span style="color:#eceff4">(</span>newFrequencyItem<span style="color:#eceff4">,</span> currentFrequency<span style="color:#eceff4">)</span>
+		<span style="color:#eceff4">}</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="nx">item</span><span class="p">.</span><span class="nx">frequencyParent</span> <span class="p">=</span> <span class="nx">nextFrequency</span>
-	<span class="nx">nextFrequency</span><span class="p">.</span><span class="nx">Value</span><span class="p">.(</span><span class="o">*</span><span class="nx">FrequencyItem</span><span class="p">).</span><span class="nx">entries</span><span class="p">[</span><span class="nx">item</span><span class="p">]</span> <span class="p">=</span> <span class="mi">1</span>
-	<span class="k">if</span> <span class="nx">currentFrequency</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nf">remove</span><span class="p">(</span><span class="nx">currentFrequency</span><span class="p">,</span> <span class="nx">item</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+	item<span style="color:#eceff4">.</span>frequencyParent <span style="color:#eceff4">=</span> nextFrequency
+	nextFrequency<span style="color:#eceff4">.</span>Value<span style="color:#eceff4">.(</span><span style="color:#81a1c1">*</span>FrequencyItem<span style="color:#eceff4">).</span>entries<span style="color:#eceff4">[</span>item<span style="color:#eceff4">]</span> <span style="color:#eceff4">=</span> <span style="color:#b48ead">1</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> currentFrequency <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		cache<span style="color:#eceff4">.</span><span style="color:#88c0d0">remove</span><span style="color:#eceff4">(</span>currentFrequency<span style="color:#eceff4">,</span> item<span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>Let&rsquo;s refer back to our original diagram of the frequency and entries lists and
 walk through incrementing the <code>E</code> item.</p>
 <p><img src="/golang-lfu-cache/e-cached-item.png" alt=""  />
@@ -621,13 +621,13 @@ the previous <code>frequencyParent</code>:</p>
 <p>Once we know the node in the list from which we want to remove it, we can just
 remove the item from the <code>entries</code> list and also completely remove the
 <code>FrequencyItem</code> from the frequency list if the <code>entries</code> become empty:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">cache</span> <span class="o">*</span><span class="nx">Cache</span><span class="p">)</span> <span class="nf">Remove</span><span class="p">(</span><span class="nx">listItem</span> <span class="o">*</span><span class="nx">list</span><span class="p">.</span><span class="nx">Element</span><span class="p">,</span> <span class="nx">item</span> <span class="o">*</span><span class="nx">CacheItem</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">frequencyItem</span> <span class="o">:=</span> <span class="nx">listItem</span><span class="p">.</span><span class="nx">Value</span><span class="p">.(</span><span class="o">*</span><span class="nx">FrequencyItem</span><span class="p">)</span>
-	<span class="nb">delete</span><span class="p">(</span><span class="nx">frequencyItem</span><span class="p">.</span><span class="nx">entries</span><span class="p">,</span> <span class="nx">item</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">frequencyItem</span><span class="p">.</span><span class="nx">entries</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nx">freqs</span><span class="p">.</span><span class="nf">Remove</span><span class="p">(</span><span class="nx">listItem</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>cache <span style="color:#81a1c1">*</span>Cache<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Remove</span><span style="color:#eceff4">(</span>listItem <span style="color:#81a1c1">*</span>list<span style="color:#eceff4">.</span>Element<span style="color:#eceff4">,</span> item <span style="color:#81a1c1">*</span>CacheItem<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	frequencyItem <span style="color:#81a1c1">:=</span> listItem<span style="color:#eceff4">.</span>Value<span style="color:#eceff4">.(</span><span style="color:#81a1c1">*</span>FrequencyItem<span style="color:#eceff4">)</span>
+	<span style="color:#81a1c1">delete</span><span style="color:#eceff4">(</span>frequencyItem<span style="color:#eceff4">.</span>entries<span style="color:#eceff4">,</span> item<span style="color:#eceff4">)</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> <span style="color:#81a1c1">len</span><span style="color:#eceff4">(</span>frequencyItem<span style="color:#eceff4">.</span>entries<span style="color:#eceff4">)</span> <span style="color:#81a1c1">==</span> <span style="color:#b48ead">0</span> <span style="color:#eceff4">{</span>
+		cache<span style="color:#eceff4">.</span>freqs<span style="color:#eceff4">.</span><span style="color:#88c0d0">Remove</span><span style="color:#eceff4">(</span>listItem<span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <h3 id="eviction" class="relative group">Eviction <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#eviction" aria-label="Anchor">#</a></span></h3>
 <p>The last piece of the puzzle is eviction, or in other words, removing the least
 frequently used items once the cache reaches its maximum capacity.</p>
@@ -644,20 +644,20 @@ will have to remove the frequency node from the frequency list as well. It will
 do that by invoking the <code>Remove</code> function. That way, the eviction will not
 leave any garbage behind.</p>
 <p>Here&rsquo;s the code of what we described above:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">cache</span> <span class="o">*</span><span class="nx">Cache</span><span class="p">)</span> <span class="nf">Evict</span><span class="p">(</span><span class="nx">count</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
-	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">count</span><span class="p">;</span> <span class="p">{</span>
-		<span class="k">if</span> <span class="nx">item</span> <span class="o">:=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">freqs</span><span class="p">.</span><span class="nf">Front</span><span class="p">();</span> <span class="nx">item</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-			<span class="k">for</span> <span class="nx">entry</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">item</span><span class="p">.</span><span class="nx">Value</span><span class="p">.(</span><span class="o">*</span><span class="nx">FrequencyItem</span><span class="p">).</span><span class="nx">entries</span> <span class="p">{</span>
-				<span class="k">if</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">count</span> <span class="p">{</span>
-					<span class="nb">delete</span><span class="p">(</span><span class="nx">cache</span><span class="p">.</span><span class="nx">bykey</span><span class="p">,</span> <span class="nx">entry</span><span class="p">.</span><span class="nx">key</span><span class="p">)</span>
-					<span class="nx">cache</span><span class="p">.</span><span class="nf">Remove</span><span class="p">(</span><span class="nx">item</span><span class="p">,</span> <span class="nx">entry</span><span class="p">)</span>
-					<span class="nx">cache</span><span class="p">.</span><span class="nx">size</span><span class="o">--</span>
-					<span class="nx">i</span><span class="o">++</span>
-				<span class="p">}</span>
-			<span class="p">}</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>cache <span style="color:#81a1c1">*</span>Cache<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Evict</span><span style="color:#eceff4">(</span>count <span style="color:#81a1c1">int</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> i <span style="color:#81a1c1">:=</span> <span style="color:#b48ead">0</span><span style="color:#eceff4">;</span> i <span style="color:#eceff4">&lt;</span> count<span style="color:#eceff4">;</span> <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">if</span> item <span style="color:#81a1c1">:=</span> cache<span style="color:#eceff4">.</span>freqs<span style="color:#eceff4">.</span><span style="color:#88c0d0">Front</span><span style="color:#eceff4">();</span> item <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+			<span style="color:#81a1c1;font-weight:bold">for</span> entry<span style="color:#eceff4">,</span> _ <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> item<span style="color:#eceff4">.</span>Value<span style="color:#eceff4">.(</span><span style="color:#81a1c1">*</span>FrequencyItem<span style="color:#eceff4">).</span>entries <span style="color:#eceff4">{</span>
+				<span style="color:#81a1c1;font-weight:bold">if</span> i <span style="color:#eceff4">&lt;</span> count <span style="color:#eceff4">{</span>
+					<span style="color:#81a1c1">delete</span><span style="color:#eceff4">(</span>cache<span style="color:#eceff4">.</span>bykey<span style="color:#eceff4">,</span> entry<span style="color:#eceff4">.</span>key<span style="color:#eceff4">)</span>
+					cache<span style="color:#eceff4">.</span><span style="color:#88c0d0">Remove</span><span style="color:#eceff4">(</span>item<span style="color:#eceff4">,</span> entry<span style="color:#eceff4">)</span>
+					cache<span style="color:#eceff4">.</span>size<span style="color:#81a1c1">--</span>
+					i<span style="color:#81a1c1">++</span>
+				<span style="color:#eceff4">}</span>
+			<span style="color:#eceff4">}</span>
+		<span style="color:#eceff4">}</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <h3 id="back-to-set-and-get" class="relative group">Back to Set and Get <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#back-to-set-and-get" aria-label="Anchor">#</a></span></h3>
 <p>At the beginning of this article we implemented the <code>Set</code> and <code>Get</code> functions.
 One thing that we didn&rsquo;t have available back then is the <code>Evict</code> and <code>increment</code>
@@ -665,33 +665,33 @@ functions, so we can use them accordingly. Let&rsquo;s add their invocation.</p>
 <h4 id="incrementing-access-frequency" class="relative group">Incrementing access frequency <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#incrementing-access-frequency" aria-label="Anchor">#</a></span></h4>
 <p>In the <code>Get</code> function, if we find an item in the <code>bykey</code> hash table, we need
 to increment it&rsquo;s access frequency before we proceed to return its <code>value</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">cache</span> <span class="o">*</span><span class="nx">Cache</span><span class="p">)</span> <span class="nf">Get</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">)</span> <span class="kd">interface</span><span class="p">{}</span> <span class="p">{</span>
-	<span class="k">if</span> <span class="nx">e</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">bykey</span><span class="p">[</span><span class="nx">key</span><span class="p">];</span> <span class="nx">ok</span> <span class="p">{</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nf">increment</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span>
-		<span class="k">return</span> <span class="nx">e</span><span class="p">.</span><span class="nx">value</span>
-	<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>cache <span style="color:#81a1c1">*</span>Cache<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Get</span><span style="color:#eceff4">(</span>key <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">interface</span><span style="color:#eceff4">{}</span> <span style="color:#eceff4">{</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> e<span style="color:#eceff4">,</span> ok <span style="color:#81a1c1">:=</span> cache<span style="color:#eceff4">.</span>bykey<span style="color:#eceff4">[</span>key<span style="color:#eceff4">];</span> ok <span style="color:#eceff4">{</span>
+		cache<span style="color:#eceff4">.</span><span style="color:#88c0d0">increment</span><span style="color:#eceff4">(</span>e<span style="color:#eceff4">)</span>
+		<span style="color:#81a1c1;font-weight:bold">return</span> e<span style="color:#eceff4">.</span>value
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">return</span> <span class="kc">nil</span>
-<span class="p">}</span></code></pre></div>
+	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>With this change, the <code>Cache</code> will increment the frequency of that particular
 item before we return it. But, are we forgetting something? Also, the <code>Set</code>
 function makes access to the cached items when it actually caches them. This
 means that when an item is cached it will immediately be added to the frequency
 list, under the node with value <code>1</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">cache</span> <span class="o">*</span><span class="nx">Cache</span><span class="p">)</span> <span class="nf">Set</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">value</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
-	<span class="k">if</span> <span class="nx">item</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">bykey</span><span class="p">[</span><span class="nx">key</span><span class="p">];</span> <span class="nx">ok</span> <span class="p">{</span>
-		<span class="nx">item</span><span class="p">.</span><span class="nx">value</span> <span class="p">=</span> <span class="nx">value</span>
-                <span class="nx">cache</span><span class="p">.</span><span class="nf">increment</span><span class="p">(</span><span class="nx">item</span><span class="p">)</span>
-	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-		<span class="nx">item</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">CacheItem</span><span class="p">)</span>
-		<span class="nx">item</span><span class="p">.</span><span class="nx">key</span> <span class="p">=</span> <span class="nx">key</span>
-		<span class="nx">item</span><span class="p">.</span><span class="nx">value</span> <span class="p">=</span> <span class="nx">value</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nx">bykey</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="p">=</span> <span class="nx">item</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nx">size</span><span class="o">++</span>
-		<span class="c1">// Eviction, if needed
-</span><span class="c1"></span>                <span class="nx">cache</span><span class="p">.</span><span class="nf">increment</span><span class="p">(</span><span class="nx">item</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>cache <span style="color:#81a1c1">*</span>Cache<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Set</span><span style="color:#eceff4">(</span>key <span style="color:#81a1c1">string</span><span style="color:#eceff4">,</span> value <span style="color:#81a1c1;font-weight:bold">interface</span><span style="color:#eceff4">{})</span> <span style="color:#eceff4">{</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> item<span style="color:#eceff4">,</span> ok <span style="color:#81a1c1">:=</span> cache<span style="color:#eceff4">.</span>bykey<span style="color:#eceff4">[</span>key<span style="color:#eceff4">];</span> ok <span style="color:#eceff4">{</span>
+		item<span style="color:#eceff4">.</span>value <span style="color:#eceff4">=</span> value
+                cache<span style="color:#eceff4">.</span><span style="color:#88c0d0">increment</span><span style="color:#eceff4">(</span>item<span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}</span> <span style="color:#81a1c1;font-weight:bold">else</span> <span style="color:#eceff4">{</span>
+		item <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">new</span><span style="color:#eceff4">(</span>CacheItem<span style="color:#eceff4">)</span>
+		item<span style="color:#eceff4">.</span>key <span style="color:#eceff4">=</span> key
+		item<span style="color:#eceff4">.</span>value <span style="color:#eceff4">=</span> value
+		cache<span style="color:#eceff4">.</span>bykey<span style="color:#eceff4">[</span>key<span style="color:#eceff4">]</span> <span style="color:#eceff4">=</span> item
+		cache<span style="color:#eceff4">.</span>size<span style="color:#81a1c1">++</span>
+		<span style="color:#616e87;font-style:italic">// Eviction, if needed
+</span><span style="color:#616e87;font-style:italic"></span>                cache<span style="color:#eceff4">.</span><span style="color:#88c0d0">increment</span><span style="color:#eceff4">(</span>item<span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <h4 id="eviction-after-addition" class="relative group">Eviction after addition <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#eviction-after-addition" aria-label="Anchor">#</a></span></h4>
 <p>The <code>Set</code> function allows users of our LFU <code>Cache</code> to cache more items in it.
 A key component of any cache is that it should know how to evict items (free up
@@ -699,31 +699,31 @@ space) when new items are added to the cache. For an LFU cache, the least
 frequently used items need to be removed when the cache is at capacity.</p>
 <p>Let&rsquo;s first add a function that will return a <code>bool</code> if the cache has reached
 its maximum capacity:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">cache</span> <span class="o">*</span><span class="nx">Cache</span><span class="p">)</span> <span class="nf">atCapacity</span><span class="p">()</span> <span class="kt">bool</span> <span class="p">{</span>
-	<span class="k">return</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">size</span> <span class="o">&gt;=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">capacity</span>
-<span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>cache <span style="color:#81a1c1">*</span>Cache<span style="color:#eceff4">)</span> <span style="color:#88c0d0">atCapacity</span><span style="color:#eceff4">()</span> <span style="color:#81a1c1">bool</span> <span style="color:#eceff4">{</span>
+	<span style="color:#81a1c1;font-weight:bold">return</span> cache<span style="color:#eceff4">.</span>size <span style="color:#81a1c1">&gt;=</span> cache<span style="color:#eceff4">.</span>capacity
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>The function is simple: checks if the current <code>size</code> of the <code>Cache</code> is bigger
 or equals than the <code>capacity</code>.</p>
 <p>Now, let&rsquo;s put this into use in the <code>Set</code> function. Once we have a new item set
 in the cache, we have to check if the cache has reached its capacity and then
 evict a number of items from it.</p>
 <p>For simplicity, we will remove only 10 items every time we reach max capacity:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="p">(</span><span class="nx">cache</span> <span class="o">*</span><span class="nx">Cache</span><span class="p">)</span> <span class="nf">Set</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">value</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
-	<span class="k">if</span> <span class="nx">item</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">cache</span><span class="p">.</span><span class="nx">bykey</span><span class="p">[</span><span class="nx">key</span><span class="p">];</span> <span class="nx">ok</span> <span class="p">{</span>
-		<span class="nx">item</span><span class="p">.</span><span class="nx">value</span> <span class="p">=</span> <span class="nx">value</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nf">increment</span><span class="p">(</span><span class="nx">item</span><span class="p">)</span>
-	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-		<span class="nx">item</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">CacheItem</span><span class="p">)</span>
-		<span class="nx">item</span><span class="p">.</span><span class="nx">key</span> <span class="p">=</span> <span class="nx">key</span>
-		<span class="nx">item</span><span class="p">.</span><span class="nx">value</span> <span class="p">=</span> <span class="nx">value</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nx">bykey</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="p">=</span> <span class="nx">item</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nx">size</span><span class="o">++</span>
-		<span class="k">if</span> <span class="nx">cache</span><span class="p">.</span><span class="nf">atCapacity</span><span class="p">()</span> <span class="p">{</span>
-			<span class="nx">cache</span><span class="p">.</span><span class="nf">Evict</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-		<span class="p">}</span>
-		<span class="nx">cache</span><span class="p">.</span><span class="nf">increment</span><span class="p">(</span><span class="nx">item</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>cache <span style="color:#81a1c1">*</span>Cache<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Set</span><span style="color:#eceff4">(</span>key <span style="color:#81a1c1">string</span><span style="color:#eceff4">,</span> value <span style="color:#81a1c1;font-weight:bold">interface</span><span style="color:#eceff4">{})</span> <span style="color:#eceff4">{</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> item<span style="color:#eceff4">,</span> ok <span style="color:#81a1c1">:=</span> cache<span style="color:#eceff4">.</span>bykey<span style="color:#eceff4">[</span>key<span style="color:#eceff4">];</span> ok <span style="color:#eceff4">{</span>
+		item<span style="color:#eceff4">.</span>value <span style="color:#eceff4">=</span> value
+		cache<span style="color:#eceff4">.</span><span style="color:#88c0d0">increment</span><span style="color:#eceff4">(</span>item<span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}</span> <span style="color:#81a1c1;font-weight:bold">else</span> <span style="color:#eceff4">{</span>
+		item <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">new</span><span style="color:#eceff4">(</span>CacheItem<span style="color:#eceff4">)</span>
+		item<span style="color:#eceff4">.</span>key <span style="color:#eceff4">=</span> key
+		item<span style="color:#eceff4">.</span>value <span style="color:#eceff4">=</span> value
+		cache<span style="color:#eceff4">.</span>bykey<span style="color:#eceff4">[</span>key<span style="color:#eceff4">]</span> <span style="color:#eceff4">=</span> item
+		cache<span style="color:#eceff4">.</span>size<span style="color:#81a1c1">++</span>
+		<span style="color:#81a1c1;font-weight:bold">if</span> cache<span style="color:#eceff4">.</span><span style="color:#88c0d0">atCapacity</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+			cache<span style="color:#eceff4">.</span><span style="color:#88c0d0">Evict</span><span style="color:#eceff4">(</span><span style="color:#b48ead">10</span><span style="color:#eceff4">)</span>
+		<span style="color:#eceff4">}</span>
+		cache<span style="color:#eceff4">.</span><span style="color:#88c0d0">increment</span><span style="color:#eceff4">(</span>item<span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>With this change, if at any point adding an item reaches the capacity of the
 cache, the cache will evict the least frequently used items.</p>
 <p>If you would like to see the whole code for this article, you can check out
@@ -1149,7 +1149,7 @@ Implementation&rdquo;</a>
       
         <p class="text-sm text-neutral-500 dark:text-neutral-400">
             &copy;
-            2022
+            2023
             Ilija Eftimov
         </p>
       

@@ -450,34 +450,34 @@ using Grape API, one of the most popular API DSLs for the Ruby programming
 language.</p>
 <p>Let&rsquo;s imagine that we have a very simple API endpoint, which will fetch a
 single user, with a URI <code>GET /user/:id</code>.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">module</span> <span class="nn">API</span>
-  <span class="k">class</span> <span class="nc">Users</span> <span class="o">&lt;</span> <span class="no">Grape</span><span class="o">::</span><span class="no">API</span>
-    <span class="n">resource</span> <span class="ss">:users</span> <span class="k">do</span>
-      <span class="n">route_param</span> <span class="ss">:id</span> <span class="k">do</span>
-        <span class="n">get</span> <span class="k">do</span>
-          <span class="no">User</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">params</span><span class="o">[</span><span class="ss">:id</span><span class="o">]</span><span class="p">)</span>
-        <span class="k">end</span>
-      <span class="k">end</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">API</span>
+  <span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Users</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">Grape</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">API</span>
+    resource <span style="color:#a3be8c">:users</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+      route_param <span style="color:#a3be8c">:id</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+        get <span style="color:#81a1c1;font-weight:bold">do</span>
+          <span style="color:#8fbcbb">User</span><span style="color:#81a1c1">.</span>find<span style="color:#eceff4">(</span>params<span style="color:#81a1c1">[</span><span style="color:#a3be8c">:id</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">)</span>
+        <span style="color:#81a1c1;font-weight:bold">end</span>
+      <span style="color:#81a1c1;font-weight:bold">end</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <h3 id="media-type-versioning-1" class="relative group">Media-type versioning <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#media-type-versioning-1" aria-label="Anchor">#</a></span></h3>
 <p>Implementing this type of versioning is rather easy. For example, let&rsquo;s say our
 company is called &lsquo;BarCo&rsquo;, so we want to make our <code>Accept</code> header look like:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">Accept: application/vnd.barco-v1+json</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Accept: application/vnd.barco-v1+json</code></pre></div>
 <p>So, how can we implement this quickly, using a <code>before</code> hook that will be
 executed before any request to our API?</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">module</span> <span class="nn">API</span>
-  <span class="k">module</span> <span class="nn">V1</span>
-    <span class="no">VENDOR</span> <span class="o">=</span> <span class="s1">&#39;barco&#39;</span><span class="o">.</span><span class="n">freeze</span>
-    <span class="no">VERSION</span> <span class="o">=</span> <span class="s1">&#39;v1&#39;</span><span class="o">.</span><span class="n">freeze</span>
-    <span class="no">HEADER</span> <span class="o">=</span> <span class="s1">&#39;application/vnd.#{API::VENDOR}-#{API::VERSION}+json&#39;</span><span class="o">.</span><span class="n">freeze</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">API</span>
+  <span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">V1</span>
+    <span style="color:#8fbcbb">VENDOR</span> <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;barco&#39;</span><span style="color:#81a1c1">.</span>freeze
+    <span style="color:#8fbcbb">VERSION</span> <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;v1&#39;</span><span style="color:#81a1c1">.</span>freeze
+    <span style="color:#8fbcbb">HEADER</span> <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;application/vnd.#{API::VENDOR}-#{API::VERSION}+json&#39;</span><span style="color:#81a1c1">.</span>freeze
 
-    <span class="n">before</span> <span class="k">do</span>
-      <span class="n">error!</span><span class="p">(</span><span class="s1">&#39;Not found&#39;</span><span class="p">,</span> <span class="mi">404</span><span class="p">)</span> <span class="k">unless</span> <span class="n">headers</span><span class="o">[</span><span class="s1">&#39;Accept&#39;</span><span class="o">]</span> <span class="o">==</span> <span class="no">HEADER</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+    before <span style="color:#81a1c1;font-weight:bold">do</span>
+      error!<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#39;Not found&#39;</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">404</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">unless</span> headers<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;Accept&#39;</span><span style="color:#81a1c1">]</span> <span style="color:#81a1c1">==</span> <span style="color:#8fbcbb">HEADER</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>So, before every request comes in, the <code>before</code> hook will validate the <code>Accept</code>
 header of the request and will raise a <code>HTTP 404</code> if it cannot find the
 appropriate API version.</p>
@@ -487,42 +487,42 @@ versioning so we don&rsquo;t have to reinvent the wheel every time we write an A
 <p>To do the same, Grape has the
 <a href="https://github.com/ruby-grape/grape#header">Header</a> versioning, and it easy to
 plug it in your API, like:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">module</span> <span class="nn">API</span>
-  <span class="k">class</span> <span class="nc">Users</span> <span class="o">&lt;</span> <span class="no">Grape</span><span class="o">::</span><span class="no">API</span>
-    <span class="n">version</span> <span class="s1">&#39;v1&#39;</span><span class="p">,</span> <span class="ss">using</span><span class="p">:</span> <span class="ss">:header</span><span class="p">,</span> <span class="ss">vendor</span><span class="p">:</span> <span class="s1">&#39;barco&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">API</span>
+  <span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Users</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">Grape</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">API</span>
+    version <span style="color:#a3be8c">&#39;v1&#39;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">using</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">:header</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">vendor</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#39;barco&#39;</span>
 
-    <span class="n">resource</span> <span class="ss">:users</span> <span class="k">do</span>
-      <span class="n">route_param</span> <span class="ss">:id</span> <span class="k">do</span>
-        <span class="n">get</span> <span class="k">do</span>
-          <span class="no">User</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">params</span><span class="o">[</span><span class="ss">:id</span><span class="o">]</span><span class="p">)</span>
-        <span class="k">end</span>
-      <span class="k">end</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+    resource <span style="color:#a3be8c">:users</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+      route_param <span style="color:#a3be8c">:id</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+        get <span style="color:#81a1c1;font-weight:bold">do</span>
+          <span style="color:#8fbcbb">User</span><span style="color:#81a1c1">.</span>find<span style="color:#eceff4">(</span>params<span style="color:#81a1c1">[</span><span style="color:#a3be8c">:id</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">)</span>
+        <span style="color:#81a1c1;font-weight:bold">end</span>
+      <span style="color:#81a1c1;font-weight:bold">end</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>Just by adding the <code>version</code> line in the class, Grape will version this
 resource for us and will expect the appropriate header to be provided to the
 request.</p>
 <h3 id="header-versioning-1" class="relative group">Header versioning <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#header-versioning-1" aria-label="Anchor">#</a></span></h3>
 <p>Similarly to our previous approach, we could version our API using custom
 header versioning. As an example, the API could require the following header:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">X-API-Version: 1</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">X-API-Version: 1</code></pre></div>
 <p>So, using Grape&rsquo;s <code>before</code> hooks, we could write something like:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">module</span> <span class="nn">API</span>
-  <span class="k">module</span> <span class="nn">V1</span>
-    <span class="no">VERSION</span> <span class="o">=</span> <span class="s1">&#39;1&#39;</span><span class="o">.</span><span class="n">freeze</span>
-    <span class="no">HEADER</span> <span class="o">=</span> <span class="s1">&#39;X-API-Version&#39;</span><span class="o">.</span><span class="n">freeze</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">API</span>
+  <span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">V1</span>
+    <span style="color:#8fbcbb">VERSION</span> <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;1&#39;</span><span style="color:#81a1c1">.</span>freeze
+    <span style="color:#8fbcbb">HEADER</span> <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;X-API-Version&#39;</span><span style="color:#81a1c1">.</span>freeze
 
-    <span class="n">before</span> <span class="k">do</span>
-      <span class="k">return</span> <span class="n">respond_with_404</span> <span class="k">unless</span> <span class="n">headers</span><span class="o">.</span><span class="n">key?</span><span class="p">(</span><span class="no">HEADER</span><span class="p">)</span>
-      <span class="k">return</span> <span class="n">respond_with_404</span> <span class="k">unless</span> <span class="n">headers</span><span class="o">[</span><span class="no">HEADER</span><span class="o">]</span> <span class="o">==</span> <span class="no">VERSION</span>
-    <span class="k">end</span>
+    before <span style="color:#81a1c1;font-weight:bold">do</span>
+      <span style="color:#81a1c1;font-weight:bold">return</span> respond_with_404 <span style="color:#81a1c1;font-weight:bold">unless</span> headers<span style="color:#81a1c1">.</span>key?<span style="color:#eceff4">(</span><span style="color:#8fbcbb">HEADER</span><span style="color:#eceff4">)</span>
+      <span style="color:#81a1c1;font-weight:bold">return</span> respond_with_404 <span style="color:#81a1c1;font-weight:bold">unless</span> headers<span style="color:#81a1c1">[</span><span style="color:#8fbcbb">HEADER</span><span style="color:#81a1c1">]</span> <span style="color:#81a1c1">==</span> <span style="color:#8fbcbb">VERSION</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
 
-    <span class="k">def</span> <span class="nf">respond_with_404</span>
-      <span class="n">error!</span><span class="p">(</span><span class="s1">&#39;Not found&#39;</span><span class="p">,</span> <span class="mi">404</span><span class="p">)</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+    <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">respond_with_404</span>
+      error!<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#39;Not found&#39;</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">404</span><span style="color:#eceff4">)</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>This <code>before</code> hook will check for the presence of a header in the request
 headers, and for the value of the header if it exists. Then it will respond
 with and error if any of the two requirements are not met.</p>
@@ -531,21 +531,21 @@ it won&rsquo;t work that elegantly. But fear not - Grape has our backs, again!</
 <p>Grape implements the <a href="https://github.com/ruby-grape/grape#accept-version-header">Accept-Version
 Header</a> strategy,
 which will accept the following versioning header:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">Accept-Version: v1</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Accept-Version: v1</code></pre></div>
 <p>Plugging it into the API is also very trivial, just like before:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">module</span> <span class="nn">API</span>
-  <span class="k">class</span> <span class="nc">Users</span> <span class="o">&lt;</span> <span class="no">Grape</span><span class="o">::</span><span class="no">API</span>
-    <span class="n">version</span> <span class="s1">&#39;v1&#39;</span><span class="p">,</span> <span class="ss">using</span><span class="p">:</span> <span class="ss">:accept_version_header</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">API</span>
+  <span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Users</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">Grape</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">API</span>
+    version <span style="color:#a3be8c">&#39;v1&#39;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">using</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">:accept_version_header</span>
 
-    <span class="n">resource</span> <span class="ss">:users</span> <span class="k">do</span>
-      <span class="n">route_param</span> <span class="ss">:id</span> <span class="k">do</span>
-        <span class="n">get</span> <span class="k">do</span>
-          <span class="no">User</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">params</span><span class="o">[</span><span class="ss">:id</span><span class="o">]</span><span class="p">)</span>
-        <span class="k">end</span>
-      <span class="k">end</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+    resource <span style="color:#a3be8c">:users</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+      route_param <span style="color:#a3be8c">:id</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+        get <span style="color:#81a1c1;font-weight:bold">do</span>
+          <span style="color:#8fbcbb">User</span><span style="color:#81a1c1">.</span>find<span style="color:#eceff4">(</span>params<span style="color:#81a1c1">[</span><span style="color:#a3be8c">:id</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">)</span>
+        <span style="color:#81a1c1;font-weight:bold">end</span>
+      <span style="color:#81a1c1;font-weight:bold">end</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>That&rsquo;s it, versioning with minimal footprint.</p>
 <h3 id="uri-versioning-1" class="relative group">URI Versioning <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#uri-versioning-1" aria-label="Anchor">#</a></span></h3>
 <p>Implementing URI versioining is a bit more involved to do manually in Grape,
@@ -553,39 +553,39 @@ because it involves basically rewriting the URI that is requested and invoking
 the proper endpoint based on pieces of the URI.</p>
 <p>The good thing is that we don&rsquo;t have to do that manually as well, since Grape
 provides an out-of-the-box solution for URI versioning as well:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">module</span> <span class="nn">API</span>
-  <span class="k">class</span> <span class="nc">Users</span> <span class="o">&lt;</span> <span class="no">Grape</span><span class="o">::</span><span class="no">API</span>
-    <span class="n">version</span> <span class="s1">&#39;v1&#39;</span><span class="p">,</span> <span class="ss">using</span><span class="p">:</span> <span class="ss">:path</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">API</span>
+  <span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Users</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">Grape</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">API</span>
+    version <span style="color:#a3be8c">&#39;v1&#39;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">using</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">:path</span>
 
-    <span class="n">resource</span> <span class="ss">:users</span> <span class="k">do</span>
-      <span class="n">route_param</span> <span class="ss">:id</span> <span class="k">do</span>
-        <span class="n">get</span> <span class="k">do</span>
-          <span class="no">User</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">params</span><span class="o">[</span><span class="ss">:id</span><span class="o">]</span><span class="p">)</span>
-        <span class="k">end</span>
-      <span class="k">end</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+    resource <span style="color:#a3be8c">:users</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+      route_param <span style="color:#a3be8c">:id</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+        get <span style="color:#81a1c1;font-weight:bold">do</span>
+          <span style="color:#8fbcbb">User</span><span style="color:#81a1c1">.</span>find<span style="color:#eceff4">(</span>params<span style="color:#81a1c1">[</span><span style="color:#a3be8c">:id</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">)</span>
+        <span style="color:#81a1c1;font-weight:bold">end</span>
+      <span style="color:#81a1c1;font-weight:bold">end</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <h3 id="parameter-versioning-1" class="relative group">Parameter versioning <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#parameter-versioning-1" aria-label="Anchor">#</a></span></h3>
 <p>Just like our previous approaches, we could version our API using a parameter.
 As an example, the API could require this parameter:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">https://example.net/users?v=1</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">https://example.net/users?v=1</code></pre></div>
 <p>So, using Grape&rsquo;s <code>before</code> hooks, we could write something like:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">module</span> <span class="nn">API</span>
-  <span class="k">module</span> <span class="nn">V1</span>
-    <span class="no">VERSION</span> <span class="o">=</span> <span class="s1">&#39;1&#39;</span><span class="o">.</span><span class="n">freeze</span>
-    <span class="no">PARAM</span> <span class="o">=</span> <span class="s1">&#39;v&#39;</span><span class="o">.</span><span class="n">freeze</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">API</span>
+  <span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">V1</span>
+    <span style="color:#8fbcbb">VERSION</span> <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;1&#39;</span><span style="color:#81a1c1">.</span>freeze
+    <span style="color:#8fbcbb">PARAM</span> <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;v&#39;</span><span style="color:#81a1c1">.</span>freeze
 
-    <span class="n">before</span> <span class="k">do</span>
-      <span class="k">return</span> <span class="n">respond_with_404</span> <span class="k">unless</span> <span class="n">params</span><span class="o">.</span><span class="n">key?</span><span class="p">(</span><span class="no">PARAM</span><span class="p">)</span>
-      <span class="k">return</span> <span class="n">respond_with_404</span> <span class="k">unless</span> <span class="n">params</span><span class="o">[</span><span class="no">PARAM</span><span class="o">]</span> <span class="o">==</span> <span class="no">VERSION</span>
-    <span class="k">end</span>
+    before <span style="color:#81a1c1;font-weight:bold">do</span>
+      <span style="color:#81a1c1;font-weight:bold">return</span> respond_with_404 <span style="color:#81a1c1;font-weight:bold">unless</span> params<span style="color:#81a1c1">.</span>key?<span style="color:#eceff4">(</span><span style="color:#8fbcbb">PARAM</span><span style="color:#eceff4">)</span>
+      <span style="color:#81a1c1;font-weight:bold">return</span> respond_with_404 <span style="color:#81a1c1;font-weight:bold">unless</span> params<span style="color:#81a1c1">[</span><span style="color:#8fbcbb">PARAM</span><span style="color:#81a1c1">]</span> <span style="color:#81a1c1">==</span> <span style="color:#8fbcbb">VERSION</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
 
-    <span class="k">def</span> <span class="nf">respond_with_404</span>
-      <span class="n">error!</span><span class="p">(</span><span class="s1">&#39;Not found&#39;</span><span class="p">,</span> <span class="mi">404</span><span class="p">)</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+    <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">respond_with_404</span>
+      error!<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#39;Not found&#39;</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">404</span><span style="color:#eceff4">)</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>This <code>before</code> hook will check for the presence of a param in the request, and
 for the value of the param if it exists. Then it will respond with and error if
 any of the two requirements are not met.</p>
@@ -594,19 +594,19 @@ has our backs, again and again.</p>
 <p>Grape implements the <a href="https://github.com/ruby-grape/grape#param">Param
 versioning</a> strategy, which work
 very similarly, but with a very small footprint:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">module</span> <span class="nn">API</span>
-  <span class="k">class</span> <span class="nc">Users</span> <span class="o">&lt;</span> <span class="no">Grape</span><span class="o">::</span><span class="no">API</span>
-    <span class="n">version</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="ss">using</span><span class="p">:</span> <span class="ss">:param</span><span class="p">,</span> <span class="ss">parameter</span><span class="p">:</span> <span class="s1">&#39;v&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">API</span>
+  <span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Users</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">Grape</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">API</span>
+    version <span style="color:#a3be8c">&#39;1&#39;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">using</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">:param</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">parameter</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#39;v&#39;</span>
 
-    <span class="n">resource</span> <span class="ss">:users</span> <span class="k">do</span>
-      <span class="n">route_param</span> <span class="ss">:id</span> <span class="k">do</span>
-        <span class="n">get</span> <span class="k">do</span>
-          <span class="no">User</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">params</span><span class="o">[</span><span class="ss">:id</span><span class="o">]</span><span class="p">)</span>
-        <span class="k">end</span>
-      <span class="k">end</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+    resource <span style="color:#a3be8c">:users</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+      route_param <span style="color:#a3be8c">:id</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+        get <span style="color:#81a1c1;font-weight:bold">do</span>
+          <span style="color:#8fbcbb">User</span><span style="color:#81a1c1">.</span>find<span style="color:#eceff4">(</span>params<span style="color:#81a1c1">[</span><span style="color:#a3be8c">:id</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">)</span>
+        <span style="color:#81a1c1;font-weight:bold">end</span>
+      <span style="color:#81a1c1;font-weight:bold">end</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <h2 id="rolling-your-own-vs-using-built-in-strategy" class="relative group">Rolling your own v.s. using built-in strategy <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#rolling-your-own-vs-using-built-in-strategy" aria-label="Anchor">#</a></span></h2>
 <p>In our examples, although quite small, we saw how you could roll out your own
 versioning strategy. Whichever strategy you pick, I recommend first knowing the
@@ -1019,7 +1019,7 @@ versioining, in combination with dates - it&rsquo;s quite interesting.</p>
       
         <p class="text-sm text-neutral-500 dark:text-neutral-400">
             &copy;
-            2022
+            2023
             Ilija Eftimov
         </p>
       

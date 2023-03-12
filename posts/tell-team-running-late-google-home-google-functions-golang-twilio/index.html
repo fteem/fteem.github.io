@@ -419,7 +419,7 @@ our Twilio account&rsquo;s dashboard:</p>
 <p>Save those two and the verified phone number, because we&rsquo;ll need to add them to
 our Golang program. The endpoint that our Golang program will call to send
 an SMS via Twilio is:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">https://api.twilio.com/2010-04-01/Accounts/ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/Messages.json</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">https://api.twilio.com/2010-04-01/Accounts/ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/Messages.json</code></pre></div>
 <p>You can see its docs <a href="https://www.twilio.com/docs/sms/api/message-resource?code-sample=code-create-a-message&amp;code-language=curl&amp;code-sdk-version=json">here</a>. The
 request body will take three parameters:</p>
 <ol>
@@ -431,32 +431,32 @@ request body will take three parameters:</p>
 need to provide the Account SID and the Auth Token as a user and pass to it.</p>
 <p>Let&rsquo;s start sketching out the program. First, let&rsquo;s create the URL encoded form
 that we will send to the API:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">smsResponse</span> <span class="o">:=</span> <span class="nx">SendSMSResponse</span><span class="p">{}</span>
-<span class="nx">msgData</span> <span class="o">:=</span> <span class="nx">url</span><span class="p">.</span><span class="nx">Values</span><span class="p">{}</span>
-<span class="nx">msgData</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="s">&#34;To&#34;</span><span class="p">,</span> <span class="nx">to</span><span class="p">)</span>
-<span class="nx">msgData</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="s">&#34;From&#34;</span><span class="p">,</span> <span class="nx">from</span><span class="p">)</span>
-<span class="nx">msgData</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="s">&#34;Body&#34;</span><span class="p">,</span> <span class="nx">body</span><span class="p">)</span>
-<span class="nx">msgDataReader</span> <span class="o">:=</span> <span class="o">*</span><span class="nx">strings</span><span class="p">.</span><span class="nf">NewReader</span><span class="p">(</span><span class="nx">msgData</span><span class="p">.</span><span class="nf">Encode</span><span class="p">())</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">smsResponse <span style="color:#81a1c1">:=</span> SendSMSResponse<span style="color:#eceff4">{}</span>
+msgData <span style="color:#81a1c1">:=</span> url<span style="color:#eceff4">.</span>Values<span style="color:#eceff4">{}</span>
+msgData<span style="color:#eceff4">.</span><span style="color:#88c0d0">Set</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;To&#34;</span><span style="color:#eceff4">,</span> to<span style="color:#eceff4">)</span>
+msgData<span style="color:#eceff4">.</span><span style="color:#88c0d0">Set</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;From&#34;</span><span style="color:#eceff4">,</span> from<span style="color:#eceff4">)</span>
+msgData<span style="color:#eceff4">.</span><span style="color:#88c0d0">Set</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Body&#34;</span><span style="color:#eceff4">,</span> body<span style="color:#eceff4">)</span>
+msgDataReader <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">*</span>strings<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewReader</span><span style="color:#eceff4">(</span>msgData<span style="color:#eceff4">.</span><span style="color:#88c0d0">Encode</span><span style="color:#eceff4">())</span></code></pre></div>
 <p>This uses the <code>url</code> package, which allows us to create a <code>url.Values</code> struct that
 will contain the data we want to send to the endpoint.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">client</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Client</span><span class="p">{</span>
-        <span class="nx">Timeout</span><span class="p">:</span> <span class="nx">time</span><span class="p">.</span><span class="nf">Duration</span><span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">),</span>
-<span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">client <span style="color:#81a1c1">:=</span> http<span style="color:#eceff4">.</span>Client<span style="color:#eceff4">{</span>
+        Timeout<span style="color:#eceff4">:</span> time<span style="color:#eceff4">.</span><span style="color:#88c0d0">Duration</span><span style="color:#eceff4">(</span><span style="color:#b48ead">5</span> <span style="color:#81a1c1">*</span> time<span style="color:#eceff4">.</span>Second<span style="color:#eceff4">),</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>We create an <code>http.Client</code> struct, from the <code>net/http</code> package, which we will
 use to issue HTTP calls. We also configure it slightly, so it&rsquo;s default timeout
 is set to 5 seconds.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">var</span> <span class="nx">endpointURL</span> <span class="p">=</span> <span class="s">&#34;https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json&#34;</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">var</span> endpointURL <span style="color:#eceff4">=</span> <span style="color:#a3be8c">&#34;https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json&#34;</span></code></pre></div>
 <p>We&rsquo;ll define the endpoint as a variable - we&rsquo;ll also put a <code>%s</code> at the place of
 where the Account SID should be placed so we can use <code>fmt.Sprintf</code> to replace
 it when we issue the HTTP request.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">req</span><span class="p">,</span> <span class="nx">newReqErr</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewRequest</span><span class="p">(</span>
-        <span class="s">&#34;POST&#34;</span><span class="p">,</span>
-        <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="nx">endpointURL</span><span class="p">,</span> <span class="nx">accountSid</span><span class="p">),</span>
-        <span class="o">&amp;</span><span class="nx">msgDataReader</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="k">if</span> <span class="nx">newReqErr</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="nx">smsResponse</span><span class="p">,</span> <span class="nx">newReqErr</span>
-<span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">req<span style="color:#eceff4">,</span> newReqErr <span style="color:#81a1c1">:=</span> http<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewRequest</span><span style="color:#eceff4">(</span>
+        <span style="color:#a3be8c">&#34;POST&#34;</span><span style="color:#eceff4">,</span>
+        fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span>endpointURL<span style="color:#eceff4">,</span> accountSid<span style="color:#eceff4">),</span>
+        <span style="color:#81a1c1">&amp;</span>msgDataReader<span style="color:#eceff4">,</span>
+<span style="color:#eceff4">)</span>
+<span style="color:#81a1c1;font-weight:bold">if</span> newReqErr <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+        <span style="color:#81a1c1;font-weight:bold">return</span> smsResponse<span style="color:#eceff4">,</span> newReqErr
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>We create a new <code>net/http</code> <code>Request</code>, using the <code>http.NewRequest</code> constructor
 function. It takes three arguments:</p>
 <ol>
@@ -464,14 +464,14 @@ function. It takes three arguments:</p>
 <li>The URL to be called</li>
 <li>The body of the request</li>
 </ol>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">req</span><span class="p">.</span><span class="nx">Header</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;Content-Type&#34;</span><span class="p">,</span> <span class="s">&#34;application/x-www-form-urlencoded&#34;</span><span class="p">)</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">req<span style="color:#eceff4">.</span>Header<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Content-Type&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;application/x-www-form-urlencoded&#34;</span><span style="color:#eceff4">)</span></code></pre></div>
 <p>We will specify the <code>Content-Type</code> header to <code>x-www-form-urlencoded</code>, so
 Twilio&rsquo;s API understands what kind of content we are sending to it. In this
 case, we will be sending a URL encoded form.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">req</span><span class="p">.</span><span class="nf">SetBasicAuth</span><span class="p">(</span><span class="nx">accountSid</span><span class="p">,</span> <span class="nx">authToken</span><span class="p">)</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">req<span style="color:#eceff4">.</span><span style="color:#88c0d0">SetBasicAuth</span><span style="color:#eceff4">(</span>accountSid<span style="color:#eceff4">,</span> authToken<span style="color:#eceff4">)</span></code></pre></div>
 <p>Before we send the request, we will also have to set the basic authentication
 using the Account SID and the Auth Token.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">resp</span><span class="p">,</span> <span class="nx">requestErr</span> <span class="o">:=</span> <span class="nx">client</span><span class="p">.</span><span class="nf">Do</span><span class="p">(</span><span class="nx">req</span><span class="p">)</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">resp<span style="color:#eceff4">,</span> requestErr <span style="color:#81a1c1">:=</span> client<span style="color:#eceff4">.</span><span style="color:#88c0d0">Do</span><span style="color:#eceff4">(</span>req<span style="color:#eceff4">)</span></code></pre></div>
 <p>Now that we have all of the things in place, we can issue the request - by
 using the <code>client.Do</code> function. This function will take the request and
 execute it, while returning a response. In case something goes bad, it will
@@ -502,35 +502,35 @@ generate a <code>struct</code> that we can use in our program.</p>
 </figure>
 
 <p>This is what the actual <code>struct</code> will look like:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">SendSMSResponse</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">Sid</span>                 <span class="kt">string</span>      <span class="s">`json:&#34;sid&#34;`</span>
-	<span class="nx">DateCreated</span>         <span class="kt">string</span>      <span class="s">`json:&#34;date_created&#34;`</span>
-	<span class="nx">DateUpdated</span>         <span class="kt">string</span>      <span class="s">`json:&#34;date_updated&#34;`</span>
-	<span class="nx">DateSent</span>            <span class="kd">interface</span><span class="p">{}</span> <span class="s">`json:&#34;date_sent&#34;`</span>
-	<span class="nx">AccountSid</span>          <span class="kt">string</span>      <span class="s">`json:&#34;account_sid&#34;`</span>
-	<span class="nx">To</span>                  <span class="kt">string</span>      <span class="s">`json:&#34;to&#34;`</span>
-	<span class="nx">From</span>                <span class="kt">string</span>      <span class="s">`json:&#34;from&#34;`</span>
-	<span class="nx">MessagingServiceSid</span> <span class="kd">interface</span><span class="p">{}</span> <span class="s">`json:&#34;messaging_service_sid&#34;`</span>
-	<span class="nx">Body</span>                <span class="kt">string</span>      <span class="s">`json:&#34;body&#34;`</span>
-	<span class="nx">Status</span>              <span class="kt">string</span>      <span class="s">`json:&#34;status&#34;`</span>
-	<span class="nx">NumSegments</span>         <span class="kt">string</span>      <span class="s">`json:&#34;num_segments&#34;`</span>
-	<span class="nx">NumMedia</span>            <span class="kt">string</span>      <span class="s">`json:&#34;num_media&#34;`</span>
-	<span class="nx">Direction</span>           <span class="kt">string</span>      <span class="s">`json:&#34;direction&#34;`</span>
-	<span class="nx">APIVersion</span>          <span class="kt">string</span>      <span class="s">`json:&#34;api_version&#34;`</span>
-	<span class="nx">Price</span>               <span class="kd">interface</span><span class="p">{}</span> <span class="s">`json:&#34;price&#34;`</span>
-	<span class="nx">PriceUnit</span>           <span class="kt">string</span>      <span class="s">`json:&#34;price_unit&#34;`</span>
-	<span class="nx">ErrorCode</span>           <span class="kd">interface</span><span class="p">{}</span> <span class="s">`json:&#34;error_code&#34;`</span>
-	<span class="nx">ErrorMessage</span>        <span class="kd">interface</span><span class="p">{}</span> <span class="s">`json:&#34;error_message&#34;`</span>
-	<span class="nx">URI</span>                 <span class="kt">string</span>      <span class="s">`json:&#34;uri&#34;`</span>
-	<span class="nx">SubresourceUris</span>     <span class="kd">struct</span> <span class="p">{</span>
-		<span class="nx">Media</span> <span class="kt">string</span> <span class="s">`json:&#34;media&#34;`</span>
-	<span class="p">}</span> <span class="s">`json:&#34;subresource_uris&#34;`</span>
-<span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> SendSMSResponse <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+	Sid                 <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;sid&#34;`</span>
+	DateCreated         <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;date_created&#34;`</span>
+	DateUpdated         <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;date_updated&#34;`</span>
+	DateSent            <span style="color:#81a1c1;font-weight:bold">interface</span><span style="color:#eceff4">{}</span> <span style="color:#a3be8c">`json:&#34;date_sent&#34;`</span>
+	AccountSid          <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;account_sid&#34;`</span>
+	To                  <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;to&#34;`</span>
+	From                <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;from&#34;`</span>
+	MessagingServiceSid <span style="color:#81a1c1;font-weight:bold">interface</span><span style="color:#eceff4">{}</span> <span style="color:#a3be8c">`json:&#34;messaging_service_sid&#34;`</span>
+	Body                <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;body&#34;`</span>
+	Status              <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;status&#34;`</span>
+	NumSegments         <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;num_segments&#34;`</span>
+	NumMedia            <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;num_media&#34;`</span>
+	Direction           <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;direction&#34;`</span>
+	APIVersion          <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;api_version&#34;`</span>
+	Price               <span style="color:#81a1c1;font-weight:bold">interface</span><span style="color:#eceff4">{}</span> <span style="color:#a3be8c">`json:&#34;price&#34;`</span>
+	PriceUnit           <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;price_unit&#34;`</span>
+	ErrorCode           <span style="color:#81a1c1;font-weight:bold">interface</span><span style="color:#eceff4">{}</span> <span style="color:#a3be8c">`json:&#34;error_code&#34;`</span>
+	ErrorMessage        <span style="color:#81a1c1;font-weight:bold">interface</span><span style="color:#eceff4">{}</span> <span style="color:#a3be8c">`json:&#34;error_message&#34;`</span>
+	URI                 <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;uri&#34;`</span>
+	SubresourceUris     <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+		Media <span style="color:#81a1c1">string</span> <span style="color:#a3be8c">`json:&#34;media&#34;`</span>
+	<span style="color:#eceff4">}</span> <span style="color:#a3be8c">`json:&#34;subresource_uris&#34;`</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>Having this in place, will allow us to take the body of the response from the
 call to Twilio, decode it to a <code>SendSMSResponse</code> struct using the <code>encode/json</code>
 package:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">smsResponse</span> <span class="o">:=</span> <span class="nx">SendSMSResponse</span><span class="p">{}</span>
-<span class="nx">unmarshalErr</span> <span class="o">:=</span> <span class="nx">json</span><span class="p">.</span><span class="nf">NewDecoder</span><span class="p">(</span><span class="nx">resp</span><span class="p">.</span><span class="nx">Body</span><span class="p">).</span><span class="nf">Decode</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">smsResponse</span><span class="p">)</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">smsResponse <span style="color:#81a1c1">:=</span> SendSMSResponse<span style="color:#eceff4">{}</span>
+unmarshalErr <span style="color:#81a1c1">:=</span> json<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewDecoder</span><span style="color:#eceff4">(</span>resp<span style="color:#eceff4">.</span>Body<span style="color:#eceff4">).</span><span style="color:#88c0d0">Decode</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">&amp;</span>smsResponse<span style="color:#eceff4">)</span></code></pre></div>
 <p>That&rsquo;s about it when it comes to calling Twilio&rsquo;s API. We made a function that
 builds the payload send to the API, executes the call and parses the JSON in
 the response to a <code>struct</code> that we can use in our Go program.</p>
@@ -542,33 +542,33 @@ defining it and hooking it up to the code that calls the Twilio API.</p>
 <p>The name of our function will be <code>SendSMS</code>. Since the function will be invoked
 via HTTP call, it will have to take a request and response as arguments. For
 now, it will return a simple JSON as a response.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">app</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">package</span> app
 
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;encoding/json&#34;</span>
-	<span class="s">&#34;fmt&#34;</span>
-	<span class="s">&#34;net/http&#34;</span>
-<span class="p">)</span>
+<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+	<span style="color:#a3be8c">&#34;encoding/json&#34;</span>
+	<span style="color:#a3be8c">&#34;fmt&#34;</span>
+	<span style="color:#a3be8c">&#34;net/http&#34;</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">type</span> <span class="nx">Response</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">Body</span> <span class="kt">string</span> <span class="s">`json:&#34;body&#34;`</span>
-<span class="p">}</span>
+<span style="color:#81a1c1;font-weight:bold">type</span> Response <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+	Body <span style="color:#81a1c1">string</span> <span style="color:#a3be8c">`json:&#34;body&#34;`</span>
+<span style="color:#eceff4">}</span>
 
-<span class="kd">func</span> <span class="nf">SendSMS</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">twilioResponse</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">sendRequest</span><span class="p">(</span>
-		<span class="s">&#34;PUT YOUR NUMBER HERE&#34;</span><span class="p">,</span>
-		<span class="s">&#34;Hey Alex, I am running late today, can we please postpone the standup a bit? Thanks! Ilija&#34;</span><span class="p">,</span>
-	<span class="p">)</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nx">json</span><span class="p">.</span><span class="nf">NewEncoder</span><span class="p">(</span><span class="nx">w</span><span class="p">).</span><span class="nf">Encode</span><span class="p">(</span><span class="nx">Response</span><span class="p">{</span>
-			<span class="nx">Body</span><span class="p">:</span> <span class="s">&#34;Something bad happened, please try again.&#34;</span><span class="p">,</span>
-		<span class="p">})</span>
-		<span class="k">return</span>
-	<span class="p">}</span>
-	<span class="nx">json</span><span class="p">.</span><span class="nf">NewEncoder</span><span class="p">(</span><span class="nx">w</span><span class="p">).</span><span class="nf">Encode</span><span class="p">(</span><span class="nx">Response</span><span class="p">{</span>
-		<span class="nx">Body</span><span class="p">:</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Message %s&#34;</span><span class="p">,</span> <span class="nx">twilioResponse</span><span class="p">.</span><span class="nx">Status</span><span class="p">),</span>
-	<span class="p">})</span>
-<span class="p">}</span></code></pre></div>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">SendSMS</span><span style="color:#eceff4">(</span>w http<span style="color:#eceff4">.</span>ResponseWriter<span style="color:#eceff4">,</span> r <span style="color:#81a1c1">*</span>http<span style="color:#eceff4">.</span>Request<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	twilioResponse<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">sendRequest</span><span style="color:#eceff4">(</span>
+		<span style="color:#a3be8c">&#34;PUT YOUR NUMBER HERE&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#a3be8c">&#34;Hey Alex, I am running late today, can we please postpone the standup a bit? Thanks! Ilija&#34;</span><span style="color:#eceff4">,</span>
+	<span style="color:#eceff4">)</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		json<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewEncoder</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">).</span><span style="color:#88c0d0">Encode</span><span style="color:#eceff4">(</span>Response<span style="color:#eceff4">{</span>
+			Body<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Something bad happened, please try again.&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">})</span>
+		<span style="color:#81a1c1;font-weight:bold">return</span>
+	<span style="color:#eceff4">}</span>
+	json<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewEncoder</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">).</span><span style="color:#88c0d0">Encode</span><span style="color:#eceff4">(</span>Response<span style="color:#eceff4">{</span>
+		Body<span style="color:#eceff4">:</span> fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Message %s&#34;</span><span style="color:#eceff4">,</span> twilioResponse<span style="color:#eceff4">.</span>Status<span style="color:#eceff4">),</span>
+	<span style="color:#eceff4">})</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>To make this work, we are also missing the Twilio API part. Before we go into
 that, let&rsquo;s see what this function does:</p>
 <ol>
@@ -580,85 +580,85 @@ error message in the response JSON.</li>
 successful scheduling of an SMS on Twilio&rsquo;s side.</li>
 </ol>
 <p>Let&rsquo;s see the full integration with Twilio&rsquo;s API:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">app</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">package</span> app
 
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;encoding/json&#34;</span>
-	<span class="s">&#34;fmt&#34;</span>
-	<span class="s">&#34;net/http&#34;</span>
-	<span class="s">&#34;net/url&#34;</span>
-	<span class="s">&#34;os&#34;</span>
-	<span class="s">&#34;strings&#34;</span>
-	<span class="s">&#34;time&#34;</span>
-<span class="p">)</span>
+<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+	<span style="color:#a3be8c">&#34;encoding/json&#34;</span>
+	<span style="color:#a3be8c">&#34;fmt&#34;</span>
+	<span style="color:#a3be8c">&#34;net/http&#34;</span>
+	<span style="color:#a3be8c">&#34;net/url&#34;</span>
+	<span style="color:#a3be8c">&#34;os&#34;</span>
+	<span style="color:#a3be8c">&#34;strings&#34;</span>
+	<span style="color:#a3be8c">&#34;time&#34;</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">type</span> <span class="nx">SendSMSResponse</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">Sid</span>                 <span class="kt">string</span>      <span class="s">`json:&#34;sid&#34;`</span>
-	<span class="nx">DateCreated</span>         <span class="kt">string</span>      <span class="s">`json:&#34;date_created&#34;`</span>
-	<span class="nx">DateUpdated</span>         <span class="kt">string</span>      <span class="s">`json:&#34;date_updated&#34;`</span>
-	<span class="nx">DateSent</span>            <span class="kd">interface</span><span class="p">{}</span> <span class="s">`json:&#34;date_sent&#34;`</span>
-	<span class="nx">AccountSid</span>          <span class="kt">string</span>      <span class="s">`json:&#34;account_sid&#34;`</span>
-	<span class="nx">To</span>                  <span class="kt">string</span>      <span class="s">`json:&#34;to&#34;`</span>
-	<span class="nx">From</span>                <span class="kt">string</span>      <span class="s">`json:&#34;from&#34;`</span>
-	<span class="nx">MessagingServiceSid</span> <span class="kd">interface</span><span class="p">{}</span> <span class="s">`json:&#34;messaging_service_sid&#34;`</span>
-	<span class="nx">Body</span>                <span class="kt">string</span>      <span class="s">`json:&#34;body&#34;`</span>
-	<span class="nx">Status</span>              <span class="kt">string</span>      <span class="s">`json:&#34;status&#34;`</span>
-	<span class="nx">NumSegments</span>         <span class="kt">string</span>      <span class="s">`json:&#34;num_segments&#34;`</span>
-	<span class="nx">NumMedia</span>            <span class="kt">string</span>      <span class="s">`json:&#34;num_media&#34;`</span>
-	<span class="nx">Direction</span>           <span class="kt">string</span>      <span class="s">`json:&#34;direction&#34;`</span>
-	<span class="nx">APIVersion</span>          <span class="kt">string</span>      <span class="s">`json:&#34;api_version&#34;`</span>
-	<span class="nx">Price</span>               <span class="kd">interface</span><span class="p">{}</span> <span class="s">`json:&#34;price&#34;`</span>
-	<span class="nx">PriceUnit</span>           <span class="kt">string</span>      <span class="s">`json:&#34;price_unit&#34;`</span>
-	<span class="nx">ErrorCode</span>           <span class="kd">interface</span><span class="p">{}</span> <span class="s">`json:&#34;error_code&#34;`</span>
-	<span class="nx">ErrorMessage</span>        <span class="kd">interface</span><span class="p">{}</span> <span class="s">`json:&#34;error_message&#34;`</span>
-	<span class="nx">URI</span>                 <span class="kt">string</span>      <span class="s">`json:&#34;uri&#34;`</span>
-	<span class="nx">SubresourceUris</span>     <span class="kd">struct</span> <span class="p">{</span>
-		<span class="nx">Media</span> <span class="kt">string</span> <span class="s">`json:&#34;media&#34;`</span>
-	<span class="p">}</span> <span class="s">`json:&#34;subresource_uris&#34;`</span>
-<span class="p">}</span>
+<span style="color:#81a1c1;font-weight:bold">type</span> SendSMSResponse <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+	Sid                 <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;sid&#34;`</span>
+	DateCreated         <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;date_created&#34;`</span>
+	DateUpdated         <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;date_updated&#34;`</span>
+	DateSent            <span style="color:#81a1c1;font-weight:bold">interface</span><span style="color:#eceff4">{}</span> <span style="color:#a3be8c">`json:&#34;date_sent&#34;`</span>
+	AccountSid          <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;account_sid&#34;`</span>
+	To                  <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;to&#34;`</span>
+	From                <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;from&#34;`</span>
+	MessagingServiceSid <span style="color:#81a1c1;font-weight:bold">interface</span><span style="color:#eceff4">{}</span> <span style="color:#a3be8c">`json:&#34;messaging_service_sid&#34;`</span>
+	Body                <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;body&#34;`</span>
+	Status              <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;status&#34;`</span>
+	NumSegments         <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;num_segments&#34;`</span>
+	NumMedia            <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;num_media&#34;`</span>
+	Direction           <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;direction&#34;`</span>
+	APIVersion          <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;api_version&#34;`</span>
+	Price               <span style="color:#81a1c1;font-weight:bold">interface</span><span style="color:#eceff4">{}</span> <span style="color:#a3be8c">`json:&#34;price&#34;`</span>
+	PriceUnit           <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;price_unit&#34;`</span>
+	ErrorCode           <span style="color:#81a1c1;font-weight:bold">interface</span><span style="color:#eceff4">{}</span> <span style="color:#a3be8c">`json:&#34;error_code&#34;`</span>
+	ErrorMessage        <span style="color:#81a1c1;font-weight:bold">interface</span><span style="color:#eceff4">{}</span> <span style="color:#a3be8c">`json:&#34;error_message&#34;`</span>
+	URI                 <span style="color:#81a1c1">string</span>      <span style="color:#a3be8c">`json:&#34;uri&#34;`</span>
+	SubresourceUris     <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+		Media <span style="color:#81a1c1">string</span> <span style="color:#a3be8c">`json:&#34;media&#34;`</span>
+	<span style="color:#eceff4">}</span> <span style="color:#a3be8c">`json:&#34;subresource_uris&#34;`</span>
+<span style="color:#eceff4">}</span>
 
-<span class="kd">var</span> <span class="p">(</span>
-	<span class="nx">endpointURL</span> <span class="p">=</span> <span class="s">&#34;https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json&#34;</span>
-	<span class="nx">accountSid</span>  <span class="p">=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Getenv</span><span class="p">(</span><span class="s">&#34;TWILIO_ACCOUNT_SID&#34;</span><span class="p">)</span>
-	<span class="nx">authToken</span>   <span class="p">=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Getenv</span><span class="p">(</span><span class="s">&#34;TWILIO_AUTH_TOKEN&#34;</span><span class="p">)</span>
-	<span class="nx">from</span>        <span class="p">=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Getenv</span><span class="p">(</span><span class="s">&#34;TWILIO_FROM_PHONE&#34;</span><span class="p">)</span>
-<span class="p">)</span>
+<span style="color:#81a1c1;font-weight:bold">var</span> <span style="color:#eceff4">(</span>
+	endpointURL <span style="color:#eceff4">=</span> <span style="color:#a3be8c">&#34;https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json&#34;</span>
+	accountSid  <span style="color:#eceff4">=</span> os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Getenv</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;TWILIO_ACCOUNT_SID&#34;</span><span style="color:#eceff4">)</span>
+	authToken   <span style="color:#eceff4">=</span> os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Getenv</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;TWILIO_AUTH_TOKEN&#34;</span><span style="color:#eceff4">)</span>
+	from        <span style="color:#eceff4">=</span> os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Getenv</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;TWILIO_FROM_PHONE&#34;</span><span style="color:#eceff4">)</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">func</span> <span class="nf">sendRequest</span><span class="p">(</span><span class="nx">to</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">body</span> <span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="nx">SendSMSResponse</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">msgData</span> <span class="o">:=</span> <span class="nx">url</span><span class="p">.</span><span class="nx">Values</span><span class="p">{}</span>
-	<span class="nx">msgData</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="s">&#34;To&#34;</span><span class="p">,</span> <span class="nx">to</span><span class="p">)</span>
-	<span class="nx">msgData</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="s">&#34;From&#34;</span><span class="p">,</span> <span class="nx">from</span><span class="p">)</span>
-	<span class="nx">msgData</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="s">&#34;Body&#34;</span><span class="p">,</span> <span class="nx">body</span><span class="p">)</span>
-	<span class="nx">msgDataReader</span> <span class="o">:=</span> <span class="o">*</span><span class="nx">strings</span><span class="p">.</span><span class="nf">NewReader</span><span class="p">(</span><span class="nx">msgData</span><span class="p">.</span><span class="nf">Encode</span><span class="p">())</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">sendRequest</span><span style="color:#eceff4">(</span>to <span style="color:#81a1c1">string</span><span style="color:#eceff4">,</span> body <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">(</span>SendSMSResponse<span style="color:#eceff4">,</span> <span style="color:#81a1c1">error</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	msgData <span style="color:#81a1c1">:=</span> url<span style="color:#eceff4">.</span>Values<span style="color:#eceff4">{}</span>
+	msgData<span style="color:#eceff4">.</span><span style="color:#88c0d0">Set</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;To&#34;</span><span style="color:#eceff4">,</span> to<span style="color:#eceff4">)</span>
+	msgData<span style="color:#eceff4">.</span><span style="color:#88c0d0">Set</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;From&#34;</span><span style="color:#eceff4">,</span> from<span style="color:#eceff4">)</span>
+	msgData<span style="color:#eceff4">.</span><span style="color:#88c0d0">Set</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Body&#34;</span><span style="color:#eceff4">,</span> body<span style="color:#eceff4">)</span>
+	msgDataReader <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">*</span>strings<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewReader</span><span style="color:#eceff4">(</span>msgData<span style="color:#eceff4">.</span><span style="color:#88c0d0">Encode</span><span style="color:#eceff4">())</span>
 
-	<span class="nx">client</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Client</span><span class="p">{</span>
-		<span class="nx">Timeout</span><span class="p">:</span> <span class="nx">time</span><span class="p">.</span><span class="nf">Duration</span><span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">),</span>
-	<span class="p">}</span>
-	<span class="nx">req</span><span class="p">,</span> <span class="nx">newReqErr</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewRequest</span><span class="p">(</span>
-		<span class="s">&#34;POST&#34;</span><span class="p">,</span>
-		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="nx">endpointURL</span><span class="p">,</span> <span class="nx">accountSid</span><span class="p">),</span>
-		<span class="o">&amp;</span><span class="nx">msgDataReader</span><span class="p">,</span>
-	<span class="p">)</span>
-	<span class="k">if</span> <span class="nx">newReqErr</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="nx">smsResponse</span><span class="p">,</span> <span class="nx">newReqErr</span>
-	<span class="p">}</span>
-	<span class="nx">req</span><span class="p">.</span><span class="nx">Header</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;Content-Type&#34;</span><span class="p">,</span> <span class="s">&#34;application/x-www-form-urlencoded&#34;</span><span class="p">)</span>
-	<span class="nx">req</span><span class="p">.</span><span class="nf">SetBasicAuth</span><span class="p">(</span><span class="nx">accountSid</span><span class="p">,</span> <span class="nx">authToken</span><span class="p">)</span>
+	client <span style="color:#81a1c1">:=</span> http<span style="color:#eceff4">.</span>Client<span style="color:#eceff4">{</span>
+		Timeout<span style="color:#eceff4">:</span> time<span style="color:#eceff4">.</span><span style="color:#88c0d0">Duration</span><span style="color:#eceff4">(</span><span style="color:#b48ead">5</span> <span style="color:#81a1c1">*</span> time<span style="color:#eceff4">.</span>Second<span style="color:#eceff4">),</span>
+	<span style="color:#eceff4">}</span>
+	req<span style="color:#eceff4">,</span> newReqErr <span style="color:#81a1c1">:=</span> http<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewRequest</span><span style="color:#eceff4">(</span>
+		<span style="color:#a3be8c">&#34;POST&#34;</span><span style="color:#eceff4">,</span>
+		fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span>endpointURL<span style="color:#eceff4">,</span> accountSid<span style="color:#eceff4">),</span>
+		<span style="color:#81a1c1">&amp;</span>msgDataReader<span style="color:#eceff4">,</span>
+	<span style="color:#eceff4">)</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> newReqErr <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">return</span> smsResponse<span style="color:#eceff4">,</span> newReqErr
+	<span style="color:#eceff4">}</span>
+	req<span style="color:#eceff4">.</span>Header<span style="color:#eceff4">.</span><span style="color:#88c0d0">Add</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Content-Type&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;application/x-www-form-urlencoded&#34;</span><span style="color:#eceff4">)</span>
+	req<span style="color:#eceff4">.</span><span style="color:#88c0d0">SetBasicAuth</span><span style="color:#eceff4">(</span>accountSid<span style="color:#eceff4">,</span> authToken<span style="color:#eceff4">)</span>
 
-	<span class="nx">resp</span><span class="p">,</span> <span class="nx">requestErr</span> <span class="o">:=</span> <span class="nx">client</span><span class="p">.</span><span class="nf">Do</span><span class="p">(</span><span class="nx">req</span><span class="p">)</span>
-	<span class="k">defer</span> <span class="nx">req</span><span class="p">.</span><span class="nx">Body</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
-	<span class="k">if</span> <span class="nx">requestErr</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="nx">smsResponse</span><span class="p">,</span> <span class="nx">requestErr</span>
-	<span class="p">}</span>
+	resp<span style="color:#eceff4">,</span> requestErr <span style="color:#81a1c1">:=</span> client<span style="color:#eceff4">.</span><span style="color:#88c0d0">Do</span><span style="color:#eceff4">(</span>req<span style="color:#eceff4">)</span>
+	<span style="color:#81a1c1;font-weight:bold">defer</span> req<span style="color:#eceff4">.</span>Body<span style="color:#eceff4">.</span><span style="color:#88c0d0">Close</span><span style="color:#eceff4">()</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> requestErr <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">return</span> smsResponse<span style="color:#eceff4">,</span> requestErr
+	<span style="color:#eceff4">}</span>
 
-	<span class="nx">smsResponse</span> <span class="o">:=</span> <span class="nx">SendSMSResponse</span><span class="p">{}</span>
-	<span class="nx">decodeErr</span> <span class="o">:=</span> <span class="nx">json</span><span class="p">.</span><span class="nf">NewDecoder</span><span class="p">(</span><span class="nx">resp</span><span class="p">.</span><span class="nx">Body</span><span class="p">).</span><span class="nf">Decode</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">smsResponse</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nx">decodeErr</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="nx">smsResponse</span><span class="p">,</span> <span class="nx">decodeErr</span>
-	<span class="p">}</span>
+	smsResponse <span style="color:#81a1c1">:=</span> SendSMSResponse<span style="color:#eceff4">{}</span>
+	decodeErr <span style="color:#81a1c1">:=</span> json<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewDecoder</span><span style="color:#eceff4">(</span>resp<span style="color:#eceff4">.</span>Body<span style="color:#eceff4">).</span><span style="color:#88c0d0">Decode</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">&amp;</span>smsResponse<span style="color:#eceff4">)</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> decodeErr <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">return</span> smsResponse<span style="color:#eceff4">,</span> decodeErr
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">return</span> <span class="nx">smsResponse</span><span class="p">,</span> <span class="kc">nil</span>
-<span class="p">}</span></code></pre></div>
+	<span style="color:#81a1c1;font-weight:bold">return</span> smsResponse<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>The differences from the code in this snippet and the code from the previous
 section are:</p>
 <ol>
@@ -716,10 +716,10 @@ helpful.</p>
 <h3 id="deploying-the-google-cloud-function" class="relative group">Deploying the Google Cloud Function <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#deploying-the-google-cloud-function" aria-label="Anchor">#</a></span></h3>
 <p>Assuming that you have your <code>gcloud</code> CLI tool installed, to deploy the function
 it&rsquo;s just one simple command:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">gcloud functions deploy SendSMS <span class="se">\
-</span><span class="se"></span>  --runtime go111 <span class="se">\
-</span><span class="se"></span>  --trigger-http <span class="se">\
-</span><span class="se"></span>  --region<span class="o">=</span>europe-west1</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">gcloud functions deploy SendSMS <span style="color:#ebcb8b">\
+</span><span style="color:#ebcb8b"></span>  --runtime go111 <span style="color:#ebcb8b">\
+</span><span style="color:#ebcb8b"></span>  --trigger-http <span style="color:#ebcb8b">\
+</span><span style="color:#ebcb8b"></span>  --region<span style="color:#81a1c1">=</span>europe-west1</code></pre></div>
 <p>Before we continue, let&rsquo;s understand the <code>deploy</code> command that we&rsquo;ll run. After
 the <code>deploy</code> keyword, we supply the function name (in our example it&rsquo;s
 <code>SendSMS</code>). After that, with the <code>--runtime</code> flag we tell GCP that our function
@@ -729,7 +729,7 @@ request. Lastly, in our example I set the <code>--region</code>, which is the Cl
 where our function will be deployed to. Because my physical location is in
 western Europe, I prefer the <code>europe-west1</code> region.</p>
 <p>Once we run it, the output will be something like this:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">› gcloud functions deploy SendSMS --runtime go111 --trigger-http --region=europe-west1
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">› gcloud functions deploy SendSMS --runtime go111 --trigger-http --region=europe-west1
 Deploying function (may take a while - up to 2 minutes)...done.
 availableMemoryMb: 256
 entryPoint: SendSMS
@@ -751,12 +751,12 @@ function and so on.</p>
 <p>But, what&rsquo;s most important for us is to try and trigger the function. There are
 two ways to do this: via a <code>cURL</code> request to the <code>httpsTrigger</code> endpoint, or by
 using a <code>gcloud</code> command. The <code>gcloud</code> command to trigger the function is:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">gcloud functions call NAME OPTS</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">gcloud functions call NAME OPTS</code></pre></div>
 <p>Let&rsquo;s run it:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">› gcloud functions call SendSMS --region<span class="o">=</span>europe-west1
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">› gcloud functions call SendSMS --region<span style="color:#81a1c1">=</span>europe-west1
 executionId: uqkmybjc9xab
-result: <span class="p">|</span>
-  <span class="o">{</span><span class="s2">&#34;body&#34;</span>: <span class="s2">&#34;Something bad hapenned, please try again.&#34;</span><span class="o">}</span></code></pre></div>
+result: <span style="color:#eceff4">|</span>
+  <span style="color:#81a1c1">{</span><span style="color:#a3be8c">&#34;body&#34;</span>: <span style="color:#a3be8c">&#34;Something bad hapenned, please try again.&#34;</span><span style="color:#81a1c1">}</span></code></pre></div>
 <div class="flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900">
   <span class="ltr:pr-3 rtl:pl-3 text-primary-400">
     
@@ -776,21 +776,21 @@ Cloud Function can be annoying. You can set your default region using: <code>gcl
 worked fine. But it seems that something went wrong when sending the SMS via
 Twilio.</p>
 <p>If we go back to the Twilio integration, we will notice the following lines:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">accountSid</span>  <span class="p">=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Getenv</span><span class="p">(</span><span class="s">&#34;TWILIO_ACCOUNT_SID&#34;</span><span class="p">)</span>
-<span class="nx">authToken</span>   <span class="p">=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Getenv</span><span class="p">(</span><span class="s">&#34;TWILIO_AUTH_TOKEN&#34;</span><span class="p">)</span>
-<span class="nx">from</span>        <span class="p">=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Getenv</span><span class="p">(</span><span class="s">&#34;TWILIO_FROM_PHONE&#34;</span><span class="p">)</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">accountSid  <span style="color:#eceff4">=</span> os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Getenv</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;TWILIO_ACCOUNT_SID&#34;</span><span style="color:#eceff4">)</span>
+authToken   <span style="color:#eceff4">=</span> os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Getenv</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;TWILIO_AUTH_TOKEN&#34;</span><span style="color:#eceff4">)</span>
+from        <span style="color:#eceff4">=</span> os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Getenv</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;TWILIO_FROM_PHONE&#34;</span><span style="color:#eceff4">)</span></code></pre></div>
 <p>These lines expect that the following values will be present as environment
 variables. This means that we need to set the environment variables for our
 function, so it can authenticate with Twilio and send SMS.</p>
 <p>Again we can do this via the web UI or via the command line. Let&rsquo;s use the
 <code>gcloud</code> CLI tool again:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">gcloud functions deploy SendSMS <span class="se">\
-</span><span class="se"></span>--set-env-vars <span class="se">\
-</span><span class="se"></span><span class="nv">TWILIO_ACCOUNT_SID</span><span class="o">=</span>ACc83f0d68d72e2340ef318fdbcbc7de48,<span class="se">\
-</span><span class="se"></span><span class="nv">TWILIO_AUTH_TOKEN</span><span class="o">=</span>e405742cdf254da46eff98c61065bb5e,<span class="se">\
-</span><span class="se"></span><span class="nv">TWILIO_FROM_PHONE</span><span class="o">=</span>+3197014200568 <span class="se">\
-</span><span class="se"></span>--trigger-http <span class="se">\
-</span><span class="se"></span>--region<span class="o">=</span>europe-west1</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">gcloud functions deploy SendSMS <span style="color:#ebcb8b">\
+</span><span style="color:#ebcb8b"></span>--set-env-vars <span style="color:#ebcb8b">\
+</span><span style="color:#ebcb8b"></span>TWILIO_ACCOUNT_SID<span style="color:#81a1c1">=</span>ACc83f0d68d72e2340ef318fdbcbc7de48,<span style="color:#ebcb8b">\
+</span><span style="color:#ebcb8b"></span>TWILIO_AUTH_TOKEN<span style="color:#81a1c1">=</span>e405742cdf254da46eff98c61065bb5e,<span style="color:#ebcb8b">\
+</span><span style="color:#ebcb8b"></span>TWILIO_FROM_PHONE<span style="color:#81a1c1">=</span>+3197014200568 <span style="color:#ebcb8b">\
+</span><span style="color:#ebcb8b"></span>--trigger-http <span style="color:#ebcb8b">\
+</span><span style="color:#ebcb8b"></span>--region<span style="color:#81a1c1">=</span>europe-west1</code></pre></div>
 <p>What&rsquo;s cool about serverless functions is that they&rsquo;re immutable. This means
 that every change, regardless if it&rsquo;s configuration, or an actual code change,
 requires a deploy. As you can notice in the command above, with the flag
@@ -798,13 +798,13 @@ requires a deploy. As you can notice in the command above, with the flag
 comma. Of course, we have to supply the trigger flag (<code>--trigger-http</code>) and
 (optionally) the region flag (<code>--region</code>).</p>
 <p>The output of the deploy will look like:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">Deploying <span class="k">function</span> <span class="o">(</span>may take a <span class="k">while</span> - up to <span class="m">2</span> minutes<span class="o">)</span>...done.
-availableMemoryMb: <span class="m">256</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">Deploying <span style="color:#81a1c1;font-weight:bold">function</span> <span style="color:#81a1c1">(</span>may take a <span style="color:#81a1c1;font-weight:bold">while</span> - up to <span style="color:#b48ead">2</span> minutes<span style="color:#81a1c1">)</span>...done.
+availableMemoryMb: <span style="color:#b48ead">256</span>
 entryPoint: SendSMS
 environmentVariables:
   TWILIO_ACCOUNT_SID: ACc83f0d68d72e183bbdf318fdbcbc7de48
   TWILIO_AUTH_TOKEN: e405742cdf254duy23n98c61065bb5e
-  TWILIO_FROM_PHONE: <span class="s1">&#39;+3197014200568&#39;</span>
+  TWILIO_FROM_PHONE: <span style="color:#a3be8c">&#39;+3197014200568&#39;</span>
 httpsTrigger:
   url: https://europe-west1-hip-courier-234516.cloudfunctions.net/SendSMS
 labels:
@@ -812,16 +812,16 @@ labels:
 name: projects/hip-courier-234516/locations/europe-west1/functions/SendSMS
 runtime: go111
 serviceAccountEmail: hip-courier-234516@appspot.gserviceaccount.com
-sourceUploadUrl: https://storage.googleapis.com/gcf-upload-europe-west1-b6b2622d-98cf-4a73-a9e3-13427706c715/2c6ce340-bd1f-48ea-b696-23a59ce579eb.zip?GoogleAccessId<span class="o">=</span>service-43664983000@gcf-admin-robot.iam.gserviceaccount.com<span class="p">&amp;</span><span class="nv">Expires</span><span class="o">=</span>1552926106<span class="p">&amp;</span><span class="nv">Signature</span><span class="o">=</span>HvRVFFVpEyWoknznuHYUIbiFD53gx4sihWJWtK8Wxuua9E4BJhjdjIUUa7RBWH0UNWlQX%2FpsUm6ub9S%2FjCQYw70JxMW4fTa4fLMJ%2FdcQQGpRRHYlEPLwPjU8aH68NUjYM1zXoWev%2Fl3jAlOTTt2P0lH3ugYwx%2FtHBop4Dbjl8K87bZmf9JUnyjk2FVGlVi7ino8S3ieRJ1tXGf0qXQAQo0DS%2B99Zuy4IsY2S3RS%2BxxKWcRBLKvibWZfZZYAW5g%2Fv%2B47RV9QE4QWRMdZOM0hK2f3URCxqetPi4rB8S5%2B%2FVZVwdyKqUJ45rNaIhTOcJ3j2t%2Fy8A%2BQ45GcNKiM5BPbz5g%3D%3D
+sourceUploadUrl: https://storage.googleapis.com/gcf-upload-europe-west1-b6b2622d-98cf-4a73-a9e3-13427706c715/2c6ce340-bd1f-48ea-b696-23a59ce579eb.zip?GoogleAccessId<span style="color:#81a1c1">=</span>service-43664983000@gcf-admin-robot.iam.gserviceaccount.com<span style="color:#eceff4">&amp;</span>Expires<span style="color:#81a1c1">=</span>1552926106<span style="color:#eceff4">&amp;</span>Signature<span style="color:#81a1c1">=</span>HvRVFFVpEyWoknznuHYUIbiFD53gx4sihWJWtK8Wxuua9E4BJhjdjIUUa7RBWH0UNWlQX%2FpsUm6ub9S%2FjCQYw70JxMW4fTa4fLMJ%2FdcQQGpRRHYlEPLwPjU8aH68NUjYM1zXoWev%2Fl3jAlOTTt2P0lH3ugYwx%2FtHBop4Dbjl8K87bZmf9JUnyjk2FVGlVi7ino8S3ieRJ1tXGf0qXQAQo0DS%2B99Zuy4IsY2S3RS%2BxxKWcRBLKvibWZfZZYAW5g%2Fv%2B47RV9QE4QWRMdZOM0hK2f3URCxqetPi4rB8S5%2B%2FVZVwdyKqUJ45rNaIhTOcJ3j2t%2Fy8A%2BQ45GcNKiM5BPbz5g%3D%3D
 status: ACTIVE
 timeout: 60s
-updateTime: <span class="s1">&#39;2019-03-18T15:52:21Z&#39;</span>
-versionId: <span class="s1">&#39;4&#39;</span></code></pre></div>
+updateTime: <span style="color:#a3be8c">&#39;2019-03-18T15:52:21Z&#39;</span>
+versionId: <span style="color:#a3be8c">&#39;4&#39;</span></code></pre></div>
 <p>If we trigger the cloud function now, we should see it working:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">› gcloud functions call SendSMS --region<span class="o">=</span>europe-west1
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">› gcloud functions call SendSMS --region<span style="color:#81a1c1">=</span>europe-west1
 executionId: jglb9o1mb5w9
-result: <span class="p">|</span>
-  <span class="o">{</span><span class="s2">&#34;body&#34;</span>: <span class="s2">&#34;Message queued&#34;</span><span class="o">}</span></code></pre></div>
+result: <span style="color:#eceff4">|</span>
+  <span style="color:#81a1c1">{</span><span style="color:#a3be8c">&#34;body&#34;</span>: <span style="color:#a3be8c">&#34;Message queued&#34;</span><span style="color:#81a1c1">}</span></code></pre></div>
 <p>As the message from Twilio states, the SMS was queued and will be sent to your
 phone soon. I got my SMS in less than 10 seconds, but YMMV. This is what it
 looked like:</p>
@@ -929,10 +929,10 @@ in sidebar.</p>
 <p>In the “Fulfillment” page we will enable the webhook by checking the checkbox.
 In the form, we need to add the information for our webhook. Now, to get the
 URL of our Google Cloud Function, we can run:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">gcloud functions describe SendSMS</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">gcloud functions describe SendSMS</code></pre></div>
 <p>This will return the metadata for our function, where we can find the
 <code>httpsTrigger</code> section with a url:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">httpsTrigger:
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">httpsTrigger:
   url: https://europe-west1-hip-courier-234516.cloudfunctions.net/SendSMS</code></pre></div>
 <p>The <code>httpsTrigger</code> URL is the HTTP trigger where our function will be executed.
 All we need to do here is copy this URL and paste it as the webhook URL in
@@ -972,87 +972,87 @@ Function have to be <code>application/json</code>. Also, there are other limitat
 it comes to the formatting of the JSON.</p>
 <p>For our purpose, we can return the most simple JSON that Google Assistant can
 understand:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-  <span class="nt">&#34;payload&#34;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&#34;google&#34;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="nt">&#34;expectUserResponse&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-      <span class="nt">&#34;richResponse&#34;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="nt">&#34;items&#34;</span><span class="p">:</span> <span class="p">[</span>
-          <span class="p">{</span>
-            <span class="nt">&#34;simpleResponse&#34;</span><span class="p">:</span> <span class="p">{</span>
-              <span class="nt">&#34;textToSpeech&#34;</span><span class="p">:</span> <span class="s2">&#34;RESPONSE_FROM_TWILIO_HERE&#34;</span>
-            <span class="p">}</span>
-          <span class="p">}</span>
-        <span class="p">]</span>
-      <span class="p">}</span>
-    <span class="p">}</span>
-  <span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#eceff4">{</span>
+  <span style="color:#81a1c1">&#34;payload&#34;</span><span style="color:#eceff4">:</span> <span style="color:#eceff4">{</span>
+    <span style="color:#81a1c1">&#34;google&#34;</span><span style="color:#eceff4">:</span> <span style="color:#eceff4">{</span>
+      <span style="color:#81a1c1">&#34;expectUserResponse&#34;</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1;font-weight:bold">true</span><span style="color:#eceff4">,</span>
+      <span style="color:#81a1c1">&#34;richResponse&#34;</span><span style="color:#eceff4">:</span> <span style="color:#eceff4">{</span>
+        <span style="color:#81a1c1">&#34;items&#34;</span><span style="color:#eceff4">:</span> <span style="color:#eceff4">[</span>
+          <span style="color:#eceff4">{</span>
+            <span style="color:#81a1c1">&#34;simpleResponse&#34;</span><span style="color:#eceff4">:</span> <span style="color:#eceff4">{</span>
+              <span style="color:#81a1c1">&#34;textToSpeech&#34;</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;RESPONSE_FROM_TWILIO_HERE&#34;</span>
+            <span style="color:#eceff4">}</span>
+          <span style="color:#eceff4">}</span>
+        <span style="color:#eceff4">]</span>
+      <span style="color:#eceff4">}</span>
+    <span style="color:#eceff4">}</span>
+  <span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>While the responses can get very complicated, for our simple use case the
 response above is all we need. Again, we can use the nice <a href="https://mholt.github.io/json-to-go/">JSON-to-Go</a> tool and convert the JSON to Go structs:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">DialogFlowResponse</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">Payload</span> <span class="nx">Payload</span> <span class="s">`json:&#34;payload&#34;`</span>
-<span class="p">}</span>
-<span class="kd">type</span> <span class="nx">SimpleResponse</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">TextToSpeech</span> <span class="kt">string</span> <span class="s">`json:&#34;textToSpeech&#34;`</span>
-<span class="p">}</span>
-<span class="kd">type</span> <span class="nx">Items</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">SimpleResponse</span> <span class="nx">SimpleResponse</span> <span class="s">`json:&#34;simpleResponse&#34;`</span>
-<span class="p">}</span>
-<span class="kd">type</span> <span class="nx">RichResponse</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">Items</span> <span class="p">[]</span><span class="nx">Items</span> <span class="s">`json:&#34;items&#34;`</span>
-<span class="p">}</span>
-<span class="kd">type</span> <span class="nx">Google</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">ExpectUserResponse</span> <span class="kt">string</span>       <span class="s">`json:&#34;expectUserResponse&#34;`</span>
-	<span class="nx">RichResponse</span>       <span class="nx">RichResponse</span> <span class="s">`json:&#34;richResponse&#34;`</span>
-<span class="p">}</span>
-<span class="kd">type</span> <span class="nx">Payload</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">Google</span> <span class="nx">Google</span> <span class="s">`json:&#34;google&#34;`</span>
-<span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> DialogFlowResponse <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+	Payload Payload <span style="color:#a3be8c">`json:&#34;payload&#34;`</span>
+<span style="color:#eceff4">}</span>
+<span style="color:#81a1c1;font-weight:bold">type</span> SimpleResponse <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+	TextToSpeech <span style="color:#81a1c1">string</span> <span style="color:#a3be8c">`json:&#34;textToSpeech&#34;`</span>
+<span style="color:#eceff4">}</span>
+<span style="color:#81a1c1;font-weight:bold">type</span> Items <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+	SimpleResponse SimpleResponse <span style="color:#a3be8c">`json:&#34;simpleResponse&#34;`</span>
+<span style="color:#eceff4">}</span>
+<span style="color:#81a1c1;font-weight:bold">type</span> RichResponse <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+	Items <span style="color:#eceff4">[]</span>Items <span style="color:#a3be8c">`json:&#34;items&#34;`</span>
+<span style="color:#eceff4">}</span>
+<span style="color:#81a1c1;font-weight:bold">type</span> Google <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+	ExpectUserResponse <span style="color:#81a1c1">string</span>       <span style="color:#a3be8c">`json:&#34;expectUserResponse&#34;`</span>
+	RichResponse       RichResponse <span style="color:#a3be8c">`json:&#34;richResponse&#34;`</span>
+<span style="color:#eceff4">}</span>
+<span style="color:#81a1c1;font-weight:bold">type</span> Payload <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+	Google Google <span style="color:#a3be8c">`json:&#34;google&#34;`</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>To make our life easier, we will also create a simple constructor function. It
 will take a string (the response from Twilio) as an argument:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">NewDialogFlowResponse</span><span class="p">(</span><span class="nx">message</span> <span class="kt">string</span><span class="p">)</span> <span class="nx">DialogFlowResponse</span> <span class="p">{</span>
-	<span class="k">return</span> <span class="nx">DialogFlowResponse</span><span class="p">{</span>
-		<span class="nx">Payload</span><span class="p">:</span> <span class="nx">Payload</span><span class="p">{</span>
-			<span class="nx">Google</span><span class="p">:</span> <span class="nx">Google</span><span class="p">{</span>
-				<span class="nx">ExpectUserResponse</span><span class="p">:</span> <span class="s">&#34;false&#34;</span><span class="p">,</span>
-				<span class="nx">RichResponse</span><span class="p">:</span> <span class="nx">RichResponse</span><span class="p">{</span>
-					<span class="nx">Items</span><span class="p">:</span> <span class="p">[]</span><span class="nx">Items</span><span class="p">{</span>
-						<span class="nx">Items</span><span class="p">{</span>
-							<span class="nx">SimpleResponse</span><span class="p">:</span> <span class="nx">SimpleResponse</span><span class="p">{</span>
-								<span class="nx">TextToSpeech</span><span class="p">:</span> <span class="nx">message</span><span class="p">,</span>
-							<span class="p">},</span>
-						<span class="p">},</span>
-					<span class="p">},</span>
-				<span class="p">},</span>
-			<span class="p">},</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">NewDialogFlowResponse</span><span style="color:#eceff4">(</span>message <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> DialogFlowResponse <span style="color:#eceff4">{</span>
+	<span style="color:#81a1c1;font-weight:bold">return</span> DialogFlowResponse<span style="color:#eceff4">{</span>
+		Payload<span style="color:#eceff4">:</span> Payload<span style="color:#eceff4">{</span>
+			Google<span style="color:#eceff4">:</span> Google<span style="color:#eceff4">{</span>
+				ExpectUserResponse<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;false&#34;</span><span style="color:#eceff4">,</span>
+				RichResponse<span style="color:#eceff4">:</span> RichResponse<span style="color:#eceff4">{</span>
+					Items<span style="color:#eceff4">:</span> <span style="color:#eceff4">[]</span>Items<span style="color:#eceff4">{</span>
+						Items<span style="color:#eceff4">{</span>
+							SimpleResponse<span style="color:#eceff4">:</span> SimpleResponse<span style="color:#eceff4">{</span>
+								TextToSpeech<span style="color:#eceff4">:</span> message<span style="color:#eceff4">,</span>
+							<span style="color:#eceff4">},</span>
+						<span style="color:#eceff4">},</span>
+					<span style="color:#eceff4">},</span>
+				<span style="color:#eceff4">},</span>
+			<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">},</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>The constructor will build the nested structs that, when serialized, will result
 in the JSON that Google Assistant is expecting.</p>
 <p>Now that we have the constructor and the necessary types, we can plug them in
 the <code>SendSMS</code> function:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">SendSMS</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">twilioResponse</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">sendRequest</span><span class="p">(</span>
-		<span class="s">&#34;PUT YOUR NUMBER HERE&#34;</span><span class="p">,</span>
-		<span class="s">&#34;Hey Alex, I am running late today, can we please postpone the standup a bit? Thanks! Ilija&#34;</span><span class="p">,</span>
-	<span class="p">)</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nx">errResponse</span> <span class="o">:=</span> <span class="nf">NewDialogFlowResponse</span><span class="p">(</span><span class="s">&#34;Something bad hapenned, please try again.&#34;</span><span class="p">)</span>
-		<span class="nx">json</span><span class="p">.</span><span class="nf">NewEncoder</span><span class="p">(</span><span class="nx">w</span><span class="p">).</span><span class="nf">Encode</span><span class="p">(</span><span class="nx">errResponse</span><span class="p">)</span>
-		<span class="k">return</span>
-	<span class="p">}</span>
-	<span class="nx">response</span> <span class="o">:=</span> <span class="nf">NewDialogFlowResponse</span><span class="p">(</span><span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;Message %s&#34;</span><span class="p">,</span> <span class="nx">twilioResponse</span><span class="p">.</span><span class="nx">Status</span><span class="p">))</span>
-	<span class="nx">json</span><span class="p">.</span><span class="nf">NewEncoder</span><span class="p">(</span><span class="nx">w</span><span class="p">).</span><span class="nf">Encode</span><span class="p">(</span><span class="nx">response</span><span class="p">)</span>
-<span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">SendSMS</span><span style="color:#eceff4">(</span>w http<span style="color:#eceff4">.</span>ResponseWriter<span style="color:#eceff4">,</span> r <span style="color:#81a1c1">*</span>http<span style="color:#eceff4">.</span>Request<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	twilioResponse<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">sendRequest</span><span style="color:#eceff4">(</span>
+		<span style="color:#a3be8c">&#34;PUT YOUR NUMBER HERE&#34;</span><span style="color:#eceff4">,</span>
+		<span style="color:#a3be8c">&#34;Hey Alex, I am running late today, can we please postpone the standup a bit? Thanks! Ilija&#34;</span><span style="color:#eceff4">,</span>
+	<span style="color:#eceff4">)</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		errResponse <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewDialogFlowResponse</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Something bad hapenned, please try again.&#34;</span><span style="color:#eceff4">)</span>
+		json<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewEncoder</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">).</span><span style="color:#88c0d0">Encode</span><span style="color:#eceff4">(</span>errResponse<span style="color:#eceff4">)</span>
+		<span style="color:#81a1c1;font-weight:bold">return</span>
+	<span style="color:#eceff4">}</span>
+	response <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">NewDialogFlowResponse</span><span style="color:#eceff4">(</span>fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Message %s&#34;</span><span style="color:#eceff4">,</span> twilioResponse<span style="color:#eceff4">.</span>Status<span style="color:#eceff4">))</span>
+	json<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewEncoder</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">).</span><span style="color:#88c0d0">Encode</span><span style="color:#eceff4">(</span>response<span style="color:#eceff4">)</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>All we had to do here is instead of building the JSON ourselves, we use the new
 <code>DialogFlowResponse</code> struct to take care of this problem. If we deploy the
 function to GCP and run it we will see the new output:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">› gcloud functions call SendSMS
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">› gcloud functions call SendSMS
 executionId: 4xo1v0ex57jw
-result: <span class="p">|</span>
-  <span class="o">{</span><span class="s2">&#34;payload&#34;</span>:<span class="o">{</span><span class="s2">&#34;google&#34;</span>:<span class="o">{</span><span class="s2">&#34;expectUserResponse&#34;</span>:<span class="s2">&#34;false&#34;</span>,<span class="s2">&#34;richResponse&#34;</span>:<span class="o">{</span><span class="s2">&#34;items&#34;</span>:<span class="o">[{</span><span class="s2">&#34;simpleResponse&#34;</span>:<span class="o">{</span><span class="s2">&#34;textToSpeech&#34;</span>:<span class="s2">&#34;Message queued&#34;</span><span class="o">}}]}}}}</span></code></pre></div>
+result: <span style="color:#eceff4">|</span>
+  <span style="color:#81a1c1">{</span><span style="color:#a3be8c">&#34;payload&#34;</span>:<span style="color:#81a1c1">{</span><span style="color:#a3be8c">&#34;google&#34;</span>:<span style="color:#81a1c1">{</span><span style="color:#a3be8c">&#34;expectUserResponse&#34;</span>:<span style="color:#a3be8c">&#34;false&#34;</span>,<span style="color:#a3be8c">&#34;richResponse&#34;</span>:<span style="color:#81a1c1">{</span><span style="color:#a3be8c">&#34;items&#34;</span>:<span style="color:#81a1c1">[{</span><span style="color:#a3be8c">&#34;simpleResponse&#34;</span>:<span style="color:#81a1c1">{</span><span style="color:#a3be8c">&#34;textToSpeech&#34;</span>:<span style="color:#a3be8c">&#34;Message queued&#34;</span><span style="color:#81a1c1">}}]}}}}</span></code></pre></div>
 <p>This means that once our Google Action invokes the Google Cloud Function, the
 response can be understood by Google Assistant. And when I say &ldquo;understood&rdquo;,
 I mean that you will hear your Google Assistant saying out loud &ldquo;Message queued&rdquo;.</p>
@@ -1510,7 +1510,7 @@ know in the comments!</p>
       
         <p class="text-sm text-neutral-500 dark:text-neutral-400">
             &copy;
-            2022
+            2023
             Ilija Eftimov
         </p>
       

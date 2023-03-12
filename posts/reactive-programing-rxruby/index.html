@@ -416,13 +416,13 @@ Enumerable module style composition in Ruby.</p>
 us, so we can easily start with Reactive Programming in Ruby. Neat, eh?</p>
 <h3 id="observables" class="relative group">Observables <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#observables" aria-label="Anchor">#</a></span></h3>
 <p>Let&rsquo;s see how <code>RxRuby</code> works, in it&rsquo;s simplest form.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="no">RxRuby</span><span class="o">::</span><span class="no">Observable</span><span class="o">.</span><span class="n">just</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#8fbcbb">RxRuby</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Observable</span><span style="color:#81a1c1">.</span>just<span style="color:#eceff4">(</span><span style="color:#b48ead">42</span><span style="color:#eceff4">)</span></code></pre></div>
 <p>A <code>RxRuby::Observable</code> is just a stream. A stream is a subject (or, an object)
 that you can subscribe to (or, observe). Now, the <code>RxRuby:Observable</code> module
 itself doesn&rsquo;t do anything, unless we invoke a method on it. Let&rsquo;s carry on
 with the example:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="n">stream</span> <span class="o">=</span> <span class="no">RxRuby</span><span class="o">::</span><span class="no">Observable</span><span class="o">.</span><span class="n">just</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
-<span class="n">stream</span><span class="o">.</span><span class="n">subscribe</span> <span class="p">{</span><span class="o">|</span><span class="n">num</span><span class="o">|</span> <span class="nb">puts</span> <span class="s2">&#34;We received: </span><span class="si">#{</span><span class="n">num</span><span class="si">}</span><span class="s2">&#34;</span> <span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">stream <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">RxRuby</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Observable</span><span style="color:#81a1c1">.</span>just<span style="color:#eceff4">(</span><span style="color:#b48ead">42</span><span style="color:#eceff4">)</span>
+stream<span style="color:#81a1c1">.</span>subscribe <span style="color:#eceff4">{</span><span style="color:#81a1c1">|</span>num<span style="color:#81a1c1">|</span> <span style="color:#81a1c1">puts</span> <span style="color:#a3be8c">&#34;We received: </span><span style="color:#a3be8c">#{</span>num<span style="color:#a3be8c">}</span><span style="color:#a3be8c">&#34;</span> <span style="color:#eceff4">}</span></code></pre></div>
 <p>What do you think will happen here? Let&rsquo;s break it down. The object that we
 receive is a just the number 42, wrapped as an observable. Since the observable
 implements (most of) the <code>Enumerable</code> methods, we can do anything with it. But,
@@ -430,18 +430,18 @@ to avoid any complication in this example, we will just <code>subscribe</code> t
 observable and pass in a lambda. The lambda will be invoked on everytime the
 stream pushes any data (or, in this case, just once).</p>
 <p>The output of the example will be:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">We received 42.</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">We received 42.</code></pre></div>
 <h3 id="observing-on-an-array" class="relative group">Observing on an array <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#observing-on-an-array" aria-label="Anchor">#</a></span></h3>
 <p>Now, since we have a lot of the methods from the <code>Enumerable</code> mixin available,
 let&rsquo;s do something with an array. There&rsquo;s two ways of working with arrays in
 <code>RxRuby</code>: via ranges and via plain arrays.</p>
 <p>Via ranges:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="no">RxRuby</span><span class="o">::</span><span class="no">Observable</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
-  <span class="o">.</span><span class="n">select</span> <span class="p">{</span><span class="o">|</span><span class="n">num</span><span class="o">|</span> <span class="n">num</span><span class="o">.</span><span class="n">even?</span> <span class="p">}</span>
-  <span class="o">.</span><span class="n">sum</span>
-  <span class="o">.</span><span class="n">subscribe</span> <span class="p">{</span><span class="o">|</span><span class="n">s</span><span class="o">|</span> <span class="nb">puts</span> <span class="s2">&#34;The sum of the even numbers from 1 to 10 is: </span><span class="si">#{</span><span class="n">s</span><span class="si">}</span><span class="s2">&#34;</span> <span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#8fbcbb">RxRuby</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Observable</span><span style="color:#81a1c1">.</span>range<span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">,</span><span style="color:#b48ead">10</span><span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1">.</span>select <span style="color:#eceff4">{</span><span style="color:#81a1c1">|</span>num<span style="color:#81a1c1">|</span> num<span style="color:#81a1c1">.</span>even? <span style="color:#eceff4">}</span>
+  <span style="color:#81a1c1">.</span>sum
+  <span style="color:#81a1c1">.</span>subscribe <span style="color:#eceff4">{</span><span style="color:#81a1c1">|</span>s<span style="color:#81a1c1">|</span> <span style="color:#81a1c1">puts</span> <span style="color:#a3be8c">&#34;The sum of the even numbers from 1 to 10 is: </span><span style="color:#a3be8c">#{</span>s<span style="color:#a3be8c">}</span><span style="color:#a3be8c">&#34;</span> <span style="color:#eceff4">}</span></code></pre></div>
 <p>This will return:
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">The sum of the even numbers from <span class="m">1</span> to <span class="m">10</span> is: <span class="m">30</span></code></pre></div></p>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">The sum of the even numbers from <span style="color:#b48ead">1</span> to <span style="color:#b48ead">10</span> is: <span style="color:#b48ead">30</span></code></pre></div></p>
 <p>Let&rsquo;s break it down. First, we create an observable range, with the numbers
 from 1 to 10. Then, we invoke <code>select</code> on the observable, with a lambda as a
 parameter.  The lambda takes each number of the range as a parameter, and
@@ -454,11 +454,11 @@ observable pushes any data, it will go through this &ldquo;funnel&rdquo; and inv
 last lambda at the end, which will print out the message.  the observables push
 any data we</p>
 <p>Doing this via arrays is very similar:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="n">arr</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">10</span><span class="p">)</span>
-<span class="no">RxRuby</span><span class="o">::</span><span class="no">Observable</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
-  <span class="o">.</span><span class="n">select</span> <span class="p">{</span><span class="o">|</span><span class="n">num</span><span class="o">|</span> <span class="n">num</span><span class="o">.</span><span class="n">even?</span> <span class="p">}</span>
-  <span class="o">.</span><span class="n">sum</span>
-  <span class="o">.</span><span class="n">subscribe</span> <span class="p">{</span><span class="o">|</span><span class="n">s</span><span class="o">|</span> <span class="nb">puts</span> <span class="s2">&#34;The sum of the even numbers from 1 to 10 is: </span><span class="si">#{</span><span class="n">s</span><span class="si">}</span><span class="s2">&#34;</span> <span class="p">}</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">arr <span style="color:#81a1c1">=</span> <span style="color:#81a1c1">Array</span><span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#81a1c1">..</span><span style="color:#b48ead">10</span><span style="color:#eceff4">)</span>
+<span style="color:#8fbcbb">RxRuby</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Observable</span><span style="color:#81a1c1">.</span>from_array<span style="color:#eceff4">(</span>arr<span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1">.</span>select <span style="color:#eceff4">{</span><span style="color:#81a1c1">|</span>num<span style="color:#81a1c1">|</span> num<span style="color:#81a1c1">.</span>even? <span style="color:#eceff4">}</span>
+  <span style="color:#81a1c1">.</span>sum
+  <span style="color:#81a1c1">.</span>subscribe <span style="color:#eceff4">{</span><span style="color:#81a1c1">|</span>s<span style="color:#81a1c1">|</span> <span style="color:#81a1c1">puts</span> <span style="color:#a3be8c">&#34;The sum of the even numbers from 1 to 10 is: </span><span style="color:#a3be8c">#{</span>s<span style="color:#a3be8c">}</span><span style="color:#a3be8c">&#34;</span> <span style="color:#eceff4">}</span></code></pre></div>
 <p>This snippet will also return the same message at the end. The only difference
 here is that we create an observable from an array.</p>
 <h2 id="more-rxruby" class="relative group">More RxRuby <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#more-rxruby" aria-label="Anchor">#</a></span></h2>
@@ -870,7 +870,7 @@ RxRuby Koans, so we can get it moving somewhere.</p>
       
         <p class="text-sm text-neutral-500 dark:text-neutral-400">
             &copy;
-            2022
+            2023
             Ilija Eftimov
         </p>
       

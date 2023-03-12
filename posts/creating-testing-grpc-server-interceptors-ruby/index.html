@@ -358,73 +358,73 @@ format for our exercise here.</p>
 gRPC call during the execution of the interceptor. To avoid polluting the
 interceptor with code that builds the log payload, let&rsquo;s first look at a class
 that will have that responsibility:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="k">module</span> <span class="nn">Grpclog</span>
-  <span class="k">class</span> <span class="nc">Payload</span>
-    <span class="no">CODES</span> <span class="o">=</span> <span class="p">{</span>
-      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">OK</span> <span class="o">=&gt;</span> <span class="s1">&#39;OK&#39;</span><span class="p">,</span>
-      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">CANCELLED</span> <span class="o">=&gt;</span> <span class="s1">&#39;Canceled&#39;</span><span class="p">,</span>
-      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">UNKNOWN</span> <span class="o">=&gt;</span> <span class="s1">&#39;Unknown&#39;</span><span class="p">,</span>
-      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">INVALID_ARGUMENT</span> <span class="o">=&gt;</span> <span class="s1">&#39;InvalidArgument&#39;</span><span class="p">,</span>
-      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">DEADLINE_EXCEEDED</span> <span class="o">=&gt;</span> <span class="s1">&#39;DeadlineExceeded&#39;</span><span class="p">,</span>
-      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">NOT_FOUND</span> <span class="o">=&gt;</span> <span class="s1">&#39;NotFound&#39;</span><span class="p">,</span>
-      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">ALREADY_EXISTS</span> <span class="o">=&gt;</span> <span class="s1">&#39;AlreadyExists&#39;</span><span class="p">,</span>
-      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">PERMISSION_DENIED</span> <span class="o">=&gt;</span> <span class="s1">&#39;PermissionDenied&#39;</span><span class="p">,</span>
-      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">RESOURCE_EXHAUSTED</span> <span class="o">=&gt;</span> <span class="s1">&#39;ResourceExhausted&#39;</span><span class="p">,</span>
-      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">FAILED_PRECONDITION</span> <span class="o">=&gt;</span> <span class="s1">&#39;FailedPrecondition&#39;</span><span class="p">,</span>
-      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">ABORTED</span> <span class="o">=&gt;</span> <span class="s1">&#39;Aborted&#39;</span><span class="p">,</span>
-      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">OUT_OF_RANGE</span> <span class="o">=&gt;</span> <span class="s1">&#39;OutOfRange&#39;</span><span class="p">,</span>
-      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">UNIMPLEMENTED</span> <span class="o">=&gt;</span> <span class="s1">&#39;Unimplemented&#39;</span><span class="p">,</span>
-      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">INTERNAL</span> <span class="o">=&gt;</span> <span class="s1">&#39;Internal&#39;</span><span class="p">,</span>
-      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">UNAVAILABLE</span> <span class="o">=&gt;</span> <span class="s1">&#39;Unavailable&#39;</span><span class="p">,</span>
-      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">DATA_LOSS</span> <span class="o">=&gt;</span> <span class="s1">&#39;DataLoss&#39;</span><span class="p">,</span>
-      <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">UNAUTHENTICATED</span> <span class="o">=&gt;</span> <span class="s1">&#39;Unauthenticated&#39;</span>
-    <span class="p">}</span><span class="o">.</span><span class="n">freeze</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rb" data-lang="rb"><span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">Grpclog</span>
+  <span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Payload</span>
+    <span style="color:#8fbcbb">CODES</span> <span style="color:#81a1c1">=</span> <span style="color:#eceff4">{</span>
+      <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">OK</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;OK&#39;</span><span style="color:#eceff4">,</span>
+      <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">CANCELLED</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;Canceled&#39;</span><span style="color:#eceff4">,</span>
+      <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">UNKNOWN</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;Unknown&#39;</span><span style="color:#eceff4">,</span>
+      <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">INVALID_ARGUMENT</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;InvalidArgument&#39;</span><span style="color:#eceff4">,</span>
+      <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">DEADLINE_EXCEEDED</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;DeadlineExceeded&#39;</span><span style="color:#eceff4">,</span>
+      <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">NOT_FOUND</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;NotFound&#39;</span><span style="color:#eceff4">,</span>
+      <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">ALREADY_EXISTS</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;AlreadyExists&#39;</span><span style="color:#eceff4">,</span>
+      <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">PERMISSION_DENIED</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;PermissionDenied&#39;</span><span style="color:#eceff4">,</span>
+      <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">RESOURCE_EXHAUSTED</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;ResourceExhausted&#39;</span><span style="color:#eceff4">,</span>
+      <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">FAILED_PRECONDITION</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;FailedPrecondition&#39;</span><span style="color:#eceff4">,</span>
+      <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">ABORTED</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;Aborted&#39;</span><span style="color:#eceff4">,</span>
+      <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">OUT_OF_RANGE</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;OutOfRange&#39;</span><span style="color:#eceff4">,</span>
+      <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">UNIMPLEMENTED</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;Unimplemented&#39;</span><span style="color:#eceff4">,</span>
+      <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">INTERNAL</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;Internal&#39;</span><span style="color:#eceff4">,</span>
+      <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">UNAVAILABLE</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;Unavailable&#39;</span><span style="color:#eceff4">,</span>
+      <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">DATA_LOSS</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;DataLoss&#39;</span><span style="color:#eceff4">,</span>
+      <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">UNAUTHENTICATED</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;Unauthenticated&#39;</span>
+    <span style="color:#eceff4">}</span><span style="color:#81a1c1">.</span>freeze
 
-    <span class="kp">attr_accessor</span> <span class="ss">:exception</span>
-    <span class="kp">attr_reader</span> <span class="ss">:method</span><span class="p">,</span> <span class="ss">:service</span><span class="p">,</span> <span class="ss">:code</span><span class="p">,</span> <span class="ss">:start_time</span>
+    <span style="color:#81a1c1">attr_accessor</span> <span style="color:#a3be8c">:exception</span>
+    <span style="color:#81a1c1">attr_reader</span> <span style="color:#a3be8c">:method</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:service</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:code</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:start_time</span>
 
-    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">start_time</span><span class="p">)</span>
-      <span class="vi">@service</span> <span class="o">=</span> <span class="n">service_name</span><span class="p">(</span><span class="nb">method</span><span class="p">)</span>
-      <span class="vi">@method</span> <span class="o">=</span> <span class="n">method_name</span><span class="p">(</span><span class="nb">method</span><span class="p">)</span>
-      <span class="vi">@code</span> <span class="o">=</span> <span class="n">code</span>
-      <span class="vi">@start_time</span> <span class="o">=</span> <span class="n">start_time</span>
-    <span class="k">end</span>
+    <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">method</span><span style="color:#eceff4">,</span> code<span style="color:#eceff4">,</span> start_time<span style="color:#eceff4">)</span>
+      @service <span style="color:#81a1c1">=</span> service_name<span style="color:#eceff4">(</span><span style="color:#81a1c1">method</span><span style="color:#eceff4">)</span>
+      @method <span style="color:#81a1c1">=</span> method_name<span style="color:#eceff4">(</span><span style="color:#81a1c1">method</span><span style="color:#eceff4">)</span>
+      @code <span style="color:#81a1c1">=</span> code
+      @start_time <span style="color:#81a1c1">=</span> start_time
+    <span style="color:#81a1c1;font-weight:bold">end</span>
 
-    <span class="k">def</span> <span class="nf">to_h</span>
-      <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;grpc.service&#39;</span> <span class="o">=&gt;</span> <span class="n">service</span><span class="p">,</span>
-        <span class="s1">&#39;grpc.method&#39;</span> <span class="o">=&gt;</span> <span class="nb">method</span><span class="p">,</span>
-        <span class="s1">&#39;grpc.code&#39;</span> <span class="o">=&gt;</span> <span class="no">CODES</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">code</span><span class="o">.</span><span class="n">to_s</span><span class="p">),</span>
-        <span class="s1">&#39;grpc.start_time&#39;</span> <span class="o">=&gt;</span> <span class="n">start_time</span><span class="o">.</span><span class="n">utc</span><span class="p">,</span>
-        <span class="s1">&#39;grpc.time_ms&#39;</span> <span class="o">=&gt;</span> <span class="n">elapsed_milliseconds</span><span class="p">,</span>
-        <span class="s1">&#39;pid&#39;</span> <span class="o">=&gt;</span> <span class="no">Process</span><span class="o">.</span><span class="n">pid</span>
-      <span class="p">}</span>
-      <span class="n">result</span><span class="o">.</span><span class="n">merge!</span><span class="p">(</span><span class="s1">&#39;exception&#39;</span> <span class="o">=&gt;</span> <span class="n">exception</span><span class="p">)</span> <span class="k">if</span> <span class="n">exception</span>
-      <span class="n">result</span>
-    <span class="k">end</span>
+    <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">to_h</span>
+      result <span style="color:#81a1c1">=</span> <span style="color:#eceff4">{</span>
+        <span style="color:#a3be8c">&#39;grpc.service&#39;</span> <span style="color:#81a1c1">=&gt;</span> service<span style="color:#eceff4">,</span>
+        <span style="color:#a3be8c">&#39;grpc.method&#39;</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#81a1c1">method</span><span style="color:#eceff4">,</span>
+        <span style="color:#a3be8c">&#39;grpc.code&#39;</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#8fbcbb">CODES</span><span style="color:#81a1c1">.</span>fetch<span style="color:#eceff4">(</span>code<span style="color:#eceff4">,</span> code<span style="color:#81a1c1">.</span>to_s<span style="color:#eceff4">),</span>
+        <span style="color:#a3be8c">&#39;grpc.start_time&#39;</span> <span style="color:#81a1c1">=&gt;</span> start_time<span style="color:#81a1c1">.</span>utc<span style="color:#eceff4">,</span>
+        <span style="color:#a3be8c">&#39;grpc.time_ms&#39;</span> <span style="color:#81a1c1">=&gt;</span> elapsed_milliseconds<span style="color:#eceff4">,</span>
+        <span style="color:#a3be8c">&#39;pid&#39;</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#8fbcbb">Process</span><span style="color:#81a1c1">.</span>pid
+      <span style="color:#eceff4">}</span>
+      result<span style="color:#81a1c1">.</span>merge!<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#39;exception&#39;</span> <span style="color:#81a1c1">=&gt;</span> exception<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">if</span> exception
+      result
+    <span style="color:#81a1c1;font-weight:bold">end</span>
 
-    <span class="kp">private</span>
+    <span style="color:#81a1c1">private</span>
 
-    <span class="k">def</span> <span class="nf">elapsed_milliseconds</span>
-      <span class="p">(</span><span class="no">Time</span><span class="o">.</span><span class="n">now</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span><span class="o">.</span><span class="mi">0</span>
-    <span class="k">end</span>
+    <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">elapsed_milliseconds</span>
+      <span style="color:#eceff4">(</span><span style="color:#8fbcbb">Time</span><span style="color:#81a1c1">.</span>now <span style="color:#81a1c1">-</span> start_time<span style="color:#eceff4">)</span> <span style="color:#81a1c1">*</span> <span style="color:#b48ead">1000</span><span style="color:#81a1c1">.</span><span style="color:#b48ead">0</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
 
-    <span class="k">def</span> <span class="nf">method_name</span><span class="p">(</span><span class="nb">method</span><span class="p">)</span>
-      <span class="n">owner</span> <span class="o">=</span> <span class="nb">method</span><span class="o">.</span><span class="n">owner</span>
-      <span class="n">method_name</span><span class="p">,</span> <span class="o">=</span> <span class="n">owner</span><span class="o">.</span><span class="n">rpc_descs</span><span class="o">.</span><span class="n">find</span> <span class="k">do</span> <span class="o">|</span><span class="n">k</span><span class="p">,</span> <span class="n">_</span><span class="o">|</span>
-        <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">GenericService</span><span class="o">.</span><span class="n">underscore</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">to_s</span><span class="p">)</span> <span class="o">==</span> <span class="nb">method</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">to_s</span>
-      <span class="k">end</span>
+    <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">method_name</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">method</span><span style="color:#eceff4">)</span>
+      owner <span style="color:#81a1c1">=</span> <span style="color:#81a1c1">method</span><span style="color:#81a1c1">.</span>owner
+      method_name<span style="color:#eceff4">,</span> <span style="color:#81a1c1">=</span> owner<span style="color:#81a1c1">.</span>rpc_descs<span style="color:#81a1c1">.</span>find <span style="color:#81a1c1;font-weight:bold">do</span> <span style="color:#81a1c1">|</span>k<span style="color:#eceff4">,</span> _<span style="color:#81a1c1">|</span>
+        <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GenericService</span><span style="color:#81a1c1">.</span>underscore<span style="color:#eceff4">(</span>k<span style="color:#81a1c1">.</span>to_s<span style="color:#eceff4">)</span> <span style="color:#81a1c1">==</span> <span style="color:#81a1c1">method</span><span style="color:#81a1c1">.</span>name<span style="color:#81a1c1">.</span>to_s
+      <span style="color:#81a1c1;font-weight:bold">end</span>
 
-      <span class="k">return</span> <span class="s1">&#39;(unknown)&#39;</span> <span class="k">if</span> <span class="n">method_name</span><span class="o">.</span><span class="n">nil?</span>
+      <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#a3be8c">&#39;(unknown)&#39;</span> <span style="color:#81a1c1;font-weight:bold">if</span> method_name<span style="color:#81a1c1">.</span>nil?
 
-      <span class="n">method_name</span><span class="o">.</span><span class="n">to_s</span>
-    <span class="k">end</span>
+      method_name<span style="color:#81a1c1">.</span>to_s
+    <span style="color:#81a1c1;font-weight:bold">end</span>
 
-    <span class="k">def</span> <span class="nf">service_name</span><span class="p">(</span><span class="nb">method</span><span class="p">)</span>
-      <span class="nb">method</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">service_name</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span>
+    <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">service_name</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">method</span><span style="color:#eceff4">)</span>
+      <span style="color:#81a1c1">method</span><span style="color:#81a1c1">.</span>owner<span style="color:#81a1c1">.</span>service_name
+    <span style="color:#81a1c1;font-weight:bold">end</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span>
 </code></pre></div><p><code>Payload</code> is only a wrapper around the gRPC <code>method</code> object, the start time of
 the request, and the gRPC response code. Additionally, it can take an
 <code>exception</code> if our interceptor hits an error of sorts.</p>
@@ -440,59 +440,59 @@ to emit a logline formatted as a valid JSON. You can imagine that we can send
 the logger&rsquo;s output to STDOUT, and we can export it and index it for further
 exploration.</p>
 <p>A straightforward implementation of a server interceptor:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="c1"># lib/grpclog/server_interceptor.rb</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rb" data-lang="rb"><span style="color:#616e87;font-style:italic"># lib/grpclog/server_interceptor.rb</span>
 
-<span class="k">module</span> <span class="nn">Grpclog</span>
-  <span class="k">class</span> <span class="nc">ServerInterceptor</span> <span class="o">&lt;</span> <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">ServerInterceptor</span>
-    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">level</span> <span class="o">=</span> <span class="ss">:info</span><span class="p">)</span>
-      <span class="vi">@logger</span> <span class="o">=</span> <span class="n">logger</span>
-      <span class="vi">@level</span> <span class="o">=</span> <span class="n">level</span>
+<span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">Grpclog</span>
+  <span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">ServerInterceptor</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">ServerInterceptor</span>
+    <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span><span style="color:#eceff4">(</span>logger<span style="color:#eceff4">,</span> level <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">:info</span><span style="color:#eceff4">)</span>
+      @logger <span style="color:#81a1c1">=</span> logger
+      @level <span style="color:#81a1c1">=</span> level
 
-      <span class="k">super</span><span class="p">()</span>
-    <span class="k">end</span>
+      <span style="color:#81a1c1;font-weight:bold">super</span><span style="color:#eceff4">()</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
 
-    <span class="k">def</span> <span class="nf">request_response</span><span class="p">(</span><span class="ss">_request</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="ss">call</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
-      <span class="n">log</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="n">call</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
-    <span class="k">end</span>
+    <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">request_response</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">_request</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">nil</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">call</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">nil</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">method</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">nil</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">&amp;</span>block<span style="color:#eceff4">)</span>
+      log<span style="color:#eceff4">(</span><span style="color:#81a1c1">method</span><span style="color:#eceff4">,</span> call<span style="color:#eceff4">,</span> <span style="color:#81a1c1">&amp;</span>block<span style="color:#eceff4">)</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
 
-    <span class="k">def</span> <span class="nf">server_streamer</span><span class="p">(</span><span class="ss">_request</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="ss">call</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
-      <span class="n">log</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="n">call</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
-    <span class="k">end</span>
+    <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">server_streamer</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">_request</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">nil</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">call</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">nil</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">method</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">nil</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">&amp;</span>block<span style="color:#eceff4">)</span>
+      log<span style="color:#eceff4">(</span><span style="color:#81a1c1">method</span><span style="color:#eceff4">,</span> call<span style="color:#eceff4">,</span> <span style="color:#81a1c1">&amp;</span>block<span style="color:#eceff4">)</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
 
-    <span class="k">def</span> <span class="nf">client_streamer</span><span class="p">(</span><span class="ss">call</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
-      <span class="n">log</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="n">call</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
-    <span class="k">end</span>
+    <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">client_streamer</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">call</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">nil</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">method</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">nil</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">&amp;</span>block<span style="color:#eceff4">)</span>
+      log<span style="color:#eceff4">(</span><span style="color:#81a1c1">method</span><span style="color:#eceff4">,</span> call<span style="color:#eceff4">,</span> <span style="color:#81a1c1">&amp;</span>block<span style="color:#eceff4">)</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
 
-    <span class="k">def</span> <span class="nf">bidi_streamer</span><span class="p">(</span><span class="ss">_request</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="ss">call</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
-      <span class="n">log</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="n">call</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span>
+    <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">bidi_streamer</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">_request</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">nil</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">call</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">nil</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">method</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">nil</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">&amp;</span>block<span style="color:#eceff4">)</span>
+      log<span style="color:#eceff4">(</span><span style="color:#81a1c1">method</span><span style="color:#eceff4">,</span> call<span style="color:#eceff4">,</span> <span style="color:#81a1c1">&amp;</span>block<span style="color:#eceff4">)</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span>
 </code></pre></div><p>The interceptor will implement all four gRPC method types, where each of them
 will invoke the same method: <code>log</code>. The <code>log</code> method will take the method name
 and the <code>call</code> object as arguments, and the gRPC method will <code>yield</code> to the
 <code>log</code> method.</p>
 <p>Let&rsquo;s look quickly at the <code>log</code> method:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="n">_call</span><span class="p">)</span>
-  <span class="n">start_time</span> <span class="o">=</span> <span class="no">Time</span><span class="o">.</span><span class="n">now</span>
-  <span class="n">code</span> <span class="o">=</span> <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">OK</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rb" data-lang="rb"><span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">log</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">method</span><span style="color:#eceff4">,</span> _call<span style="color:#eceff4">)</span>
+  start_time <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Time</span><span style="color:#81a1c1">.</span>now
+  code <span style="color:#81a1c1">=</span> <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">OK</span>
 
-  <span class="k">yield</span>
-<span class="k">rescue</span> <span class="no">StandardError</span> <span class="o">=&gt;</span> <span class="n">e</span>
-  <span class="n">code</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">is_a?</span><span class="p">(</span><span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">BadStatus</span><span class="p">)</span> <span class="p">?</span> <span class="n">e</span><span class="o">.</span><span class="n">code</span> <span class="p">:</span> <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">UNKNOWN</span>
+  <span style="color:#81a1c1;font-weight:bold">yield</span>
+<span style="color:#81a1c1;font-weight:bold">rescue</span> <span style="color:#8fbcbb">StandardError</span> <span style="color:#81a1c1">=&gt;</span> e
+  code <span style="color:#81a1c1">=</span> e<span style="color:#81a1c1">.</span>is_a?<span style="color:#eceff4">(</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">BadStatus</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">?</span> e<span style="color:#81a1c1">.</span>code <span style="color:#eceff4">:</span> <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">UNKNOWN</span>
 
-  <span class="k">raise</span>
-<span class="k">ensure</span>
-  <span class="n">payload</span> <span class="o">=</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">Payload</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">start_time</span><span class="p">)</span>
+  <span style="color:#81a1c1;font-weight:bold">raise</span>
+<span style="color:#81a1c1;font-weight:bold">ensure</span>
+  payload <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Grpclog</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Payload</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span><span style="color:#81a1c1">method</span><span style="color:#eceff4">,</span> code<span style="color:#eceff4">,</span> start_time<span style="color:#eceff4">)</span>
 
-  <span class="k">if</span> <span class="n">e</span>
-    <span class="n">payload</span><span class="o">.</span><span class="n">exception</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span>
-    <span class="vi">@level</span> <span class="o">=</span> <span class="ss">:error</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1;font-weight:bold">if</span> e
+    payload<span style="color:#81a1c1">.</span>exception <span style="color:#81a1c1">=</span> e<span style="color:#81a1c1">.</span>message
+    @level <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">:error</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="vi">@logger</span><span class="o">.</span><span class="n">formatter</span> <span class="o">=</span> <span class="nb">method</span><span class="p">(</span><span class="ss">:formatter</span><span class="p">)</span>
-  <span class="vi">@logger</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="vi">@level</span><span class="p">,</span> <span class="n">payload</span><span class="o">.</span><span class="n">to_h</span><span class="p">)</span>
-<span class="k">end</span>
+  @logger<span style="color:#81a1c1">.</span>formatter <span style="color:#81a1c1">=</span> <span style="color:#81a1c1">method</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">:formatter</span><span style="color:#eceff4">)</span>
+  @logger<span style="color:#81a1c1">.</span>send<span style="color:#eceff4">(</span>@level<span style="color:#eceff4">,</span> payload<span style="color:#81a1c1">.</span>to_h<span style="color:#eceff4">)</span>
+<span style="color:#81a1c1;font-weight:bold">end</span>
 </code></pre></div><p>While the method is a bit busy, it doesn&rsquo;t do <em>much</em>:</p>
 <ul>
 <li>It records the <code>start</code> time of the request, so later we can see the time
@@ -523,17 +523,17 @@ drop me a line and let me know!</p>
 <h3 id="unit-testing-intercetoprs" class="relative group">Unit testing intercetoprs <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#unit-testing-intercetoprs" aria-label="Anchor">#</a></span></h3>
 <p>When looking at the implementation of the interceptors, we can notice that to
 do any testing, we will need to mock out all gRPC-related dependencies:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="k">module</span> <span class="nn">Grpclog</span>
-  <span class="k">class</span> <span class="nc">ServerInterceptor</span> <span class="o">&lt;</span> <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">ServerInterceptor</span>
-    <span class="c1"># Snipped for brevity</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rb" data-lang="rb"><span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">Grpclog</span>
+  <span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">ServerInterceptor</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">ServerInterceptor</span>
+    <span style="color:#616e87;font-style:italic"># Snipped for brevity</span>
 
-    <span class="k">def</span> <span class="nf">request_response</span><span class="p">(</span><span class="ss">request</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="ss">call</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="kp">nil</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
-      <span class="n">log</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="n">call</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
-    <span class="k">end</span>
+    <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">request_response</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">request</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">nil</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">call</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">nil</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">method</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">nil</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">&amp;</span>block<span style="color:#eceff4">)</span>
+      log<span style="color:#eceff4">(</span><span style="color:#81a1c1">method</span><span style="color:#eceff4">,</span> call<span style="color:#eceff4">,</span> <span style="color:#81a1c1">&amp;</span>block<span style="color:#eceff4">)</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
 
-    <span class="c1"># Snipped for brevity</span>
-  <span class="k">end</span>
-<span class="k">end</span>
+    <span style="color:#616e87;font-style:italic"># Snipped for brevity</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span>
 </code></pre></div><p>The <code>request</code>, <code>call</code>, and <code>method</code> objects are dependencies that the
 interceptor&rsquo;s interface forces upon us during testing. Even though our <code>log</code>
 method does not use the <code>request</code> object, we will have to satisfy the interface
@@ -541,36 +541,36 @@ of the interceptor.</p>
 <p>Additionally, if we look at the <code>log</code> method, we will see that we do not use
 the <code>_call</code> object, but the method extensively uses the <code>method</code> object and the
 <code>Payload</code> object that we will create in it:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="n">_call</span><span class="p">)</span>
-  <span class="c1"># Snipped for brevity</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rb" data-lang="rb"><span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">log</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">method</span><span style="color:#eceff4">,</span> _call<span style="color:#eceff4">)</span>
+  <span style="color:#616e87;font-style:italic"># Snipped for brevity</span>
 
-  <span class="k">yield</span>
-<span class="k">rescue</span> <span class="no">StandardError</span> <span class="o">=&gt;</span> <span class="n">e</span>
-  <span class="c1"># Snipped for brevity</span>
-<span class="k">ensure</span>
-  <span class="n">payload</span> <span class="o">=</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">Payload</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="nb">method</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">start_time</span><span class="p">)</span>
+  <span style="color:#81a1c1;font-weight:bold">yield</span>
+<span style="color:#81a1c1;font-weight:bold">rescue</span> <span style="color:#8fbcbb">StandardError</span> <span style="color:#81a1c1">=&gt;</span> e
+  <span style="color:#616e87;font-style:italic"># Snipped for brevity</span>
+<span style="color:#81a1c1;font-weight:bold">ensure</span>
+  payload <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Grpclog</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Payload</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span><span style="color:#81a1c1">method</span><span style="color:#eceff4">,</span> code<span style="color:#eceff4">,</span> start_time<span style="color:#eceff4">)</span>
 
-  <span class="c1"># Snipped for brevity</span>
+  <span style="color:#616e87;font-style:italic"># Snipped for brevity</span>
 
-  <span class="vi">@logger</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="vi">@level</span><span class="p">,</span> <span class="n">payload</span><span class="o">.</span><span class="n">to_h</span><span class="p">)</span>
-<span class="k">end</span>
+  @logger<span style="color:#81a1c1">.</span>send<span style="color:#eceff4">(</span>@level<span style="color:#eceff4">,</span> payload<span style="color:#81a1c1">.</span>to_h<span style="color:#eceff4">)</span>
+<span style="color:#81a1c1;font-weight:bold">end</span>
 </code></pre></div><p>And the <code>Payload#method_name</code> and <code>Payload#service_name</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="c1"># lib/grpclog/payload.rb</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rb" data-lang="rb"><span style="color:#616e87;font-style:italic"># lib/grpclog/payload.rb</span>
 
-<span class="k">def</span> <span class="nf">method_name</span><span class="p">(</span><span class="nb">method</span><span class="p">)</span>
-  <span class="n">owner</span> <span class="o">=</span> <span class="nb">method</span><span class="o">.</span><span class="n">owner</span>
-  <span class="n">method_name</span><span class="p">,</span> <span class="o">=</span> <span class="n">owner</span><span class="o">.</span><span class="n">rpc_descs</span><span class="o">.</span><span class="n">find</span> <span class="k">do</span> <span class="o">|</span><span class="n">k</span><span class="p">,</span> <span class="n">_</span><span class="o">|</span>
-    <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">GenericService</span><span class="o">.</span><span class="n">underscore</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">to_s</span><span class="p">)</span> <span class="o">==</span> <span class="nb">method</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">to_s</span>
-  <span class="k">end</span>
+<span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">method_name</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">method</span><span style="color:#eceff4">)</span>
+  owner <span style="color:#81a1c1">=</span> <span style="color:#81a1c1">method</span><span style="color:#81a1c1">.</span>owner
+  method_name<span style="color:#eceff4">,</span> <span style="color:#81a1c1">=</span> owner<span style="color:#81a1c1">.</span>rpc_descs<span style="color:#81a1c1">.</span>find <span style="color:#81a1c1;font-weight:bold">do</span> <span style="color:#81a1c1">|</span>k<span style="color:#eceff4">,</span> _<span style="color:#81a1c1">|</span>
+    <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GenericService</span><span style="color:#81a1c1">.</span>underscore<span style="color:#eceff4">(</span>k<span style="color:#81a1c1">.</span>to_s<span style="color:#eceff4">)</span> <span style="color:#81a1c1">==</span> <span style="color:#81a1c1">method</span><span style="color:#81a1c1">.</span>name<span style="color:#81a1c1">.</span>to_s
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="k">return</span> <span class="s1">&#39;(unknown)&#39;</span> <span class="k">if</span> <span class="n">method_name</span><span class="o">.</span><span class="n">nil?</span>
+  <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#a3be8c">&#39;(unknown)&#39;</span> <span style="color:#81a1c1;font-weight:bold">if</span> method_name<span style="color:#81a1c1">.</span>nil?
 
-  <span class="n">method_name</span><span class="o">.</span><span class="n">to_s</span>
-<span class="k">end</span>
+  method_name<span style="color:#81a1c1">.</span>to_s
+<span style="color:#81a1c1;font-weight:bold">end</span>
 
-<span class="k">def</span> <span class="nf">service_name</span><span class="p">(</span><span class="nb">method</span><span class="p">)</span>
-  <span class="nb">method</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">service_name</span>
-<span class="k">end</span>
+<span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">service_name</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">method</span><span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1">method</span><span style="color:#81a1c1">.</span>owner<span style="color:#81a1c1">.</span>service_name
+<span style="color:#81a1c1;font-weight:bold">end</span>
 </code></pre></div><p>Given the extensive use of the <code>method</code> object, it&rsquo;s clear that a simple
 <code>double</code> won&rsquo;t do the trick.</p>
 <p>Additionally, to unit test the service in isolation without extra dependencies,
@@ -579,29 +579,29 @@ allow us to have the test self-contained without the need for additional
 support files.</p>
 <p>Without kicking the can down the road, let&rsquo;s first see the setup that we
 will need for our unit tests:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="no">RSpec</span><span class="o">.</span><span class="n">describe</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">ServerInterceptor</span> <span class="k">do</span>
-  <span class="n">let</span><span class="p">(</span><span class="ss">:rpc_class</span><span class="p">)</span> <span class="p">{</span>
-    <span class="no">Class</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span>
-      <span class="kp">include</span> <span class="no">GRPC</span><span class="o">::</span><span class="no">GenericService</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rb" data-lang="rb"><span style="color:#8fbcbb">RSpec</span><span style="color:#81a1c1">.</span>describe <span style="color:#8fbcbb">Grpclog</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">ServerInterceptor</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  let<span style="color:#eceff4">(</span><span style="color:#a3be8c">:rpc_class</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+    <span style="color:#8fbcbb">Class</span><span style="color:#81a1c1">.</span>new <span style="color:#81a1c1;font-weight:bold">do</span>
+      <span style="color:#81a1c1">include</span> <span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GenericService</span>
 
-      <span class="nb">self</span><span class="o">.</span><span class="n">marshal_class_method</span> <span class="o">=</span> <span class="ss">:encode</span>
-      <span class="nb">self</span><span class="o">.</span><span class="n">unmarshal_class_method</span> <span class="o">=</span> <span class="ss">:decode</span>
-      <span class="nb">self</span><span class="o">.</span><span class="n">service_name</span> <span class="o">=</span> <span class="s1">&#39;test.Test&#39;</span>
+      <span style="color:#81a1c1">self</span><span style="color:#81a1c1">.</span>marshal_class_method <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">:encode</span>
+      <span style="color:#81a1c1">self</span><span style="color:#81a1c1">.</span>unmarshal_class_method <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">:decode</span>
+      <span style="color:#81a1c1">self</span><span style="color:#81a1c1">.</span>service_name <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;test.Test&#39;</span>
 
-      <span class="n">rpc</span> <span class="ss">:Greet</span><span class="p">,</span> <span class="no">Google</span><span class="o">::</span><span class="no">Protobuf</span><span class="o">::</span><span class="no">StringValue</span><span class="p">,</span> <span class="no">Google</span><span class="o">::</span><span class="no">Protobuf</span><span class="o">::</span><span class="no">Empty</span>
-    <span class="k">end</span>
-  <span class="p">}</span>
+      rpc <span style="color:#a3be8c">:Greet</span><span style="color:#eceff4">,</span> <span style="color:#8fbcbb">Google</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Protobuf</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StringValue</span><span style="color:#eceff4">,</span> <span style="color:#8fbcbb">Google</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Protobuf</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Empty</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
+  <span style="color:#eceff4">}</span>
 
-  <span class="n">let</span><span class="p">(</span><span class="ss">:service_class</span><span class="p">)</span> <span class="p">{</span>
-    <span class="no">Class</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">rpc_class</span><span class="p">)</span> <span class="k">do</span>
-      <span class="k">def</span> <span class="nf">greet</span><span class="p">(</span><span class="n">_msg</span><span class="p">,</span> <span class="n">_call</span><span class="p">)</span>
-        <span class="c1"># Do nothing</span>
-      <span class="k">end</span>
-    <span class="k">end</span>
-  <span class="p">}</span>
+  let<span style="color:#eceff4">(</span><span style="color:#a3be8c">:service_class</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+    <span style="color:#8fbcbb">Class</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span>rpc_class<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+      <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">greet</span><span style="color:#eceff4">(</span>_msg<span style="color:#eceff4">,</span> _call<span style="color:#eceff4">)</span>
+        <span style="color:#616e87;font-style:italic"># Do nothing</span>
+      <span style="color:#81a1c1;font-weight:bold">end</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
+  <span style="color:#eceff4">}</span>
 
-   <span class="c1"># Snipped for brevity</span>
-<span class="k">end</span>
+   <span style="color:#616e87;font-style:italic"># Snipped for brevity</span>
+<span style="color:#81a1c1;font-weight:bold">end</span>
 </code></pre></div><p>First, we will define the gRPC generic service class and the service class that
 implements the generic class. The service will have only one method – <code>Greet</code>
 - which will take a simple string value and return an empty value (i.e.,
@@ -610,15 +610,15 @@ Protobuf defined as <code>Google::Protobuf::Empty</code>).</p>
 will be testing the interceptor, not the real method, so we don&rsquo;t care about
 its implementation.</p>
 <p>Now that we have these classes in place, let&rsquo;s continue with the test setup:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="no">RSpec</span><span class="o">.</span><span class="n">describe</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">ServerInterceptor</span> <span class="k">do</span>
-  <span class="c1"># Snipped for brevity</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rb" data-lang="rb"><span style="color:#8fbcbb">RSpec</span><span style="color:#81a1c1">.</span>describe <span style="color:#8fbcbb">Grpclog</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">ServerInterceptor</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  <span style="color:#616e87;font-style:italic"># Snipped for brevity</span>
 
-  <span class="n">let</span><span class="p">(</span><span class="ss">:method</span><span class="p">)</span> <span class="p">{</span> <span class="n">service_class</span><span class="o">.</span><span class="n">new</span><span class="o">.</span><span class="n">method</span><span class="p">(</span><span class="ss">:greet</span><span class="p">)</span> <span class="p">}</span>
-  <span class="n">let</span><span class="p">(</span><span class="ss">:request</span><span class="p">)</span> <span class="p">{</span> <span class="n">double</span> <span class="p">}</span>
-  <span class="n">let</span><span class="p">(</span><span class="ss">:call</span><span class="p">)</span> <span class="p">{</span> <span class="n">double</span><span class="p">(</span><span class="ss">:call</span><span class="p">,</span> <span class="ss">peer</span><span class="p">:</span> <span class="s2">&#34;&#34;</span><span class="p">,</span> <span class="ss">metadata</span><span class="p">:</span> <span class="p">{})</span> <span class="p">}</span>
+  let<span style="color:#eceff4">(</span><span style="color:#a3be8c">:method</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span> service_class<span style="color:#81a1c1">.</span>new<span style="color:#81a1c1">.</span>method<span style="color:#eceff4">(</span><span style="color:#a3be8c">:greet</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">}</span>
+  let<span style="color:#eceff4">(</span><span style="color:#a3be8c">:request</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span> double <span style="color:#eceff4">}</span>
+  let<span style="color:#eceff4">(</span><span style="color:#a3be8c">:call</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span> double<span style="color:#eceff4">(</span><span style="color:#a3be8c">:call</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">peer</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">metadata</span><span style="color:#eceff4">:</span> <span style="color:#eceff4">{})</span> <span style="color:#eceff4">}</span>
 
-  <span class="c1"># Snipped for brevity</span>
-<span class="k">end</span>
+  <span style="color:#616e87;font-style:italic"># Snipped for brevity</span>
+<span style="color:#81a1c1;font-weight:bold">end</span>
 </code></pre></div><p>We have to create a few values that we will use in the specs:</p>
 <ul>
 <li>The gRPC <code>method</code> object</li>
@@ -630,57 +630,57 @@ However, keep in mind that if your interceptor accesses these attributes, like
 if the interceptor extracts the <code>User-agent</code> from the call, you must set these
 attributes on the <code>call</code> object.</p>
 <p>Next, let&rsquo;s look at the remainder of the spec setup:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="no">RSpec</span><span class="o">.</span><span class="n">describe</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">ServerInterceptor</span> <span class="k">do</span>
-  <span class="c1"># Snipped for brevity</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rb" data-lang="rb"><span style="color:#8fbcbb">RSpec</span><span style="color:#81a1c1">.</span>describe <span style="color:#8fbcbb">Grpclog</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">ServerInterceptor</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  <span style="color:#616e87;font-style:italic"># Snipped for brevity</span>
 
-  <span class="n">let</span><span class="p">(</span><span class="ss">:interceptor</span><span class="p">)</span> <span class="p">{</span> <span class="n">described_class</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span> <span class="p">}</span>
+  let<span style="color:#eceff4">(</span><span style="color:#a3be8c">:interceptor</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span> described_class<span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span>logger<span style="color:#eceff4">)</span> <span style="color:#eceff4">}</span>
 
-  <span class="n">subject</span><span class="p">(</span><span class="ss">:logger</span><span class="p">)</span> <span class="p">{</span> <span class="no">Logger</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="no">STDOUT</span><span class="p">)</span> <span class="p">}</span>
+  subject<span style="color:#eceff4">(</span><span style="color:#a3be8c">:logger</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span> <span style="color:#8fbcbb">Logger</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span><span style="color:#8fbcbb">STDOUT</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">}</span>
 
-  <span class="c1"># Snipped for brevity</span>
-<span class="k">end</span>
+  <span style="color:#616e87;font-style:italic"># Snipped for brevity</span>
+<span style="color:#81a1c1;font-weight:bold">end</span>
 </code></pre></div><p>Lastly, we create the <code>interceptor</code> object, and pass a <code>logger</code> to the
 constructor.  The <code>subject</code> of our specs will be the <code>logger</code> object, as we
 will be asserting whether the interceptor invokes the correct methods on the
 <code>logger</code> (as seen in the implementation of the interceptor).</p>
 <p>Let&rsquo;s finally look at the actual specs:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="no">RSpec</span><span class="o">.</span><span class="n">describe</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">ServerInterceptor</span> <span class="k">do</span>
-  <span class="c1"># Snipped for brevity</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rb" data-lang="rb"><span style="color:#8fbcbb">RSpec</span><span style="color:#81a1c1">.</span>describe <span style="color:#8fbcbb">Grpclog</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">ServerInterceptor</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  <span style="color:#616e87;font-style:italic"># Snipped for brevity</span>
 
-  <span class="n">describe</span> <span class="s1">&#39;#request_response_method&#39;</span> <span class="k">do</span>
-    <span class="n">before</span> <span class="p">{</span> <span class="n">allow</span><span class="p">(</span><span class="n">subject</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">receive</span><span class="p">(</span><span class="ss">:send</span><span class="p">)</span> <span class="p">}</span>
+  describe <span style="color:#a3be8c">&#39;#request_response_method&#39;</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    before <span style="color:#eceff4">{</span> allow<span style="color:#eceff4">(</span>subject<span style="color:#eceff4">)</span><span style="color:#81a1c1">.</span>to receive<span style="color:#eceff4">(</span><span style="color:#a3be8c">:send</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">}</span>
 
-    <span class="n">context</span> <span class="s1">&#39;when no exception occurs&#39;</span> <span class="k">do</span>
-      <span class="n">before</span> <span class="p">{</span> <span class="n">interceptor</span><span class="o">.</span><span class="n">request_response</span><span class="p">(</span><span class="ss">request</span><span class="p">:</span> <span class="n">request</span><span class="p">,</span> <span class="ss">call</span><span class="p">:</span> <span class="n">call</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="nb">method</span><span class="p">)</span> <span class="p">{</span> <span class="p">}</span> <span class="p">}</span>
+    context <span style="color:#a3be8c">&#39;when no exception occurs&#39;</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+      before <span style="color:#eceff4">{</span> interceptor<span style="color:#81a1c1">.</span>request_response<span style="color:#eceff4">(</span><span style="color:#a3be8c">request</span><span style="color:#eceff4">:</span> request<span style="color:#eceff4">,</span> <span style="color:#a3be8c">call</span><span style="color:#eceff4">:</span> call<span style="color:#eceff4">,</span> <span style="color:#81a1c1">method</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">method</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span> <span style="color:#eceff4">}</span> <span style="color:#eceff4">}</span>
 
-      <span class="n">it</span> <span class="p">{</span> <span class="n">is_expected</span><span class="o">.</span><span class="n">to</span> <span class="n">have_received</span><span class="p">(</span><span class="ss">:send</span><span class="p">)</span><span class="o">.</span><span class="n">with</span><span class="p">(</span><span class="ss">:info</span><span class="p">,</span> <span class="no">Hash</span><span class="p">)</span> <span class="p">}</span>
-    <span class="k">end</span>
+      it <span style="color:#eceff4">{</span> is_expected<span style="color:#81a1c1">.</span>to have_received<span style="color:#eceff4">(</span><span style="color:#a3be8c">:send</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">.</span>with<span style="color:#eceff4">(</span><span style="color:#a3be8c">:info</span><span style="color:#eceff4">,</span> <span style="color:#8fbcbb">Hash</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">}</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
 
-    <span class="n">context</span> <span class="s1">&#39;when a known exception occurs&#39;</span> <span class="k">do</span>
-      <span class="n">before</span> <span class="k">do</span>
-        <span class="n">expect</span> <span class="k">do</span>
-          <span class="n">interceptor</span><span class="o">.</span><span class="n">request_response</span><span class="p">(</span><span class="ss">request</span><span class="p">:</span> <span class="n">request</span><span class="p">,</span> <span class="ss">call</span><span class="p">:</span> <span class="n">call</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="nb">method</span><span class="p">)</span> <span class="k">do</span>
-            <span class="k">raise</span> <span class="no">GRPC</span><span class="o">::</span><span class="no">NotFound</span><span class="o">.</span><span class="n">new</span>
-          <span class="k">end</span>
-        <span class="k">end</span><span class="o">.</span><span class="n">to</span> <span class="n">raise_error</span><span class="p">(</span><span class="no">GRPC</span><span class="o">::</span><span class="no">NotFound</span><span class="p">)</span>
-      <span class="k">end</span>
+    context <span style="color:#a3be8c">&#39;when a known exception occurs&#39;</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+      before <span style="color:#81a1c1;font-weight:bold">do</span>
+        expect <span style="color:#81a1c1;font-weight:bold">do</span>
+          interceptor<span style="color:#81a1c1">.</span>request_response<span style="color:#eceff4">(</span><span style="color:#a3be8c">request</span><span style="color:#eceff4">:</span> request<span style="color:#eceff4">,</span> <span style="color:#a3be8c">call</span><span style="color:#eceff4">:</span> call<span style="color:#eceff4">,</span> <span style="color:#81a1c1">method</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">method</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+            <span style="color:#81a1c1;font-weight:bold">raise</span> <span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">NotFound</span><span style="color:#81a1c1">.</span>new
+          <span style="color:#81a1c1;font-weight:bold">end</span>
+        <span style="color:#81a1c1;font-weight:bold">end</span><span style="color:#81a1c1">.</span>to raise_error<span style="color:#eceff4">(</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">NotFound</span><span style="color:#eceff4">)</span>
+      <span style="color:#81a1c1;font-weight:bold">end</span>
 
-      <span class="n">it</span> <span class="p">{</span> <span class="n">is_expected</span><span class="o">.</span><span class="n">to</span> <span class="n">have_received</span><span class="p">(</span><span class="ss">:send</span><span class="p">)</span><span class="o">.</span><span class="n">with</span><span class="p">(</span><span class="ss">:error</span><span class="p">,</span> <span class="no">Hash</span><span class="p">)</span> <span class="p">}</span>
-    <span class="k">end</span>
+      it <span style="color:#eceff4">{</span> is_expected<span style="color:#81a1c1">.</span>to have_received<span style="color:#eceff4">(</span><span style="color:#a3be8c">:send</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">.</span>with<span style="color:#eceff4">(</span><span style="color:#a3be8c">:error</span><span style="color:#eceff4">,</span> <span style="color:#8fbcbb">Hash</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">}</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
 
-    <span class="n">context</span> <span class="s1">&#39;when an unknown exception occurs&#39;</span> <span class="k">do</span>
-      <span class="n">before</span> <span class="k">do</span>
-        <span class="n">expect</span> <span class="k">do</span>
-          <span class="n">interceptor</span><span class="o">.</span><span class="n">request_response</span><span class="p">(</span><span class="ss">request</span><span class="p">:</span> <span class="n">request</span><span class="p">,</span> <span class="ss">call</span><span class="p">:</span> <span class="n">call</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="nb">method</span><span class="p">)</span> <span class="p">{</span> <span class="k">raise</span> <span class="ss">:unknown</span> <span class="p">}</span>
-        <span class="k">end</span><span class="o">.</span><span class="n">to</span> <span class="n">raise_error</span><span class="p">(</span><span class="no">StandardError</span><span class="p">)</span>
-      <span class="k">end</span>
+    context <span style="color:#a3be8c">&#39;when an unknown exception occurs&#39;</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+      before <span style="color:#81a1c1;font-weight:bold">do</span>
+        expect <span style="color:#81a1c1;font-weight:bold">do</span>
+          interceptor<span style="color:#81a1c1">.</span>request_response<span style="color:#eceff4">(</span><span style="color:#a3be8c">request</span><span style="color:#eceff4">:</span> request<span style="color:#eceff4">,</span> <span style="color:#a3be8c">call</span><span style="color:#eceff4">:</span> call<span style="color:#eceff4">,</span> <span style="color:#81a1c1">method</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">method</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span> <span style="color:#81a1c1;font-weight:bold">raise</span> <span style="color:#a3be8c">:unknown</span> <span style="color:#eceff4">}</span>
+        <span style="color:#81a1c1;font-weight:bold">end</span><span style="color:#81a1c1">.</span>to raise_error<span style="color:#eceff4">(</span><span style="color:#8fbcbb">StandardError</span><span style="color:#eceff4">)</span>
+      <span style="color:#81a1c1;font-weight:bold">end</span>
 
-      <span class="n">it</span> <span class="p">{</span> <span class="n">is_expected</span><span class="o">.</span><span class="n">to</span> <span class="n">have_received</span><span class="p">(</span><span class="ss">:send</span><span class="p">)</span><span class="o">.</span><span class="n">with</span><span class="p">(</span><span class="ss">:error</span><span class="p">,</span> <span class="no">Hash</span><span class="p">)</span> <span class="p">}</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
+      it <span style="color:#eceff4">{</span> is_expected<span style="color:#81a1c1">.</span>to have_received<span style="color:#eceff4">(</span><span style="color:#a3be8c">:send</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">.</span>with<span style="color:#eceff4">(</span><span style="color:#a3be8c">:error</span><span style="color:#eceff4">,</span> <span style="color:#8fbcbb">Hash</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">}</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="c1"># Snipped for brevity</span>
-<span class="k">end</span>
+  <span style="color:#616e87;font-style:italic"># Snipped for brevity</span>
+<span style="color:#81a1c1;font-weight:bold">end</span>
 </code></pre></div><p>We are looking at three different tests here:</p>
 <ol>
 <li>Test the logging behavior when no errors occur</li>
@@ -703,9 +703,9 @@ in a <code>before</code> block.</p>
 it and log the request line. We set the expectation that when the interceptor
 hits no errors, the <code>logger</code> will receive <code>send</code> with the <code>:info</code> argument
 (i.e., the log level) and a <code>Hash</code>, which is the payload:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="c1"># lib/grpclog/server_interceptor.rb</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rb" data-lang="rb"><span style="color:#616e87;font-style:italic"># lib/grpclog/server_interceptor.rb</span>
 
-<span class="vi">@logger</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="vi">@level</span><span class="p">,</span> <span class="n">payload</span><span class="o">.</span><span class="n">to_h</span><span class="p">)</span>
+@logger<span style="color:#81a1c1">.</span>send<span style="color:#eceff4">(</span>@level<span style="color:#eceff4">,</span> payload<span style="color:#81a1c1">.</span>to_h<span style="color:#eceff4">)</span>
 </code></pre></div><p>In the second spec, within the <code>when a known exception occurs</code> context, we use
 the same approach as before with one key difference: the block evaluated by the
 interceptor will raise a (known) error. In such a case, we set the expectation
@@ -720,78 +720,78 @@ and the payload <code>Hash</code> – identical to the one above.</p>
 request types, the other tests are similar to those above. To prove that the
 same test approach will work for the other method, here&rsquo;s the <code>bidi_streamer</code>
 spec:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="no">RSpec</span><span class="o">.</span><span class="n">describe</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">ServerInterceptor</span> <span class="k">do</span>
-  <span class="c1"># Snipped for brevity</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rb" data-lang="rb"><span style="color:#8fbcbb">RSpec</span><span style="color:#81a1c1">.</span>describe <span style="color:#8fbcbb">Grpclog</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">ServerInterceptor</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  <span style="color:#616e87;font-style:italic"># Snipped for brevity</span>
 
-  <span class="n">describe</span> <span class="s1">&#39;#bidi_streamer&#39;</span> <span class="k">do</span>
-    <span class="n">before</span> <span class="p">{</span> <span class="n">allow</span><span class="p">(</span><span class="n">subject</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">receive</span><span class="p">(</span><span class="ss">:send</span><span class="p">)</span> <span class="p">}</span>
+  describe <span style="color:#a3be8c">&#39;#bidi_streamer&#39;</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    before <span style="color:#eceff4">{</span> allow<span style="color:#eceff4">(</span>subject<span style="color:#eceff4">)</span><span style="color:#81a1c1">.</span>to receive<span style="color:#eceff4">(</span><span style="color:#a3be8c">:send</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">}</span>
 
-    <span class="n">context</span> <span class="s1">&#39;when no exception occurs&#39;</span> <span class="k">do</span>
-      <span class="n">before</span> <span class="p">{</span> <span class="n">interceptor</span><span class="o">.</span><span class="n">bidi_streamer</span><span class="p">(</span><span class="ss">requests</span><span class="p">:</span> <span class="o">[</span><span class="n">request</span><span class="o">]</span><span class="p">,</span> <span class="ss">call</span><span class="p">:</span> <span class="n">call</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="nb">method</span><span class="p">)</span> <span class="p">{</span> <span class="p">}</span> <span class="p">}</span>
+    context <span style="color:#a3be8c">&#39;when no exception occurs&#39;</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+      before <span style="color:#eceff4">{</span> interceptor<span style="color:#81a1c1">.</span>bidi_streamer<span style="color:#eceff4">(</span><span style="color:#a3be8c">requests</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">[</span>request<span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">call</span><span style="color:#eceff4">:</span> call<span style="color:#eceff4">,</span> <span style="color:#81a1c1">method</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">method</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span> <span style="color:#eceff4">}</span> <span style="color:#eceff4">}</span>
 
-      <span class="n">it</span> <span class="p">{</span> <span class="n">is_expected</span><span class="o">.</span><span class="n">to</span> <span class="n">have_received</span><span class="p">(</span><span class="ss">:send</span><span class="p">)</span><span class="o">.</span><span class="n">with</span><span class="p">(</span><span class="ss">:info</span><span class="p">,</span> <span class="no">Hash</span><span class="p">)</span> <span class="p">}</span>
-    <span class="k">end</span>
+      it <span style="color:#eceff4">{</span> is_expected<span style="color:#81a1c1">.</span>to have_received<span style="color:#eceff4">(</span><span style="color:#a3be8c">:send</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">.</span>with<span style="color:#eceff4">(</span><span style="color:#a3be8c">:info</span><span style="color:#eceff4">,</span> <span style="color:#8fbcbb">Hash</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">}</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
 
-    <span class="n">context</span> <span class="s1">&#39;when a known exception occurs&#39;</span> <span class="k">do</span>
-      <span class="n">before</span> <span class="k">do</span>
-        <span class="n">expect</span> <span class="k">do</span>
-          <span class="n">interceptor</span><span class="o">.</span><span class="n">bidi_streamer</span><span class="p">(</span><span class="ss">requests</span><span class="p">:</span> <span class="o">[</span><span class="n">request</span><span class="o">]</span><span class="p">,</span> <span class="ss">call</span><span class="p">:</span> <span class="n">call</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="nb">method</span><span class="p">)</span> <span class="k">do</span>
-            <span class="k">raise</span> <span class="no">GRPC</span><span class="o">::</span><span class="no">NotFound</span><span class="o">.</span><span class="n">new</span>
-          <span class="k">end</span>
-        <span class="k">end</span><span class="o">.</span><span class="n">to</span> <span class="n">raise_error</span><span class="p">(</span><span class="no">GRPC</span><span class="o">::</span><span class="no">NotFound</span><span class="p">)</span>
-      <span class="k">end</span>
+    context <span style="color:#a3be8c">&#39;when a known exception occurs&#39;</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+      before <span style="color:#81a1c1;font-weight:bold">do</span>
+        expect <span style="color:#81a1c1;font-weight:bold">do</span>
+          interceptor<span style="color:#81a1c1">.</span>bidi_streamer<span style="color:#eceff4">(</span><span style="color:#a3be8c">requests</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">[</span>request<span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">call</span><span style="color:#eceff4">:</span> call<span style="color:#eceff4">,</span> <span style="color:#81a1c1">method</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">method</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+            <span style="color:#81a1c1;font-weight:bold">raise</span> <span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">NotFound</span><span style="color:#81a1c1">.</span>new
+          <span style="color:#81a1c1;font-weight:bold">end</span>
+        <span style="color:#81a1c1;font-weight:bold">end</span><span style="color:#81a1c1">.</span>to raise_error<span style="color:#eceff4">(</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">NotFound</span><span style="color:#eceff4">)</span>
+      <span style="color:#81a1c1;font-weight:bold">end</span>
 
-      <span class="n">it</span> <span class="p">{</span> <span class="n">is_expected</span><span class="o">.</span><span class="n">to</span> <span class="n">have_received</span><span class="p">(</span><span class="ss">:send</span><span class="p">)</span><span class="o">.</span><span class="n">with</span><span class="p">(</span><span class="ss">:error</span><span class="p">,</span> <span class="no">Hash</span><span class="p">)</span> <span class="p">}</span>
-    <span class="k">end</span>
+      it <span style="color:#eceff4">{</span> is_expected<span style="color:#81a1c1">.</span>to have_received<span style="color:#eceff4">(</span><span style="color:#a3be8c">:send</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">.</span>with<span style="color:#eceff4">(</span><span style="color:#a3be8c">:error</span><span style="color:#eceff4">,</span> <span style="color:#8fbcbb">Hash</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">}</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
 
-    <span class="n">context</span> <span class="s1">&#39;when an unknown exception occurs&#39;</span> <span class="k">do</span>
-      <span class="n">before</span> <span class="k">do</span>
-        <span class="n">expect</span> <span class="k">do</span>
-          <span class="n">interceptor</span><span class="o">.</span><span class="n">bidi_streamer</span><span class="p">(</span><span class="ss">requests</span><span class="p">:</span> <span class="o">[</span><span class="n">request</span><span class="o">]</span><span class="p">,</span> <span class="ss">call</span><span class="p">:</span> <span class="n">call</span><span class="p">,</span> <span class="nb">method</span><span class="p">:</span> <span class="nb">method</span><span class="p">)</span> <span class="p">{</span> <span class="k">raise</span> <span class="ss">:unknown</span> <span class="p">}</span>
-        <span class="k">end</span><span class="o">.</span><span class="n">to</span> <span class="n">raise_error</span><span class="p">(</span><span class="no">StandardError</span><span class="p">)</span>
-      <span class="k">end</span>
+    context <span style="color:#a3be8c">&#39;when an unknown exception occurs&#39;</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+      before <span style="color:#81a1c1;font-weight:bold">do</span>
+        expect <span style="color:#81a1c1;font-weight:bold">do</span>
+          interceptor<span style="color:#81a1c1">.</span>bidi_streamer<span style="color:#eceff4">(</span><span style="color:#a3be8c">requests</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">[</span>request<span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">call</span><span style="color:#eceff4">:</span> call<span style="color:#eceff4">,</span> <span style="color:#81a1c1">method</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">method</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span> <span style="color:#81a1c1;font-weight:bold">raise</span> <span style="color:#a3be8c">:unknown</span> <span style="color:#eceff4">}</span>
+        <span style="color:#81a1c1;font-weight:bold">end</span><span style="color:#81a1c1">.</span>to raise_error<span style="color:#eceff4">(</span><span style="color:#8fbcbb">StandardError</span><span style="color:#eceff4">)</span>
+      <span style="color:#81a1c1;font-weight:bold">end</span>
 
-      <span class="n">it</span> <span class="p">{</span> <span class="n">is_expected</span><span class="o">.</span><span class="n">to</span> <span class="n">have_received</span><span class="p">(</span><span class="ss">:send</span><span class="p">)</span><span class="o">.</span><span class="n">with</span><span class="p">(</span><span class="ss">:error</span><span class="p">,</span> <span class="no">Hash</span><span class="p">)</span> <span class="p">}</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
+      it <span style="color:#eceff4">{</span> is_expected<span style="color:#81a1c1">.</span>to have_received<span style="color:#eceff4">(</span><span style="color:#a3be8c">:send</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">.</span>with<span style="color:#eceff4">(</span><span style="color:#a3be8c">:error</span><span style="color:#eceff4">,</span> <span style="color:#8fbcbb">Hash</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">}</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="c1"># Snipped for brevity</span>
-<span class="k">end</span>
+  <span style="color:#616e87;font-style:italic"># Snipped for brevity</span>
+<span style="color:#81a1c1;font-weight:bold">end</span>
 </code></pre></div><p>If we run the specs, this is the output we will get:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh">root@e4cdc18cf452:/app# bundle <span class="nb">exec</span> rspec --format documentation spec/grpclog/server_interceptor_spec.rb
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">root@e4cdc18cf452:/app# bundle <span style="color:#81a1c1">exec</span> rspec --format documentation spec/grpclog/server_interceptor_spec.rb
 
 Grpclog::ServerInterceptor
-  <span class="c1">#request_response_method</span>
+  <span style="color:#616e87;font-style:italic">#request_response_method</span>
     when no exception occurs
-      is expected to have received send<span class="o">(</span>:info, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+      is expected to have received send<span style="color:#81a1c1">(</span>:info, Hash<span style="color:#81a1c1">)</span> <span style="color:#b48ead">1</span> <span style="color:#81a1c1">time</span>
     when a known exception occurs
-      is expected to have received send<span class="o">(</span>:error, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+      is expected to have received send<span style="color:#81a1c1">(</span>:error, Hash<span style="color:#81a1c1">)</span> <span style="color:#b48ead">1</span> <span style="color:#81a1c1">time</span>
     when an unknown exception occurs
-      is expected to have received send<span class="o">(</span>:error, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
-  <span class="c1">#server_streamer</span>
+      is expected to have received send<span style="color:#81a1c1">(</span>:error, Hash<span style="color:#81a1c1">)</span> <span style="color:#b48ead">1</span> <span style="color:#81a1c1">time</span>
+  <span style="color:#616e87;font-style:italic">#server_streamer</span>
     when no exception occurs
-      is expected to have received send<span class="o">(</span>:info, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+      is expected to have received send<span style="color:#81a1c1">(</span>:info, Hash<span style="color:#81a1c1">)</span> <span style="color:#b48ead">1</span> <span style="color:#81a1c1">time</span>
     when a known exception occurs
-      is expected to have received send<span class="o">(</span>:error, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+      is expected to have received send<span style="color:#81a1c1">(</span>:error, Hash<span style="color:#81a1c1">)</span> <span style="color:#b48ead">1</span> <span style="color:#81a1c1">time</span>
     when an unknown exception occurs
-      is expected to have received send<span class="o">(</span>:error, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
-  <span class="c1">#client_streamer</span>
+      is expected to have received send<span style="color:#81a1c1">(</span>:error, Hash<span style="color:#81a1c1">)</span> <span style="color:#b48ead">1</span> <span style="color:#81a1c1">time</span>
+  <span style="color:#616e87;font-style:italic">#client_streamer</span>
     when no exception occurs
-      is expected to have received send<span class="o">(</span>:info, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+      is expected to have received send<span style="color:#81a1c1">(</span>:info, Hash<span style="color:#81a1c1">)</span> <span style="color:#b48ead">1</span> <span style="color:#81a1c1">time</span>
     when a known exception occurs
-      is expected to have received send<span class="o">(</span>:error, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+      is expected to have received send<span style="color:#81a1c1">(</span>:error, Hash<span style="color:#81a1c1">)</span> <span style="color:#b48ead">1</span> <span style="color:#81a1c1">time</span>
     when an unknown exception occurs
-      is expected to have received send<span class="o">(</span>:error, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
-  <span class="c1">#bidi_streamer</span>
+      is expected to have received send<span style="color:#81a1c1">(</span>:error, Hash<span style="color:#81a1c1">)</span> <span style="color:#b48ead">1</span> <span style="color:#81a1c1">time</span>
+  <span style="color:#616e87;font-style:italic">#bidi_streamer</span>
     when no exception occurs
-      is expected to have received send<span class="o">(</span>:info, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+      is expected to have received send<span style="color:#81a1c1">(</span>:info, Hash<span style="color:#81a1c1">)</span> <span style="color:#b48ead">1</span> <span style="color:#81a1c1">time</span>
     when a known exception occurs
-      is expected to have received send<span class="o">(</span>:error, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+      is expected to have received send<span style="color:#81a1c1">(</span>:error, Hash<span style="color:#81a1c1">)</span> <span style="color:#b48ead">1</span> <span style="color:#81a1c1">time</span>
     when an unknown exception occurs
-      is expected to have received send<span class="o">(</span>:error, Hash<span class="o">)</span> <span class="m">1</span> <span class="nb">time</span>
+      is expected to have received send<span style="color:#81a1c1">(</span>:error, Hash<span style="color:#81a1c1">)</span> <span style="color:#b48ead">1</span> <span style="color:#81a1c1">time</span>
 
-Finished in 0.02193 seconds <span class="o">(</span>files took 0.16171 seconds to load<span class="o">)</span>
-<span class="m">12</span> examples, <span class="m">0</span> failures
+Finished in 0.02193 seconds <span style="color:#81a1c1">(</span>files took 0.16171 seconds to load<span style="color:#81a1c1">)</span>
+<span style="color:#b48ead">12</span> examples, <span style="color:#b48ead">0</span> failures
 </code></pre></div><p>One last note: while this approach works for my use case, remember that your
 tests can vary depending on how complicated / what kind of work your
 interceptors do.  You might have to rely on more mocking, or you might need
@@ -814,91 +814,91 @@ invoke it.</p>
 <h4 id="service--message-definitions" class="relative group">Service &amp; message definitions <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#service--message-definitions" aria-label="Anchor">#</a></span></h4>
 <p>First, let&rsquo;s look at the Protobuf definition of the dummy service and its
 message:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-protobuf" data-lang="protobuf"><span class="c1">// spec/support/greeter.proto
-</span><span class="c1"></span><span class="err">
-</span><span class="err"></span><span class="n">syntax</span> <span class="o">=</span> <span class="s">&#34;proto3&#34;</span><span class="p">;</span><span class="err">
-</span><span class="err">
-</span><span class="err"></span><span class="kn">package</span> <span class="nn">grpclog</span><span class="p">;</span><span class="err">
-</span><span class="err">
-</span><span class="err"></span><span class="kd">service</span> <span class="n">Greeter</span> <span class="p">{</span><span class="err">
-</span><span class="err"></span>  <span class="k">rpc</span> <span class="n">RequestResponseMethod</span><span class="p">(</span><span class="n">Hello</span><span class="p">)</span> <span class="k">returns</span> <span class="p">(</span><span class="n">Hello</span><span class="p">)</span> <span class="p">{}</span><span class="err">
-</span><span class="err"></span>  <span class="k">rpc</span> <span class="n">ServerStreamMethod</span><span class="p">(</span><span class="n">Hello</span><span class="p">)</span> <span class="k">returns</span> <span class="p">(</span><span class="n">stream</span> <span class="n">Hello</span><span class="p">)</span> <span class="p">{}</span><span class="err">
-</span><span class="err"></span>  <span class="k">rpc</span> <span class="n">ClientStreamMethod</span><span class="p">(</span><span class="n">stream</span> <span class="n">Hello</span><span class="p">)</span> <span class="k">returns</span> <span class="p">(</span><span class="n">Hello</span><span class="p">)</span> <span class="p">{}</span><span class="err">
-</span><span class="err"></span>  <span class="k">rpc</span> <span class="n">BidiStreamMethod</span><span class="p">(</span><span class="n">stream</span> <span class="n">Hello</span><span class="p">)</span> <span class="k">returns</span> <span class="p">(</span><span class="n">stream</span> <span class="n">Hello</span><span class="p">)</span> <span class="p">{}</span><span class="err">
-</span><span class="err"></span><span class="p">}</span><span class="err">
-</span><span class="err">
-</span><span class="err"></span><span class="kd">message</span> <span class="nc">Hello</span> <span class="p">{</span><span class="err">
-</span><span class="err"></span>  <span class="kt">string</span> <span class="n">name</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span><span class="err">
-</span><span class="err"></span>  <span class="kt">int64</span> <span class="n">error_code</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span><span class="err">
-</span><span class="err"></span><span class="p">}</span><span class="err">
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-protobuf" data-lang="protobuf"><span style="color:#616e87;font-style:italic">// spec/support/greeter.proto
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span>syntax <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#34;proto3&#34;</span><span style="color:#eceff4">;</span><span style="color:#bf616a">
+</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span><span style="color:#81a1c1;font-weight:bold">package</span> <span style="color:#8fbcbb">grpclog</span><span style="color:#eceff4">;</span><span style="color:#bf616a">
+</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span><span style="color:#81a1c1;font-weight:bold">service</span> Greeter <span style="color:#eceff4">{</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span>  <span style="color:#81a1c1;font-weight:bold">rpc</span> RequestResponseMethod<span style="color:#eceff4">(</span>Hello<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">returns</span> <span style="color:#eceff4">(</span>Hello<span style="color:#eceff4">)</span> <span style="color:#eceff4">{}</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span>  <span style="color:#81a1c1;font-weight:bold">rpc</span> ServerStreamMethod<span style="color:#eceff4">(</span>Hello<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">returns</span> <span style="color:#eceff4">(</span>stream Hello<span style="color:#eceff4">)</span> <span style="color:#eceff4">{}</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span>  <span style="color:#81a1c1;font-weight:bold">rpc</span> ClientStreamMethod<span style="color:#eceff4">(</span>stream Hello<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">returns</span> <span style="color:#eceff4">(</span>Hello<span style="color:#eceff4">)</span> <span style="color:#eceff4">{}</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span>  <span style="color:#81a1c1;font-weight:bold">rpc</span> BidiStreamMethod<span style="color:#eceff4">(</span>stream Hello<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">returns</span> <span style="color:#eceff4">(</span>stream Hello<span style="color:#eceff4">)</span> <span style="color:#eceff4">{}</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span><span style="color:#eceff4">}</span><span style="color:#bf616a">
+</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span><span style="color:#81a1c1;font-weight:bold">message</span> <span style="color:#8fbcbb">Hello</span> <span style="color:#eceff4">{</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span>  <span style="color:#81a1c1">string</span> name <span style="color:#81a1c1">=</span> <span style="color:#b48ead">1</span><span style="color:#eceff4">;</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span>  <span style="color:#81a1c1">int64</span> error_code <span style="color:#81a1c1">=</span> <span style="color:#b48ead">2</span><span style="color:#eceff4">;</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span><span style="color:#eceff4">}</span><span style="color:#bf616a">
 </span></code></pre></div><p>Each of the RPCs defined on the <code>Greeter</code> service will map to the respective
 method type, as supported by gRPC.</p>
 <p>Next, we can generate the server and client stubs from the Protobuf code. Let&rsquo;s
 define a small <code>rake</code> command to aid us with this, as part of the project&rsquo;s
 <code>Rakefile</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="c1"># Rakefile</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rb" data-lang="rb"><span style="color:#616e87;font-style:italic"># Rakefile</span>
 
-<span class="n">namespace</span> <span class="ss">:test</span> <span class="k">do</span>
-  <span class="n">desc</span> <span class="s1">&#39;Generate test protobuf stubs&#39;</span>
-  <span class="n">task</span> <span class="ss">:generate_proto</span> <span class="k">do</span> <span class="o">|</span><span class="n">_task</span><span class="p">,</span> <span class="n">_args</span><span class="o">|</span>
-    <span class="nb">system</span> <span class="s1">&#39;bundle exec grpc_tools_ruby_protoc --ruby_out=. --grpc_out=. spec/support/greeter/greeter.proto&#39;</span>
-  <span class="k">end</span>
-<span class="k">end</span>
+namespace <span style="color:#a3be8c">:test</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  desc <span style="color:#a3be8c">&#39;Generate test protobuf stubs&#39;</span>
+  task <span style="color:#a3be8c">:generate_proto</span> <span style="color:#81a1c1;font-weight:bold">do</span> <span style="color:#81a1c1">|</span>_task<span style="color:#eceff4">,</span> _args<span style="color:#81a1c1">|</span>
+    <span style="color:#81a1c1">system</span> <span style="color:#a3be8c">&#39;bundle exec grpc_tools_ruby_protoc --ruby_out=. --grpc_out=. spec/support/greeter/greeter.proto&#39;</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span>
 </code></pre></div><p>Now that we have the <code>rake test:generate_proto</code> task, we can use it to generate
 the files (output shortened for brevity):</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh">root@d20bd4fd8613:/app# rake test:generate_proto
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">root@d20bd4fd8613:/app# rake test:generate_proto
 root@d20bd4fd8613:/app# ls -la spec/support/greeter/
--rw-r--r--  <span class="m">1</span> root root   <span class="m">353</span> Nov  <span class="m">1</span> 10:50 greeter.proto
--rw-r--r--  <span class="m">1</span> root root   <span class="m">482</span> Nov  <span class="m">2</span> 20:54 greeter_pb.rb
--rw-r--r--  <span class="m">1</span> root root   <span class="m">739</span> Nov  <span class="m">2</span> 20:54 greeter_services_pb.rb
+-rw-r--r--  <span style="color:#b48ead">1</span> root root   <span style="color:#b48ead">353</span> Nov  <span style="color:#b48ead">1</span> 10:50 greeter.proto
+-rw-r--r--  <span style="color:#b48ead">1</span> root root   <span style="color:#b48ead">482</span> Nov  <span style="color:#b48ead">2</span> 20:54 greeter_pb.rb
+-rw-r--r--  <span style="color:#b48ead">1</span> root root   <span style="color:#b48ead">739</span> Nov  <span style="color:#b48ead">2</span> 20:54 greeter_services_pb.rb
 </code></pre></div><p>To be able to mount our server interceptor and test it, we will need to
 implement an actual server, using the newly created <code>Greeter</code> service. The
 server will have two parts: the service itself, with all its methods, and a
 controller piece which will be the actual gRPC over HTTP/2 server.</p>
 <h4 id="service-implementation" class="relative group">Service implementation <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#service-implementation" aria-label="Anchor">#</a></span></h4>
 <p>First, let&rsquo;s put together the service methods:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="c1"># spec/support/greeter/server.rb</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rb" data-lang="rb"><span style="color:#616e87;font-style:italic"># spec/support/greeter/server.rb</span>
 
-<span class="k">module</span> <span class="nn">Grpclog</span>
-  <span class="k">module</span> <span class="nn">Greeter</span>
-    <span class="k">class</span> <span class="nc">Server</span> <span class="o">&lt;</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">Greeter</span><span class="o">::</span><span class="no">Service</span>
-      <span class="k">def</span> <span class="nf">request_response_method</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">_call</span><span class="p">)</span>
-        <span class="n">raise_exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">Grpclog</span>
+  <span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">Greeter</span>
+    <span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Server</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">Grpclog</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Greeter</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Service</span>
+      <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">request_response_method</span><span style="color:#eceff4">(</span>msg<span style="color:#eceff4">,</span> _call<span style="color:#eceff4">)</span>
+        raise_exception<span style="color:#eceff4">(</span>msg<span style="color:#eceff4">)</span>
 
-        <span class="no">Grpclog</span><span class="o">::</span><span class="no">Hello</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="nb">name</span><span class="p">:</span> <span class="s2">&#34;Hello </span><span class="si">#{</span><span class="n">msg</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-      <span class="k">end</span>
+        <span style="color:#8fbcbb">Grpclog</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Hello</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span><span style="color:#81a1c1">name</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Hello </span><span style="color:#a3be8c">#{</span>msg<span style="color:#81a1c1">.</span>name<span style="color:#a3be8c">}</span><span style="color:#a3be8c">&#34;</span><span style="color:#eceff4">)</span>
+      <span style="color:#81a1c1;font-weight:bold">end</span>
 
-      <span class="k">def</span> <span class="nf">server_stream_method</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">_call</span><span class="p">)</span>
-        <span class="n">raise_exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+      <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">server_stream_method</span><span style="color:#eceff4">(</span>msg<span style="color:#eceff4">,</span> _call<span style="color:#eceff4">)</span>
+        raise_exception<span style="color:#eceff4">(</span>msg<span style="color:#eceff4">)</span>
 
-        <span class="o">[</span><span class="no">Grpclog</span><span class="o">::</span><span class="no">Hello</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="nb">name</span><span class="p">:</span> <span class="s1">&#39;Hello!&#39;</span><span class="p">)</span><span class="o">]</span>
-      <span class="k">end</span>
+        <span style="color:#81a1c1">[</span><span style="color:#8fbcbb">Grpclog</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Hello</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span><span style="color:#81a1c1">name</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#39;Hello!&#39;</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">]</span>
+      <span style="color:#81a1c1;font-weight:bold">end</span>
 
-      <span class="k">def</span> <span class="nf">client_stream_method</span><span class="p">(</span><span class="n">call</span><span class="p">)</span>
-        <span class="n">call</span><span class="o">.</span><span class="n">each_remote_read</span> <span class="k">do</span> <span class="o">|</span><span class="n">msg</span><span class="o">|</span>
-          <span class="n">raise_exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-        <span class="k">end</span>
+      <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">client_stream_method</span><span style="color:#eceff4">(</span>call<span style="color:#eceff4">)</span>
+        call<span style="color:#81a1c1">.</span>each_remote_read <span style="color:#81a1c1;font-weight:bold">do</span> <span style="color:#81a1c1">|</span>msg<span style="color:#81a1c1">|</span>
+          raise_exception<span style="color:#eceff4">(</span>msg<span style="color:#eceff4">)</span>
+        <span style="color:#81a1c1;font-weight:bold">end</span>
 
-        <span class="no">Grpclog</span><span class="o">::</span><span class="no">Hello</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="nb">name</span><span class="p">:</span> <span class="s1">&#39;Hello!&#39;</span><span class="p">)</span>
-      <span class="k">end</span>
+        <span style="color:#8fbcbb">Grpclog</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Hello</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span><span style="color:#81a1c1">name</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#39;Hello!&#39;</span><span style="color:#eceff4">)</span>
+      <span style="color:#81a1c1;font-weight:bold">end</span>
 
-      <span class="k">def</span> <span class="nf">bidi_stream_method</span><span class="p">(</span><span class="n">call</span><span class="p">,</span> <span class="n">_view</span><span class="p">)</span>
-        <span class="n">call</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">msg</span><span class="o">|</span>
-          <span class="n">raise_exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-        <span class="k">end</span>
+      <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">bidi_stream_method</span><span style="color:#eceff4">(</span>call<span style="color:#eceff4">,</span> _view<span style="color:#eceff4">)</span>
+        call<span style="color:#81a1c1">.</span>each <span style="color:#81a1c1;font-weight:bold">do</span> <span style="color:#81a1c1">|</span>msg<span style="color:#81a1c1">|</span>
+          raise_exception<span style="color:#eceff4">(</span>msg<span style="color:#eceff4">)</span>
+        <span style="color:#81a1c1;font-weight:bold">end</span>
 
-        <span class="o">[</span><span class="no">Grpclog</span><span class="o">::</span><span class="no">Hello</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="nb">name</span><span class="p">:</span> <span class="s1">&#39;Hello!&#39;</span><span class="p">)</span><span class="o">]</span>
-      <span class="k">end</span>
+        <span style="color:#81a1c1">[</span><span style="color:#8fbcbb">Grpclog</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Hello</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span><span style="color:#81a1c1">name</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#39;Hello!&#39;</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">]</span>
+      <span style="color:#81a1c1;font-weight:bold">end</span>
 
-      <span class="k">def</span> <span class="nf">raise_exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-        <span class="n">code</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">error_code</span>
+      <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">raise_exception</span><span style="color:#eceff4">(</span>msg<span style="color:#eceff4">)</span>
+        code <span style="color:#81a1c1">=</span> msg<span style="color:#81a1c1">.</span>error_code
 
-        <span class="k">raise</span> <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">BadStatus</span><span class="o">.</span><span class="n">new_status_exception</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="s1">&#39;test exception&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">code</span> <span class="o">&gt;</span> <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">OK</span>
-        <span class="k">raise</span> <span class="n">code</span><span class="o">.</span><span class="n">to_s</span> <span class="k">if</span> <span class="n">code</span> <span class="o">&lt;</span> <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">OK</span>
-      <span class="k">end</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span>
+        <span style="color:#81a1c1;font-weight:bold">raise</span> <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">BadStatus</span><span style="color:#81a1c1">.</span>new_status_exception<span style="color:#eceff4">(</span>code<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#39;test exception&#39;</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">if</span> code <span style="color:#81a1c1">&gt;</span> <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">OK</span>
+        <span style="color:#81a1c1;font-weight:bold">raise</span> code<span style="color:#81a1c1">.</span>to_s <span style="color:#81a1c1;font-weight:bold">if</span> code <span style="color:#81a1c1">&lt;</span> <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">OK</span>
+      <span style="color:#81a1c1;font-weight:bold">end</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span>
 </code></pre></div><p>The <code>Server</code> implements the four methods, as defined in the Profobuf
 definition. We keep the implementations lightweight, where each RPC method will
 consume the request/stream and return a blank response. We leave the server as
@@ -919,46 +919,46 @@ implementation.</p>
 <li>Provide an interface to stop the server by terminating the server thread</li>
 </ul>
 <p>Let&rsquo;s quickly see the <code>Controller</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="c1"># spec/support/greeter/controller.rb</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rb" data-lang="rb"><span style="color:#616e87;font-style:italic"># spec/support/greeter/controller.rb</span>
 
-<span class="c1"># rubocop:disable Style/ClassVars</span>
-<span class="k">module</span> <span class="nn">Grpclog</span>
-  <span class="k">module</span> <span class="nn">Greeter</span>
-    <span class="k">class</span> <span class="nc">Controller</span>
-      <span class="vc">@@port</span> <span class="o">=</span> <span class="mi">0</span>
+<span style="color:#616e87;font-style:italic"># rubocop:disable Style/ClassVars</span>
+<span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">Grpclog</span>
+  <span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">Greeter</span>
+    <span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Controller</span>
+      @@port <span style="color:#81a1c1">=</span> <span style="color:#b48ead">0</span>
 
-      <span class="k">class</span> <span class="o">&lt;&lt;</span> <span class="nb">self</span>
-        <span class="k">def</span> <span class="nf">next_port</span>
-          <span class="vc">@@port</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">end</span>
-      <span class="k">end</span>
+      <span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#81a1c1">&lt;&lt;</span> <span style="color:#81a1c1">self</span>
+        <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">next_port</span>
+          @@port <span style="color:#81a1c1">+=</span> <span style="color:#b48ead">1</span>
+        <span style="color:#81a1c1;font-weight:bold">end</span>
+      <span style="color:#81a1c1;font-weight:bold">end</span>
 
-      <span class="kp">attr_reader</span> <span class="ss">:host</span>
+      <span style="color:#81a1c1">attr_reader</span> <span style="color:#a3be8c">:host</span>
 
-      <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="ss">interceptors</span><span class="p">:</span> <span class="o">[]</span><span class="p">,</span> <span class="ss">service</span><span class="p">:</span> <span class="no">Server</span><span class="p">)</span>
-        <span class="vi">@host</span> <span class="o">=</span> <span class="s2">&#34;0.0.0.0:8008</span><span class="si">#{</span><span class="nb">self</span><span class="o">.</span><span class="n">class</span><span class="o">.</span><span class="n">next_port</span><span class="si">}</span><span class="s2">&#34;</span>
-        <span class="vi">@server</span> <span class="o">=</span> <span class="no">GRPC</span><span class="o">::</span><span class="no">RpcServer</span><span class="o">.</span><span class="n">new</span><span class="p">(</span>
-          <span class="ss">poll_period</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-          <span class="ss">pool_keep_alive</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-          <span class="ss">interceptors</span><span class="p">:</span> <span class="n">interceptors</span>
-        <span class="p">)</span>
-        <span class="vi">@server</span><span class="o">.</span><span class="n">add_http2_port</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="ss">:this_port_is_insecure</span><span class="p">)</span>
-        <span class="vi">@server</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
-      <span class="k">end</span>
+      <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">interceptors</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">[]</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">service</span><span style="color:#eceff4">:</span> <span style="color:#8fbcbb">Server</span><span style="color:#eceff4">)</span>
+        @host <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#34;0.0.0.0:8008</span><span style="color:#a3be8c">#{</span><span style="color:#81a1c1">self</span><span style="color:#81a1c1">.</span>class<span style="color:#81a1c1">.</span>next_port<span style="color:#a3be8c">}</span><span style="color:#a3be8c">&#34;</span>
+        @server <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">RpcServer</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span>
+          <span style="color:#a3be8c">poll_period</span><span style="color:#eceff4">:</span> <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
+          <span style="color:#a3be8c">pool_keep_alive</span><span style="color:#eceff4">:</span> <span style="color:#b48ead">1</span><span style="color:#eceff4">,</span>
+          <span style="color:#a3be8c">interceptors</span><span style="color:#eceff4">:</span> interceptors
+        <span style="color:#eceff4">)</span>
+        @server<span style="color:#81a1c1">.</span>add_http2_port<span style="color:#eceff4">(</span>host<span style="color:#eceff4">,</span> <span style="color:#a3be8c">:this_port_is_insecure</span><span style="color:#eceff4">)</span>
+        @server<span style="color:#81a1c1">.</span>handle<span style="color:#eceff4">(</span>service<span style="color:#eceff4">)</span>
+      <span style="color:#81a1c1;font-weight:bold">end</span>
 
-      <span class="k">def</span> <span class="nf">start</span>
-        <span class="vi">@server_thread</span> <span class="o">=</span> <span class="no">Thread</span><span class="o">.</span><span class="n">new</span> <span class="p">{</span> <span class="vi">@server</span><span class="o">.</span><span class="n">run_till_terminated</span> <span class="p">}</span>
-      <span class="k">end</span>
+      <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">start</span>
+        @server_thread <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Thread</span><span style="color:#81a1c1">.</span>new <span style="color:#eceff4">{</span> @server<span style="color:#81a1c1">.</span>run_till_terminated <span style="color:#eceff4">}</span>
+      <span style="color:#81a1c1;font-weight:bold">end</span>
 
-      <span class="k">def</span> <span class="nf">stop</span>
-        <span class="vi">@server</span><span class="o">.</span><span class="n">stop</span>
-        <span class="vi">@server_thread</span><span class="o">.</span><span class="n">join</span>
-        <span class="vi">@server_thread</span><span class="o">.</span><span class="n">terminate</span>
-      <span class="k">end</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-<span class="c1"># rubocop:enable all</span>
+      <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">stop</span>
+        @server<span style="color:#81a1c1">.</span>stop
+        @server_thread<span style="color:#81a1c1">.</span>join
+        @server_thread<span style="color:#81a1c1">.</span>terminate
+      <span style="color:#81a1c1;font-weight:bold">end</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#616e87;font-style:italic"># rubocop:enable all</span>
 </code></pre></div><p>We first establish a <code>GRPC::RpcServer</code> during the initialization phase, the
 actual gRPC server implementation, as provided by the <code>grpc</code> gem. We then set
 up the gRPC server by attaching a <code>host:port</code> that it will listen to, and we
@@ -980,28 +980,28 @@ terminate the server <code>Thread</code> that we start in the <code>start</code>
 <h4 id="integration-test-setup" class="relative group">Integration test setup <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#integration-test-setup" aria-label="Anchor">#</a></span></h4>
 <p>We begin the test setup similarly to the unit test one, but with some crucial
 differences:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="no">RSpec</span><span class="o">.</span><span class="n">describe</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">ServerInterceptor</span> <span class="k">do</span>
-  <span class="n">let</span><span class="p">(</span><span class="ss">:log</span><span class="p">)</span> <span class="p">{</span> <span class="no">StringIO</span><span class="o">.</span><span class="n">new</span> <span class="p">}</span>
-  <span class="n">let</span><span class="p">(</span><span class="ss">:logger</span><span class="p">)</span> <span class="p">{</span> <span class="no">Logger</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">log</span><span class="p">)</span> <span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rb" data-lang="rb"><span style="color:#8fbcbb">RSpec</span><span style="color:#81a1c1">.</span>describe <span style="color:#8fbcbb">Grpclog</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">ServerInterceptor</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  let<span style="color:#eceff4">(</span><span style="color:#a3be8c">:log</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span> <span style="color:#8fbcbb">StringIO</span><span style="color:#81a1c1">.</span>new <span style="color:#eceff4">}</span>
+  let<span style="color:#eceff4">(</span><span style="color:#a3be8c">:logger</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span> <span style="color:#8fbcbb">Logger</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span>log<span style="color:#eceff4">)</span> <span style="color:#eceff4">}</span>
 
-  <span class="n">let</span><span class="p">(</span><span class="ss">:interceptor</span><span class="p">)</span> <span class="p">{</span> <span class="n">described_class</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span> <span class="p">}</span>
-  <span class="n">let</span><span class="p">(</span><span class="ss">:channel</span><span class="p">)</span> <span class="p">{</span>
-    <span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">Channel</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="vi">@server</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="ss">:this_channel_is_insecure</span><span class="p">)</span>
-  <span class="p">}</span>
+  let<span style="color:#eceff4">(</span><span style="color:#a3be8c">:interceptor</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span> described_class<span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span>logger<span style="color:#eceff4">)</span> <span style="color:#eceff4">}</span>
+  let<span style="color:#eceff4">(</span><span style="color:#a3be8c">:channel</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+    <span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Channel</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span>@server<span style="color:#81a1c1">.</span>host<span style="color:#eceff4">,</span> <span style="color:#81a1c1">nil</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:this_channel_is_insecure</span><span style="color:#eceff4">)</span>
+  <span style="color:#eceff4">}</span>
 
-  <span class="n">let</span><span class="p">(</span><span class="ss">:client</span><span class="p">)</span> <span class="k">do</span>
-    <span class="no">Grpclog</span><span class="o">::</span><span class="no">Greeter</span><span class="o">::</span><span class="no">Stub</span><span class="o">.</span><span class="n">new</span><span class="p">(</span>
-      <span class="vi">@server</span><span class="o">.</span><span class="n">host</span><span class="p">,</span>
-      <span class="ss">:this_channel_is_insecure</span><span class="p">,</span>
-      <span class="ss">channel_override</span><span class="p">:</span> <span class="n">channel</span><span class="p">,</span>
-      <span class="ss">interceptors</span><span class="p">:</span> <span class="o">[]</span>
-    <span class="p">)</span>
-  <span class="k">end</span>
+  let<span style="color:#eceff4">(</span><span style="color:#a3be8c">:client</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#8fbcbb">Grpclog</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Greeter</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Stub</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span>
+      @server<span style="color:#81a1c1">.</span>host<span style="color:#eceff4">,</span>
+      <span style="color:#a3be8c">:this_channel_is_insecure</span><span style="color:#eceff4">,</span>
+      <span style="color:#a3be8c">channel_override</span><span style="color:#eceff4">:</span> channel<span style="color:#eceff4">,</span>
+      <span style="color:#a3be8c">interceptors</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">[]</span>
+    <span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="n">subject</span><span class="p">(</span><span class="ss">:message</span><span class="p">)</span> <span class="p">{</span> <span class="no">JSON</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">string</span><span class="p">)</span> <span class="p">}</span>
+  subject<span style="color:#eceff4">(</span><span style="color:#a3be8c">:message</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span> <span style="color:#8fbcbb">JSON</span><span style="color:#81a1c1">.</span>parse<span style="color:#eceff4">(</span>log<span style="color:#81a1c1">.</span>string<span style="color:#eceff4">)</span> <span style="color:#eceff4">}</span>
 
-  <span class="c1"># Snipped for brevity</span>
-<span class="k">end</span>
+  <span style="color:#616e87;font-style:italic"># Snipped for brevity</span>
+<span style="color:#81a1c1;font-weight:bold">end</span>
 </code></pre></div><p>Setting up the <code>interceptor</code> object by passing in a <code>logger</code> that takes a <code>log</code>
 which is a <code>StringIO</code>, is very similar to what we saw before. Next, we create a
 gRPC channel that connects to a gRPC server on a specified host and port.</p>
@@ -1012,20 +1012,20 @@ implemented.</p>
 <p>Lastly, the <code>subject</code> is the parsed JSON from the <code>log</code> buffer. We will use it
 to set expectations that the interceptor logged our messages correctly.</p>
 <p>Let&rsquo;s continue with our spec:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="no">RSpec</span><span class="o">.</span><span class="n">describe</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">ServerInterceptor</span> <span class="k">do</span>
-  <span class="c1"># Snipped for brevity</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rb" data-lang="rb"><span style="color:#8fbcbb">RSpec</span><span style="color:#81a1c1">.</span>describe <span style="color:#8fbcbb">Grpclog</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">ServerInterceptor</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  <span style="color:#616e87;font-style:italic"># Snipped for brevity</span>
 
-  <span class="n">before</span> <span class="k">do</span>
-    <span class="vi">@server</span> <span class="o">=</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">Greeter</span><span class="o">::</span><span class="no">Controller</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="ss">interceptors</span><span class="p">:</span> <span class="o">[</span><span class="n">interceptor</span><span class="o">]</span><span class="p">)</span>
-    <span class="vi">@server</span><span class="o">.</span><span class="n">start</span>
-  <span class="k">end</span>
+  before <span style="color:#81a1c1;font-weight:bold">do</span>
+    @server <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Grpclog</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Greeter</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Controller</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span><span style="color:#a3be8c">interceptors</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">[</span>interceptor<span style="color:#81a1c1">]</span><span style="color:#eceff4">)</span>
+    @server<span style="color:#81a1c1">.</span>start
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="n">after</span> <span class="k">do</span>
-    <span class="vi">@server</span><span class="o">&amp;.</span><span class="n">stop</span>
-  <span class="k">end</span>
+  after <span style="color:#81a1c1;font-weight:bold">do</span>
+    @server<span style="color:#81a1c1">&amp;.</span>stop
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="c1"># Snipped for brevity</span>
-<span class="k">end</span>
+  <span style="color:#616e87;font-style:italic"># Snipped for brevity</span>
+<span style="color:#81a1c1;font-weight:bold">end</span>
 </code></pre></div><p>Here, we set the <code>before</code> and <code>after</code> blocks. In the <code>before</code> block, we
 initialize the new gRPC server by using the <code>Grpclog::Greeter::Controller</code>
 class. To it, we pass the <code>interceptor</code> object that we initialized before.</p>
@@ -1033,37 +1033,37 @@ class. To it, we pass the <code>interceptor</code> object that we initialized be
 want to perform this cleanup, so we do not leave gRPC server threads running
 after our specs finish.</p>
 <p>Let&rsquo;s look at a spec next:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rb" data-lang="rb"><span class="no">RSpec</span><span class="o">.</span><span class="n">describe</span> <span class="no">Grpclog</span><span class="o">::</span><span class="no">ServerInterceptor</span> <span class="k">do</span>
-  <span class="c1"># Snipped for brevity</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-rb" data-lang="rb"><span style="color:#8fbcbb">RSpec</span><span style="color:#81a1c1">.</span>describe <span style="color:#8fbcbb">Grpclog</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">ServerInterceptor</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  <span style="color:#616e87;font-style:italic"># Snipped for brevity</span>
 
-  <span class="n">subject</span><span class="p">(</span><span class="ss">:logger</span><span class="p">)</span> <span class="p">{</span> <span class="no">Logger</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="no">STDOUT</span><span class="p">)</span> <span class="p">}</span>
+  subject<span style="color:#eceff4">(</span><span style="color:#a3be8c">:logger</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span> <span style="color:#8fbcbb">Logger</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span><span style="color:#8fbcbb">STDOUT</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">}</span>
 
-  <span class="n">describe</span> <span class="s1">&#39;#server_streamer_method&#39;</span> <span class="k">do</span>
-    <span class="n">context</span> <span class="s1">&#39;when no exceptions are raised&#39;</span> <span class="k">do</span>
-      <span class="n">before</span> <span class="k">do</span>
-        <span class="n">enumerator</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">server_streamer_method</span><span class="p">(</span><span class="no">Grpclog</span><span class="o">::</span><span class="no">Hello</span><span class="o">.</span><span class="n">new</span><span class="p">)</span>
-        <span class="n">enumerator</span><span class="o">.</span><span class="n">each</span> <span class="p">{}</span> <span class="c1"># Consume the stream</span>
-      <span class="k">end</span>
+  describe <span style="color:#a3be8c">&#39;#server_streamer_method&#39;</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    context <span style="color:#a3be8c">&#39;when no exceptions are raised&#39;</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+      before <span style="color:#81a1c1;font-weight:bold">do</span>
+        enumerator <span style="color:#81a1c1">=</span> client<span style="color:#81a1c1">.</span>server_streamer_method<span style="color:#eceff4">(</span><span style="color:#8fbcbb">Grpclog</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Hello</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">)</span>
+        enumerator<span style="color:#81a1c1">.</span>each <span style="color:#eceff4">{}</span> <span style="color:#616e87;font-style:italic"># Consume the stream</span>
+      <span style="color:#81a1c1;font-weight:bold">end</span>
 
-      <span class="n">it</span> <span class="p">{</span> <span class="n">is_expected</span><span class="o">.</span><span class="n">to</span> <span class="kp">include</span><span class="p">(</span><span class="s1">&#39;grpc.code&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;OK&#39;</span><span class="p">)</span> <span class="p">}</span>
-    <span class="k">end</span>
+      it <span style="color:#eceff4">{</span> is_expected<span style="color:#81a1c1">.</span>to <span style="color:#81a1c1">include</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#39;grpc.code&#39;</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;OK&#39;</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">}</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
 
-    <span class="n">context</span> <span class="s1">&#39;when an exception is raised&#39;</span> <span class="k">do</span>
-      <span class="n">before</span> <span class="k">do</span>
-        <span class="n">expect</span> <span class="k">do</span>
-          <span class="n">enumerator</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">server_streamer_method</span><span class="p">(</span>
-            <span class="no">Grpclog</span><span class="o">::</span><span class="no">Hello</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="ss">error_code</span><span class="p">:</span> <span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Core</span><span class="o">::</span><span class="no">StatusCodes</span><span class="o">::</span><span class="no">UNKNOWN</span><span class="p">)</span>
-          <span class="p">)</span>
-          <span class="n">enumerator</span><span class="o">.</span><span class="n">each</span> <span class="p">{}</span> <span class="c1"># Consume the stream</span>
-        <span class="k">end</span><span class="o">.</span><span class="n">to</span> <span class="n">raise_error</span><span class="p">(</span><span class="o">::</span><span class="no">GRPC</span><span class="o">::</span><span class="no">Unknown</span><span class="p">)</span>
-      <span class="k">end</span>
+    context <span style="color:#a3be8c">&#39;when an exception is raised&#39;</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+      before <span style="color:#81a1c1;font-weight:bold">do</span>
+        expect <span style="color:#81a1c1;font-weight:bold">do</span>
+          enumerator <span style="color:#81a1c1">=</span> client<span style="color:#81a1c1">.</span>server_streamer_method<span style="color:#eceff4">(</span>
+            <span style="color:#8fbcbb">Grpclog</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Hello</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span><span style="color:#a3be8c">error_code</span><span style="color:#eceff4">:</span> <span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Core</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">StatusCodes</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">UNKNOWN</span><span style="color:#eceff4">)</span>
+          <span style="color:#eceff4">)</span>
+          enumerator<span style="color:#81a1c1">.</span>each <span style="color:#eceff4">{}</span> <span style="color:#616e87;font-style:italic"># Consume the stream</span>
+        <span style="color:#81a1c1;font-weight:bold">end</span><span style="color:#81a1c1">.</span>to raise_error<span style="color:#eceff4">(</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">GRPC</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Unknown</span><span style="color:#eceff4">)</span>
+      <span style="color:#81a1c1;font-weight:bold">end</span>
 
-      <span class="n">it</span> <span class="p">{</span> <span class="n">is_expected</span><span class="o">.</span><span class="n">to</span> <span class="kp">include</span><span class="p">(</span><span class="s1">&#39;grpc.code&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;Unknown&#39;</span><span class="p">)</span> <span class="p">}</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
+      it <span style="color:#eceff4">{</span> is_expected<span style="color:#81a1c1">.</span>to <span style="color:#81a1c1">include</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#39;grpc.code&#39;</span> <span style="color:#81a1c1">=&gt;</span> <span style="color:#a3be8c">&#39;Unknown&#39;</span><span style="color:#eceff4">)</span> <span style="color:#eceff4">}</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="c1"># Snipped for brevity</span>
-<span class="k">end</span>
+  <span style="color:#616e87;font-style:italic"># Snipped for brevity</span>
+<span style="color:#81a1c1;font-weight:bold">end</span>
 </code></pre></div><p>We are looking at two different specs here: one where no exception is raised
 and one that raises a <code>GRPC::Unknown</code>.</p>
 <p>In the first spec, we use the service <code>client</code> to invoke the
@@ -1488,7 +1488,7 @@ setup.</p>
       
         <p class="text-sm text-neutral-500 dark:text-neutral-400">
             &copy;
-            2022
+            2023
             Ilija Eftimov
         </p>
       

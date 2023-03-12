@@ -110,7 +110,7 @@
     "keywords": ["docker","docker-compose","pid","tmpfs"],
     
     "mainEntityOfPage": "true",
-    "wordCount": "3072"
+    "wordCount": "3087"
   }]
   </script>
 
@@ -384,33 +384,33 @@ as the application is containerized.</span>
 <p>Let&rsquo;s look at the <code>Dockerfile</code> of a simple Rails application, that uses no
 backing services. The <code>Dockerfile</code> will use the <code>ruby:3.0.2-alpine3.14</code> image
 as base:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-dockerfile" data-lang="dockerfile"><span class="k">FROM</span><span class="s"> ruby:3.0.2-alpine3.14</span><span class="err">
-</span><span class="err">
-</span><span class="err"></span><span class="k">WORKDIR</span><span class="s"> /app</span><span class="err">
-</span><span class="err">
-</span><span class="err"></span><span class="c"># Install runtime dependencies</span><span class="err">
-</span><span class="err"></span><span class="k">RUN</span> apk add --no-cache <span class="se">\
-</span><span class="se"></span>  shared-mime-info <span class="se">\
-</span><span class="se"></span>  tzdata <span class="se">\
-</span><span class="se"></span>  sqlite-libs<span class="err">
-</span><span class="err">
-</span><span class="err"></span><span class="c"># Install the project dependencies</span><span class="err">
-</span><span class="err"></span><span class="k">COPY</span> Gemfile* /app<span class="err">
-</span><span class="err">
-</span><span class="err"></span><span class="c"># Bundle build dependencies</span><span class="err">
-</span><span class="err"></span><span class="k">RUN</span> apk add --no-cache --virtual build-dependencies <span class="se">\
-</span><span class="se"></span>  build-base <span class="se">\
-</span><span class="se"></span>  sqlite-dev <span class="se">\
-</span><span class="se"></span>  <span class="o">&amp;&amp;</span> bundle install <span class="se">\
-</span><span class="se"></span>  <span class="o">&amp;&amp;</span> rm -rf /usr/local/bundle/cache/*.gem <span class="se">\
-</span><span class="se"></span>  <span class="o">&amp;&amp;</span> find /usr/local/bundle/gems/ -name <span class="s2">&#34;*.[co]&#34;</span> -delete <span class="se">\
-</span><span class="se"></span>  <span class="o">&amp;&amp;</span> apk del --no-network build-dependencies<span class="err">
-</span><span class="err">
-</span><span class="err"></span><span class="k">COPY</span> . .<span class="err">
-</span><span class="err">
-</span><span class="err"></span><span class="k">ENTRYPOINT</span> <span class="p">[</span><span class="s2">&#34;/bin/sh&#34;</span><span class="p">,</span> <span class="s2">&#34;-c&#34;</span><span class="p">]</span><span class="err">
-</span><span class="err">
-</span><span class="err"></span><span class="k">CMD</span> <span class="p">[</span><span class="s2">&#34;bundle exec rails s -b 0.0.0.0 -p $SERVER_PORT&#34;</span><span class="p">]</span><span class="err">
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-dockerfile" data-lang="dockerfile"><span style="color:#81a1c1;font-weight:bold">FROM</span><span style="color:#a3be8c"> ruby:3.0.2-alpine3.14</span><span style="color:#bf616a">
+</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span><span style="color:#81a1c1;font-weight:bold">WORKDIR</span><span style="color:#a3be8c"> /app</span><span style="color:#bf616a">
+</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span><span style="color:#616e87;font-style:italic"># Install runtime dependencies</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span><span style="color:#81a1c1;font-weight:bold">RUN</span> apk add --no-cache <span style="color:#ebcb8b">\
+</span><span style="color:#ebcb8b"></span>  shared-mime-info <span style="color:#ebcb8b">\
+</span><span style="color:#ebcb8b"></span>  tzdata <span style="color:#ebcb8b">\
+</span><span style="color:#ebcb8b"></span>  sqlite-libs<span style="color:#bf616a">
+</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span><span style="color:#616e87;font-style:italic"># Install the project dependencies</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span><span style="color:#81a1c1;font-weight:bold">COPY</span> Gemfile* /app<span style="color:#bf616a">
+</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span><span style="color:#616e87;font-style:italic"># Bundle build dependencies</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span><span style="color:#81a1c1;font-weight:bold">RUN</span> apk add --no-cache --virtual build-dependencies <span style="color:#ebcb8b">\
+</span><span style="color:#ebcb8b"></span>  build-base <span style="color:#ebcb8b">\
+</span><span style="color:#ebcb8b"></span>  sqlite-dev <span style="color:#ebcb8b">\
+</span><span style="color:#ebcb8b"></span>  <span style="color:#81a1c1">&amp;&amp;</span> bundle install <span style="color:#ebcb8b">\
+</span><span style="color:#ebcb8b"></span>  <span style="color:#81a1c1">&amp;&amp;</span> rm -rf /usr/local/bundle/cache/*.gem <span style="color:#ebcb8b">\
+</span><span style="color:#ebcb8b"></span>  <span style="color:#81a1c1">&amp;&amp;</span> find /usr/local/bundle/gems/ -name <span style="color:#a3be8c">&#34;*.[co]&#34;</span> -delete <span style="color:#ebcb8b">\
+</span><span style="color:#ebcb8b"></span>  <span style="color:#81a1c1">&amp;&amp;</span> apk del --no-network build-dependencies<span style="color:#bf616a">
+</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span><span style="color:#81a1c1;font-weight:bold">COPY</span> . .<span style="color:#bf616a">
+</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span><span style="color:#81a1c1;font-weight:bold">ENTRYPOINT</span> <span style="color:#eceff4">[</span><span style="color:#a3be8c">&#34;/bin/sh&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;-c&#34;</span><span style="color:#eceff4">]</span><span style="color:#bf616a">
+</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span><span style="color:#81a1c1;font-weight:bold">CMD</span> <span style="color:#eceff4">[</span><span style="color:#a3be8c">&#34;bundle exec rails s -b 0.0.0.0 -p $SERVER_PORT&#34;</span><span style="color:#eceff4">]</span><span style="color:#bf616a">
 </span></code></pre></div><p>In the <code>Dockerfile</code>, we first set the working directory (<code>WORKDIR</code>) and then
 install a mix of build and runtime dependencies. Next, we copy the <code>Gemfile</code>
 and <code>Gemfile.lock</code> files to download and compile the bundle in the next step.
@@ -421,141 +421,141 @@ the <code>rails s</code> command. We <code>COPY</code> all files because we want
 files to be inside the container to run. If we fail to copy a required file,
 the application will fail to boot, rendering our Docker image useless.</p>
 <p>To run this container, we first need to build its image:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ docker build -t jarjar:latest .
-<span class="o">[</span>+<span class="o">]</span> Building 14.9s <span class="o">(</span>11/11<span class="o">)</span> <span class="nv">FINISHED</span>
- <span class="o">=</span>&gt; <span class="o">[</span>internal<span class="o">]</span> load build definition from Dockerfile                                                     0.0s
- <span class="o">=</span>&gt; <span class="o">=</span>&gt; transferring dockerfile: 622B                                                                     0.0s
- <span class="o">=</span>&gt; <span class="o">[</span>internal<span class="o">]</span> load .dockerignore                                                                        0.0s
- <span class="o">=</span>&gt; <span class="o">=</span>&gt; transferring context: 2B                                                                          0.0s
- <span class="o">=</span>&gt; <span class="o">[</span>internal<span class="o">]</span> load metadata <span class="k">for</span> docker.io/library/ruby:3.0.2-alpine3.14                                 0.6s
- <span class="o">=</span>&gt; <span class="o">[</span>1/6<span class="o">]</span> FROM docker.io/library/ruby:3.0.2-alpine3.14@sha256:5bb06d7e3853903b9e9480b647b2d99ca289f9511  0.0s
- <span class="o">=</span>&gt; <span class="o">[</span>internal<span class="o">]</span> load build context                                                                        0.0s
- <span class="o">=</span>&gt; <span class="o">=</span>&gt; transferring context: 18.47kB                                                                     0.0s
- <span class="o">=</span>&gt; CACHED <span class="o">[</span>2/6<span class="o">]</span> WORKDIR /app                                                                            0.0s
- <span class="o">=</span>&gt; CACHED <span class="o">[</span>3/6<span class="o">]</span> RUN apk add --no-cache   shared-mime-info   tzdata   sqlite-libs                        0.0s
- <span class="o">=</span>&gt; CACHED <span class="o">[</span>4/6<span class="o">]</span> COPY Gemfile* /app                                                                      0.0s
- <span class="o">=</span>&gt; <span class="o">[</span>5/6<span class="o">]</span> RUN apk add --no-cache --virtual build-dependencies   build-base   sqlite-dev   <span class="o">&amp;&amp;</span> bundle in  13.6s
- <span class="o">=</span>&gt; <span class="o">[</span>6/6<span class="o">]</span> COPY . .                                                                                       0.0s
- <span class="o">=</span>&gt; exporting to image                                                                                   0.5s
- <span class="o">=</span>&gt; <span class="o">=</span>&gt; exporting layers                                                                                  0.5s
- <span class="o">=</span>&gt; <span class="o">=</span>&gt; writing image sha256:c24befc2a0ce11f5550672e4f7aa64a5f6d8169609d173c35d039bf459bce757             0.0s
- <span class="o">=</span>&gt; <span class="o">=</span>&gt; naming to docker.io/library/jarjar:latest                                                         0.0s
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker build -t jarjar:latest .
+<span style="color:#81a1c1">[</span>+<span style="color:#81a1c1">]</span> Building 14.9s <span style="color:#81a1c1">(</span>11/11<span style="color:#81a1c1">)</span> FINISHED
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">[</span>internal<span style="color:#81a1c1">]</span> load build definition from Dockerfile                                                     0.0s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">=</span>&gt; transferring dockerfile: 622B                                                                     0.0s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">[</span>internal<span style="color:#81a1c1">]</span> load .dockerignore                                                                        0.0s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">=</span>&gt; transferring context: 2B                                                                          0.0s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">[</span>internal<span style="color:#81a1c1">]</span> load metadata <span style="color:#81a1c1;font-weight:bold">for</span> docker.io/library/ruby:3.0.2-alpine3.14                                 0.6s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">[</span>1/6<span style="color:#81a1c1">]</span> FROM docker.io/library/ruby:3.0.2-alpine3.14@sha256:5bb06d7e3853903b9e9480b647b2d99ca289f9511  0.0s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">[</span>internal<span style="color:#81a1c1">]</span> load build context                                                                        0.0s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">=</span>&gt; transferring context: 18.47kB                                                                     0.0s
+ <span style="color:#81a1c1">=</span>&gt; CACHED <span style="color:#81a1c1">[</span>2/6<span style="color:#81a1c1">]</span> WORKDIR /app                                                                            0.0s
+ <span style="color:#81a1c1">=</span>&gt; CACHED <span style="color:#81a1c1">[</span>3/6<span style="color:#81a1c1">]</span> RUN apk add --no-cache   shared-mime-info   tzdata   sqlite-libs                        0.0s
+ <span style="color:#81a1c1">=</span>&gt; CACHED <span style="color:#81a1c1">[</span>4/6<span style="color:#81a1c1">]</span> COPY Gemfile* /app                                                                      0.0s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">[</span>5/6<span style="color:#81a1c1">]</span> RUN apk add --no-cache --virtual build-dependencies   build-base   sqlite-dev   <span style="color:#81a1c1">&amp;&amp;</span> bundle in  13.6s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">[</span>6/6<span style="color:#81a1c1">]</span> COPY . .                                                                                       0.0s
+ <span style="color:#81a1c1">=</span>&gt; exporting to image                                                                                   0.5s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">=</span>&gt; exporting layers                                                                                  0.5s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">=</span>&gt; writing image sha256:c24befc2a0ce11f5550672e4f7aa64a5f6d8169609d173c35d039bf459bce757             0.0s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">=</span>&gt; naming to docker.io/library/jarjar:latest                                                         0.0s
 </code></pre></div><p>After the image is built, we can create a container:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ docker run --env <span class="nv">SERVER_PORT</span><span class="o">=</span><span class="m">3000</span> -p 3000:3000 jarjar:latest
-<span class="o">=</span>&gt; Booting <span class="nv">Puma</span>
-<span class="o">=</span>&gt; Rails 6.1.4.1 application starting in <span class="nv">development</span>
-<span class="o">=</span>&gt; Run <span class="sb">`</span>bin/rails server --help<span class="sb">`</span> <span class="k">for</span> more startup options
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker run --env SERVER_PORT<span style="color:#81a1c1">=</span><span style="color:#b48ead">3000</span> -p 3000:3000 jarjar:latest
+<span style="color:#81a1c1">=</span>&gt; Booting Puma
+<span style="color:#81a1c1">=</span>&gt; Rails 6.1.4.1 application starting in development
+<span style="color:#81a1c1">=</span>&gt; Run <span style="color:#a3be8c">`</span>bin/rails server --help<span style="color:#a3be8c">`</span> <span style="color:#81a1c1;font-weight:bold">for</span> more startup options
 Puma starting in single mode...
-* Puma version: 5.5.2 <span class="o">(</span>ruby 3.0.2-p107<span class="o">)</span> <span class="o">(</span><span class="s2">&#34;Zawgyi&#34;</span><span class="o">)</span>
-*  Min threads: <span class="m">5</span>
-*  Max threads: <span class="m">5</span>
+* Puma version: 5.5.2 <span style="color:#81a1c1">(</span>ruby 3.0.2-p107<span style="color:#81a1c1">)</span> <span style="color:#81a1c1">(</span><span style="color:#a3be8c">&#34;Zawgyi&#34;</span><span style="color:#81a1c1">)</span>
+*  Min threads: <span style="color:#b48ead">5</span>
+*  Max threads: <span style="color:#b48ead">5</span>
 *  Environment: development
-*          PID: <span class="m">1</span>
+*          PID: <span style="color:#b48ead">1</span>
 * Listening on http://0.0.0.0:3000
 Use Ctrl-C to stop
 </code></pre></div><p>Voilá! Our container is off to the races!</p>
 <p>Because we map the container port 3000 to the host machine&rsquo;s port 3000, we can
 <code>curl</code> the Rails application from our host machine. Fortunately, we will get
 an HTTP 200:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ curl -X GET -I localhost:3000
-HTTP/1.1 <span class="m">200</span> OK
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ curl -X GET -I localhost:3000
+HTTP/1.1 <span style="color:#b48ead">200</span> OK
 X-Frame-Options: SAMEORIGIN
-X-XSS-Protection: 1<span class="p">;</span> <span class="nv">mode</span><span class="o">=</span>block
+X-XSS-Protection: 1<span style="color:#eceff4">;</span> mode<span style="color:#81a1c1">=</span>block
 X-Content-Type-Options: nosniff
 X-Download-Options: noopen
 X-Permitted-Cross-Domain-Policies: none
 Referrer-Policy: strict-origin-when-cross-origin
-Content-Type: text/html<span class="p">;</span> <span class="nv">charset</span><span class="o">=</span>utf-8
+Content-Type: text/html<span style="color:#eceff4">;</span> charset<span style="color:#81a1c1">=</span>utf-8
 Vary: Accept
-Cache-Control: no-store, must-revalidate, private, max-age<span class="o">=</span><span class="m">0</span>
-Content-Security-Policy: script-src <span class="s1">&#39;unsafe-inline&#39;</span><span class="p">;</span> style-src <span class="s1">&#39;unsafe-inline&#39;</span>
+Cache-Control: no-store, must-revalidate, private, max-age<span style="color:#81a1c1">=</span><span style="color:#b48ead">0</span>
+Content-Security-Policy: script-src <span style="color:#a3be8c">&#39;unsafe-inline&#39;</span><span style="color:#eceff4">;</span> style-src <span style="color:#a3be8c">&#39;unsafe-inline&#39;</span>
 X-Request-Id: a4befe81-30be-4859-b757-feac45f90b08
 X-Runtime: 0.312531
-X-MiniProfiler-Original-Cache-Control: max-age<span class="o">=</span>0, private, must-revalidate
+X-MiniProfiler-Original-Cache-Control: max-age<span style="color:#81a1c1">=</span>0, private, must-revalidate
 X-MiniProfiler-Ids: 8hq1e1quzqh4uacc9xb8
-Set-Cookie: <span class="nv">__profilin</span><span class="o">=</span>p%3Dt<span class="p">;</span> <span class="nv">path</span><span class="o">=</span>/<span class="p">;</span> HttpOnly<span class="p">;</span> <span class="nv">SameSite</span><span class="o">=</span>Lax
-Content-Length: <span class="m">400499</span>
+Set-Cookie: __profilin<span style="color:#81a1c1">=</span>p%3Dt<span style="color:#eceff4">;</span> path<span style="color:#81a1c1">=</span>/<span style="color:#eceff4">;</span> HttpOnly<span style="color:#eceff4">;</span> SameSite<span style="color:#81a1c1">=</span>Lax
+Content-Length: <span style="color:#b48ead">400499</span>
 </code></pre></div><p>Now, instead of running our application with the complicated <code>docker run</code> command,
 let&rsquo;s throw in a Docker Compose file and make our lifes easier:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;3.8&#39;</span><span class="w">
-</span><span class="w">
-</span><span class="w"></span><span class="nt">services</span><span class="p">:</span><span class="w">
-</span><span class="w">  </span><span class="nt">http</span><span class="p">:</span><span class="w">
-</span><span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l">.</span><span class="w">
-</span><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">jarjar</span><span class="w">
-</span><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
-</span><span class="w">      </span><span class="nt">SERVER_PORT</span><span class="p">:</span><span class="w"> </span><span class="l">${SERVER_PORT}</span><span class="w">
-</span><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
-</span><span class="w">      </span>- <span class="l">${SERVER_PORT}:${SERVER_PORT} </span><span class="w"> </span><span class="c"># Set to 4000 in .env file</span><span class="w">
-</span><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
-</span><span class="w">      </span>- <span class="l">.:/app</span><span class="w">
-</span></code></pre></div><p>The file sets up the required environment variables, ports and volumes for the
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#81a1c1">version</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#39;3.8&#39;</span>
+
+<span style="color:#81a1c1">services</span><span style="color:#eceff4">:</span>
+  <span style="color:#81a1c1">http</span><span style="color:#eceff4">:</span>
+    <span style="color:#81a1c1">build</span><span style="color:#eceff4">:</span> .
+    <span style="color:#81a1c1">image</span><span style="color:#eceff4">:</span> jarjar
+    <span style="color:#81a1c1">environment</span><span style="color:#eceff4">:</span>
+      <span style="color:#81a1c1">SERVER_PORT</span><span style="color:#eceff4">:</span> ${SERVER_PORT}
+    <span style="color:#81a1c1">ports</span><span style="color:#eceff4">:</span>
+      - ${SERVER_PORT}:${SERVER_PORT}  <span style="color:#616e87;font-style:italic"># Set to 4000 in .env file</span>
+    <span style="color:#81a1c1">volumes</span><span style="color:#eceff4">:</span>
+      - .:/app
+</code></pre></div><p>The file sets up the required environment variables, ports and volumes for the
 Rails application. To build our image now, we can use <code>docker-compose build</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ docker-compose build
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker-compose build
 Building http
-<span class="o">[</span>+<span class="o">]</span> Building 0.7s <span class="o">(</span>11/11<span class="o">)</span> <span class="nv">FINISHED</span>
- <span class="o">=</span>&gt; <span class="o">[</span>internal<span class="o">]</span> load build definition from Dockerfile                                                     0.0s
- <span class="o">=</span>&gt; <span class="o">=</span>&gt; transferring dockerfile: 622B                                                                     0.0s
- <span class="o">=</span>&gt; <span class="o">[</span>internal<span class="o">]</span> load .dockerignore                                                                        0.0s
- <span class="o">=</span>&gt; <span class="o">=</span>&gt; transferring context: 2B                                                                          0.0s
- <span class="o">=</span>&gt; <span class="o">[</span>internal<span class="o">]</span> load metadata <span class="k">for</span> docker.io/library/ruby:3.0.2-alpine3.14                                 0.6s
- <span class="o">=</span>&gt; <span class="o">[</span>1/6<span class="o">]</span> FROM docker.io/library/ruby:3.0.2-alpine3.14@sha256:5bb06d7e3853903b9e9480b647b2d99ca289f9511  0.0s
- <span class="o">=</span>&gt; <span class="o">[</span>internal<span class="o">]</span> load build context                                                                        0.0s
- <span class="o">=</span>&gt; <span class="o">=</span>&gt; transferring context: 32.32kB                                                                     0.0s
- <span class="o">=</span>&gt; CACHED <span class="o">[</span>2/6<span class="o">]</span> WORKDIR /app                                                                            0.0s
- <span class="o">=</span>&gt; CACHED <span class="o">[</span>3/6<span class="o">]</span> RUN apk add --no-cache   shared-mime-info   tzdata   sqlite-libs                        0.0s
- <span class="o">=</span>&gt; CACHED <span class="o">[</span>4/6<span class="o">]</span> COPY Gemfile* /app                                                                      0.0s
- <span class="o">=</span>&gt; CACHED <span class="o">[</span>5/6<span class="o">]</span> RUN apk add --no-cache --virtual build-dependencies   build-base   sqlite-dev   <span class="o">&amp;&amp;</span> bun  0.0s
- <span class="o">=</span>&gt; CACHED <span class="o">[</span>6/6<span class="o">]</span> COPY . .                                                                                0.0s
- <span class="o">=</span>&gt; exporting to image                                                                                   0.0s
- <span class="o">=</span>&gt; <span class="o">=</span>&gt; exporting layers                                                                                  0.0s
- <span class="o">=</span>&gt; <span class="o">=</span>&gt; writing image sha256:c24befc2a0ce11f5550672e4f7aa64a5f6d8169609d173c35d039bf459bce757             0.0s
- <span class="o">=</span>&gt; <span class="o">=</span>&gt; naming to docker.io/library/jarjar                                                                0.0s
+<span style="color:#81a1c1">[</span>+<span style="color:#81a1c1">]</span> Building 0.7s <span style="color:#81a1c1">(</span>11/11<span style="color:#81a1c1">)</span> FINISHED
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">[</span>internal<span style="color:#81a1c1">]</span> load build definition from Dockerfile                                                     0.0s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">=</span>&gt; transferring dockerfile: 622B                                                                     0.0s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">[</span>internal<span style="color:#81a1c1">]</span> load .dockerignore                                                                        0.0s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">=</span>&gt; transferring context: 2B                                                                          0.0s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">[</span>internal<span style="color:#81a1c1">]</span> load metadata <span style="color:#81a1c1;font-weight:bold">for</span> docker.io/library/ruby:3.0.2-alpine3.14                                 0.6s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">[</span>1/6<span style="color:#81a1c1">]</span> FROM docker.io/library/ruby:3.0.2-alpine3.14@sha256:5bb06d7e3853903b9e9480b647b2d99ca289f9511  0.0s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">[</span>internal<span style="color:#81a1c1">]</span> load build context                                                                        0.0s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">=</span>&gt; transferring context: 32.32kB                                                                     0.0s
+ <span style="color:#81a1c1">=</span>&gt; CACHED <span style="color:#81a1c1">[</span>2/6<span style="color:#81a1c1">]</span> WORKDIR /app                                                                            0.0s
+ <span style="color:#81a1c1">=</span>&gt; CACHED <span style="color:#81a1c1">[</span>3/6<span style="color:#81a1c1">]</span> RUN apk add --no-cache   shared-mime-info   tzdata   sqlite-libs                        0.0s
+ <span style="color:#81a1c1">=</span>&gt; CACHED <span style="color:#81a1c1">[</span>4/6<span style="color:#81a1c1">]</span> COPY Gemfile* /app                                                                      0.0s
+ <span style="color:#81a1c1">=</span>&gt; CACHED <span style="color:#81a1c1">[</span>5/6<span style="color:#81a1c1">]</span> RUN apk add --no-cache --virtual build-dependencies   build-base   sqlite-dev   <span style="color:#81a1c1">&amp;&amp;</span> bun  0.0s
+ <span style="color:#81a1c1">=</span>&gt; CACHED <span style="color:#81a1c1">[</span>6/6<span style="color:#81a1c1">]</span> COPY . .                                                                                0.0s
+ <span style="color:#81a1c1">=</span>&gt; exporting to image                                                                                   0.0s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">=</span>&gt; exporting layers                                                                                  0.0s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">=</span>&gt; writing image sha256:c24befc2a0ce11f5550672e4f7aa64a5f6d8169609d173c35d039bf459bce757             0.0s
+ <span style="color:#81a1c1">=</span>&gt; <span style="color:#81a1c1">=</span>&gt; naming to docker.io/library/jarjar                                                                0.0s
 </code></pre></div><p>Now that we have the image built, we can run the service:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ docker-compose up
-Starting jarjar_http_1 ... <span class="k">done</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker-compose up
+Starting jarjar_http_1 ... <span style="color:#81a1c1;font-weight:bold">done</span>
 Attaching to jarjar_http_1
-http_1  <span class="p">|</span> <span class="o">=</span>&gt; Booting Puma
-http_1  <span class="p">|</span> <span class="o">=</span>&gt; Rails 6.1.4.1 application starting in development
-http_1  <span class="p">|</span> <span class="o">=</span>&gt; Run <span class="sb">`</span>bin/rails server --help<span class="sb">`</span> <span class="k">for</span> more startup options
-http_1  <span class="p">|</span> Puma starting in single mode...
-http_1  <span class="p">|</span> * Puma version: 5.5.2 <span class="o">(</span>ruby 3.0.2-p107<span class="o">)</span> <span class="o">(</span><span class="s2">&#34;Zawgyi&#34;</span><span class="o">)</span>
-http_1  <span class="p">|</span> *  Min threads: <span class="m">5</span>
-http_1  <span class="p">|</span> *  Max threads: <span class="m">5</span>
-http_1  <span class="p">|</span> *  Environment: development
-http_1  <span class="p">|</span> *          PID: <span class="m">1</span>
-http_1  <span class="p">|</span> * Listening on http://0.0.0.0:4000
-http_1  <span class="p">|</span> Use Ctrl-C to stop
+http_1  <span style="color:#eceff4">|</span> <span style="color:#81a1c1">=</span>&gt; Booting Puma
+http_1  <span style="color:#eceff4">|</span> <span style="color:#81a1c1">=</span>&gt; Rails 6.1.4.1 application starting in development
+http_1  <span style="color:#eceff4">|</span> <span style="color:#81a1c1">=</span>&gt; Run <span style="color:#a3be8c">`</span>bin/rails server --help<span style="color:#a3be8c">`</span> <span style="color:#81a1c1;font-weight:bold">for</span> more startup options
+http_1  <span style="color:#eceff4">|</span> Puma starting in single mode...
+http_1  <span style="color:#eceff4">|</span> * Puma version: 5.5.2 <span style="color:#81a1c1">(</span>ruby 3.0.2-p107<span style="color:#81a1c1">)</span> <span style="color:#81a1c1">(</span><span style="color:#a3be8c">&#34;Zawgyi&#34;</span><span style="color:#81a1c1">)</span>
+http_1  <span style="color:#eceff4">|</span> *  Min threads: <span style="color:#b48ead">5</span>
+http_1  <span style="color:#eceff4">|</span> *  Max threads: <span style="color:#b48ead">5</span>
+http_1  <span style="color:#eceff4">|</span> *  Environment: development
+http_1  <span style="color:#eceff4">|</span> *          PID: <span style="color:#b48ead">1</span>
+http_1  <span style="color:#eceff4">|</span> * Listening on http://0.0.0.0:4000
+http_1  <span style="color:#eceff4">|</span> Use Ctrl-C to stop
 </code></pre></div><p>We have our service running using Docker Compose! Let&rsquo;s <code>curl</code> it, again:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ curl -X GET -I localhost:4000
-HTTP/1.1 <span class="m">200</span> OK
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ curl -X GET -I localhost:4000
+HTTP/1.1 <span style="color:#b48ead">200</span> OK
 X-Frame-Options: SAMEORIGIN
-X-XSS-Protection: 1<span class="p">;</span> <span class="nv">mode</span><span class="o">=</span>block
+X-XSS-Protection: 1<span style="color:#eceff4">;</span> mode<span style="color:#81a1c1">=</span>block
 X-Content-Type-Options: nosniff
 X-Download-Options: noopen
 X-Permitted-Cross-Domain-Policies: none
 Referrer-Policy: strict-origin-when-cross-origin
-Content-Type: text/html<span class="p">;</span> <span class="nv">charset</span><span class="o">=</span>utf-8
+Content-Type: text/html<span style="color:#eceff4">;</span> charset<span style="color:#81a1c1">=</span>utf-8
 Vary: Accept
-Cache-Control: no-store, must-revalidate, private, max-age<span class="o">=</span><span class="m">0</span>
-Content-Security-Policy: script-src <span class="s1">&#39;unsafe-inline&#39;</span><span class="p">;</span> style-src <span class="s1">&#39;unsafe-inline&#39;</span>
+Cache-Control: no-store, must-revalidate, private, max-age<span style="color:#81a1c1">=</span><span style="color:#b48ead">0</span>
+Content-Security-Policy: script-src <span style="color:#a3be8c">&#39;unsafe-inline&#39;</span><span style="color:#eceff4">;</span> style-src <span style="color:#a3be8c">&#39;unsafe-inline&#39;</span>
 X-Request-Id: d7a72b16-9630-4e4c-9e9e-8781c8207b52
 X-Runtime: 0.020082
-X-MiniProfiler-Original-Cache-Control: max-age<span class="o">=</span>0, private, must-revalidate
+X-MiniProfiler-Original-Cache-Control: max-age<span style="color:#81a1c1">=</span>0, private, must-revalidate
 X-MiniProfiler-Ids: dvwfody0av0h45hub5bw,pp70s0op22fdolh4u8zt,hdpxqj8kohhs6r3jf7xp,c080m80j1zfarr0b4qxw
-Set-Cookie: <span class="nv">__profilin</span><span class="o">=</span>p%3Dt<span class="p">;</span> <span class="nv">path</span><span class="o">=</span>/<span class="p">;</span> HttpOnly<span class="p">;</span> <span class="nv">SameSite</span><span class="o">=</span>Lax
-Content-Length: <span class="m">400562</span>
+Set-Cookie: __profilin<span style="color:#81a1c1">=</span>p%3Dt<span style="color:#eceff4">;</span> path<span style="color:#81a1c1">=</span>/<span style="color:#eceff4">;</span> HttpOnly<span style="color:#eceff4">;</span> SameSite<span style="color:#81a1c1">=</span>Lax
+Content-Length: <span style="color:#b48ead">400562</span>
 </code></pre></div><p>We get an HTTP 200. If we bring down the container and up again, we&rsquo;ll run
 into a familiar problem:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ docker-compose up
-Starting jarjar_http_1     ... <span class="k">done</span>
-<span class="o">[</span>...<span class="o">]</span>
-http_1      <span class="p">|</span> <span class="o">=</span>&gt; Booting Puma
-http_1      <span class="p">|</span> <span class="o">=</span>&gt; Rails 6.1.4.1 application starting in development
-http_1      <span class="p">|</span> <span class="o">=</span>&gt; Run <span class="sb">`</span>bin/rails server --help<span class="sb">`</span> <span class="k">for</span> more startup options
-http_1      <span class="p">|</span> Exiting
-http_1      <span class="p">|</span> A server is already running. Check /app/tmp/pids/server.pid.
-jarjar_http_1 exited with code <span class="m">1</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker-compose up
+Starting jarjar_http_1     ... <span style="color:#81a1c1;font-weight:bold">done</span>
+<span style="color:#81a1c1">[</span>...<span style="color:#81a1c1">]</span>
+http_1      <span style="color:#eceff4">|</span> <span style="color:#81a1c1">=</span>&gt; Booting Puma
+http_1      <span style="color:#eceff4">|</span> <span style="color:#81a1c1">=</span>&gt; Rails 6.1.4.1 application starting in development
+http_1      <span style="color:#eceff4">|</span> <span style="color:#81a1c1">=</span>&gt; Run <span style="color:#a3be8c">`</span>bin/rails server --help<span style="color:#a3be8c">`</span> <span style="color:#81a1c1;font-weight:bold">for</span> more startup options
+http_1      <span style="color:#eceff4">|</span> Exiting
+http_1      <span style="color:#eceff4">|</span> A server is already running. Check /app/tmp/pids/server.pid.
+jarjar_http_1 exited with code <span style="color:#b48ead">1</span>
 </code></pre></div><p>Apparently we have a stray PID file, and our server can&rsquo;t boot.</p>
 <h2 id="stray-pid-files" class="relative group">Stray PID files <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#stray-pid-files" aria-label="Anchor">#</a></span></h2>
 <p>The default web server for Rails, Puma, creates a PID file. A PID, shorthand
@@ -563,8 +563,8 @@ for Process ID, is a file that contains only the ID of the server process on
 the operating system. So, if we boot our server container, we attach to it and
 open the PID file; we will see that the file contains only the PID number in
 it:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">/app <span class="c1"># cat tmp/pids/server.pid</span>
-<span class="m">1</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">/app <span style="color:#616e87;font-style:italic"># cat tmp/pids/server.pid</span>
+<span style="color:#b48ead">1</span>
 </code></pre></div><p>Before I got to this section, I had no idea why PID files were useful. However,
 after consulting an excellent <a href="https://unix.stackexchange.com/a/12818/410360">StackOverflow
 answer</a> (that I recommend
@@ -607,20 +607,20 @@ clean up its mess before exiting?</p>
 signal (SIGINT) when we press Ctrl-C so it can act upon it. But when we press
 Ctrl-C, even though we think we are interrupting Puma, we are not.</p>
 <p>Inspect this output, carefully:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ docker-compose up
-Recreating jarjar_http_1 ... <span class="k">done</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker-compose up
+Recreating jarjar_http_1 ... <span style="color:#81a1c1;font-weight:bold">done</span>
 Attaching to jarjar_http_1
-http_1  <span class="p">|</span> <span class="o">=</span>&gt; Booting Puma
-http_1  <span class="p">|</span> <span class="o">=</span>&gt; Rails 6.1.4.1 application starting in development
-http_1  <span class="p">|</span> <span class="o">=</span>&gt; Run <span class="sb">`</span>bin/rails server --help<span class="sb">`</span> <span class="k">for</span> more startup options
-http_1  <span class="p">|</span> Puma starting in single mode...
-http_1  <span class="p">|</span> * Puma version: 5.5.2 <span class="o">(</span>ruby 3.0.2-p107<span class="o">)</span> <span class="o">(</span><span class="s2">&#34;Zawgyi&#34;</span><span class="o">)</span>
-http_1  <span class="p">|</span> *  Min threads: <span class="m">5</span>
-http_1  <span class="p">|</span> *  Max threads: <span class="m">5</span>
-http_1  <span class="p">|</span> *  Environment: development
-http_1  <span class="p">|</span> *          PID: <span class="m">1</span>
-http_1  <span class="p">|</span> * Listening on http://0.0.0.0:4000
-http_1  <span class="p">|</span> Use Ctrl-C to stop
+http_1  <span style="color:#eceff4">|</span> <span style="color:#81a1c1">=</span>&gt; Booting Puma
+http_1  <span style="color:#eceff4">|</span> <span style="color:#81a1c1">=</span>&gt; Rails 6.1.4.1 application starting in development
+http_1  <span style="color:#eceff4">|</span> <span style="color:#81a1c1">=</span>&gt; Run <span style="color:#a3be8c">`</span>bin/rails server --help<span style="color:#a3be8c">`</span> <span style="color:#81a1c1;font-weight:bold">for</span> more startup options
+http_1  <span style="color:#eceff4">|</span> Puma starting in single mode...
+http_1  <span style="color:#eceff4">|</span> * Puma version: 5.5.2 <span style="color:#81a1c1">(</span>ruby 3.0.2-p107<span style="color:#81a1c1">)</span> <span style="color:#81a1c1">(</span><span style="color:#a3be8c">&#34;Zawgyi&#34;</span><span style="color:#81a1c1">)</span>
+http_1  <span style="color:#eceff4">|</span> *  Min threads: <span style="color:#b48ead">5</span>
+http_1  <span style="color:#eceff4">|</span> *  Max threads: <span style="color:#b48ead">5</span>
+http_1  <span style="color:#eceff4">|</span> *  Environment: development
+http_1  <span style="color:#eceff4">|</span> *          PID: <span style="color:#b48ead">1</span>
+http_1  <span style="color:#eceff4">|</span> * Listening on http://0.0.0.0:4000
+http_1  <span style="color:#eceff4">|</span> Use Ctrl-C to stop
 </code></pre></div><p>From STDOUT we see Puma saying <code>Use Ctrl-C to stop</code>, but when we press Ctrl-C
 we interrupt Docker Compose (its <code>up</code> command), not Puma. This is because upon
 pressing Ctrl-C we rely on Docker Compose to send that same SIGINT to the Puma
@@ -633,7 +633,7 @@ can&rsquo;t clean up its PID file.</p>
 <h3 id="attempt-no-1-remove-pid-before-puma-boot" class="relative group">Attempt no. 1: Remove PID before Puma boot <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#attempt-no-1-remove-pid-before-puma-boot" aria-label="Anchor">#</a></span></h3>
 <p>The most straightforward way is to remove the PID file before we kick-off the
 Puma server. It can be done by modifying the <code>CMD</code> of the <code>Dockerfile</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-dockerfile" data-lang="dockerfile"><span class="k">CMD</span> <span class="p">[</span><span class="s2">&#34;rm -f tmp/pids/server.pid &amp;&amp; bundle exec rails s -b 0.0.0.0 -p $SERVER_PORT&#34;</span><span class="p">]</span><span class="err">
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-dockerfile" data-lang="dockerfile"><span style="color:#81a1c1;font-weight:bold">CMD</span> <span style="color:#eceff4">[</span><span style="color:#a3be8c">&#34;rm -f tmp/pids/server.pid &amp;&amp; bundle exec rails s -b 0.0.0.0 -p $SERVER_PORT&#34;</span><span style="color:#eceff4">]</span><span style="color:#bf616a">
 </span></code></pre></div><p>The Internet is riddled with variations of this approach. From <a href="https://www.reddit.com/r/rails/comments/aphq08/rails_docker_and_tmppidsserverpid/">Reddit
 threads</a>,
 to <a href="https://stackoverflow.com/a/53289249/601555">many</a>
@@ -651,26 +651,26 @@ the server from restarting when a certain <code>server.pid</code> file pre-exist
 script will be executed every time the container gets started.</p>
 </blockquote>
 <p>The <code>entrypoint.sh</code> script, as taken from the documentation:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="cp">#!/bin/bash
-</span><span class="cp"></span>
-<span class="c1"># Stops the execution of a script in case of error</span>
-<span class="nb">set</span> -e
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#5e81ac;font-style:italic">#!/bin/bash
+</span><span style="color:#5e81ac;font-style:italic"></span>
+<span style="color:#616e87;font-style:italic"># Stops the execution of a script in case of error</span>
+<span style="color:#81a1c1">set</span> -e
 
-<span class="c1"># Remove a potentially pre-existing server.pid for Rails.</span>
+<span style="color:#616e87;font-style:italic"># Remove a potentially pre-existing server.pid for Rails.</span>
 rm -f /myapp/tmp/pids/server.pid
 
-<span class="c1"># Then exec the container&#39;s main process (what&#39;s set as CMD in the Dockerfile).</span>
-<span class="nb">exec</span> <span class="s2">&#34;</span><span class="nv">$@</span><span class="s2">&#34;</span>
+<span style="color:#616e87;font-style:italic"># Then exec the container&#39;s main process (what&#39;s set as CMD in the Dockerfile).</span>
+<span style="color:#81a1c1">exec</span> <span style="color:#a3be8c">&#34;</span>$@<span style="color:#a3be8c">&#34;</span>
 </code></pre></div><p>This script will work in unison with the <code>Dockerfile</code>, which will have to
 make the script executable and run it as an <code>ENTRYPOINT</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-dockerfile" data-lang="dockerfile"><span class="o">[</span>...<span class="o">]</span><span class="err">
-</span><span class="err">
-</span><span class="err"></span><span class="c"># Add a script to be executed every time the container starts.</span><span class="err">
-</span><span class="err"></span><span class="k">COPY</span> entrypoint.sh /usr/bin/<span class="err">
-</span><span class="err"></span><span class="k">RUN</span> chmod +x /usr/bin/entrypoint.sh<span class="err">
-</span><span class="err"></span><span class="k">ENTRYPOINT</span> <span class="p">[</span><span class="s2">&#34;entrypoint.sh&#34;</span><span class="p">]</span><span class="err">
-</span><span class="err">
-</span><span class="err"></span><span class="k">CMD</span> <span class="p">[</span><span class="s2">&#34;bundle exec rails s -b 0.0.0.0 -p $SERVER_PORT&#34;</span><span class="p">]</span><span class="err">
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-dockerfile" data-lang="dockerfile"><span style="color:#81a1c1">[</span>...<span style="color:#81a1c1">]</span><span style="color:#bf616a">
+</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span><span style="color:#616e87;font-style:italic"># Add a script to be executed every time the container starts.</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span><span style="color:#81a1c1;font-weight:bold">COPY</span> entrypoint.sh /usr/bin/<span style="color:#bf616a">
+</span><span style="color:#bf616a"></span><span style="color:#81a1c1;font-weight:bold">RUN</span> chmod +x /usr/bin/entrypoint.sh<span style="color:#bf616a">
+</span><span style="color:#bf616a"></span><span style="color:#81a1c1;font-weight:bold">ENTRYPOINT</span> <span style="color:#eceff4">[</span><span style="color:#a3be8c">&#34;entrypoint.sh&#34;</span><span style="color:#eceff4">]</span><span style="color:#bf616a">
+</span><span style="color:#bf616a">
+</span><span style="color:#bf616a"></span><span style="color:#81a1c1;font-weight:bold">CMD</span> <span style="color:#eceff4">[</span><span style="color:#a3be8c">&#34;bundle exec rails s -b 0.0.0.0 -p $SERVER_PORT&#34;</span><span style="color:#eceff4">]</span><span style="color:#bf616a">
 </span></code></pre></div><p>While the above solutions work and the second is even officially recommended
 by Compose, I do not like them for three reasons:</p>
 <ol>
@@ -695,7 +695,7 @@ project, you know what I am talking about.</p>
 setup complexity will end up in the <code>docker-compose.yml</code> file.</p>
 <p>Puma allows us to set the PID file path from the command line using the <code>-p</code>
 toggle. Unfortunately, this will add complexity to our Dockerfile:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-dockerfile" data-lang="dockerfile"><span class="k">CMD</span> <span class="p">[</span><span class="s2">&#34;bundle exec rails s -b 0.0.0.0 -p $SERVER_PORT -P /some/path/server.pid&#34;</span><span class="p">]</span><span class="err">
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-dockerfile" data-lang="dockerfile"><span style="color:#81a1c1;font-weight:bold">CMD</span> <span style="color:#eceff4">[</span><span style="color:#a3be8c">&#34;bundle exec rails s -b 0.0.0.0 -p $SERVER_PORT -P /some/path/server.pid&#34;</span><span style="color:#eceff4">]</span><span style="color:#bf616a">
 </span></code></pre></div><p>This is a no-go, as we want to stick to the defaults in any other (cloud)
 environment. The good news is that since 2019, Rails has supported <a href="https://github.com/rails/rails/pull/36486">setting the
 PID file path using an environment
@@ -706,7 +706,7 @@ its value be? Unix operating systems have one place where all bits go to die:
 <code>/dev/null</code>.</p>
 <h3 id="attempt-no-3-send-the-pid-file-to-devnull" class="relative group">Attempt no. 3: Send the PID file to <code>/dev/null</code> <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#attempt-no-3-send-the-pid-file-to-devnull" aria-label="Anchor">#</a></span></h3>
 <p>This is easily achieved by adding a single line in the <code>docker-compose.yml</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"> version: &#39;3.8&#39;
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-diff" data-lang="diff"> version: &#39;3.8&#39;
 
  services:
    http:
@@ -714,8 +714,8 @@ its value be? Unix operating systems have one place where all bits go to die:
      image: jarjar
      environment:
        SERVER_PORT: ${SERVER_PORT}
-<span class="gi">+      PIDFILE: /dev/null
-</span><span class="gi"></span>     ports:
+<span style="color:#a3be8c">+      PIDFILE: /dev/null
+</span><span style="color:#a3be8c"></span>     ports:
        - ${SERVER_PORT}:${SERVER_PORT}
      volumes:
        - .:/app
@@ -738,7 +738,7 @@ removed, and all files in it will be gone. <code>tmpfs</code> mounts seem like t
 ephemeral storage for our problem.</p>
 <p>To add a <code>tmpfs</code> path in our Compose file and to store the PID file in that
 path, we need to make the following changes:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff">version: &#39;3.8&#39;
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-diff" data-lang="diff">version: &#39;3.8&#39;
 
 services:
   http:
@@ -746,14 +746,14 @@ services:
     image: jarjar
     environment:
       SERVER_PORT: ${SERVER_PORT}
-<span class="gd">-     PIDFILE: /dev/null
-</span><span class="gd"></span><span class="gi">+     PIDFILE: /tmp/pids/server.pid
-</span><span class="gi"></span>    ports:
+<span style="color:#bf616a">-     PIDFILE: /dev/null
+</span><span style="color:#bf616a"></span><span style="color:#a3be8c">+     PIDFILE: /tmp/pids/server.pid
+</span><span style="color:#a3be8c"></span>    ports:
       - ${SERVER_PORT}:${SERVER_PORT}
     volumes:
       - .:/app
-<span class="gi">+   tmpfs:
-</span><span class="gi">+     - /tmp/pids/
+<span style="color:#a3be8c">+   tmpfs:
+</span><span style="color:#a3be8c">+     - /tmp/pids/
 </span></code></pre></div><p>Docker Compose will create a path and mount it in the host’s memory when we run
 <code>docker-compose up</code>. This will allow us to set the PID file in that ephemeral
 path, <code>/tmp/pids</code> in our example, and use the PID file during the duration of
@@ -762,37 +762,37 @@ the void with all PID files in it.</p>
 <p>Let&rsquo;s give this a shot and see if we can run <code>docker-compose up</code> and interrupt
 it ad infinitum.</p>
 <p>First run:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ docker-compose up
-Creating jarjar_http_1     ... <span class="k">done</span>
-<span class="o">[</span>...<span class="o">]</span>
-http_1      <span class="p">|</span> <span class="o">=</span>&gt; Booting Puma
-http_1      <span class="p">|</span> <span class="o">=</span>&gt; Rails 6.1.4.1 application starting in development
-http_1      <span class="p">|</span> <span class="o">=</span>&gt; Run <span class="sb">`</span>bin/rails server --help<span class="sb">`</span> <span class="k">for</span> more startup options
-http_1      <span class="p">|</span> Puma starting in single mode...
-http_1      <span class="p">|</span> * Puma version: 5.5.2 <span class="o">(</span>ruby 3.0.2-p107<span class="o">)</span> <span class="o">(</span><span class="s2">&#34;Zawgyi&#34;</span><span class="o">)</span>
-http_1      <span class="p">|</span> *  Min threads: <span class="m">5</span>
-http_1      <span class="p">|</span> *  Max threads: <span class="m">5</span>
-http_1      <span class="p">|</span> *  Environment: development
-http_1      <span class="p">|</span> *          PID: <span class="m">1</span>
-http_1      <span class="p">|</span> * Listening on http://0.0.0.0:4000
-http_1      <span class="p">|</span> Use Ctrl-C to stop
-^CGracefully stopping... <span class="o">(</span>press Ctrl+C again to force<span class="o">)</span>
-Killing jarjar_http_1      ... <span class="k">done</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker-compose up
+Creating jarjar_http_1     ... <span style="color:#81a1c1;font-weight:bold">done</span>
+<span style="color:#81a1c1">[</span>...<span style="color:#81a1c1">]</span>
+http_1      <span style="color:#eceff4">|</span> <span style="color:#81a1c1">=</span>&gt; Booting Puma
+http_1      <span style="color:#eceff4">|</span> <span style="color:#81a1c1">=</span>&gt; Rails 6.1.4.1 application starting in development
+http_1      <span style="color:#eceff4">|</span> <span style="color:#81a1c1">=</span>&gt; Run <span style="color:#a3be8c">`</span>bin/rails server --help<span style="color:#a3be8c">`</span> <span style="color:#81a1c1;font-weight:bold">for</span> more startup options
+http_1      <span style="color:#eceff4">|</span> Puma starting in single mode...
+http_1      <span style="color:#eceff4">|</span> * Puma version: 5.5.2 <span style="color:#81a1c1">(</span>ruby 3.0.2-p107<span style="color:#81a1c1">)</span> <span style="color:#81a1c1">(</span><span style="color:#a3be8c">&#34;Zawgyi&#34;</span><span style="color:#81a1c1">)</span>
+http_1      <span style="color:#eceff4">|</span> *  Min threads: <span style="color:#b48ead">5</span>
+http_1      <span style="color:#eceff4">|</span> *  Max threads: <span style="color:#b48ead">5</span>
+http_1      <span style="color:#eceff4">|</span> *  Environment: development
+http_1      <span style="color:#eceff4">|</span> *          PID: <span style="color:#b48ead">1</span>
+http_1      <span style="color:#eceff4">|</span> * Listening on http://0.0.0.0:4000
+http_1      <span style="color:#eceff4">|</span> Use Ctrl-C to stop
+^CGracefully stopping... <span style="color:#81a1c1">(</span>press Ctrl+C again to force<span style="color:#81a1c1">)</span>
+Killing jarjar_http_1      ... <span style="color:#81a1c1;font-weight:bold">done</span>
 </code></pre></div><p>Looking good! Next run:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ docker-compose up
-Starting jarjar_http_1     ... <span class="k">done</span>
-<span class="o">[</span>...<span class="o">]</span>
-http_1      <span class="p">|</span> <span class="o">=</span>&gt; Booting Puma
-http_1      <span class="p">|</span> <span class="o">=</span>&gt; Rails 6.1.4.1 application starting in development
-http_1      <span class="p">|</span> <span class="o">=</span>&gt; Run <span class="sb">`</span>bin/rails server --help<span class="sb">`</span> <span class="k">for</span> more startup options
-http_1      <span class="p">|</span> Puma starting in single mode...
-http_1      <span class="p">|</span> * Puma version: 5.5.2 <span class="o">(</span>ruby 3.0.2-p107<span class="o">)</span> <span class="o">(</span><span class="s2">&#34;Zawgyi&#34;</span><span class="o">)</span>
-http_1      <span class="p">|</span> *  Min threads: <span class="m">5</span>
-http_1      <span class="p">|</span> *  Max threads: <span class="m">5</span>
-http_1      <span class="p">|</span> *  Environment: development
-http_1      <span class="p">|</span> *          PID: <span class="m">1</span>
-http_1      <span class="p">|</span> * Listening on http://0.0.0.0:4000
-http_1      <span class="p">|</span> Use Ctrl-C to stop
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ docker-compose up
+Starting jarjar_http_1     ... <span style="color:#81a1c1;font-weight:bold">done</span>
+<span style="color:#81a1c1">[</span>...<span style="color:#81a1c1">]</span>
+http_1      <span style="color:#eceff4">|</span> <span style="color:#81a1c1">=</span>&gt; Booting Puma
+http_1      <span style="color:#eceff4">|</span> <span style="color:#81a1c1">=</span>&gt; Rails 6.1.4.1 application starting in development
+http_1      <span style="color:#eceff4">|</span> <span style="color:#81a1c1">=</span>&gt; Run <span style="color:#a3be8c">`</span>bin/rails server --help<span style="color:#a3be8c">`</span> <span style="color:#81a1c1;font-weight:bold">for</span> more startup options
+http_1      <span style="color:#eceff4">|</span> Puma starting in single mode...
+http_1      <span style="color:#eceff4">|</span> * Puma version: 5.5.2 <span style="color:#81a1c1">(</span>ruby 3.0.2-p107<span style="color:#81a1c1">)</span> <span style="color:#81a1c1">(</span><span style="color:#a3be8c">&#34;Zawgyi&#34;</span><span style="color:#81a1c1">)</span>
+http_1      <span style="color:#eceff4">|</span> *  Min threads: <span style="color:#b48ead">5</span>
+http_1      <span style="color:#eceff4">|</span> *  Max threads: <span style="color:#b48ead">5</span>
+http_1      <span style="color:#eceff4">|</span> *  Environment: development
+http_1      <span style="color:#eceff4">|</span> *          PID: <span style="color:#b48ead">1</span>
+http_1      <span style="color:#eceff4">|</span> * Listening on http://0.0.0.0:4000
+http_1      <span style="color:#eceff4">|</span> Use Ctrl-C to stop
 </code></pre></div><p>Works as advertised!</p>
 <p>Using a <code>tmpfs</code> mount, we can leave our <code>Dockerfile</code> unscathed without
 additional entrypoints scripts or dependencies. Instead, we are using a native
@@ -1185,7 +1185,7 @@ custom path for the PID file – that&rsquo;s all!</p>
       
         <p class="text-sm text-neutral-500 dark:text-neutral-400">
             &copy;
-            2022
+            2023
             Ilija Eftimov
         </p>
       

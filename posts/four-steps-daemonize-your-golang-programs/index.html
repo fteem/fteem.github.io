@@ -368,43 +368,43 @@ variables. Being a drop-in replacement means that using the <code>namsral/flag</
 package is as simple as using the <code>flag</code> package from the standard library.</p>
 <p>First, <code>observer</code> will have a <code>config</code> type, which will encapsulate the
 configuration for the website that it will observe:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">const</span> <span class="nx">defaultTick</span> <span class="p">=</span> <span class="mi">60</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">const</span> defaultTick <span style="color:#eceff4">=</span> <span style="color:#b48ead">60</span> <span style="color:#81a1c1">*</span> time<span style="color:#eceff4">.</span>Second
 
-<span class="kd">type</span> <span class="nx">config</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">contentType</span> <span class="kt">string</span>
-	<span class="nx">server</span>      <span class="kt">string</span>
-	<span class="nx">statusCode</span>  <span class="kt">int</span>
-	<span class="nx">tick</span>        <span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span>
-	<span class="nx">url</span>         <span class="kt">string</span>
-	<span class="nx">userAgent</span>   <span class="kt">string</span>
-<span class="p">}</span>
+<span style="color:#81a1c1;font-weight:bold">type</span> config <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+	contentType <span style="color:#81a1c1">string</span>
+	server      <span style="color:#81a1c1">string</span>
+	statusCode  <span style="color:#81a1c1">int</span>
+	tick        time<span style="color:#eceff4">.</span>Duration
+	url         <span style="color:#81a1c1">string</span>
+	userAgent   <span style="color:#81a1c1">string</span>
+<span style="color:#eceff4">}</span>
 
-<span class="kd">func</span> <span class="p">(</span><span class="nx">c</span> <span class="o">*</span><span class="nx">config</span><span class="p">)</span> <span class="nf">init</span><span class="p">(</span><span class="nx">args</span> <span class="p">[]</span><span class="kt">string</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
-	<span class="nx">flags</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">NewFlagSet</span><span class="p">(</span><span class="nx">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nx">flag</span><span class="p">.</span><span class="nx">ExitOnError</span><span class="p">)</span>
-	<span class="nx">flags</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="nx">flag</span><span class="p">.</span><span class="nx">DefaultConfigFlagname</span><span class="p">,</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="s">&#34;Path to config file&#34;</span><span class="p">)</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>c <span style="color:#81a1c1">*</span>config<span style="color:#eceff4">)</span> <span style="color:#88c0d0">init</span><span style="color:#eceff4">(</span>args <span style="color:#eceff4">[]</span><span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">error</span> <span style="color:#eceff4">{</span>
+	flags <span style="color:#81a1c1">:=</span> flag<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewFlagSet</span><span style="color:#eceff4">(</span>args<span style="color:#eceff4">[</span><span style="color:#b48ead">0</span><span style="color:#eceff4">],</span> flag<span style="color:#eceff4">.</span>ExitOnError<span style="color:#eceff4">)</span>
+	flags<span style="color:#eceff4">.</span><span style="color:#88c0d0">String</span><span style="color:#eceff4">(</span>flag<span style="color:#eceff4">.</span>DefaultConfigFlagname<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Path to config file&#34;</span><span style="color:#eceff4">)</span>
 
-	<span class="kd">var</span> <span class="p">(</span>
-		<span class="nx">statusCode</span>  <span class="p">=</span> <span class="nx">flags</span><span class="p">.</span><span class="nf">Int</span><span class="p">(</span><span class="s">&#34;status&#34;</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="s">&#34;Response HTTP status code&#34;</span><span class="p">)</span>
-		<span class="nx">tick</span>        <span class="p">=</span> <span class="nx">flags</span><span class="p">.</span><span class="nf">Duration</span><span class="p">(</span><span class="s">&#34;tick&#34;</span><span class="p">,</span> <span class="nx">defaultTick</span><span class="p">,</span> <span class="s">&#34;Ticking interval&#34;</span><span class="p">)</span>
-		<span class="nx">server</span>      <span class="p">=</span> <span class="nx">flags</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;server&#34;</span><span class="p">,</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="s">&#34;Server HTTP header value&#34;</span><span class="p">)</span>
-		<span class="nx">contentType</span> <span class="p">=</span> <span class="nx">flags</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;content_type&#34;</span><span class="p">,</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="s">&#34;Content-Type HTTP header value&#34;</span><span class="p">)</span>
-		<span class="nx">userAgent</span>   <span class="p">=</span> <span class="nx">flags</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;user_agent&#34;</span><span class="p">,</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="s">&#34;User-Agent HTTP header value&#34;</span><span class="p">)</span>
-		<span class="nx">url</span>         <span class="p">=</span> <span class="nx">flags</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;url&#34;</span><span class="p">,</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="s">&#34;Request URL&#34;</span><span class="p">)</span>
-	<span class="p">)</span>
+	<span style="color:#81a1c1;font-weight:bold">var</span> <span style="color:#eceff4">(</span>
+		statusCode  <span style="color:#eceff4">=</span> flags<span style="color:#eceff4">.</span><span style="color:#88c0d0">Int</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;status&#34;</span><span style="color:#eceff4">,</span> <span style="color:#b48ead">200</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Response HTTP status code&#34;</span><span style="color:#eceff4">)</span>
+		tick        <span style="color:#eceff4">=</span> flags<span style="color:#eceff4">.</span><span style="color:#88c0d0">Duration</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;tick&#34;</span><span style="color:#eceff4">,</span> defaultTick<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Ticking interval&#34;</span><span style="color:#eceff4">)</span>
+		server      <span style="color:#eceff4">=</span> flags<span style="color:#eceff4">.</span><span style="color:#88c0d0">String</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;server&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Server HTTP header value&#34;</span><span style="color:#eceff4">)</span>
+		contentType <span style="color:#eceff4">=</span> flags<span style="color:#eceff4">.</span><span style="color:#88c0d0">String</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;content_type&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Content-Type HTTP header value&#34;</span><span style="color:#eceff4">)</span>
+		userAgent   <span style="color:#eceff4">=</span> flags<span style="color:#eceff4">.</span><span style="color:#88c0d0">String</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;user_agent&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;User-Agent HTTP header value&#34;</span><span style="color:#eceff4">)</span>
+		url         <span style="color:#eceff4">=</span> flags<span style="color:#eceff4">.</span><span style="color:#88c0d0">String</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;url&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Request URL&#34;</span><span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">)</span>
 
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">flags</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="nx">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:]);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="nx">err</span>
-	<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">:=</span> flags<span style="color:#eceff4">.</span><span style="color:#88c0d0">Parse</span><span style="color:#eceff4">(</span>args<span style="color:#eceff4">[</span><span style="color:#b48ead">1</span><span style="color:#eceff4">:]);</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">return</span> err
+	<span style="color:#eceff4">}</span>
 
-	<span class="nx">c</span><span class="p">.</span><span class="nx">statusCode</span> <span class="p">=</span> <span class="o">*</span><span class="nx">statusCode</span>
-	<span class="nx">c</span><span class="p">.</span><span class="nx">tick</span> <span class="p">=</span> <span class="o">*</span><span class="nx">tick</span>
-	<span class="nx">c</span><span class="p">.</span><span class="nx">server</span> <span class="p">=</span> <span class="o">*</span><span class="nx">server</span>
-	<span class="nx">c</span><span class="p">.</span><span class="nx">contentType</span> <span class="p">=</span> <span class="o">*</span><span class="nx">contentType</span>
-	<span class="nx">c</span><span class="p">.</span><span class="nx">userAgent</span> <span class="p">=</span> <span class="o">*</span><span class="nx">userAgent</span>
-	<span class="nx">c</span><span class="p">.</span><span class="nx">url</span> <span class="p">=</span> <span class="o">*</span><span class="nx">url</span>
+	c<span style="color:#eceff4">.</span>statusCode <span style="color:#eceff4">=</span> <span style="color:#81a1c1">*</span>statusCode
+	c<span style="color:#eceff4">.</span>tick <span style="color:#eceff4">=</span> <span style="color:#81a1c1">*</span>tick
+	c<span style="color:#eceff4">.</span>server <span style="color:#eceff4">=</span> <span style="color:#81a1c1">*</span>server
+	c<span style="color:#eceff4">.</span>contentType <span style="color:#eceff4">=</span> <span style="color:#81a1c1">*</span>contentType
+	c<span style="color:#eceff4">.</span>userAgent <span style="color:#eceff4">=</span> <span style="color:#81a1c1">*</span>userAgent
+	c<span style="color:#eceff4">.</span>url <span style="color:#eceff4">=</span> <span style="color:#81a1c1">*</span>url
 
-	<span class="k">return</span> <span class="kc">nil</span>
-<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>The <code>init</code> function will take the command line arguments as input and build a
 <code>FlagSet</code>, which represents a set of defined flags. Each of the flags is listed
 and parsed; then, their values are assigned to the <code>config</code>. Additionally,
@@ -412,21 +412,21 @@ having the <code>flag.DefaultConfigFilename</code> as a flag as well enables our
 <code>observer</code> to load the configuration from a <code>config.conf</code> file. The <code>.conf</code>
 file has a <code>key=value</code> format, with new lines after each key-value pair.</p>
 <p>Here&rsquo;s the main function:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-	<span class="nx">ctx</span> <span class="o">:=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">Background</span><span class="p">()</span>
-	<span class="nx">ctx</span><span class="p">,</span> <span class="nx">cancel</span> <span class="o">:=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">WithCancel</span><span class="p">(</span><span class="nx">ctx</span><span class="p">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">main</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+	ctx <span style="color:#81a1c1">:=</span> context<span style="color:#eceff4">.</span><span style="color:#88c0d0">Background</span><span style="color:#eceff4">()</span>
+	ctx<span style="color:#eceff4">,</span> cancel <span style="color:#81a1c1">:=</span> context<span style="color:#eceff4">.</span><span style="color:#88c0d0">WithCancel</span><span style="color:#eceff4">(</span>ctx<span style="color:#eceff4">)</span>
 
-	<span class="nx">c</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">config</span><span class="p">{}</span>
+	c <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>config<span style="color:#eceff4">{}</span>
 
-	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
-		<span class="nf">cancel</span><span class="p">()</span>
-	<span class="p">}()</span>
+	<span style="color:#81a1c1;font-weight:bold">defer</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+		<span style="color:#88c0d0">cancel</span><span style="color:#eceff4">()</span>
+	<span style="color:#eceff4">}()</span>
 
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">run</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">c</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintf</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stderr</span><span class="p">,</span> <span class="s">&#34;%s\n&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">run</span><span style="color:#eceff4">(</span>ctx<span style="color:#eceff4">,</span> c<span style="color:#eceff4">);</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fprintf</span><span style="color:#eceff4">(</span>os<span style="color:#eceff4">.</span>Stderr<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;%s\n&#34;</span><span style="color:#eceff4">,</span> err<span style="color:#eceff4">)</span>
+		os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Exit</span><span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>Following <a href="https://pace.dev/blog/2020/02/12/why-you-shouldnt-use-func-main-in-golang-by-mat-ryer.html">Mat Ryer&rsquo;s
 advice</a>,
 we are going to keep <code>main</code> very thin while keeping the main logic of the
@@ -434,37 +434,37 @@ we are going to keep <code>main</code> very thin while keeping the main logic of
 will propagate down to the <code>run</code> method, and it initializes the observer
 <code>config</code>. Then it passes all of the relevant arguments to the <code>run</code> method.</p>
 <p>Here&rsquo;s the <code>run</code> method:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">run</span><span class="p">(</span><span class="nx">ctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span> <span class="nx">c</span> <span class="o">*</span><span class="nx">config</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
-	<span class="nx">c</span><span class="p">.</span><span class="nf">init</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">run</span><span style="color:#eceff4">(</span>ctx context<span style="color:#eceff4">.</span>Context<span style="color:#eceff4">,</span> c <span style="color:#81a1c1">*</span>config<span style="color:#eceff4">)</span> <span style="color:#81a1c1">error</span> <span style="color:#eceff4">{</span>
+	c<span style="color:#eceff4">.</span><span style="color:#88c0d0">init</span><span style="color:#eceff4">(</span>os<span style="color:#eceff4">.</span>Args<span style="color:#eceff4">)</span>
 
-	<span class="k">for</span> <span class="p">{</span>
-		<span class="k">select</span> <span class="p">{</span>
-		<span class="k">case</span> <span class="o">&lt;-</span><span class="nx">ctx</span><span class="p">.</span><span class="nf">Done</span><span class="p">():</span>
-			<span class="k">return</span> <span class="kc">nil</span>
-		<span class="k">case</span> <span class="o">&lt;-</span><span class="nx">time</span><span class="p">.</span><span class="nf">Tick</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">tick</span><span class="p">):</span>
-			<span class="nx">resp</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">url</span><span class="p">)</span>
-			<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-				<span class="k">return</span> <span class="nx">err</span>
-			<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">select</span> <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">case</span> <span style="color:#81a1c1">&lt;-</span>ctx<span style="color:#eceff4">.</span><span style="color:#88c0d0">Done</span><span style="color:#eceff4">():</span>
+			<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
+		<span style="color:#81a1c1;font-weight:bold">case</span> <span style="color:#81a1c1">&lt;-</span>time<span style="color:#eceff4">.</span><span style="color:#88c0d0">Tick</span><span style="color:#eceff4">(</span>c<span style="color:#eceff4">.</span>tick<span style="color:#eceff4">):</span>
+			resp<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> http<span style="color:#eceff4">.</span><span style="color:#88c0d0">Get</span><span style="color:#eceff4">(</span>c<span style="color:#eceff4">.</span>url<span style="color:#eceff4">)</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+				<span style="color:#81a1c1;font-weight:bold">return</span> err
+			<span style="color:#eceff4">}</span>
 
-			<span class="k">if</span> <span class="nx">resp</span><span class="p">.</span><span class="nx">StatusCode</span> <span class="o">!=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">statusCode</span> <span class="p">{</span>
-				<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Status code mismatch, got: %d\n&#34;</span><span class="p">,</span> <span class="nx">resp</span><span class="p">.</span><span class="nx">StatusCode</span><span class="p">)</span>
-			<span class="p">}</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> resp<span style="color:#eceff4">.</span>StatusCode <span style="color:#81a1c1">!=</span> c<span style="color:#eceff4">.</span>statusCode <span style="color:#eceff4">{</span>
+				log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Printf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Status code mismatch, got: %d\n&#34;</span><span style="color:#eceff4">,</span> resp<span style="color:#eceff4">.</span>StatusCode<span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
 
-			<span class="k">if</span> <span class="nx">s</span> <span class="o">:=</span> <span class="nx">resp</span><span class="p">.</span><span class="nx">Header</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;server&#34;</span><span class="p">);</span> <span class="nx">s</span> <span class="o">!=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">server</span> <span class="p">{</span>
-				<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Server header mismatch, got: %s\n&#34;</span><span class="p">,</span> <span class="nx">s</span><span class="p">)</span>
-			<span class="p">}</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> s <span style="color:#81a1c1">:=</span> resp<span style="color:#eceff4">.</span>Header<span style="color:#eceff4">.</span><span style="color:#88c0d0">Get</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;server&#34;</span><span style="color:#eceff4">);</span> s <span style="color:#81a1c1">!=</span> c<span style="color:#eceff4">.</span>server <span style="color:#eceff4">{</span>
+				log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Printf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Server header mismatch, got: %s\n&#34;</span><span style="color:#eceff4">,</span> s<span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
 
-			<span class="k">if</span> <span class="nx">ct</span> <span class="o">:=</span> <span class="nx">resp</span><span class="p">.</span><span class="nx">Header</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;content-type&#34;</span><span class="p">);</span> <span class="nx">ct</span> <span class="o">!=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">contentType</span> <span class="p">{</span>
-				<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Content-Type header mismatch, got: %s\n&#34;</span><span class="p">,</span> <span class="nx">ct</span><span class="p">)</span>
-			<span class="p">}</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> ct <span style="color:#81a1c1">:=</span> resp<span style="color:#eceff4">.</span>Header<span style="color:#eceff4">.</span><span style="color:#88c0d0">Get</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;content-type&#34;</span><span style="color:#eceff4">);</span> ct <span style="color:#81a1c1">!=</span> c<span style="color:#eceff4">.</span>contentType <span style="color:#eceff4">{</span>
+				log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Printf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Content-Type header mismatch, got: %s\n&#34;</span><span style="color:#eceff4">,</span> ct<span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
 
-			<span class="k">if</span> <span class="nx">ua</span> <span class="o">:=</span> <span class="nx">resp</span><span class="p">.</span><span class="nx">Header</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;user-agent&#34;</span><span class="p">);</span> <span class="nx">ua</span> <span class="o">!=</span> <span class="nx">c</span><span class="p">.</span><span class="nx">userAgent</span> <span class="p">{</span>
-				<span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;User-Agent header mismatch, got: %s\n&#34;</span><span class="p">,</span> <span class="nx">ua</span><span class="p">)</span>
-			<span class="p">}</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-<span class="p">}</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> ua <span style="color:#81a1c1">:=</span> resp<span style="color:#eceff4">.</span>Header<span style="color:#eceff4">.</span><span style="color:#88c0d0">Get</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;user-agent&#34;</span><span style="color:#eceff4">);</span> ua <span style="color:#81a1c1">!=</span> c<span style="color:#eceff4">.</span>userAgent <span style="color:#eceff4">{</span>
+				log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Printf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;User-Agent header mismatch, got: %s\n&#34;</span><span style="color:#eceff4">,</span> ua<span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
+		<span style="color:#eceff4">}</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>First, the <code>run</code> method initializes the <code>config</code> instance <code>c</code>, using the <code>init</code>
 method. Then, it loops infinitely until the context <code>ctx</code> is done. When <code>ctx</code>
 is done, it means the <code>observer</code> process is terminated, so it merely returns a
@@ -479,13 +479,13 @@ response headers and the status code with the once provided through the
 configuration. If any mismatch is detected, it logs the error.</p>
 <p>Running the <code>observer</code> is relatively simple. One way is to supply a config file
 through the command line:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ ./observer -config ./config.conf
-2020/04/23 19:41:54 Status code mismatch, got: <span class="m">200</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ ./observer -config ./config.conf
+2020/04/23 19:41:54 Status code mismatch, got: <span style="color:#b48ead">200</span>
 </code></pre></div><p>Alternatively, using flags:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ ./observer -status<span class="o">=</span><span class="m">500</span> -tick<span class="o">=</span>10s -url<span class="o">=</span>https://ieftimov.com -server<span class="o">=</span>Cloudflare
-2020/04/23 19:43:34 Status code mismatch, got: <span class="m">200</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ ./observer -status<span style="color:#81a1c1">=</span><span style="color:#b48ead">500</span> -tick<span style="color:#81a1c1">=</span>10s -url<span style="color:#81a1c1">=</span>https://ieftimov.com -server<span style="color:#81a1c1">=</span>Cloudflare
+2020/04/23 19:43:34 Status code mismatch, got: <span style="color:#b48ead">200</span>
 2020/04/23 19:43:34 Server header mismatch, got: cloudflare
-2020/04/23 19:43:34 Content-Type header mismatch, got: text/html<span class="p">;</span> <span class="nv">charset</span><span class="o">=</span>utf-8
+2020/04/23 19:43:34 Content-Type header mismatch, got: text/html<span style="color:#eceff4">;</span> charset<span style="color:#81a1c1">=</span>utf-8
 </code></pre></div><p>We can do the same using environment variables, or a combination of all three:
 config file, environment variables, and flags.</p>
 <p>Now, how can we apply the four simple rules of daemonization?</p>
@@ -503,19 +503,19 @@ should be stored or streamed.</p>
 <p>First, we will add another argument to the <code>run</code> function, called <code>out</code> of type
 <code>io.Writer</code>. Then, we will invoke the <code>log.SetOutput</code> function passing the
 <code>out</code> as argument to it.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">run</span><span class="p">(</span><span class="nx">ctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span> <span class="nx">c</span> <span class="o">*</span><span class="nx">config</span><span class="p">,</span> <span class="nx">out</span> <span class="nx">io</span><span class="p">.</span><span class="nx">Writer</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
-	<span class="nx">c</span><span class="p">.</span><span class="nf">init</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">)</span>
-	<span class="nx">log</span><span class="p">.</span><span class="nf">SetOutput</span><span class="p">(</span><span class="nx">out</span><span class="p">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">run</span><span style="color:#eceff4">(</span>ctx context<span style="color:#eceff4">.</span>Context<span style="color:#eceff4">,</span> c <span style="color:#81a1c1">*</span>config<span style="color:#eceff4">,</span> out io<span style="color:#eceff4">.</span>Writer<span style="color:#eceff4">)</span> <span style="color:#81a1c1">error</span> <span style="color:#eceff4">{</span>
+	c<span style="color:#eceff4">.</span><span style="color:#88c0d0">init</span><span style="color:#eceff4">(</span>os<span style="color:#eceff4">.</span>Args<span style="color:#eceff4">)</span>
+	log<span style="color:#eceff4">.</span><span style="color:#88c0d0">SetOutput</span><span style="color:#eceff4">(</span>out<span style="color:#eceff4">)</span>
 
-	<span class="k">for</span> <span class="p">{</span>
-		<span class="k">select</span> <span class="p">{</span>
-		<span class="k">case</span> <span class="o">&lt;-</span><span class="nx">ctx</span><span class="p">.</span><span class="nf">Done</span><span class="p">():</span>
-			<span class="k">return</span> <span class="kc">nil</span>
-		<span class="k">case</span> <span class="o">&lt;-</span><span class="nx">time</span><span class="p">.</span><span class="nf">Tick</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">tick</span><span class="p">):</span>
-			<span class="c1">// Identical to above, removed from brewity
-</span><span class="c1"></span>		<span class="p">}</span>
-	<span class="p">}</span>
-<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">select</span> <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">case</span> <span style="color:#81a1c1">&lt;-</span>ctx<span style="color:#eceff4">.</span><span style="color:#88c0d0">Done</span><span style="color:#eceff4">():</span>
+			<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
+		<span style="color:#81a1c1;font-weight:bold">case</span> <span style="color:#81a1c1">&lt;-</span>time<span style="color:#eceff4">.</span><span style="color:#88c0d0">Tick</span><span style="color:#eceff4">(</span>c<span style="color:#eceff4">.</span>tick<span style="color:#eceff4">):</span>
+			<span style="color:#616e87;font-style:italic">// Identical to above, removed from brewity
+</span><span style="color:#616e87;font-style:italic"></span>		<span style="color:#eceff4">}</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>By doing this, we will have to pass <code>STDOUT</code> from the <code>main</code> function, but we
 keep our <code>run</code> function more testable. Using a separate <code>run</code> method means we
 can invoke it with any instance that implements the <code>io.Writer</code> interface. We
@@ -523,26 +523,26 @@ basically couple the <code>run</code> method to <strong>a behavior instead of ty
 <p>Then, we need to update the <code>main</code> function to pass the additional argument to
 the <code>run</code> function when invoking it. And the <code>io.Writer</code> will be simple
 <code>os.Stdout</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-	<span class="nx">ctx</span> <span class="o">:=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">Background</span><span class="p">()</span>
-	<span class="nx">ctx</span><span class="p">,</span> <span class="nx">cancel</span> <span class="o">:=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">WithCancel</span><span class="p">(</span><span class="nx">ctx</span><span class="p">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">main</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+	ctx <span style="color:#81a1c1">:=</span> context<span style="color:#eceff4">.</span><span style="color:#88c0d0">Background</span><span style="color:#eceff4">()</span>
+	ctx<span style="color:#eceff4">,</span> cancel <span style="color:#81a1c1">:=</span> context<span style="color:#eceff4">.</span><span style="color:#88c0d0">WithCancel</span><span style="color:#eceff4">(</span>ctx<span style="color:#eceff4">)</span>
 
-	<span class="nx">c</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">config</span><span class="p">{}</span>
+	c <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>config<span style="color:#eceff4">{}</span>
 
-	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
-		<span class="nf">cancel</span><span class="p">()</span>
-	<span class="p">}()</span>
+	<span style="color:#81a1c1;font-weight:bold">defer</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+		<span style="color:#88c0d0">cancel</span><span style="color:#eceff4">()</span>
+	<span style="color:#eceff4">}()</span>
 
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">run</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">c</span><span class="p">,</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintf</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stderr</span><span class="p">,</span> <span class="s">&#34;%s\n&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-		<span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">run</span><span style="color:#eceff4">(</span>ctx<span style="color:#eceff4">,</span> c<span style="color:#eceff4">,</span> os<span style="color:#eceff4">.</span>Stdout<span style="color:#eceff4">);</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fprintf</span><span style="color:#eceff4">(</span>os<span style="color:#eceff4">.</span>Stderr<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;%s\n&#34;</span><span style="color:#eceff4">,</span> err<span style="color:#eceff4">)</span>
+		os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Exit</span><span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>If we run the program again we won&rsquo;t see a difference:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ ./observer -status<span class="o">=</span><span class="m">500</span> -tick<span class="o">=</span>10s -url<span class="o">=</span>https://ieftimov.com -server<span class="o">=</span>Cloudflare
-2020/04/23 19:43:34 Status code mismatch, got: <span class="m">200</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ ./observer -status<span style="color:#81a1c1">=</span><span style="color:#b48ead">500</span> -tick<span style="color:#81a1c1">=</span>10s -url<span style="color:#81a1c1">=</span>https://ieftimov.com -server<span style="color:#81a1c1">=</span>Cloudflare
+2020/04/23 19:43:34 Status code mismatch, got: <span style="color:#b48ead">200</span>
 2020/04/23 19:43:34 Server header mismatch, got: cloudflare
-2020/04/23 19:43:34 Content-Type header mismatch, got: text/html<span class="p">;</span> <span class="nv">charset</span><span class="o">=</span>utf-8
+2020/04/23 19:43:34 Content-Type header mismatch, got: text/html<span style="color:#eceff4">;</span> charset<span style="color:#81a1c1">=</span>utf-8
 </code></pre></div><p>Why is that? Well, the <code>log</code> package <a href="https://github.com/golang/go/blob/5477623/src/log/log.go#L76">logs to <code>STDERR</code> by
 default</a>, so
 there is no visible change of behavior there. Still, we make the dependency on
@@ -584,150 +584,150 @@ accept signals thorough a channel of type <code>os.Signal</code>.</p>
 <code>SIGTERM</code>/<code>SIGINT</code>. All we have to do is to stop further execution and shut
 down gracefully. So, how can we achieve that?</p>
 <p>First, we need to create a channel through which we will accept these two signals:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">signalChan</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Signal</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-<span class="nx">signal</span><span class="p">.</span><span class="nf">Notify</span><span class="p">(</span><span class="nx">signalChan</span><span class="p">,</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">SIGINT</span><span class="p">,</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">SIGTERM</span><span class="p">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">signalChan <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">make</span><span style="color:#eceff4">(</span><span style="color:#81a1c1;font-weight:bold">chan</span> os<span style="color:#eceff4">.</span>Signal<span style="color:#eceff4">,</span> <span style="color:#b48ead">1</span><span style="color:#eceff4">)</span>
+signal<span style="color:#eceff4">.</span><span style="color:#88c0d0">Notify</span><span style="color:#eceff4">(</span>signalChan<span style="color:#eceff4">,</span> syscall<span style="color:#eceff4">.</span>SIGINT<span style="color:#eceff4">,</span> syscall<span style="color:#eceff4">.</span>SIGTERM<span style="color:#eceff4">)</span>
 </code></pre></div><p>Once the <code>observer</code> process receives a <code>SIGINT</code> or a <code>SIGTERM</code>, it will proxy
 it through the <code>signalChan</code> channel. To process the signals, we would need to
 create a goroutine that will receive signals through the <code>signalChan</code>. Once it
 gets a signal, it will have to <code>cancel()</code> the context, which would stop the
 further execution of the <code>run</code> method:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
-        <span class="k">select</span> <span class="p">{</span>
-        <span class="k">case</span> <span class="p">=</span> <span class="o">&lt;-</span><span class="nx">signalChan</span><span class="p">:</span>
-                <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Got SIGINT/SIGTERM, exiting.&#34;</span><span class="p">)</span>
-                <span class="nf">cancel</span><span class="p">()</span>
-                <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">case</span> <span class="o">&lt;-</span><span class="nx">ctx</span><span class="p">.</span><span class="nf">Done</span><span class="p">():</span>
-                <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Done.&#34;</span><span class="p">)</span>
-                <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-        <span class="p">}</span>
-<span class="p">}()</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">go</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+        <span style="color:#81a1c1;font-weight:bold">select</span> <span style="color:#eceff4">{</span>
+        <span style="color:#81a1c1;font-weight:bold">case</span> <span style="color:#eceff4">=</span> <span style="color:#81a1c1">&lt;-</span>signalChan<span style="color:#eceff4">:</span>
+                log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Printf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Got SIGINT/SIGTERM, exiting.&#34;</span><span style="color:#eceff4">)</span>
+                <span style="color:#88c0d0">cancel</span><span style="color:#eceff4">()</span>
+                os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Exit</span><span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span>
+        <span style="color:#81a1c1;font-weight:bold">case</span> <span style="color:#81a1c1">&lt;-</span>ctx<span style="color:#eceff4">.</span><span style="color:#88c0d0">Done</span><span style="color:#eceff4">():</span>
+                log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Printf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Done.&#34;</span><span style="color:#eceff4">)</span>
+                os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Exit</span><span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span>
+        <span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}()</span>
 </code></pre></div><p>So, once the <code>cancel</code> function is executed, in the <code>for</code> loop of the <code>run</code>
 method the execution will stop:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">run</span><span class="p">(</span><span class="nx">ctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span> <span class="nx">c</span> <span class="o">*</span><span class="nx">config</span><span class="p">,</span> <span class="nx">stdout</span> <span class="nx">io</span><span class="p">.</span><span class="nx">Writer</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
-        <span class="nx">c</span><span class="p">.</span><span class="nf">init</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">)</span>
-        <span class="nx">log</span><span class="p">.</span><span class="nf">SetOutput</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">run</span><span style="color:#eceff4">(</span>ctx context<span style="color:#eceff4">.</span>Context<span style="color:#eceff4">,</span> c <span style="color:#81a1c1">*</span>config<span style="color:#eceff4">,</span> stdout io<span style="color:#eceff4">.</span>Writer<span style="color:#eceff4">)</span> <span style="color:#81a1c1">error</span> <span style="color:#eceff4">{</span>
+        c<span style="color:#eceff4">.</span><span style="color:#88c0d0">init</span><span style="color:#eceff4">(</span>os<span style="color:#eceff4">.</span>Args<span style="color:#eceff4">)</span>
+        log<span style="color:#eceff4">.</span><span style="color:#88c0d0">SetOutput</span><span style="color:#eceff4">(</span>os<span style="color:#eceff4">.</span>Stdout<span style="color:#eceff4">)</span>
 
-        <span class="k">for</span> <span class="p">{</span>
-                <span class="k">select</span> <span class="p">{</span>
-                <span class="k">case</span> <span class="o">&lt;-</span><span class="nx">ctx</span><span class="p">.</span><span class="nf">Done</span><span class="p">():</span>
-                        <span class="k">return</span> <span class="kc">nil</span>
-                <span class="k">case</span> <span class="o">&lt;-</span><span class="nx">time</span><span class="p">.</span><span class="nf">Tick</span><span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">tick</span><span class="p">):</span>
-                        <span class="c1">// Same as above...
-</span><span class="c1"></span>                <span class="p">}</span>
-        <span class="p">}</span>
-<span class="p">}</span>
+        <span style="color:#81a1c1;font-weight:bold">for</span> <span style="color:#eceff4">{</span>
+                <span style="color:#81a1c1;font-weight:bold">select</span> <span style="color:#eceff4">{</span>
+                <span style="color:#81a1c1;font-weight:bold">case</span> <span style="color:#81a1c1">&lt;-</span>ctx<span style="color:#eceff4">.</span><span style="color:#88c0d0">Done</span><span style="color:#eceff4">():</span>
+                        <span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">nil</span>
+                <span style="color:#81a1c1;font-weight:bold">case</span> <span style="color:#81a1c1">&lt;-</span>time<span style="color:#eceff4">.</span><span style="color:#88c0d0">Tick</span><span style="color:#eceff4">(</span>c<span style="color:#eceff4">.</span>tick<span style="color:#eceff4">):</span>
+                        <span style="color:#616e87;font-style:italic">// Same as above...
+</span><span style="color:#616e87;font-style:italic"></span>                <span style="color:#eceff4">}</span>
+        <span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span>
 </code></pre></div><p>The last thing we need to do in the <code>main</code> function is to close the
 <code>signalChan</code> channel when the programs exits:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-	<span class="c1">// Same as above...
-</span><span class="c1"></span>
-	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
-                <span class="nx">signal</span><span class="p">.</span><span class="nf">Stop</span><span class="p">(</span><span class="nx">signalChan</span><span class="p">)</span>
-		<span class="nf">cancel</span><span class="p">()</span>
-	<span class="p">}()</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">main</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+	<span style="color:#616e87;font-style:italic">// Same as above...
+</span><span style="color:#616e87;font-style:italic"></span>
+	<span style="color:#81a1c1;font-weight:bold">defer</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+                signal<span style="color:#eceff4">.</span><span style="color:#88c0d0">Stop</span><span style="color:#eceff4">(</span>signalChan<span style="color:#eceff4">)</span>
+		<span style="color:#88c0d0">cancel</span><span style="color:#eceff4">()</span>
+	<span style="color:#eceff4">}()</span>
 
-	<span class="c1">// Same as above...
-</span><span class="c1"></span><span class="p">}</span>
+	<span style="color:#616e87;font-style:italic">// Same as above...
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#eceff4">}</span>
 </code></pre></div><p>The <code>Stop</code> function will stop relaying incoming signals to <code>signalChan</code>. When
 <code>Stop</code> returns, it is guaranteed that <code>signalChan</code> will receive no more
 signals.</p>
 <p>Let&rsquo;s run the <code>observer</code> program and see the signal handling in action:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ ./observer -config<span class="o">=</span>config.conf
-2020/04/26 00:14:46 Status code mismatch, got: <span class="m">200</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ ./observer -config<span style="color:#81a1c1">=</span>config.conf
+2020/04/26 00:14:46 Status code mismatch, got: <span style="color:#b48ead">200</span>
 ...
-2020/04/26 00:15:46 Status code mismatch, got: <span class="m">200</span>
+2020/04/26 00:15:46 Status code mismatch, got: <span style="color:#b48ead">200</span>
 </code></pre></div><p>Now, having the PID of <code>observer</code>, we can send any signal using the <code>kill</code>
 command line tool:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ <span class="nb">kill</span> -SIGINT <span class="m">37212</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ <span style="color:#81a1c1">kill</span> -SIGINT <span style="color:#b48ead">37212</span>
 </code></pre></div><p>By executing the <code>kill</code> command, we will send a <code>SIGINT</code> to the <code>observer</code>
 process. This will force <code>observer</code> to wrap up the execution, log a line to
 <code>STDOUT</code> and exit:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ ./observer -config<span class="o">=</span>config.conf
-2020/04/26 00:29:22 Status code mismatch, got: <span class="m">200</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ ./observer -config<span style="color:#81a1c1">=</span>config.conf
+2020/04/26 00:29:22 Status code mismatch, got: <span style="color:#b48ead">200</span>
 2020/04/26 00:29:22 Got SIGINT/SIGTERM, exiting.
-<span class="nb">exit</span> status <span class="m">1</span>
+<span style="color:#81a1c1">exit</span> status <span style="color:#b48ead">1</span>
 </code></pre></div><p>We can try the same exercise with <code>SIGTERM</code> as well:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">› <span class="nb">kill</span> -SIGTERM <span class="m">37827</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">› <span style="color:#81a1c1">kill</span> -SIGTERM <span style="color:#b48ead">37827</span>
 </code></pre></div><p>Causes <code>observer</code> to exit with the same behavior:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ ./observer -config<span class="o">=</span>config.conf
-2020/04/26 00:33:42 Status code mismatch, got: <span class="m">200</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ ./observer -config<span style="color:#81a1c1">=</span>config.conf
+2020/04/26 00:33:42 Status code mismatch, got: <span style="color:#b48ead">200</span>
 2020/04/26 00:33:44 Got SIGINT/SIGTERM, exiting.
-<span class="nb">exit</span> status <span class="m">1</span>
+<span style="color:#81a1c1">exit</span> status <span style="color:#b48ead">1</span>
 </code></pre></div><h2 id="reload-config-on-sighup" class="relative group">Reload config on <code>SIGHUP</code> <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#reload-config-on-sighup" aria-label="Anchor">#</a></span></h2>
 <p>Now that we know how to handle signals, we need to add another signal to the
 mix - <code>SIGHUP</code>. To do that, we can just add <code>syscall.SIGHUP</code> to the
 <code>signal.Notify</code> call:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">signalChan</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Signal</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-<span class="nx">signal</span><span class="p">.</span><span class="nf">Notify</span><span class="p">(</span><span class="nx">signalChan</span><span class="p">,</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">SIGINT</span><span class="p">,</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">SIGTERM</span><span class="p">,</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">SIGHUP</span><span class="p">)</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">signalChan <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">make</span><span style="color:#eceff4">(</span><span style="color:#81a1c1;font-weight:bold">chan</span> os<span style="color:#eceff4">.</span>Signal<span style="color:#eceff4">,</span> <span style="color:#b48ead">1</span><span style="color:#eceff4">)</span>
+signal<span style="color:#eceff4">.</span><span style="color:#88c0d0">Notify</span><span style="color:#eceff4">(</span>signalChan<span style="color:#eceff4">,</span> syscall<span style="color:#eceff4">.</span>SIGINT<span style="color:#eceff4">,</span> syscall<span style="color:#eceff4">.</span>SIGTERM<span style="color:#eceff4">,</span> syscall<span style="color:#eceff4">.</span>SIGHUP<span style="color:#eceff4">)</span>
 </code></pre></div><p>Now that we have <code>SIGHUP</code> covered, in the goroutine that handles the signals,
 once a <code>SIGHUP</code> is received, it should re-run the <code>config.init</code> method. By
 doing that, we will reload the configuration of the <code>observer</code>, loading any
 changes in the configuration:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
-        <span class="k">select</span> <span class="p">{</span>
-        <span class="k">case</span> <span class="nx">s</span> <span class="o">:=</span> <span class="o">&lt;-</span><span class="nx">signalChan</span><span class="p">:</span>
-                <span class="k">switch</span> <span class="nx">s</span> <span class="p">{</span>
-                <span class="k">case</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">SIGINT</span><span class="p">,</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">SIGTERM</span><span class="p">:</span>
-                        <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Got SIGINT/SIGTERM, exiting.&#34;</span><span class="p">)</span>
-                        <span class="nf">cancel</span><span class="p">()</span>
-                        <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-                <span class="k">case</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">SIGHUP</span><span class="p">:</span>
-                        <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Got SIGHUP, reloading.&#34;</span><span class="p">)</span>
-                        <span class="nx">c</span><span class="p">.</span><span class="nf">init</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">)</span>
-                <span class="p">}</span>
-        <span class="k">case</span> <span class="o">&lt;-</span><span class="nx">ctx</span><span class="p">.</span><span class="nf">Done</span><span class="p">():</span>
-                <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Done.&#34;</span><span class="p">)</span>
-                <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-        <span class="p">}</span>
-<span class="p">}()</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">go</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+        <span style="color:#81a1c1;font-weight:bold">select</span> <span style="color:#eceff4">{</span>
+        <span style="color:#81a1c1;font-weight:bold">case</span> s <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&lt;-</span>signalChan<span style="color:#eceff4">:</span>
+                <span style="color:#81a1c1;font-weight:bold">switch</span> s <span style="color:#eceff4">{</span>
+                <span style="color:#81a1c1;font-weight:bold">case</span> syscall<span style="color:#eceff4">.</span>SIGINT<span style="color:#eceff4">,</span> syscall<span style="color:#eceff4">.</span>SIGTERM<span style="color:#eceff4">:</span>
+                        log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Printf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Got SIGINT/SIGTERM, exiting.&#34;</span><span style="color:#eceff4">)</span>
+                        <span style="color:#88c0d0">cancel</span><span style="color:#eceff4">()</span>
+                        os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Exit</span><span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span>
+                <span style="color:#81a1c1;font-weight:bold">case</span> syscall<span style="color:#eceff4">.</span>SIGHUP<span style="color:#eceff4">:</span>
+                        log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Printf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Got SIGHUP, reloading.&#34;</span><span style="color:#eceff4">)</span>
+                        c<span style="color:#eceff4">.</span><span style="color:#88c0d0">init</span><span style="color:#eceff4">(</span>os<span style="color:#eceff4">.</span>Args<span style="color:#eceff4">)</span>
+                <span style="color:#eceff4">}</span>
+        <span style="color:#81a1c1;font-weight:bold">case</span> <span style="color:#81a1c1">&lt;-</span>ctx<span style="color:#eceff4">.</span><span style="color:#88c0d0">Done</span><span style="color:#eceff4">():</span>
+                log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Printf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Done.&#34;</span><span style="color:#eceff4">)</span>
+                os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Exit</span><span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span>
+        <span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}()</span>
 </code></pre></div><p>The change is relatively small. By using a <code>switch</code> construct, detect the
 received signal. If it&rsquo;s a <code>SIGHUP</code>, we invoke <code>c.init(os.Args)</code>. Otherwise,
 we <code>cancel()</code> the context and <code>os.Exit</code> the program.</p>
 <p>We can test this using the same trick from before:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ <span class="nb">kill</span> -SIGHUP <span class="m">38761</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ <span style="color:#81a1c1">kill</span> -SIGHUP <span style="color:#b48ead">38761</span>
 </code></pre></div><p>Will cause the <code>observer</code> to reload:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ ./observer -config<span class="o">=</span>config.conf
-2020/04/26 01:15:40 Status code mismatch, got: <span class="m">200</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ ./observer -config<span style="color:#81a1c1">=</span>config.conf
+2020/04/26 01:15:40 Status code mismatch, got: <span style="color:#b48ead">200</span>
 2020/04/26 01:15:44 Got SIGHUP, reloading.
 </code></pre></div><p>This looks nice. Let&rsquo;s shut down the server now by sending a <code>SIGTERM</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ <span class="nb">kill</span> -SIGTERM <span class="m">38761</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ <span style="color:#81a1c1">kill</span> -SIGTERM <span style="color:#b48ead">38761</span>
 </code></pre></div><p>In case you&rsquo;re following along, you will find out that the <code>observer</code> is still
 running; this is a bug – the goroutine that was receiving signals exited
 because the <code>select</code> construct completed once it received the <code>SIGHUP</code>.</p>
 <p>To make the goroutine accept signals without exiting, we need to make the
 goroutine run infinitely – using a <code>for</code> loop:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
-        <span class="k">for</span> <span class="p">{</span>
-                <span class="k">select</span> <span class="p">{</span>
-                <span class="k">case</span> <span class="nx">s</span> <span class="o">:=</span> <span class="o">&lt;-</span><span class="nx">signalChan</span><span class="p">:</span>
-                        <span class="k">switch</span> <span class="nx">s</span> <span class="p">{</span>
-                        <span class="k">case</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">SIGINT</span><span class="p">,</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">SIGTERM</span><span class="p">:</span>
-                                <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Got SIGINT/SIGTERM, exiting.&#34;</span><span class="p">)</span>
-                                <span class="nf">cancel</span><span class="p">()</span>
-                                <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-                        <span class="k">case</span> <span class="nx">syscall</span><span class="p">.</span><span class="nx">SIGHUP</span><span class="p">:</span>
-                                <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Got SIGHUP, reloading.&#34;</span><span class="p">)</span>
-                                <span class="nx">c</span><span class="p">.</span><span class="nf">init</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">)</span>
-                        <span class="p">}</span>
-                <span class="k">case</span> <span class="o">&lt;-</span><span class="nx">ctx</span><span class="p">.</span><span class="nf">Done</span><span class="p">():</span>
-                        <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Done.&#34;</span><span class="p">)</span>
-                        <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-                <span class="p">}</span>
-        <span class="p">}</span>
-<span class="p">}()</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">go</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+        <span style="color:#81a1c1;font-weight:bold">for</span> <span style="color:#eceff4">{</span>
+                <span style="color:#81a1c1;font-weight:bold">select</span> <span style="color:#eceff4">{</span>
+                <span style="color:#81a1c1;font-weight:bold">case</span> s <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&lt;-</span>signalChan<span style="color:#eceff4">:</span>
+                        <span style="color:#81a1c1;font-weight:bold">switch</span> s <span style="color:#eceff4">{</span>
+                        <span style="color:#81a1c1;font-weight:bold">case</span> syscall<span style="color:#eceff4">.</span>SIGINT<span style="color:#eceff4">,</span> syscall<span style="color:#eceff4">.</span>SIGTERM<span style="color:#eceff4">:</span>
+                                log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Printf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Got SIGINT/SIGTERM, exiting.&#34;</span><span style="color:#eceff4">)</span>
+                                <span style="color:#88c0d0">cancel</span><span style="color:#eceff4">()</span>
+                                os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Exit</span><span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span>
+                        <span style="color:#81a1c1;font-weight:bold">case</span> syscall<span style="color:#eceff4">.</span>SIGHUP<span style="color:#eceff4">:</span>
+                                log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Printf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Got SIGHUP, reloading.&#34;</span><span style="color:#eceff4">)</span>
+                                c<span style="color:#eceff4">.</span><span style="color:#88c0d0">init</span><span style="color:#eceff4">(</span>os<span style="color:#eceff4">.</span>Args<span style="color:#eceff4">)</span>
+                        <span style="color:#eceff4">}</span>
+                <span style="color:#81a1c1;font-weight:bold">case</span> <span style="color:#81a1c1">&lt;-</span>ctx<span style="color:#eceff4">.</span><span style="color:#88c0d0">Done</span><span style="color:#eceff4">():</span>
+                        log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Printf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Done.&#34;</span><span style="color:#eceff4">)</span>
+                        os<span style="color:#eceff4">.</span><span style="color:#88c0d0">Exit</span><span style="color:#eceff4">(</span><span style="color:#b48ead">1</span><span style="color:#eceff4">)</span>
+                <span style="color:#eceff4">}</span>
+        <span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}()</span>
 </code></pre></div><p>By wrapping the whole goroutine in a <code>for</code> loop, we will make sure that it will
 not exit, except when a <code>SIGINT</code>/<code>SIGTERM</code> is received, or if the context is
 done. By having this endless goroutine, we also can send multiple <code>SIGHUP</code>s to
 the <code>observer</code>, and it will process them correctly.</p>
 <p>Let&rsquo;s send two <code>SIGHUP</code>s, to perform two reloads, and <code>SIGTERM</code> to shut down
 the <code>observer</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ <span class="nb">kill</span> -SIGHUP <span class="m">38960</span>
-$ <span class="nb">kill</span> -SIGHUP <span class="m">38960</span>
-$ <span class="nb">kill</span> -SIGTERM <span class="m">38960</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ <span style="color:#81a1c1">kill</span> -SIGHUP <span style="color:#b48ead">38960</span>
+$ <span style="color:#81a1c1">kill</span> -SIGHUP <span style="color:#b48ead">38960</span>
+$ <span style="color:#81a1c1">kill</span> -SIGTERM <span style="color:#b48ead">38960</span>
 </code></pre></div><p>And the <code>observer</code> output:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ ./observer -config<span class="o">=</span>config.conf
-2020/04/26 01:25:02 Status code mismatch, got: <span class="m">200</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ ./observer -config<span style="color:#81a1c1">=</span>config.conf
+2020/04/26 01:25:02 Status code mismatch, got: <span style="color:#b48ead">200</span>
 2020/04/26 01:25:03 Got SIGHUP, reloading.
 2020/04/26 01:25:05 Got SIGHUP, reloading.
 2020/04/26 01:25:08 Got SIGINT/SIGTERM, exiting.
@@ -745,33 +745,33 @@ agent.</p>
 agents</a>, so if you would like to
 more about this topic, you can head read that as well. Still, let&rsquo;s see a
 minimal <code>launchd</code> configuration for <code>observer</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="cp">&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;</span>
-<span class="cp">&lt;!DOCTYPE plist PUBLIC &#34;-//Apple//DTD PLIST 1.0//EN&#34; &#34;http://www.apple.com/DTDs/PropertyList-1.0.dtd&#34;&gt;</span>
-<span class="nt">&lt;plist</span> <span class="na">version=</span><span class="s">&#34;1.0&#34;</span><span class="nt">&gt;</span>
-    <span class="nt">&lt;dict&gt;</span>
-        <span class="nt">&lt;key&gt;</span>Label<span class="nt">&lt;/key&gt;</span>
-        <span class="nt">&lt;string&gt;</span>com.ieftimov.observer<span class="nt">&lt;/string&gt;</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#5e81ac;font-style:italic">&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;</span>
+<span style="color:#5e81ac;font-style:italic">&lt;!DOCTYPE plist PUBLIC &#34;-//Apple//DTD PLIST 1.0//EN&#34; &#34;http://www.apple.com/DTDs/PropertyList-1.0.dtd&#34;&gt;</span>
+<span style="color:#81a1c1">&lt;plist</span> <span style="color:#8fbcbb">version=</span><span style="color:#a3be8c">&#34;1.0&#34;</span><span style="color:#81a1c1">&gt;</span>
+    <span style="color:#81a1c1">&lt;dict&gt;</span>
+        <span style="color:#81a1c1">&lt;key&gt;</span>Label<span style="color:#81a1c1">&lt;/key&gt;</span>
+        <span style="color:#81a1c1">&lt;string&gt;</span>com.ieftimov.observer<span style="color:#81a1c1">&lt;/string&gt;</span>
 
-        <span class="nt">&lt;key&gt;</span>RunAtLoad<span class="nt">&lt;/key&gt;</span>
-        <span class="nt">&lt;true/&gt;</span>
+        <span style="color:#81a1c1">&lt;key&gt;</span>RunAtLoad<span style="color:#81a1c1">&lt;/key&gt;</span>
+        <span style="color:#81a1c1">&lt;true/&gt;</span>
 
-        <span class="nt">&lt;key&gt;</span>KeepAlive<span class="nt">&lt;/key&gt;</span>
-        <span class="nt">&lt;true/&gt;</span>
+        <span style="color:#81a1c1">&lt;key&gt;</span>KeepAlive<span style="color:#81a1c1">&lt;/key&gt;</span>
+        <span style="color:#81a1c1">&lt;true/&gt;</span>
 
-        <span class="nt">&lt;key&gt;</span>ProgramArguments<span class="nt">&lt;/key&gt;</span>
-        <span class="nt">&lt;array&gt;</span>
-          <span class="nt">&lt;string&gt;</span>/usr/local/bin/observer<span class="nt">&lt;/string&gt;</span>
-          <span class="nt">&lt;string&gt;</span>-config<span class="nt">&lt;/string&gt;</span>
-          <span class="nt">&lt;string&gt;</span>/etc/observer.conf<span class="nt">&lt;/string&gt;</span>
-        <span class="nt">&lt;/array&gt;</span>
+        <span style="color:#81a1c1">&lt;key&gt;</span>ProgramArguments<span style="color:#81a1c1">&lt;/key&gt;</span>
+        <span style="color:#81a1c1">&lt;array&gt;</span>
+          <span style="color:#81a1c1">&lt;string&gt;</span>/usr/local/bin/observer<span style="color:#81a1c1">&lt;/string&gt;</span>
+          <span style="color:#81a1c1">&lt;string&gt;</span>-config<span style="color:#81a1c1">&lt;/string&gt;</span>
+          <span style="color:#81a1c1">&lt;string&gt;</span>/etc/observer.conf<span style="color:#81a1c1">&lt;/string&gt;</span>
+        <span style="color:#81a1c1">&lt;/array&gt;</span>
 
-        <span class="nt">&lt;key&gt;</span>StandardOutPath<span class="nt">&lt;/key&gt;</span>
-        <span class="nt">&lt;string&gt;</span>/tmp/observer.log<span class="nt">&lt;/string&gt;</span>
+        <span style="color:#81a1c1">&lt;key&gt;</span>StandardOutPath<span style="color:#81a1c1">&lt;/key&gt;</span>
+        <span style="color:#81a1c1">&lt;string&gt;</span>/tmp/observer.log<span style="color:#81a1c1">&lt;/string&gt;</span>
 
-        <span class="nt">&lt;key&gt;</span>StandardErrorPath<span class="nt">&lt;/key&gt;</span>
-        <span class="nt">&lt;string&gt;</span>/tmp/observer.error.log<span class="nt">&lt;/string&gt;</span>
-    <span class="nt">&lt;/dict&gt;</span>
-<span class="nt">&lt;/plist&gt;</span>
+        <span style="color:#81a1c1">&lt;key&gt;</span>StandardErrorPath<span style="color:#81a1c1">&lt;/key&gt;</span>
+        <span style="color:#81a1c1">&lt;string&gt;</span>/tmp/observer.error.log<span style="color:#81a1c1">&lt;/string&gt;</span>
+    <span style="color:#81a1c1">&lt;/dict&gt;</span>
+<span style="color:#81a1c1">&lt;/plist&gt;</span>
 </code></pre></div><p>The configuration is relatively straightforward, here are all of the pieces in
 order:</p>
 <ul>
@@ -789,7 +789,7 @@ that requires granting write access of the agent to <code>/var/log</code>.</li>
 <p>To make sure we can run the agent, we have to also supply the configuration
 file <code>observer.conf</code> in the <code>/etc</code> directory. On my machine, its contents are
 as follows:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text">status=500
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">status=500
 tick=30s
 url=https://ieftimov.com
 server=cloudflare
@@ -797,15 +797,15 @@ content_type=text/html; charset=utf-8
 user_agent=
 </code></pre></div><p>After placing the <code>observer.conf</code> file in <code>/etc</code>, for the agent to work, we
 have to place its <code>.plist</code> file in <code>~/Library/LaunchAgents</code>, and load it with:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh">$ launchctl load ~/Library/LaunchAgents/com.ieftimov.observer.plist
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ launchctl load ~/Library/LaunchAgents/com.ieftimov.observer.plist
 </code></pre></div><p>Now, if we would <code>tail -f</code> the log files in <code>/tmp</code> we will see its outputs
 there:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh">$ tail -f /tmp/observer.*
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ tail -f /tmp/observer.*
 
-<span class="o">==</span>&gt; /tmp/observer.error.log &lt;<span class="o">==</span>
+<span style="color:#81a1c1">==</span>&gt; /tmp/observer.error.log &lt;<span style="color:#81a1c1">==</span>
 
-<span class="o">==</span>&gt; /tmp/observer.log &lt;<span class="o">==</span>
-2020/05/02 11:49:03 Status code mismatch, got: <span class="m">200</span>
+<span style="color:#81a1c1">==</span>&gt; /tmp/observer.log &lt;<span style="color:#81a1c1">==</span>
+2020/05/02 11:49:03 Status code mismatch, got: <span style="color:#b48ead">200</span>
 </code></pre></div><p>Voila! The agent is running and its logging output to <code>STDOUT</code>, while <code>launchd</code>
 is redirecting that output to a log file.</p>
 <p>If we would like to run the <code>observer</code> on GNU/Linux, we cannot use this
@@ -1209,7 +1209,7 @@ article.</p>
       
         <p class="text-sm text-neutral-500 dark:text-neutral-400">
             &copy;
-            2022
+            2023
             Ilija Eftimov
         </p>
       

@@ -346,29 +346,29 @@ method</a> and authenticates
 the request. Depending on the authentication result, it will return an error
 response or let the request go through.</p>
 <p>The <code>AuthMiddleware</code> authorization middleware:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">AuthMiddleware</span> <span class="kd">struct</span> <span class="p">{</span>
-	<span class="nx">db</span> <span class="o">*</span><span class="nx">gorm</span><span class="p">.</span><span class="nx">DB</span>
-<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">type</span> AuthMiddleware <span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+	db <span style="color:#81a1c1">*</span>gorm<span style="color:#eceff4">.</span>DB
+<span style="color:#eceff4">}</span>
 
-<span class="kd">func</span> <span class="p">(</span><span class="nx">am</span> <span class="o">*</span><span class="nx">AuthMiddleware</span><span class="p">)</span> <span class="nf">Validate</span><span class="p">(</span><span class="nx">username</span><span class="p">,</span> <span class="nx">password</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-	<span class="kd">var</span> <span class="nx">u</span> <span class="nx">User</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>am <span style="color:#81a1c1">*</span>AuthMiddleware<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Validate</span><span style="color:#eceff4">(</span>username<span style="color:#eceff4">,</span> password <span style="color:#81a1c1">string</span><span style="color:#eceff4">)</span> <span style="color:#81a1c1">bool</span> <span style="color:#eceff4">{</span>
+	<span style="color:#81a1c1;font-weight:bold">var</span> u User
 
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">am</span><span class="p">.</span><span class="nx">db</span><span class="p">.</span><span class="nf">Where</span><span class="p">(</span><span class="s">&#34;username = ? AND password = ?&#34;</span><span class="p">,</span> <span class="nx">username</span><span class="p">,</span> <span class="nx">password</span><span class="p">).</span><span class="nf">First</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">u</span><span class="p">).</span><span class="nx">Error</span><span class="p">;</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="kc">false</span>
-	<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">:=</span> am<span style="color:#eceff4">.</span>db<span style="color:#eceff4">.</span><span style="color:#88c0d0">Where</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;username = ? AND password = ?&#34;</span><span style="color:#eceff4">,</span> username<span style="color:#eceff4">,</span> password<span style="color:#eceff4">).</span><span style="color:#88c0d0">First</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">&amp;</span>u<span style="color:#eceff4">).</span>Error<span style="color:#eceff4">;</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">false</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">return</span> <span class="kc">true</span>
-<span class="p">}</span>
+	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">true</span>
+<span style="color:#eceff4">}</span>
 
-<span class="kd">func</span> <span class="p">(</span><span class="nx">am</span> <span class="o">*</span><span class="nx">AuthMiddleware</span><span class="p">)</span> <span class="nf">Middleware</span><span class="p">(</span><span class="nx">next</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
-	<span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-		<span class="k">if</span> <span class="nx">u</span><span class="p">,</span> <span class="nx">p</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">BasicAuth</span><span class="p">();</span> <span class="nx">ok</span> <span class="o">&amp;&amp;</span> <span class="nx">am</span><span class="p">.</span><span class="nf">Validate</span><span class="p">(</span><span class="nx">u</span><span class="p">,</span> <span class="nx">p</span><span class="p">)</span> <span class="p">{</span>
-			<span class="nx">next</span><span class="p">.</span><span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
-		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-			<span class="nx">http</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Forbidden&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusForbidden</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">})</span>
-<span class="p">}</span></code></pre></div>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#eceff4">(</span>am <span style="color:#81a1c1">*</span>AuthMiddleware<span style="color:#eceff4">)</span> <span style="color:#88c0d0">Middleware</span><span style="color:#eceff4">(</span>next http<span style="color:#eceff4">.</span>Handler<span style="color:#eceff4">)</span> http<span style="color:#eceff4">.</span>Handler <span style="color:#eceff4">{</span>
+	<span style="color:#81a1c1;font-weight:bold">return</span> http<span style="color:#eceff4">.</span><span style="color:#88c0d0">HandlerFunc</span><span style="color:#eceff4">(</span><span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>w http<span style="color:#eceff4">.</span>ResponseWriter<span style="color:#eceff4">,</span> r <span style="color:#81a1c1">*</span>http<span style="color:#eceff4">.</span>Request<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+		<span style="color:#81a1c1;font-weight:bold">if</span> u<span style="color:#eceff4">,</span> p<span style="color:#eceff4">,</span> ok <span style="color:#81a1c1">:=</span> r<span style="color:#eceff4">.</span><span style="color:#88c0d0">BasicAuth</span><span style="color:#eceff4">();</span> ok <span style="color:#81a1c1">&amp;&amp;</span> am<span style="color:#eceff4">.</span><span style="color:#88c0d0">Validate</span><span style="color:#eceff4">(</span>u<span style="color:#eceff4">,</span> p<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+			next<span style="color:#eceff4">.</span><span style="color:#88c0d0">ServeHTTP</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">,</span> r<span style="color:#eceff4">)</span>
+		<span style="color:#eceff4">}</span> <span style="color:#81a1c1;font-weight:bold">else</span> <span style="color:#eceff4">{</span>
+			http<span style="color:#eceff4">.</span><span style="color:#88c0d0">Error</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Forbidden&#34;</span><span style="color:#eceff4">,</span> http<span style="color:#eceff4">.</span>StatusForbidden<span style="color:#eceff4">)</span>
+		<span style="color:#eceff4">}</span>
+	<span style="color:#eceff4">})</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>The <code>AuthMiddleware</code> is a <code>struct</code> that has a <code>db</code> attribute of the type
 <code>*gorm.DB</code>, which, in fact, is a <a href="https://gorm.io">Gorm</a> database connection
 pool. The <code>Validate</code> method of the middleware will check the validity of the
@@ -385,22 +385,22 @@ returned. If the request does not supply proper HTTP Basic Authentication
 credentials, or the supplied credentials are invalid, it will return an <code>HTTP 403</code> Forbidden error.</p>
 <p>The simplistic server that builds the router and mounts the handler and the
 middleware:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-	<span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">gorm</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="s">&#34;sqlite3&#34;</span><span class="p">,</span> <span class="s">&#34;./cleanups.db&#34;</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-	<span class="p">}</span>
-	<span class="k">defer</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">main</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+	db<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> gorm<span style="color:#eceff4">.</span><span style="color:#88c0d0">Open</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;sqlite3&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;./cleanups.db&#34;</span><span style="color:#eceff4">)</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatal</span><span style="color:#eceff4">(</span>err<span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}</span>
+	<span style="color:#81a1c1;font-weight:bold">defer</span> db<span style="color:#eceff4">.</span><span style="color:#88c0d0">Close</span><span style="color:#eceff4">()</span>
 
-	<span class="nx">aum</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">AuthMiddleware</span><span class="p">{</span><span class="nx">db</span><span class="p">}</span>
-	<span class="nx">r</span> <span class="o">:=</span> <span class="nx">mux</span><span class="p">.</span><span class="nf">NewRouter</span><span class="p">()</span>
-	<span class="nx">r</span><span class="p">.</span><span class="nf">Use</span><span class="p">(</span><span class="nx">aum</span><span class="p">.</span><span class="nx">Middleware</span><span class="p">)</span>
-	<span class="nx">r</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/foo&#34;</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-                <span class="nx">io</span><span class="p">.</span><span class="nf">WriteString</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;6 x 9 = 42\n&#34;</span><span class="p">)</span>
-	<span class="p">})</span>
+	aum <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1">&amp;</span>AuthMiddleware<span style="color:#eceff4">{</span>db<span style="color:#eceff4">}</span>
+	r <span style="color:#81a1c1">:=</span> mux<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewRouter</span><span style="color:#eceff4">()</span>
+	r<span style="color:#eceff4">.</span><span style="color:#88c0d0">Use</span><span style="color:#eceff4">(</span>aum<span style="color:#eceff4">.</span>Middleware<span style="color:#eceff4">)</span>
+	r<span style="color:#eceff4">.</span><span style="color:#88c0d0">HandleFunc</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;/foo&#34;</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>w http<span style="color:#eceff4">.</span>ResponseWriter<span style="color:#eceff4">,</span> r <span style="color:#81a1c1">*</span>http<span style="color:#eceff4">.</span>Request<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+                io<span style="color:#eceff4">.</span><span style="color:#88c0d0">WriteString</span><span style="color:#eceff4">(</span>w<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;6 x 9 = 42\n&#34;</span><span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">})</span>
 
-	<span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:8888&#34;</span><span class="p">,</span> <span class="nx">r</span><span class="p">))</span>
-<span class="p">}</span></code></pre></div>
+	log<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatal</span><span style="color:#eceff4">(</span>http<span style="color:#eceff4">.</span><span style="color:#88c0d0">ListenAndServe</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;:8888&#34;</span><span style="color:#eceff4">,</span> r<span style="color:#eceff4">))</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>The <code>main</code> function opens a Gorm connection to an <code>SQLite3</code> database, builds a
 <code>mux</code> router, and mounts a handler at the <code>/foo</code> URI. Then, it mounts the
 router on a server and starts listening on <code>127.0.0.1:8888</code>.</p>
@@ -414,87 +414,87 @@ connection (to a test database) and then use it to initialize a test server
 that mounts the router. Then, we have to send requests to that same server and
 run our assertions on its response body and status.</p>
 <p>Let&rsquo;s take a stab at it:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">package</span> main
 
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;fmt&#34;</span>
-	<span class="s">&#34;io/ioutil&#34;</span>
-	<span class="s">&#34;log&#34;</span>
-	<span class="s">&#34;net/http&#34;</span>
-	<span class="s">&#34;net/http/httptest&#34;</span>
-	<span class="s">&#34;os&#34;</span>
-	<span class="s">&#34;strings&#34;</span>
-	<span class="s">&#34;testing&#34;</span>
+<span style="color:#81a1c1;font-weight:bold">import</span> <span style="color:#eceff4">(</span>
+	<span style="color:#a3be8c">&#34;fmt&#34;</span>
+	<span style="color:#a3be8c">&#34;io/ioutil&#34;</span>
+	<span style="color:#a3be8c">&#34;log&#34;</span>
+	<span style="color:#a3be8c">&#34;net/http&#34;</span>
+	<span style="color:#a3be8c">&#34;net/http/httptest&#34;</span>
+	<span style="color:#a3be8c">&#34;os&#34;</span>
+	<span style="color:#a3be8c">&#34;strings&#34;</span>
+	<span style="color:#a3be8c">&#34;testing&#34;</span>
 
-	<span class="s">&#34;github.com/jinzhu/gorm&#34;</span>
-<span class="p">)</span>
+	<span style="color:#a3be8c">&#34;github.com/jinzhu/gorm&#34;</span>
+<span style="color:#eceff4">)</span>
 
-<span class="kd">func</span> <span class="nf">TestServer</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-<span class="hl">	<span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">gorm</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="s">&#34;sqlite3&#34;</span><span class="p">,</span> <span class="s">&#34;./cleanups_test.db&#34;</span><span class="p">)</span>
-</span><span class="hl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span><span class="hl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-</span><span class="hl">	<span class="p">}</span>
-</span><span class="hl">	<span class="k">defer</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
-</span><span class="hl">
-</span><span class="hl">	<span class="nx">r</span> <span class="o">:=</span> <span class="nf">Router</span><span class="p">(</span><span class="nx">db</span><span class="p">)</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestServer</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+<span style="display:block;width:100%;background-color:#424853">	db<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> gorm<span style="color:#eceff4">.</span><span style="color:#88c0d0">Open</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;sqlite3&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;./cleanups_test.db&#34;</span><span style="color:#eceff4">)</span>
+</span><span style="display:block;width:100%;background-color:#424853">	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+</span><span style="display:block;width:100%;background-color:#424853">		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatal</span><span style="color:#eceff4">(</span>err<span style="color:#eceff4">)</span>
+</span><span style="display:block;width:100%;background-color:#424853">	<span style="color:#eceff4">}</span>
+</span><span style="display:block;width:100%;background-color:#424853">	<span style="color:#81a1c1;font-weight:bold">defer</span> db<span style="color:#eceff4">.</span><span style="color:#88c0d0">Close</span><span style="color:#eceff4">()</span>
+</span><span style="display:block;width:100%;background-color:#424853">
+</span><span style="display:block;width:100%;background-color:#424853">	r <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">Router</span><span style="color:#eceff4">(</span>db<span style="color:#eceff4">)</span>
 </span>
-	<span class="nx">tcs</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
-		<span class="nx">name</span>           <span class="kt">string</span>
-		<span class="nx">username</span>       <span class="kt">string</span>
-		<span class="nx">password</span>       <span class="kt">string</span>
-		<span class="nx">responseBody</span>   <span class="kt">string</span>
-		<span class="nx">responseStatus</span> <span class="kt">int</span>
-	<span class="p">}{</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span>           <span class="s">&#34;with invalid username-password combo&#34;</span><span class="p">,</span>
-			<span class="nx">username</span><span class="p">:</span>       <span class="s">&#34;jane&#34;</span><span class="p">,</span>
-			<span class="nx">password</span><span class="p">:</span>       <span class="s">&#34;doe&#34;</span><span class="p">,</span>
-			<span class="nx">responseBody</span><span class="p">:</span>   <span class="s">&#34;Forbidden&#34;</span><span class="p">,</span>
-			<span class="nx">responseStatus</span><span class="p">:</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusForbidden</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span>           <span class="s">&#34;with valid username-password combo&#34;</span><span class="p">,</span>
-			<span class="nx">username</span><span class="p">:</span>       <span class="s">&#34;jane&#34;</span><span class="p">,</span>
-			<span class="nx">password</span><span class="p">:</span>       <span class="s">&#34;doe123&#34;</span><span class="p">,</span>
-			<span class="nx">responseBody</span><span class="p">:</span>   <span class="s">&#34;6 x 9 = 42&#34;</span><span class="p">,</span>
-			<span class="nx">responseStatus</span><span class="p">:</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">,</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+	tcs <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+		name           <span style="color:#81a1c1">string</span>
+		username       <span style="color:#81a1c1">string</span>
+		password       <span style="color:#81a1c1">string</span>
+		responseBody   <span style="color:#81a1c1">string</span>
+		responseStatus <span style="color:#81a1c1">int</span>
+	<span style="color:#eceff4">}{</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span>           <span style="color:#a3be8c">&#34;with invalid username-password combo&#34;</span><span style="color:#eceff4">,</span>
+			username<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;jane&#34;</span><span style="color:#eceff4">,</span>
+			password<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;doe&#34;</span><span style="color:#eceff4">,</span>
+			responseBody<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;Forbidden&#34;</span><span style="color:#eceff4">,</span>
+			responseStatus<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusForbidden<span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span>           <span style="color:#a3be8c">&#34;with valid username-password combo&#34;</span><span style="color:#eceff4">,</span>
+			username<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;jane&#34;</span><span style="color:#eceff4">,</span>
+			password<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;doe123&#34;</span><span style="color:#eceff4">,</span>
+			responseBody<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;6 x 9 = 42&#34;</span><span style="color:#eceff4">,</span>
+			responseStatus<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusOK<span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+	<span style="color:#eceff4">}</span>
 
-<span class="hl">	<span class="nx">ts</span> <span class="o">:=</span> <span class="nx">httptest</span><span class="p">.</span><span class="nf">NewServer</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
-</span><span class="hl">	<span class="k">defer</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
-</span><span class="hl">	<span class="nx">client</span> <span class="o">:=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">Client</span><span class="p">()</span>
-</span><span class="hl">
-</span><span class="hl">	<span class="nx">req</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewRequest</span><span class="p">(</span><span class="s">&#34;GET&#34;</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;%s/foo&#34;</span><span class="p">,</span> <span class="nx">ts</span><span class="p">.</span><span class="nx">URL</span><span class="p">),</span> <span class="kc">nil</span><span class="p">)</span>
-</span><span class="hl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span><span class="hl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-</span><span class="hl">	<span class="p">}</span>
+<span style="display:block;width:100%;background-color:#424853">	ts <span style="color:#81a1c1">:=</span> httptest<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewServer</span><span style="color:#eceff4">(</span>r<span style="color:#eceff4">)</span>
+</span><span style="display:block;width:100%;background-color:#424853">	<span style="color:#81a1c1;font-weight:bold">defer</span> ts<span style="color:#eceff4">.</span><span style="color:#88c0d0">Close</span><span style="color:#eceff4">()</span>
+</span><span style="display:block;width:100%;background-color:#424853">	client <span style="color:#81a1c1">:=</span> ts<span style="color:#eceff4">.</span><span style="color:#88c0d0">Client</span><span style="color:#eceff4">()</span>
+</span><span style="display:block;width:100%;background-color:#424853">
+</span><span style="display:block;width:100%;background-color:#424853">	req<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> http<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewRequest</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;GET&#34;</span><span style="color:#eceff4">,</span> fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;%s/foo&#34;</span><span style="color:#eceff4">,</span> ts<span style="color:#eceff4">.</span>URL<span style="color:#eceff4">),</span> <span style="color:#81a1c1;font-weight:bold">nil</span><span style="color:#eceff4">)</span>
+</span><span style="display:block;width:100%;background-color:#424853">	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+</span><span style="display:block;width:100%;background-color:#424853">		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatal</span><span style="color:#eceff4">(</span>err<span style="color:#eceff4">)</span>
+</span><span style="display:block;width:100%;background-color:#424853">	<span style="color:#eceff4">}</span>
 </span>
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tcs</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-<span class="hl">			<span class="nx">req</span><span class="p">.</span><span class="nf">SetBasicAuth</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">username</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">password</span><span class="p">)</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> tc <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> tcs <span style="color:#eceff4">{</span>
+		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Run</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>name<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+<span style="display:block;width:100%;background-color:#424853">			req<span style="color:#eceff4">.</span><span style="color:#88c0d0">SetBasicAuth</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>username<span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>password<span style="color:#eceff4">)</span>
 </span>
-			<span class="nx">res</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">client</span><span class="p">.</span><span class="nf">Do</span><span class="p">(</span><span class="nx">req</span><span class="p">)</span>
-			<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-			<span class="p">}</span>
-			<span class="k">defer</span> <span class="nx">res</span><span class="p">.</span><span class="nx">Body</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+			res<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> client<span style="color:#eceff4">.</span><span style="color:#88c0d0">Do</span><span style="color:#eceff4">(</span>req<span style="color:#eceff4">)</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatal</span><span style="color:#eceff4">(</span>err<span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
+			<span style="color:#81a1c1;font-weight:bold">defer</span> res<span style="color:#eceff4">.</span>Body<span style="color:#eceff4">.</span><span style="color:#88c0d0">Close</span><span style="color:#eceff4">()</span>
 
-			<span class="nx">response</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">ioutil</span><span class="p">.</span><span class="nf">ReadAll</span><span class="p">(</span><span class="nx">res</span><span class="p">.</span><span class="nx">Body</span><span class="p">)</span>
-			<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-			<span class="p">}</span>
+			response<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> ioutil<span style="color:#eceff4">.</span><span style="color:#88c0d0">ReadAll</span><span style="color:#eceff4">(</span>res<span style="color:#eceff4">.</span>Body<span style="color:#eceff4">)</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span>err<span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
 
-			<span class="k">if</span> <span class="nx">res</span><span class="p">.</span><span class="nx">StatusCode</span> <span class="o">!=</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">responseStatus</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Want &#39;%d&#39;, got &#39;%d&#39;&#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">responseStatus</span><span class="p">,</span> <span class="nx">res</span><span class="p">.</span><span class="nx">StatusCode</span><span class="p">)</span>
-			<span class="p">}</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> res<span style="color:#eceff4">.</span>StatusCode <span style="color:#81a1c1">!=</span> tc<span style="color:#eceff4">.</span>responseStatus <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want &#39;%d&#39;, got &#39;%d&#39;&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>responseStatus<span style="color:#eceff4">,</span> res<span style="color:#eceff4">.</span>StatusCode<span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
 
-			<span class="k">if</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">TrimSpace</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nx">response</span><span class="p">))</span> <span class="o">!=</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">responseBody</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">responseBody</span><span class="p">,</span> <span class="nb">string</span><span class="p">(</span><span class="nx">response</span><span class="p">))</span>
-			<span class="p">}</span>
-		<span class="p">})</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+			<span style="color:#81a1c1;font-weight:bold">if</span> strings<span style="color:#eceff4">.</span><span style="color:#88c0d0">TrimSpace</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">string</span><span style="color:#eceff4">(</span>response<span style="color:#eceff4">))</span> <span style="color:#81a1c1">!=</span> tc<span style="color:#eceff4">.</span>responseBody <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>responseBody<span style="color:#eceff4">,</span> <span style="color:#81a1c1">string</span><span style="color:#eceff4">(</span>response<span style="color:#eceff4">))</span>
+			<span style="color:#eceff4">}</span>
+		<span style="color:#eceff4">})</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>We first open a database connection to a test database and pass the
 connection as an argument to the <code>Router</code> function. In the second highlighted
 block, we mount the returned router from the <code>Router</code> function on the test HTTP
@@ -512,13 +512,13 @@ response and the contents of the body.</p>
 the test database is empty. When we send a request to the HTTP server, it will
 try to validate the credentials our test sends, and it will find an empty
 database:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">$ go <span class="nb">test</span> ./... -v -count<span class="o">=</span><span class="nv">1</span>
-<span class="o">===</span> RUN   TestServer
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ go <span style="color:#81a1c1">test</span> ./... -v -count<span style="color:#81a1c1">=</span>1
+<span style="color:#81a1c1">===</span> RUN   TestServer
     TestServer: server_test.go:17: no such table: users
 
-<span class="o">(</span>/app/server_test.go:16<span class="o">)</span>
-<span class="o">[</span>2020-02-16 17:29:26<span class="o">]</span>  no such table: users
---- FAIL: TestServer <span class="o">(</span>0.01s<span class="o">)</span>
+<span style="color:#81a1c1">(</span>/app/server_test.go:16<span style="color:#81a1c1">)</span>
+<span style="color:#81a1c1">[</span>2020-02-16 17:29:26<span style="color:#81a1c1">]</span>  no such table: users
+--- FAIL: TestServer <span style="color:#81a1c1">(</span>0.01s<span style="color:#81a1c1">)</span>
 FAIL
 FAIL	github.com/fteem/go-playground/testing-in-go-cleanup	0.015s
 FAIL</code></pre></div>
@@ -533,85 +533,85 @@ time we run the tests. Precisely what our failing tests need.</p>
 <p>Achieving this in the most idiomatic way is by using a cleanup closure that is
 returned by the function that inserts the data. Usually, the returning cleanup
 function &ldquo;pattern&rdquo; looks like this:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="hl"><span class="kd">func</span> <span class="nf">createUser</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">,</span> <span class="nx">db</span> <span class="o">*</span><span class="nx">gorm</span><span class="p">.</span><span class="nx">DB</span><span class="p">)</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
-</span><span class="hl">	<span class="nx">user</span> <span class="o">:=</span> <span class="nx">User</span><span class="p">{</span><span class="nx">Username</span><span class="p">:</span> <span class="s">&#34;jane&#34;</span><span class="p">,</span> <span class="nx">Password</span><span class="p">:</span> <span class="s">&#34;doe123&#34;</span><span class="p">}</span>
-</span><span class="hl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">user</span><span class="p">).</span><span class="nx">Error</span><span class="p">;</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span><span class="hl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-</span><span class="hl">	<span class="p">}</span>
-</span><span class="hl">
-</span><span class="hl">	<span class="k">return</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
-</span><span class="hl">		<span class="nx">db</span><span class="p">.</span><span class="nf">Delete</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">user</span><span class="p">)</span>
-</span><span class="hl">	<span class="p">}</span>
-</span><span class="hl"><span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="display:block;width:100%;background-color:#424853"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">createUser</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">,</span> db <span style="color:#81a1c1">*</span>gorm<span style="color:#eceff4">.</span>DB<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+</span><span style="display:block;width:100%;background-color:#424853">	user <span style="color:#81a1c1">:=</span> User<span style="color:#eceff4">{</span>Username<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;jane&#34;</span><span style="color:#eceff4">,</span> Password<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;doe123&#34;</span><span style="color:#eceff4">}</span>
+</span><span style="display:block;width:100%;background-color:#424853">	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">:=</span> db<span style="color:#eceff4">.</span><span style="color:#88c0d0">Create</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">&amp;</span>user<span style="color:#eceff4">).</span>Error<span style="color:#eceff4">;</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+</span><span style="display:block;width:100%;background-color:#424853">		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatal</span><span style="color:#eceff4">(</span>err<span style="color:#eceff4">)</span>
+</span><span style="display:block;width:100%;background-color:#424853">	<span style="color:#eceff4">}</span>
+</span><span style="display:block;width:100%;background-color:#424853">
+</span><span style="display:block;width:100%;background-color:#424853">	<span style="color:#81a1c1;font-weight:bold">return</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+</span><span style="display:block;width:100%;background-color:#424853">		db<span style="color:#eceff4">.</span><span style="color:#88c0d0">Delete</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">&amp;</span>user<span style="color:#eceff4">)</span>
+</span><span style="display:block;width:100%;background-color:#424853">	<span style="color:#eceff4">}</span>
+</span><span style="display:block;width:100%;background-color:#424853"><span style="color:#eceff4">}</span>
 </span>
-<span class="kd">func</span> <span class="nf">TestServer</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">gorm</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="s">&#34;sqlite3&#34;</span><span class="p">,</span> <span class="s">&#34;./cleanups_test.db&#34;</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-	<span class="p">}</span>
-	<span class="k">defer</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestServer</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	db<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> gorm<span style="color:#eceff4">.</span><span style="color:#88c0d0">Open</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;sqlite3&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;./cleanups_test.db&#34;</span><span style="color:#eceff4">)</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatal</span><span style="color:#eceff4">(</span>err<span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}</span>
+	<span style="color:#81a1c1;font-weight:bold">defer</span> db<span style="color:#eceff4">.</span><span style="color:#88c0d0">Close</span><span style="color:#eceff4">()</span>
 
-<span class="hl">	<span class="nx">cleanup</span> <span class="o">:=</span> <span class="nf">createUser</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">db</span><span class="p">)</span>
-</span><span class="hl">	<span class="k">defer</span> <span class="nf">cleanup</span><span class="p">()</span>
+<span style="display:block;width:100%;background-color:#424853">	cleanup <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">createUser</span><span style="color:#eceff4">(</span>t<span style="color:#eceff4">,</span> db<span style="color:#eceff4">)</span>
+</span><span style="display:block;width:100%;background-color:#424853">	<span style="color:#81a1c1;font-weight:bold">defer</span> <span style="color:#88c0d0">cleanup</span><span style="color:#eceff4">()</span>
 </span>
-	<span class="nx">r</span> <span class="o">:=</span> <span class="nf">Router</span><span class="p">(</span><span class="nx">db</span><span class="p">)</span>
+	r <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">Router</span><span style="color:#eceff4">(</span>db<span style="color:#eceff4">)</span>
 
-	<span class="nx">tcs</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
-		<span class="nx">name</span>           <span class="kt">string</span>
-		<span class="nx">username</span>       <span class="kt">string</span>
-		<span class="nx">password</span>       <span class="kt">string</span>
-		<span class="nx">responseBody</span>   <span class="kt">string</span> <span class="nx">responseStatus</span> <span class="kt">int</span>
-	<span class="p">}{</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span>           <span class="s">&#34;with invalid username-password combo&#34;</span><span class="p">,</span>
-			<span class="nx">username</span><span class="p">:</span>       <span class="s">&#34;jane&#34;</span><span class="p">,</span>
-			<span class="nx">password</span><span class="p">:</span>       <span class="s">&#34;doe&#34;</span><span class="p">,</span>
-			<span class="nx">responseBody</span><span class="p">:</span>   <span class="s">&#34;Forbidden&#34;</span><span class="p">,</span>
-			<span class="nx">responseStatus</span><span class="p">:</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusForbidden</span><span class="p">,</span>
-		<span class="p">},</span>
-		<span class="p">{</span>
-			<span class="nx">name</span><span class="p">:</span>           <span class="s">&#34;with valid username-password combo&#34;</span><span class="p">,</span>
-			<span class="nx">username</span><span class="p">:</span>       <span class="s">&#34;jane&#34;</span><span class="p">,</span>
-			<span class="nx">password</span><span class="p">:</span>       <span class="s">&#34;doe123&#34;</span><span class="p">,</span>
-			<span class="nx">responseBody</span><span class="p">:</span>   <span class="s">&#34;6 x 9 = 42&#34;</span><span class="p">,</span>
-			<span class="nx">responseStatus</span><span class="p">:</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">,</span>
-		<span class="p">},</span>
-	<span class="p">}</span>
+	tcs <span style="color:#81a1c1">:=</span> <span style="color:#eceff4">[]</span><span style="color:#81a1c1;font-weight:bold">struct</span> <span style="color:#eceff4">{</span>
+		name           <span style="color:#81a1c1">string</span>
+		username       <span style="color:#81a1c1">string</span>
+		password       <span style="color:#81a1c1">string</span>
+		responseBody   <span style="color:#81a1c1">string</span> responseStatus <span style="color:#81a1c1">int</span>
+	<span style="color:#eceff4">}{</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span>           <span style="color:#a3be8c">&#34;with invalid username-password combo&#34;</span><span style="color:#eceff4">,</span>
+			username<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;jane&#34;</span><span style="color:#eceff4">,</span>
+			password<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;doe&#34;</span><span style="color:#eceff4">,</span>
+			responseBody<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;Forbidden&#34;</span><span style="color:#eceff4">,</span>
+			responseStatus<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusForbidden<span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+		<span style="color:#eceff4">{</span>
+			name<span style="color:#eceff4">:</span>           <span style="color:#a3be8c">&#34;with valid username-password combo&#34;</span><span style="color:#eceff4">,</span>
+			username<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;jane&#34;</span><span style="color:#eceff4">,</span>
+			password<span style="color:#eceff4">:</span>       <span style="color:#a3be8c">&#34;doe123&#34;</span><span style="color:#eceff4">,</span>
+			responseBody<span style="color:#eceff4">:</span>   <span style="color:#a3be8c">&#34;6 x 9 = 42&#34;</span><span style="color:#eceff4">,</span>
+			responseStatus<span style="color:#eceff4">:</span> http<span style="color:#eceff4">.</span>StatusOK<span style="color:#eceff4">,</span>
+		<span style="color:#eceff4">},</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="nx">ts</span> <span class="o">:=</span> <span class="nx">httptest</span><span class="p">.</span><span class="nf">NewServer</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
-	<span class="k">defer</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
-	<span class="nx">client</span> <span class="o">:=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">Client</span><span class="p">()</span>
+	ts <span style="color:#81a1c1">:=</span> httptest<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewServer</span><span style="color:#eceff4">(</span>r<span style="color:#eceff4">)</span>
+	<span style="color:#81a1c1;font-weight:bold">defer</span> ts<span style="color:#eceff4">.</span><span style="color:#88c0d0">Close</span><span style="color:#eceff4">()</span>
+	client <span style="color:#81a1c1">:=</span> ts<span style="color:#eceff4">.</span><span style="color:#88c0d0">Client</span><span style="color:#eceff4">()</span>
 
-	<span class="nx">req</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewRequest</span><span class="p">(</span><span class="s">&#34;GET&#34;</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;%s/foo&#34;</span><span class="p">,</span> <span class="nx">ts</span><span class="p">.</span><span class="nx">URL</span><span class="p">),</span> <span class="kc">nil</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-	<span class="p">}</span>
+	req<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> http<span style="color:#eceff4">.</span><span style="color:#88c0d0">NewRequest</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;GET&#34;</span><span style="color:#eceff4">,</span> fmt<span style="color:#eceff4">.</span><span style="color:#88c0d0">Sprintf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;%s/foo&#34;</span><span style="color:#eceff4">,</span> ts<span style="color:#eceff4">.</span>URL<span style="color:#eceff4">),</span> <span style="color:#81a1c1;font-weight:bold">nil</span><span style="color:#eceff4">)</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatal</span><span style="color:#eceff4">(</span>err<span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}</span>
 
-	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tc</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tcs</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-			<span class="nx">req</span><span class="p">.</span><span class="nf">SetBasicAuth</span><span class="p">(</span><span class="nx">tc</span><span class="p">.</span><span class="nx">username</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">password</span><span class="p">)</span>
+	<span style="color:#81a1c1;font-weight:bold">for</span> _<span style="color:#eceff4">,</span> tc <span style="color:#81a1c1">:=</span> <span style="color:#81a1c1;font-weight:bold">range</span> tcs <span style="color:#eceff4">{</span>
+		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Run</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>name<span style="color:#eceff4">,</span> <span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+			req<span style="color:#eceff4">.</span><span style="color:#88c0d0">SetBasicAuth</span><span style="color:#eceff4">(</span>tc<span style="color:#eceff4">.</span>username<span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>password<span style="color:#eceff4">)</span>
 
-			<span class="nx">res</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">client</span><span class="p">.</span><span class="nf">Do</span><span class="p">(</span><span class="nx">req</span><span class="p">)</span>
-			<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-			<span class="p">}</span>
-			<span class="k">defer</span> <span class="nx">res</span><span class="p">.</span><span class="nx">Body</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+			res<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> client<span style="color:#eceff4">.</span><span style="color:#88c0d0">Do</span><span style="color:#eceff4">(</span>req<span style="color:#eceff4">)</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatal</span><span style="color:#eceff4">(</span>err<span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
+			<span style="color:#81a1c1;font-weight:bold">defer</span> res<span style="color:#eceff4">.</span>Body<span style="color:#eceff4">.</span><span style="color:#88c0d0">Close</span><span style="color:#eceff4">()</span>
 
-			<span class="nx">response</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">ioutil</span><span class="p">.</span><span class="nf">ReadAll</span><span class="p">(</span><span class="nx">res</span><span class="p">.</span><span class="nx">Body</span><span class="p">)</span>
-			<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-			<span class="p">}</span>
+			response<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> ioutil<span style="color:#eceff4">.</span><span style="color:#88c0d0">ReadAll</span><span style="color:#eceff4">(</span>res<span style="color:#eceff4">.</span>Body<span style="color:#eceff4">)</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Error</span><span style="color:#eceff4">(</span>err<span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
 
-			<span class="k">if</span> <span class="nx">res</span><span class="p">.</span><span class="nx">StatusCode</span> <span class="o">!=</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">responseStatus</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Want &#39;%d&#39;, got &#39;%d&#39;&#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">responseStatus</span><span class="p">,</span> <span class="nx">res</span><span class="p">.</span><span class="nx">StatusCode</span><span class="p">)</span>
-			<span class="p">}</span>
+			<span style="color:#81a1c1;font-weight:bold">if</span> res<span style="color:#eceff4">.</span>StatusCode <span style="color:#81a1c1">!=</span> tc<span style="color:#eceff4">.</span>responseStatus <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want &#39;%d&#39;, got &#39;%d&#39;&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>responseStatus<span style="color:#eceff4">,</span> res<span style="color:#eceff4">.</span>StatusCode<span style="color:#eceff4">)</span>
+			<span style="color:#eceff4">}</span>
 
-			<span class="k">if</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">TrimSpace</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nx">response</span><span class="p">))</span> <span class="o">!=</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">responseBody</span> <span class="p">{</span>
-				<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span><span class="p">,</span> <span class="nx">tc</span><span class="p">.</span><span class="nx">responseBody</span><span class="p">,</span> <span class="nb">string</span><span class="p">(</span><span class="nx">response</span><span class="p">))</span>
-			<span class="p">}</span>
-		<span class="p">})</span>
-	<span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+			<span style="color:#81a1c1;font-weight:bold">if</span> strings<span style="color:#eceff4">.</span><span style="color:#88c0d0">TrimSpace</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">string</span><span style="color:#eceff4">(</span>response<span style="color:#eceff4">))</span> <span style="color:#81a1c1">!=</span> tc<span style="color:#eceff4">.</span>responseBody <span style="color:#eceff4">{</span>
+				t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Errorf</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;Want &#39;%s&#39;, got &#39;%s&#39;&#34;</span><span style="color:#eceff4">,</span> tc<span style="color:#eceff4">.</span>responseBody<span style="color:#eceff4">,</span> <span style="color:#81a1c1">string</span><span style="color:#eceff4">(</span>response<span style="color:#eceff4">))</span>
+			<span style="color:#eceff4">}</span>
+		<span style="color:#eceff4">})</span>
+	<span style="color:#eceff4">}</span>
+<span style="color:#eceff4">}</span></code></pre></div>
 <p>The <code>createUser</code> function takes a database connection as an argument and uses
 it to insert a new <code>User</code> in the <code>users</code> table. After that, it will return a
 closure that, when invoked, will remove the added user.</p>
@@ -654,30 +654,30 @@ the test and all its subtests complete. This means that even if our tests run
 as subtests, which is the case in our example, the cleanup will only happen
 after all the subtests are done.</p>
 <p>Here&rsquo;s the reworked version of our tests:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">createUser</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">,</span> <span class="nx">db</span> <span class="o">*</span><span class="nx">gorm</span><span class="p">.</span><span class="nx">DB</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">user</span> <span class="o">:=</span> <span class="nx">User</span><span class="p">{</span><span class="nx">Username</span><span class="p">:</span> <span class="s">&#34;jane&#34;</span><span class="p">,</span> <span class="nx">Password</span><span class="p">:</span> <span class="s">&#34;doe123&#34;</span><span class="p">}</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">user</span><span class="p">).</span><span class="nx">Error</span><span class="p">;</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-	<span class="p">}</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">createUser</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">,</span> db <span style="color:#81a1c1">*</span>gorm<span style="color:#eceff4">.</span>DB<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	user <span style="color:#81a1c1">:=</span> User<span style="color:#eceff4">{</span>Username<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;jane&#34;</span><span style="color:#eceff4">,</span> Password<span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;doe123&#34;</span><span style="color:#eceff4">}</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">:=</span> db<span style="color:#eceff4">.</span><span style="color:#88c0d0">Create</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">&amp;</span>user<span style="color:#eceff4">).</span>Error<span style="color:#eceff4">;</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatal</span><span style="color:#eceff4">(</span>err<span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}</span>
 
-<span class="hl">	<span class="nx">t</span><span class="p">.</span><span class="nf">Cleanup</span><span class="p">(</span><span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
-</span><span class="hl">		<span class="nx">db</span><span class="p">.</span><span class="nf">Delete</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">user</span><span class="p">)</span>
-</span><span class="hl">	<span class="p">})</span>
-</span><span class="p">}</span>
+<span style="display:block;width:100%;background-color:#424853">	t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Cleanup</span><span style="color:#eceff4">(</span><span style="color:#81a1c1;font-weight:bold">func</span><span style="color:#eceff4">()</span> <span style="color:#eceff4">{</span>
+</span><span style="display:block;width:100%;background-color:#424853">		db<span style="color:#eceff4">.</span><span style="color:#88c0d0">Delete</span><span style="color:#eceff4">(</span><span style="color:#81a1c1">&amp;</span>user<span style="color:#eceff4">)</span>
+</span><span style="display:block;width:100%;background-color:#424853">	<span style="color:#eceff4">})</span>
+</span><span style="color:#eceff4">}</span>
 
-<span class="kd">func</span> <span class="nf">TestServer</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">gorm</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="s">&#34;sqlite3&#34;</span><span class="p">,</span> <span class="s">&#34;./cleanups_test.db&#34;</span><span class="p">)</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-	<span class="p">}</span>
-	<span class="k">defer</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+<span style="color:#81a1c1;font-weight:bold">func</span> <span style="color:#88c0d0">TestServer</span><span style="color:#eceff4">(</span>t <span style="color:#81a1c1">*</span>testing<span style="color:#eceff4">.</span>T<span style="color:#eceff4">)</span> <span style="color:#eceff4">{</span>
+	db<span style="color:#eceff4">,</span> err <span style="color:#81a1c1">:=</span> gorm<span style="color:#eceff4">.</span><span style="color:#88c0d0">Open</span><span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;sqlite3&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;./cleanups_test.db&#34;</span><span style="color:#eceff4">)</span>
+	<span style="color:#81a1c1;font-weight:bold">if</span> err <span style="color:#81a1c1">!=</span> <span style="color:#81a1c1;font-weight:bold">nil</span> <span style="color:#eceff4">{</span>
+		t<span style="color:#eceff4">.</span><span style="color:#88c0d0">Fatal</span><span style="color:#eceff4">(</span>err<span style="color:#eceff4">)</span>
+	<span style="color:#eceff4">}</span>
+	<span style="color:#81a1c1;font-weight:bold">defer</span> db<span style="color:#eceff4">.</span><span style="color:#88c0d0">Close</span><span style="color:#eceff4">()</span>
 
-<span class="hl">	<span class="nf">createUser</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">db</span><span class="p">)</span>
+<span style="display:block;width:100%;background-color:#424853">	<span style="color:#88c0d0">createUser</span><span style="color:#eceff4">(</span>t<span style="color:#eceff4">,</span> db<span style="color:#eceff4">)</span>
 </span>
-	<span class="nx">r</span> <span class="o">:=</span> <span class="nf">Router</span><span class="p">(</span><span class="nx">db</span><span class="p">)</span>
+	r <span style="color:#81a1c1">:=</span> <span style="color:#88c0d0">Router</span><span style="color:#eceff4">(</span>db<span style="color:#eceff4">)</span>
 
-    <span class="c1">// Snipped for brewity...
-</span><span class="c1"></span><span class="p">}</span></code></pre></div>
+    <span style="color:#616e87;font-style:italic">// Snipped for brewity...
+</span><span style="color:#616e87;font-style:italic"></span><span style="color:#eceff4">}</span></code></pre></div>
 <p>While the code change is small, there is a substantial difference between the
 new and the old versions.</p>
 <p>The most significant difference lies in the fact that the <code>createUser</code> function
@@ -1076,7 +1076,7 @@ in mind – it is here to stay.</p>
       
         <p class="text-sm text-neutral-500 dark:text-neutral-400">
             &copy;
-            2022
+            2023
             Ilija Eftimov
         </p>
       

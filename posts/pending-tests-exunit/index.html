@@ -333,26 +333,26 @@ suite so ExUnit can skip over tests in our test suite.</p>
 variables in the test module. In the context of the test, you can think of them
 as <strong>annotations</strong>.  So, by tagging a test, the value of the tag can be used in
 the test itself, by passing the context.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="kd">defmodule</span> <span class="nc">FileTest</span> <span class="k">do</span>
-  <span class="c1"># Changing directory cannot be async</span>
-  <span class="kn">use</span> <span class="nc">ExUnit.Case</span><span class="p">,</span> <span class="ss">async</span><span class="p">:</span> <span class="no">false</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir"><span style="color:#81a1c1;font-weight:bold">defmodule</span> <span style="color:#8fbcbb">FileTest</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  <span style="color:#616e87;font-style:italic"># Changing directory cannot be async</span>
+  <span style="color:#81a1c1;font-weight:bold">use</span> <span style="color:#8fbcbb">ExUnit.Case</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">async</span><span style="color:#eceff4">:</span> <span style="color:#8fbcbb">false</span>
 
-  <span class="n">setup</span> <span class="n">context</span> <span class="k">do</span>
-    <span class="c1"># Read the :cd tag value</span>
-    <span class="k">if</span> <span class="n">cd</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="ss">:cd</span><span class="p">]</span> <span class="k">do</span>
-      <span class="n">prev_cd</span> <span class="o">=</span> <span class="nc">File</span><span class="o">.</span><span class="n">cwd!</span>
-      <span class="nc">File</span><span class="o">.</span><span class="n">cd!</span><span class="p">(</span><span class="n">cd</span><span class="p">)</span>
-      <span class="n">on_exit</span> <span class="k">fn</span> <span class="o">-&gt;</span> <span class="nc">File</span><span class="o">.</span><span class="n">cd!</span><span class="p">(</span><span class="n">prev_cd</span><span class="p">)</span> <span class="k">end</span>
-    <span class="k">end</span>
+  setup context <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#616e87;font-style:italic"># Read the :cd tag value</span>
+    <span style="color:#81a1c1;font-weight:bold">if</span> cd <span style="color:#81a1c1">=</span> context<span style="color:#eceff4">[</span><span style="color:#a3be8c">:cd</span><span style="color:#eceff4">]</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+      prev_cd <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">File</span><span style="color:#81a1c1">.</span>cwd!
+      <span style="color:#8fbcbb">File</span><span style="color:#81a1c1">.</span>cd!<span style="color:#eceff4">(</span>cd<span style="color:#eceff4">)</span>
+      on_exit <span style="color:#81a1c1;font-weight:bold">fn</span> <span style="color:#81a1c1">-&gt;</span> <span style="color:#8fbcbb">File</span><span style="color:#81a1c1">.</span>cd!<span style="color:#eceff4">(</span>prev_cd<span style="color:#eceff4">)</span> <span style="color:#81a1c1;font-weight:bold">end</span>
+    <span style="color:#81a1c1;font-weight:bold">end</span>
 
-    <span class="ss">:ok</span>
-  <span class="k">end</span>
+    <span style="color:#a3be8c">:ok</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="na">@tag</span> <span class="ss">cd</span><span class="p">:</span> <span class="s2">&#34;fixtures&#34;</span>
-  <span class="n">test</span> <span class="s2">&#34;reads utf-8 fixtures&#34;</span> <span class="k">do</span>
-    <span class="nc">File</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&#34;hello&#34;</span><span class="p">)</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+  <span style="color:#8fbcbb">@tag</span> <span style="color:#a3be8c">cd</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;fixtures&#34;</span>
+  test <span style="color:#a3be8c">&#34;reads utf-8 fixtures&#34;</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#8fbcbb">File</span><span style="color:#81a1c1">.</span>read<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;hello&#34;</span><span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <small>
 Note: Example taken from ExUnit's official
 [documentation](http://elixir-lang.org/docs/v1.0/ex_unit/ExUnit.Case.html).
@@ -362,37 +362,37 @@ Note: Example taken from ExUnit's official
 <p>Running tests by tag is really simple in ExUnit. Basically, ExUnit has the
 ability to skip/include any test by it&rsquo;s tag.</p>
 <p>For example, let&rsquo;s say you have tagged couple of tests that are brittle:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="kd">defmodule</span> <span class="nc">SomeTest</span> <span class="k">do</span>
-  <span class="kn">use</span> <span class="nc">ExUnit.Case</span><span class="p">,</span> <span class="ss">async</span><span class="p">:</span> <span class="no">false</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir"><span style="color:#81a1c1;font-weight:bold">defmodule</span> <span style="color:#8fbcbb">SomeTest</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  <span style="color:#81a1c1;font-weight:bold">use</span> <span style="color:#8fbcbb">ExUnit.Case</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">async</span><span style="color:#eceff4">:</span> <span style="color:#8fbcbb">false</span>
 
-  <span class="na">@tag</span> <span class="ss">:brittle</span>
-  <span class="n">test</span> <span class="s2">&#34;some brittle code&#34;</span> <span class="k">do</span>
-    <span class="c1"># test here...</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+  <span style="color:#8fbcbb">@tag</span> <span style="color:#a3be8c">:brittle</span>
+  test <span style="color:#a3be8c">&#34;some brittle code&#34;</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    <span style="color:#616e87;font-style:italic"># test here...</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>Now, you can run only the tests with the <code>brittle</code> tag, by executing:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">mix <span class="nb">test</span> test/some_test.exs --include brittle</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mix <span style="color:#81a1c1">test</span> test/some_test.exs --include brittle</code></pre></div>
 <p>Having this in mind, let&rsquo;s introduce a custom tag of ours so we can make our
 tests <code>pending</code>.</p>
 <h2 id="custom-tags" class="relative group">Custom tags <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#custom-tags" aria-label="Anchor">#</a></span></h2>
 <p>Although the word &ldquo;custom&rdquo; used in programming often means something
 complicated done from scracth by the programmer, in this case it&rsquo;s very simple.</p>
 <p>Let&rsquo;s take any test and tag it with <code>:pending</code>.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="kd">defmodule</span> <span class="nc">SomeTest</span> <span class="k">do</span>
-  <span class="kn">use</span> <span class="nc">ExUnit.Case</span><span class="p">,</span> <span class="ss">async</span><span class="p">:</span> <span class="no">false</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir"><span style="color:#81a1c1;font-weight:bold">defmodule</span> <span style="color:#8fbcbb">SomeTest</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+  <span style="color:#81a1c1;font-weight:bold">use</span> <span style="color:#8fbcbb">ExUnit.Case</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">async</span><span style="color:#eceff4">:</span> <span style="color:#8fbcbb">false</span>
 
-  <span class="na">@tag</span> <span class="ss">:pending</span>
-  <span class="n">test</span> <span class="s2">&#34;always true&#34;</span> <span class="k">do</span>
-    <span class="n">assert</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">1</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+  <span style="color:#8fbcbb">@tag</span> <span style="color:#a3be8c">:pending</span>
+  test <span style="color:#a3be8c">&#34;always true&#34;</span> <span style="color:#81a1c1;font-weight:bold">do</span>
+    assert <span style="color:#b48ead">1</span> <span style="color:#81a1c1">==</span> <span style="color:#b48ead">1</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>We can exclude this &ldquo;pending&rdquo; test by executing our test suite with:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">mix <span class="nb">test</span> --exclude pending</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mix <span style="color:#81a1c1">test</span> --exclude pending</code></pre></div>
 <p>This will skip any tests that have the <code>:pending</code> tag. Simple as that, we have
 RSpec&rsquo;s <code>pending</code> functionality just by excluding a tag. If you are wondering
 if we can make the exclusion of the tag automatic - yes we can. In your
 <code>test_helper.exs</code> add this line, before the <code>ExUnit.start</code> line:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="nc">ExUnit</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="ss">exclude</span><span class="p">:</span> <span class="p">[</span><span class="ss">pending</span><span class="p">:</span> <span class="no">true</span><span class="p">])</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-elixir" data-lang="elixir"><span style="color:#8fbcbb">ExUnit</span><span style="color:#81a1c1">.</span>configure<span style="color:#eceff4">(</span><span style="color:#a3be8c">exclude</span><span style="color:#eceff4">:</span> <span style="color:#eceff4">[</span><span style="color:#a3be8c">pending</span><span style="color:#eceff4">:</span> <span style="color:#8fbcbb">true</span><span style="color:#eceff4">])</span></code></pre></div>
 <p>This configuration will tell ExUnit that it should always skip tests that are
 tagged as <code>:pending</code>. Now, every time you run your tests, the tests tagged with
 <code>:pending</code> will be excluded.</p>
@@ -783,7 +783,7 @@ ExUnit!</p>
       
         <p class="text-sm text-neutral-500 dark:text-neutral-400">
             &copy;
-            2022
+            2023
             Ilija Eftimov
         </p>
       

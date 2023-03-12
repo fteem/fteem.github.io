@@ -374,115 +374,115 @@ continue with aforementioned design problem.</p>
 code.  Here&rsquo;s an example. We will make a tiny API wrapper of the REST Countries
 API, more specifically, the <a href="https://restcountries.eu/rest/v1/capital/london">World Capitals
 API</a>.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">&#39;net/http&#39;</span>
-<span class="nb">require</span> <span class="s1">&#39;json&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1">require</span> <span style="color:#a3be8c">&#39;net/http&#39;</span>
+<span style="color:#81a1c1">require</span> <span style="color:#a3be8c">&#39;json&#39;</span>
 
-<span class="k">class</span> <span class="nc">CapitalsClient</span>
-  <span class="no">API_ENDPOINT</span> <span class="o">=</span> <span class="s2">&#34;https://restcountries.eu/rest/v1/capital/&#34;</span>
+<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">CapitalsClient</span>
+  <span style="color:#8fbcbb">API_ENDPOINT</span> <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#34;https://restcountries.eu/rest/v1/capital/&#34;</span>
 
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">find</span><span class="p">(</span><span class="n">capital_name</span><span class="p">)</span>
-    <span class="n">uri</span> <span class="o">=</span> <span class="no">URI</span><span class="p">(</span><span class="no">API_ENDPOINT</span> <span class="o">+</span> <span class="n">capital_name</span><span class="p">)</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="no">Net</span><span class="o">::</span><span class="no">HTTP</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="no">JSON</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">response</span><span class="p">)</span><span class="o">.</span><span class="n">first</span>
-    <span class="n">currencies</span> <span class="o">=</span> <span class="n">result</span><span class="o">[</span><span class="s1">&#39;currencies&#39;</span><span class="o">].</span><span class="n">map</span> <span class="p">{</span><span class="o">|</span><span class="n">currency</span><span class="o">|</span> <span class="no">Currency</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">currency</span><span class="p">)</span> <span class="p">}</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#8fbcbb">self</span><span style="color:#81a1c1">.</span><span style="color:#88c0d0">find</span><span style="color:#eceff4">(</span>capital_name<span style="color:#eceff4">)</span>
+    uri <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">URI</span><span style="color:#eceff4">(</span><span style="color:#8fbcbb">API_ENDPOINT</span> <span style="color:#81a1c1">+</span> capital_name<span style="color:#eceff4">)</span>
+    response <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Net</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">HTTP</span><span style="color:#81a1c1">.</span>get<span style="color:#eceff4">(</span>uri<span style="color:#eceff4">)</span>
+    result <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">JSON</span><span style="color:#81a1c1">.</span>parse<span style="color:#eceff4">(</span>response<span style="color:#eceff4">)</span><span style="color:#81a1c1">.</span>first
+    currencies <span style="color:#81a1c1">=</span> result<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;currencies&#39;</span><span style="color:#81a1c1">].</span>map <span style="color:#eceff4">{</span><span style="color:#81a1c1">|</span>currency<span style="color:#81a1c1">|</span> <span style="color:#8fbcbb">Currency</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span>currency<span style="color:#eceff4">)</span> <span style="color:#eceff4">}</span>
 
-    <span class="no">Country</span><span class="o">.</span><span class="n">new</span><span class="p">({</span> <span class="nb">name</span><span class="p">:</span> <span class="n">result</span><span class="o">[</span><span class="s2">&#34;name&#34;</span><span class="o">]</span><span class="p">,</span>
-                  <span class="ss">capital</span><span class="p">:</span> <span class="n">result</span><span class="o">[</span><span class="s2">&#34;capital&#34;</span><span class="o">]</span><span class="p">,</span>
-                  <span class="ss">region</span><span class="p">:</span> <span class="n">result</span><span class="o">[</span><span class="s2">&#34;region&#34;</span><span class="o">]</span><span class="p">,</span>
-                  <span class="ss">population</span><span class="p">:</span> <span class="n">result</span><span class="o">[</span><span class="s2">&#34;population&#34;</span><span class="o">]</span><span class="p">,</span>
-                  <span class="ss">latitude</span><span class="p">:</span> <span class="n">result</span><span class="o">[</span><span class="s2">&#34;latlng&#34;</span><span class="o">][</span><span class="mi">0</span><span class="o">]</span><span class="p">,</span>
-                  <span class="ss">longitude</span><span class="p">:</span> <span class="n">result</span><span class="o">[</span><span class="s2">&#34;latlng&#34;</span><span class="o">][</span><span class="mi">1</span><span class="o">]</span><span class="p">,</span>
-                  <span class="ss">native_name</span><span class="p">:</span> <span class="n">result</span><span class="o">[</span><span class="s2">&#34;nativeName&#34;</span><span class="o">]</span><span class="p">,</span>
-                  <span class="ss">currencies</span><span class="p">:</span> <span class="n">currencies</span>
-    <span class="p">})</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+    <span style="color:#8fbcbb">Country</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">({</span> <span style="color:#81a1c1">name</span><span style="color:#eceff4">:</span> result<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;name&#34;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span>
+                  <span style="color:#a3be8c">capital</span><span style="color:#eceff4">:</span> result<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;capital&#34;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span>
+                  <span style="color:#a3be8c">region</span><span style="color:#eceff4">:</span> result<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;region&#34;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span>
+                  <span style="color:#a3be8c">population</span><span style="color:#eceff4">:</span> result<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;population&#34;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span>
+                  <span style="color:#a3be8c">latitude</span><span style="color:#eceff4">:</span> result<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;latlng&#34;</span><span style="color:#81a1c1">][</span><span style="color:#b48ead">0</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span>
+                  <span style="color:#a3be8c">longitude</span><span style="color:#eceff4">:</span> result<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;latlng&#34;</span><span style="color:#81a1c1">][</span><span style="color:#b48ead">1</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span>
+                  <span style="color:#a3be8c">native_name</span><span style="color:#eceff4">:</span> result<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;nativeName&#34;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span>
+                  <span style="color:#a3be8c">currencies</span><span style="color:#eceff4">:</span> currencies
+    <span style="color:#eceff4">})</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>The <code>CapitalsClient</code> will issue a GET request to the API endpoint, get the
 result and build a <code>Country</code> object from the results. This is what the JSON
 result looks like for London, UK:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="p">[</span>
-    <span class="p">{</span>
-        <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;United Kingdom&#34;</span><span class="p">,</span>
-        <span class="nt">&#34;capital&#34;</span><span class="p">:</span> <span class="s2">&#34;London&#34;</span><span class="p">,</span>
-        <span class="nt">&#34;altSpellings&#34;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="s2">&#34;GB&#34;</span><span class="p">,</span>
-            <span class="s2">&#34;UK&#34;</span><span class="p">,</span>
-            <span class="s2">&#34;Great Britain&#34;</span>
-        <span class="p">],</span>
-        <span class="nt">&#34;relevance&#34;</span><span class="p">:</span> <span class="s2">&#34;2.5&#34;</span><span class="p">,</span>
-        <span class="nt">&#34;region&#34;</span><span class="p">:</span> <span class="s2">&#34;Europe&#34;</span><span class="p">,</span>
-        <span class="nt">&#34;subregion&#34;</span><span class="p">:</span> <span class="s2">&#34;Northern Europe&#34;</span><span class="p">,</span>
-        <span class="nt">&#34;translations&#34;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&#34;de&#34;</span><span class="p">:</span> <span class="s2">&#34;Vereinigtes Königreich&#34;</span><span class="p">,</span>
-            <span class="nt">&#34;es&#34;</span><span class="p">:</span> <span class="s2">&#34;Reino Unido&#34;</span><span class="p">,</span>
-            <span class="nt">&#34;fr&#34;</span><span class="p">:</span> <span class="s2">&#34;Royaume-Uni&#34;</span><span class="p">,</span>
-            <span class="nt">&#34;ja&#34;</span><span class="p">:</span> <span class="s2">&#34;イギリス&#34;</span><span class="p">,</span>
-            <span class="nt">&#34;it&#34;</span><span class="p">:</span> <span class="s2">&#34;Regno Unito&#34;</span>
-        <span class="p">},</span>
-        <span class="nt">&#34;population&#34;</span><span class="p">:</span> <span class="mi">64105654</span><span class="p">,</span>
-        <span class="nt">&#34;latlng&#34;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="mi">54</span><span class="p">,</span>
-            <span class="mi">-2</span>
-        <span class="p">],</span>
-        <span class="nt">&#34;demonym&#34;</span><span class="p">:</span> <span class="s2">&#34;British&#34;</span><span class="p">,</span>
-        <span class="nt">&#34;area&#34;</span><span class="p">:</span> <span class="mi">242900</span><span class="p">,</span>
-        <span class="nt">&#34;gini&#34;</span><span class="p">:</span> <span class="mi">34</span><span class="p">,</span>
-        <span class="nt">&#34;timezones&#34;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="s2">&#34;UTC−08:00&#34;</span><span class="p">,</span>
-            <span class="s2">&#34;UTC−05:00&#34;</span><span class="p">,</span>
-            <span class="s2">&#34;UTC−04:00&#34;</span><span class="p">,</span>
-            <span class="s2">&#34;UTC−03:00&#34;</span><span class="p">,</span>
-            <span class="s2">&#34;UTC−02:00&#34;</span><span class="p">,</span>
-            <span class="s2">&#34;UTC&#34;</span><span class="p">,</span>
-            <span class="s2">&#34;UTC+01:00&#34;</span><span class="p">,</span>
-            <span class="s2">&#34;UTC+02:00&#34;</span><span class="p">,</span>
-            <span class="s2">&#34;UTC+06:00&#34;</span>
-        <span class="p">],</span>
-        <span class="nt">&#34;borders&#34;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="s2">&#34;IRL&#34;</span>
-        <span class="p">],</span>
-        <span class="nt">&#34;nativeName&#34;</span><span class="p">:</span> <span class="s2">&#34;United Kingdom&#34;</span><span class="p">,</span>
-        <span class="nt">&#34;callingCodes&#34;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="s2">&#34;44&#34;</span>
-        <span class="p">],</span>
-        <span class="nt">&#34;topLevelDomain&#34;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="s2">&#34;.uk&#34;</span>
-        <span class="p">],</span>
-        <span class="nt">&#34;alpha2Code&#34;</span><span class="p">:</span> <span class="s2">&#34;GB&#34;</span><span class="p">,</span>
-        <span class="nt">&#34;alpha3Code&#34;</span><span class="p">:</span> <span class="s2">&#34;GBR&#34;</span><span class="p">,</span>
-        <span class="nt">&#34;currencies&#34;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="s2">&#34;GBP&#34;</span>
-        <span class="p">],</span>
-        <span class="nt">&#34;languages&#34;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="s2">&#34;en&#34;</span>
-        <span class="p">]</span>
-    <span class="p">}</span>
-<span class="p">]</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#eceff4">[</span>
+    <span style="color:#eceff4">{</span>
+        <span style="color:#81a1c1">&#34;name&#34;</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;United Kingdom&#34;</span><span style="color:#eceff4">,</span>
+        <span style="color:#81a1c1">&#34;capital&#34;</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;London&#34;</span><span style="color:#eceff4">,</span>
+        <span style="color:#81a1c1">&#34;altSpellings&#34;</span><span style="color:#eceff4">:</span> <span style="color:#eceff4">[</span>
+            <span style="color:#a3be8c">&#34;GB&#34;</span><span style="color:#eceff4">,</span>
+            <span style="color:#a3be8c">&#34;UK&#34;</span><span style="color:#eceff4">,</span>
+            <span style="color:#a3be8c">&#34;Great Britain&#34;</span>
+        <span style="color:#eceff4">],</span>
+        <span style="color:#81a1c1">&#34;relevance&#34;</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;2.5&#34;</span><span style="color:#eceff4">,</span>
+        <span style="color:#81a1c1">&#34;region&#34;</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Europe&#34;</span><span style="color:#eceff4">,</span>
+        <span style="color:#81a1c1">&#34;subregion&#34;</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Northern Europe&#34;</span><span style="color:#eceff4">,</span>
+        <span style="color:#81a1c1">&#34;translations&#34;</span><span style="color:#eceff4">:</span> <span style="color:#eceff4">{</span>
+            <span style="color:#81a1c1">&#34;de&#34;</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Vereinigtes Königreich&#34;</span><span style="color:#eceff4">,</span>
+            <span style="color:#81a1c1">&#34;es&#34;</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Reino Unido&#34;</span><span style="color:#eceff4">,</span>
+            <span style="color:#81a1c1">&#34;fr&#34;</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Royaume-Uni&#34;</span><span style="color:#eceff4">,</span>
+            <span style="color:#81a1c1">&#34;ja&#34;</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;イギリス&#34;</span><span style="color:#eceff4">,</span>
+            <span style="color:#81a1c1">&#34;it&#34;</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;Regno Unito&#34;</span>
+        <span style="color:#eceff4">},</span>
+        <span style="color:#81a1c1">&#34;population&#34;</span><span style="color:#eceff4">:</span> <span style="color:#b48ead">64105654</span><span style="color:#eceff4">,</span>
+        <span style="color:#81a1c1">&#34;latlng&#34;</span><span style="color:#eceff4">:</span> <span style="color:#eceff4">[</span>
+            <span style="color:#b48ead">54</span><span style="color:#eceff4">,</span>
+            <span style="color:#b48ead">-2</span>
+        <span style="color:#eceff4">],</span>
+        <span style="color:#81a1c1">&#34;demonym&#34;</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;British&#34;</span><span style="color:#eceff4">,</span>
+        <span style="color:#81a1c1">&#34;area&#34;</span><span style="color:#eceff4">:</span> <span style="color:#b48ead">242900</span><span style="color:#eceff4">,</span>
+        <span style="color:#81a1c1">&#34;gini&#34;</span><span style="color:#eceff4">:</span> <span style="color:#b48ead">34</span><span style="color:#eceff4">,</span>
+        <span style="color:#81a1c1">&#34;timezones&#34;</span><span style="color:#eceff4">:</span> <span style="color:#eceff4">[</span>
+            <span style="color:#a3be8c">&#34;UTC−08:00&#34;</span><span style="color:#eceff4">,</span>
+            <span style="color:#a3be8c">&#34;UTC−05:00&#34;</span><span style="color:#eceff4">,</span>
+            <span style="color:#a3be8c">&#34;UTC−04:00&#34;</span><span style="color:#eceff4">,</span>
+            <span style="color:#a3be8c">&#34;UTC−03:00&#34;</span><span style="color:#eceff4">,</span>
+            <span style="color:#a3be8c">&#34;UTC−02:00&#34;</span><span style="color:#eceff4">,</span>
+            <span style="color:#a3be8c">&#34;UTC&#34;</span><span style="color:#eceff4">,</span>
+            <span style="color:#a3be8c">&#34;UTC+01:00&#34;</span><span style="color:#eceff4">,</span>
+            <span style="color:#a3be8c">&#34;UTC+02:00&#34;</span><span style="color:#eceff4">,</span>
+            <span style="color:#a3be8c">&#34;UTC+06:00&#34;</span>
+        <span style="color:#eceff4">],</span>
+        <span style="color:#81a1c1">&#34;borders&#34;</span><span style="color:#eceff4">:</span> <span style="color:#eceff4">[</span>
+            <span style="color:#a3be8c">&#34;IRL&#34;</span>
+        <span style="color:#eceff4">],</span>
+        <span style="color:#81a1c1">&#34;nativeName&#34;</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;United Kingdom&#34;</span><span style="color:#eceff4">,</span>
+        <span style="color:#81a1c1">&#34;callingCodes&#34;</span><span style="color:#eceff4">:</span> <span style="color:#eceff4">[</span>
+            <span style="color:#a3be8c">&#34;44&#34;</span>
+        <span style="color:#eceff4">],</span>
+        <span style="color:#81a1c1">&#34;topLevelDomain&#34;</span><span style="color:#eceff4">:</span> <span style="color:#eceff4">[</span>
+            <span style="color:#a3be8c">&#34;.uk&#34;</span>
+        <span style="color:#eceff4">],</span>
+        <span style="color:#81a1c1">&#34;alpha2Code&#34;</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;GB&#34;</span><span style="color:#eceff4">,</span>
+        <span style="color:#81a1c1">&#34;alpha3Code&#34;</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;GBR&#34;</span><span style="color:#eceff4">,</span>
+        <span style="color:#81a1c1">&#34;currencies&#34;</span><span style="color:#eceff4">:</span> <span style="color:#eceff4">[</span>
+            <span style="color:#a3be8c">&#34;GBP&#34;</span>
+        <span style="color:#eceff4">],</span>
+        <span style="color:#81a1c1">&#34;languages&#34;</span><span style="color:#eceff4">:</span> <span style="color:#eceff4">[</span>
+            <span style="color:#a3be8c">&#34;en&#34;</span>
+        <span style="color:#eceff4">]</span>
+    <span style="color:#eceff4">}</span>
+<span style="color:#eceff4">]</span></code></pre></div>
 <p>For completeness sake, let&rsquo;s see the <code>Currency</code> and <code>Country</code> classes.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">Currency</span>
-  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">code</span>
-    <span class="vi">@code</span> <span class="o">=</span> <span class="n">code</span>
-  <span class="k">end</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Currency</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span> code
+    @code <span style="color:#81a1c1">=</span> code
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="k">def</span> <span class="nf">to_s</span>
-    <span class="vi">@code</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">Country</span>
-  <span class="kp">attr_reader</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">:capital</span><span class="p">,</span> <span class="ss">:region</span><span class="p">,</span> <span class="ss">:population</span><span class="p">,</span> <span class="ss">:latitude</span><span class="p">,</span> <span class="ss">:longitude</span><span class="p">,</span>
-    <span class="ss">:native_name</span><span class="p">,</span> <span class="ss">:currencies</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">to_s</span>
+    @code
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Country</span>
+  <span style="color:#81a1c1">attr_reader</span> <span style="color:#a3be8c">:name</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:capital</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:region</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:population</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:latitude</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:longitude</span><span style="color:#eceff4">,</span>
+    <span style="color:#a3be8c">:native_name</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:currencies</span>
 
-  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">attrs</span>
-    <span class="vi">@name</span>        <span class="o">=</span>  <span class="n">attrs</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="s2">&#34;name&#34;</span><span class="p">,</span><span class="kp">nil</span><span class="p">)</span>
-    <span class="vi">@capital</span>     <span class="o">=</span>  <span class="n">attrs</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="s2">&#34;capital&#34;</span><span class="p">,</span><span class="kp">nil</span><span class="p">)</span>
-    <span class="vi">@region</span>      <span class="o">=</span>  <span class="n">attrs</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="s2">&#34;region&#34;</span><span class="p">,</span><span class="kp">nil</span><span class="p">)</span>
-    <span class="vi">@population</span>  <span class="o">=</span>  <span class="n">attrs</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="s2">&#34;population&#34;</span><span class="p">,</span><span class="kp">nil</span><span class="p">)</span>
-    <span class="vi">@latitude</span>    <span class="o">=</span>  <span class="n">attrs</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="s2">&#34;latlng&#34;</span><span class="p">,</span><span class="o">[]</span><span class="p">)</span><span class="o">.</span><span class="n">first</span>
-    <span class="vi">@longitude</span>   <span class="o">=</span>  <span class="n">attrs</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="s2">&#34;latlng&#34;</span><span class="p">,</span><span class="o">[]</span><span class="p">)</span><span class="o">.</span><span class="n">last</span>
-    <span class="vi">@native_name</span> <span class="o">=</span>  <span class="n">attrs</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="s2">&#34;nativeName&#34;</span><span class="p">,</span><span class="kp">nil</span><span class="p">)</span>
-    <span class="vi">@currencies</span>  <span class="o">=</span>  <span class="n">attrs</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="s2">&#34;currencies&#34;</span><span class="p">,</span> <span class="o">[]</span><span class="p">)</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span> attrs
+    @name        <span style="color:#81a1c1">=</span>  attrs<span style="color:#81a1c1">.</span>fetch<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;name&#34;</span><span style="color:#eceff4">,</span><span style="color:#81a1c1">nil</span><span style="color:#eceff4">)</span>
+    @capital     <span style="color:#81a1c1">=</span>  attrs<span style="color:#81a1c1">.</span>fetch<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;capital&#34;</span><span style="color:#eceff4">,</span><span style="color:#81a1c1">nil</span><span style="color:#eceff4">)</span>
+    @region      <span style="color:#81a1c1">=</span>  attrs<span style="color:#81a1c1">.</span>fetch<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;region&#34;</span><span style="color:#eceff4">,</span><span style="color:#81a1c1">nil</span><span style="color:#eceff4">)</span>
+    @population  <span style="color:#81a1c1">=</span>  attrs<span style="color:#81a1c1">.</span>fetch<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;population&#34;</span><span style="color:#eceff4">,</span><span style="color:#81a1c1">nil</span><span style="color:#eceff4">)</span>
+    @latitude    <span style="color:#81a1c1">=</span>  attrs<span style="color:#81a1c1">.</span>fetch<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;latlng&#34;</span><span style="color:#eceff4">,</span><span style="color:#81a1c1">[]</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">.</span>first
+    @longitude   <span style="color:#81a1c1">=</span>  attrs<span style="color:#81a1c1">.</span>fetch<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;latlng&#34;</span><span style="color:#eceff4">,</span><span style="color:#81a1c1">[]</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">.</span>last
+    @native_name <span style="color:#81a1c1">=</span>  attrs<span style="color:#81a1c1">.</span>fetch<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;nativeName&#34;</span><span style="color:#eceff4">,</span><span style="color:#81a1c1">nil</span><span style="color:#eceff4">)</span>
+    @currencies  <span style="color:#81a1c1">=</span>  attrs<span style="color:#81a1c1">.</span>fetch<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;currencies&#34;</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">[]</span><span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>Now, let&rsquo;s revisit the <code>CountryClient</code> class. We&rsquo;ve all done this - we fetch
 the JSON, parse it and build the currencies and country object(s). Now, testing
 is interesting.</p>
@@ -491,30 +491,30 @@ is interesting.</p>
 object that we receive as a result of the <code>CapitalsClient::find</code> method.
 Another approach is to use VCR and record the request going out and replay it
 whenever needed.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">&#39;minitest/autorun&#39;</span>
-<span class="nb">require</span> <span class="s1">&#39;webmock/minitest&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1">require</span> <span style="color:#a3be8c">&#39;minitest/autorun&#39;</span>
+<span style="color:#81a1c1">require</span> <span style="color:#a3be8c">&#39;webmock/minitest&#39;</span>
 
-<span class="k">class</span> <span class="nc">CountryClientTest</span> <span class="o">&lt;</span> <span class="no">Minitest</span><span class="o">::</span><span class="no">Test</span>
-  <span class="k">def</span> <span class="nf">test_client_fetches_countries</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="sx">%Q{
-</span><span class="sx">      [
-</span><span class="sx">        {
-</span><span class="sx">          &#34;name&#34;: &#34;United Kingdom&#34;,
-</span><span class="sx">          &#34;capital&#34;: &#34;London&#34;,
-</span><span class="sx">          &#34;region&#34;: &#34;Europe&#34;,
-</span><span class="sx">          &#34;population&#34;: 64105654,
-</span><span class="sx">          &#34;latlng&#34;: [54, -2],
-</span><span class="sx">          &#34;nativeName&#34;: &#34;United Kingdom&#34;
-</span><span class="sx">        }
-</span><span class="sx">      ]
-</span><span class="sx">    }</span>
-    <span class="n">stub_request</span><span class="p">(</span><span class="ss">:get</span><span class="p">,</span> <span class="no">CountryClient</span><span class="o">::</span><span class="no">API_ENDPOINT</span> <span class="o">+</span> <span class="s2">&#34;London&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">to_return</span><span class="p">(</span><span class="ss">body</span><span class="p">:</span> <span class="n">response</span><span class="p">)</span>
-    <span class="n">country</span> <span class="o">=</span> <span class="no">CapitalsClient</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&#34;London&#34;</span><span class="p">)</span>
-    <span class="n">assert_equal</span> <span class="s2">&#34;London&#34;</span><span class="p">,</span> <span class="n">country</span><span class="o">.</span><span class="n">name</span>
-    <span class="n">assert_equal</span> <span class="s2">&#34;United Kingdom&#34;</span><span class="p">,</span> <span class="n">country</span><span class="o">.</span><span class="n">name</span>
-    <span class="n">assert_equal</span> <span class="s2">&#34;Europe&#34;</span><span class="p">,</span> <span class="n">country</span><span class="o">.</span><span class="n">region</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">CountryClientTest</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">Minitest</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Test</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">test_client_fetches_countries</span>
+    response <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">%Q{
+</span><span style="color:#a3be8c">      [
+</span><span style="color:#a3be8c">        {
+</span><span style="color:#a3be8c">          &#34;name&#34;: &#34;United Kingdom&#34;,
+</span><span style="color:#a3be8c">          &#34;capital&#34;: &#34;London&#34;,
+</span><span style="color:#a3be8c">          &#34;region&#34;: &#34;Europe&#34;,
+</span><span style="color:#a3be8c">          &#34;population&#34;: 64105654,
+</span><span style="color:#a3be8c">          &#34;latlng&#34;: [54, -2],
+</span><span style="color:#a3be8c">          &#34;nativeName&#34;: &#34;United Kingdom&#34;
+</span><span style="color:#a3be8c">        }
+</span><span style="color:#a3be8c">      ]
+</span><span style="color:#a3be8c">    }</span>
+    stub_request<span style="color:#eceff4">(</span><span style="color:#a3be8c">:get</span><span style="color:#eceff4">,</span> <span style="color:#8fbcbb">CountryClient</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">API_ENDPOINT</span> <span style="color:#81a1c1">+</span> <span style="color:#a3be8c">&#34;London&#34;</span><span style="color:#eceff4">)</span><span style="color:#81a1c1">.</span>to_return<span style="color:#eceff4">(</span><span style="color:#a3be8c">body</span><span style="color:#eceff4">:</span> response<span style="color:#eceff4">)</span>
+    country <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">CapitalsClient</span><span style="color:#81a1c1">.</span>find<span style="color:#eceff4">(</span><span style="color:#a3be8c">&#34;London&#34;</span><span style="color:#eceff4">)</span>
+    assert_equal <span style="color:#a3be8c">&#34;London&#34;</span><span style="color:#eceff4">,</span> country<span style="color:#81a1c1">.</span>name
+    assert_equal <span style="color:#a3be8c">&#34;United Kingdom&#34;</span><span style="color:#eceff4">,</span> country<span style="color:#81a1c1">.</span>name
+    assert_equal <span style="color:#a3be8c">&#34;Europe&#34;</span><span style="color:#eceff4">,</span> country<span style="color:#81a1c1">.</span>region
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>Now, this works, it&rsquo;s fine. But, what exactly are we testing here? I am sure we
 have all done this multiple times. Look at the test class name -
 <code>CountryClientTest</code>.  We should be testing the client, not setting assertions
@@ -539,69 +539,69 @@ humble, it doesn&rsquo;t need to be tested. But, the humble object should be
 humble.  The first step would be to make it an API client. Exactly that,
 nothing more or less.  This means that it will only issue HTTP GET to the API.
 Hint: think of the Single-responsibility principle.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">&#39;net/http&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1">require</span> <span style="color:#a3be8c">&#39;net/http&#39;</span>
 
-<span class="k">class</span> <span class="nc">CapitalsClient</span>
-  <span class="no">API_ENDPOINT</span> <span class="o">=</span> <span class="s2">&#34;https://restcountries.eu/rest/v1/capital/&#34;</span>
+<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">CapitalsClient</span>
+  <span style="color:#8fbcbb">API_ENDPOINT</span> <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#34;https://restcountries.eu/rest/v1/capital/&#34;</span>
 
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">find</span><span class="p">(</span><span class="n">capital_name</span><span class="p">)</span>
-    <span class="n">uri</span> <span class="o">=</span> <span class="no">URI</span><span class="p">(</span><span class="no">API_ENDPOINT</span> <span class="o">+</span> <span class="n">capital_name</span><span class="p">)</span>
-    <span class="no">Net</span><span class="o">::</span><span class="no">HTTP</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#8fbcbb">self</span><span style="color:#81a1c1">.</span><span style="color:#88c0d0">find</span><span style="color:#eceff4">(</span>capital_name<span style="color:#eceff4">)</span>
+    uri <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">URI</span><span style="color:#eceff4">(</span><span style="color:#8fbcbb">API_ENDPOINT</span> <span style="color:#81a1c1">+</span> capital_name<span style="color:#eceff4">)</span>
+    <span style="color:#8fbcbb">Net</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">HTTP</span><span style="color:#81a1c1">.</span>get<span style="color:#eceff4">(</span>uri<span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>That&rsquo;s it. Again, <code>CapitalsClient</code> just sends the request and it returns it&rsquo;s
 response. Now, the extracted logic.</p>
 <p>Since the code that we extracted was actually building the <code>Country</code> object, we
 can create a <code>CountryBuilder</code> class out of it:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">&#39;json&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1">require</span> <span style="color:#a3be8c">&#39;json&#39;</span>
 
-<span class="k">class</span> <span class="nc">CountryBuilder</span>
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">build</span> <span class="n">json</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="no">JSON</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">response</span><span class="p">)</span><span class="o">.</span><span class="n">first</span>
-    <span class="n">currencies</span> <span class="o">=</span> <span class="n">result</span><span class="o">[</span><span class="s1">&#39;currencies&#39;</span><span class="o">].</span><span class="n">map</span> <span class="p">{</span><span class="o">|</span><span class="n">currency</span><span class="o">|</span> <span class="no">Currency</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">currency</span><span class="p">)</span> <span class="p">}</span>
+<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">CountryBuilder</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#8fbcbb">self</span><span style="color:#81a1c1">.</span><span style="color:#88c0d0">build</span> json
+    result <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">JSON</span><span style="color:#81a1c1">.</span>parse<span style="color:#eceff4">(</span>response<span style="color:#eceff4">)</span><span style="color:#81a1c1">.</span>first
+    currencies <span style="color:#81a1c1">=</span> result<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#39;currencies&#39;</span><span style="color:#81a1c1">].</span>map <span style="color:#eceff4">{</span><span style="color:#81a1c1">|</span>currency<span style="color:#81a1c1">|</span> <span style="color:#8fbcbb">Currency</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">(</span>currency<span style="color:#eceff4">)</span> <span style="color:#eceff4">}</span>
 
-    <span class="no">Country</span><span class="o">.</span><span class="n">new</span><span class="p">({</span> <span class="nb">name</span><span class="p">:</span> <span class="n">result</span><span class="o">[</span><span class="s2">&#34;name&#34;</span><span class="o">]</span><span class="p">,</span>
-                  <span class="ss">capital</span><span class="p">:</span> <span class="n">result</span><span class="o">[</span><span class="s2">&#34;capital&#34;</span><span class="o">]</span><span class="p">,</span>
-                  <span class="ss">region</span><span class="p">:</span> <span class="n">result</span><span class="o">[</span><span class="s2">&#34;region&#34;</span><span class="o">]</span><span class="p">,</span>
-                  <span class="ss">population</span><span class="p">:</span> <span class="n">result</span><span class="o">[</span><span class="s2">&#34;population&#34;</span><span class="o">]</span><span class="p">,</span>
-                  <span class="ss">latitude</span><span class="p">:</span> <span class="n">result</span><span class="o">[</span><span class="s2">&#34;latlng&#34;</span><span class="o">][</span><span class="mi">0</span><span class="o">]</span><span class="p">,</span>
-                  <span class="ss">longitude</span><span class="p">:</span> <span class="n">result</span><span class="o">[</span><span class="s2">&#34;latlng&#34;</span><span class="o">][</span><span class="mi">1</span><span class="o">]</span><span class="p">,</span>
-                  <span class="ss">native_name</span><span class="p">:</span> <span class="n">result</span><span class="o">[</span><span class="s2">&#34;nativeName&#34;</span><span class="o">]</span><span class="p">,</span>
-                  <span class="ss">currencies</span><span class="p">:</span> <span class="n">currencies</span>
-    <span class="p">})</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+    <span style="color:#8fbcbb">Country</span><span style="color:#81a1c1">.</span>new<span style="color:#eceff4">({</span> <span style="color:#81a1c1">name</span><span style="color:#eceff4">:</span> result<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;name&#34;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span>
+                  <span style="color:#a3be8c">capital</span><span style="color:#eceff4">:</span> result<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;capital&#34;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span>
+                  <span style="color:#a3be8c">region</span><span style="color:#eceff4">:</span> result<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;region&#34;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span>
+                  <span style="color:#a3be8c">population</span><span style="color:#eceff4">:</span> result<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;population&#34;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span>
+                  <span style="color:#a3be8c">latitude</span><span style="color:#eceff4">:</span> result<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;latlng&#34;</span><span style="color:#81a1c1">][</span><span style="color:#b48ead">0</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span>
+                  <span style="color:#a3be8c">longitude</span><span style="color:#eceff4">:</span> result<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;latlng&#34;</span><span style="color:#81a1c1">][</span><span style="color:#b48ead">1</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span>
+                  <span style="color:#a3be8c">native_name</span><span style="color:#eceff4">:</span> result<span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;nativeName&#34;</span><span style="color:#81a1c1">]</span><span style="color:#eceff4">,</span>
+                  <span style="color:#a3be8c">currencies</span><span style="color:#eceff4">:</span> currencies
+    <span style="color:#eceff4">})</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>The <code>CountryBuilder.build</code> method will receive the JSON and build the <code>Country</code>
 object on it&rsquo;s own. The next, obvious step, is to test this class. If you look
 at the test we wrote earlier, you can notice that the test is 90% done, it just
 needs some tweaking.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">&#39;minitest/autorun&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1">require</span> <span style="color:#a3be8c">&#39;minitest/autorun&#39;</span>
 
-<span class="k">class</span> <span class="nc">CountryBuilderTest</span> <span class="o">&lt;</span> <span class="no">Minitest</span><span class="o">::</span><span class="no">Test</span>
-  <span class="k">def</span> <span class="nf">test_build_builds_the_country</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="sx">%Q{
-</span><span class="sx">      [
-</span><span class="sx">        {
-</span><span class="sx">          &#34;name&#34;: &#34;United Kingdom&#34;,
-</span><span class="sx">          &#34;capital&#34;: &#34;London&#34;,
-</span><span class="sx">          &#34;region&#34;: &#34;Europe&#34;,
-</span><span class="sx">          &#34;population&#34;: 64105654,
-</span><span class="sx">          &#34;latlng&#34;: [54, -2],
-</span><span class="sx">          &#34;nativeName&#34;: &#34;United Kingdom&#34;
-</span><span class="sx">        }
-</span><span class="sx">      ]
-</span><span class="sx">    }</span>
-    <span class="n">country</span> <span class="o">=</span> <span class="no">CountryBuilder</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">CountryBuilderTest</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">Minitest</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Test</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">test_build_builds_the_country</span>
+    response <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">%Q{
+</span><span style="color:#a3be8c">      [
+</span><span style="color:#a3be8c">        {
+</span><span style="color:#a3be8c">          &#34;name&#34;: &#34;United Kingdom&#34;,
+</span><span style="color:#a3be8c">          &#34;capital&#34;: &#34;London&#34;,
+</span><span style="color:#a3be8c">          &#34;region&#34;: &#34;Europe&#34;,
+</span><span style="color:#a3be8c">          &#34;population&#34;: 64105654,
+</span><span style="color:#a3be8c">          &#34;latlng&#34;: [54, -2],
+</span><span style="color:#a3be8c">          &#34;nativeName&#34;: &#34;United Kingdom&#34;
+</span><span style="color:#a3be8c">        }
+</span><span style="color:#a3be8c">      ]
+</span><span style="color:#a3be8c">    }</span>
+    country <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">CountryBuilder</span><span style="color:#81a1c1">.</span>build<span style="color:#eceff4">(</span>response<span style="color:#eceff4">)</span>
 
-    <span class="c1"># Sanity check</span>
-    <span class="n">assert_equal</span> <span class="no">Country</span><span class="p">,</span> <span class="n">country</span><span class="o">.</span><span class="n">class</span>
+    <span style="color:#616e87;font-style:italic"># Sanity check</span>
+    assert_equal <span style="color:#8fbcbb">Country</span><span style="color:#eceff4">,</span> country<span style="color:#81a1c1">.</span>class
 
-    <span class="c1"># Useful assertions</span>
-    <span class="n">assert_equal</span> <span class="s2">&#34;London&#34;</span><span class="p">,</span> <span class="n">country</span><span class="o">.</span><span class="n">name</span>
-    <span class="n">assert_equal</span> <span class="s2">&#34;United Kingdom&#34;</span><span class="p">,</span> <span class="n">country</span><span class="o">.</span><span class="n">name</span>
-    <span class="n">assert_equal</span> <span class="s2">&#34;Europe&#34;</span><span class="p">,</span> <span class="n">country</span><span class="o">.</span><span class="n">region</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+    <span style="color:#616e87;font-style:italic"># Useful assertions</span>
+    assert_equal <span style="color:#a3be8c">&#34;London&#34;</span><span style="color:#eceff4">,</span> country<span style="color:#81a1c1">.</span>name
+    assert_equal <span style="color:#a3be8c">&#34;United Kingdom&#34;</span><span style="color:#eceff4">,</span> country<span style="color:#81a1c1">.</span>name
+    assert_equal <span style="color:#a3be8c">&#34;Europe&#34;</span><span style="color:#eceff4">,</span> country<span style="color:#81a1c1">.</span>region
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>The key differences in the new and old test is that the new one is missing the
 Webmock request stub. Also, we are testing the builder class, which does what
 it should - receives the response as a JSON, builds an object of a class and
@@ -609,17 +609,17 @@ returns it. But, what happens now to the <code>CapitalsClient</code>? Well, noth
 complicated. If you remember, the pattern states that the humble object should
 depend on the extracted code.</p>
 <p>If you look at the code below, it should all make sense:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">&#39;net/http&#39;</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1">require</span> <span style="color:#a3be8c">&#39;net/http&#39;</span>
 
-<span class="k">class</span> <span class="nc">CapitalsClient</span>
-  <span class="no">API_ENDPOINT</span> <span class="o">=</span> <span class="s2">&#34;https://restcountries.eu/rest/v1/capital/&#34;</span>
+<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">CapitalsClient</span>
+  <span style="color:#8fbcbb">API_ENDPOINT</span> <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#34;https://restcountries.eu/rest/v1/capital/&#34;</span>
 
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">find</span><span class="p">(</span><span class="n">capital_name</span><span class="p">)</span>
-    <span class="n">uri</span> <span class="o">=</span> <span class="no">URI</span><span class="p">(</span><span class="no">API_ENDPOINT</span> <span class="o">+</span> <span class="n">capital_name</span><span class="p">)</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="no">Net</span><span class="o">::</span><span class="no">HTTP</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span>
-    <span class="no">CountryBuilder</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#8fbcbb">self</span><span style="color:#81a1c1">.</span><span style="color:#88c0d0">find</span><span style="color:#eceff4">(</span>capital_name<span style="color:#eceff4">)</span>
+    uri <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">URI</span><span style="color:#eceff4">(</span><span style="color:#8fbcbb">API_ENDPOINT</span> <span style="color:#81a1c1">+</span> capital_name<span style="color:#eceff4">)</span>
+    response <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Net</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">HTTP</span><span style="color:#81a1c1">.</span>get<span style="color:#eceff4">(</span>uri<span style="color:#eceff4">)</span>
+    <span style="color:#8fbcbb">CountryBuilder</span><span style="color:#81a1c1">.</span>build<span style="color:#eceff4">(</span>response<span style="color:#eceff4">)</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>So, we add the dependency, making <code>CapitalsClient</code> use <code>CountryBuilder</code> to
 create the country out of the JSON payload.</p>
 <p>And, what about testing <code>CapitalsClient</code>? Well, we don&rsquo;t really need to test
@@ -1019,7 +1019,7 @@ knowing the pattern guides us towards making only one entry point to our code
       
         <p class="text-sm text-neutral-500 dark:text-neutral-400">
             &copy;
-            2022
+            2023
             Ilija Eftimov
         </p>
       

@@ -346,13 +346,13 @@ so keep on reading!</p>
 <p>Rails by default has bunch of middleware loaded that is crucial to Rails'
 working. If you want to see what middleware your Rails app is using, open it up
 in command line and run:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">rake middleware</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">rake middleware</code></pre></div>
 <p>You will see a big list of middleware classes that your current Rails app is
 using.  This is a sample output on a app that I am working on. Keep in mind
 that your output may vary.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">use ActionDispatch::Static
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">use ActionDispatch::Static
 use Rack::Lock
-use <span class="c1">#&lt;ActiveSupport::Cache::Strategy::LocalCache::Middleware:0x007f93ff6810d8&gt;</span>
+use <span style="color:#616e87;font-style:italic">#&lt;ActiveSupport::Cache::Strategy::LocalCache::Middleware:0x007f93ff6810d8&gt;</span>
 use Rack::Runtime
 use Rack::MethodOverride
 use ActionDispatch::RequestId
@@ -384,72 +384,72 @@ middleware and how we can leverage those to write our own middleware.</p>
 <p>Just like any Rack middleware that we wrote before, we will need to write a
 middleware class. Since v3.2, Rails gave us the ability to add middleware
 classes to <code>lib/middleware</code>. So, lets add that class.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># lib/middleware/my_middleware.rb</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#616e87;font-style:italic"># lib/middleware/my_middleware.rb</span>
 
-<span class="k">class</span> <span class="nc">MyMiddleware</span>
-<span class="k">end</span></code></pre></div>
+<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">MyMiddleware</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>As always, there are some conventions of how Rails middleware should be
 created.  Like any other middleware class, the class needs an <code>initialize</code>
 method and a <code>call</code> method.  Also, the first argument of the initialize
 method is the application itself, and the first argument of the call method is
 the request environment.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># lib/middleware/my_middleware.rb</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#616e87;font-style:italic"># lib/middleware/my_middleware.rb</span>
 
-<span class="k">class</span> <span class="nc">MyMiddleware</span>
-  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">app</span>
-    <span class="vi">@app</span> <span class="o">=</span> <span class="n">app</span>
-  <span class="k">end</span>
+<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">MyMiddleware</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span> app
+    @app <span style="color:#81a1c1">=</span> app
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="k">def</span> <span class="nf">call</span> <span class="n">env</span>
-    <span class="c1"># do something...</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">call</span> env
+    <span style="color:#616e87;font-style:italic"># do something...</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <h2 id="using-our-middleware" class="relative group">Using our middleware <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#using-our-middleware" aria-label="Anchor">#</a></span></h2>
 <p>Rails allows us to mount this middleware class in the middleware stack so the
 application can use it in runtime. Again, you can see the middleware stack by
 running</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">rake middleware</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">rake middleware</code></pre></div>
 <p>in your command line.</p>
 <h3 id="mounting" class="relative group">Mounting <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#mounting" aria-label="Anchor">#</a></span></h3>
 <p>Mounting middleware is usually done in the <code>config/application.rb</code> file.  But,
 Rails also allows us to mount different middleware for different environment.
 This means that you can mount middleware in any of the <code>config/environments</code>
 files. Mounting a middleware class is done with the command:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">module</span> <span class="nn">MyRailsApplication</span>
-  <span class="k">class</span> <span class="nc">Application</span> <span class="o">&lt;</span> <span class="no">Rails</span><span class="o">::</span><span class="no">Application</span>
-    <span class="o">*</span><span class="n">snip</span><span class="o">*</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">MyRailsApplication</span>
+  <span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Application</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Application</span>
+    <span style="color:#81a1c1">*</span>snip<span style="color:#81a1c1">*</span>
 
-    <span class="n">config</span><span class="o">.</span><span class="n">middleware</span><span class="o">.</span><span class="n">use</span> <span class="o">&lt;</span><span class="n">class</span><span class="o">-</span><span class="nb">name</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">first</span><span class="o">-</span><span class="n">argument</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">nth</span><span class="o">-</span><span class="n">argument</span><span class="o">&gt;</span>
+    config<span style="color:#81a1c1">.</span>middleware<span style="color:#81a1c1">.</span>use <span style="color:#81a1c1">&lt;</span>class<span style="color:#81a1c1">-</span><span style="color:#81a1c1">name</span><span style="color:#81a1c1">&gt;</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">&lt;</span>first<span style="color:#81a1c1">-</span>argument<span style="color:#81a1c1">&gt;</span><span style="color:#eceff4">,</span> <span style="color:#81a1c1">&lt;</span>nth<span style="color:#81a1c1">-</span>argument<span style="color:#81a1c1">&gt;</span>
 
-    <span class="o">*</span><span class="n">snip</span><span class="o">*</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+    <span style="color:#81a1c1">*</span>snip<span style="color:#81a1c1">*</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>Or, in our case:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># config/application.rb</span>
-<span class="k">module</span> <span class="nn">MyRailsApplication</span>
-  <span class="k">class</span> <span class="nc">Application</span> <span class="o">&lt;</span> <span class="no">Rails</span><span class="o">::</span><span class="no">Application</span>
-    <span class="o">*</span><span class="n">snip</span><span class="o">*</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#616e87;font-style:italic"># config/application.rb</span>
+<span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">MyRailsApplication</span>
+  <span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Application</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Application</span>
+    <span style="color:#81a1c1">*</span>snip<span style="color:#81a1c1">*</span>
 
-    <span class="n">config</span><span class="o">.</span><span class="n">middleware</span><span class="o">.</span><span class="n">use</span> <span class="s2">&#34;MyMiddleware&#34;</span>
+    config<span style="color:#81a1c1">.</span>middleware<span style="color:#81a1c1">.</span>use <span style="color:#a3be8c">&#34;MyMiddleware&#34;</span>
 
-    <span class="o">*</span><span class="n">snip</span><span class="o">*</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+    <span style="color:#81a1c1">*</span>snip<span style="color:#81a1c1">*</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>There is this tiny caveat when mounting middleware - note that the class name
 is written as a string, not as a constant. If you mount a middleware class in
 the <code>config/application.rb</code> file the class name has to be a string. But, if
 you load the middleware class in the environment files (i.e.
 <code>config/environment/development.rb</code>) you can mount is as a constant:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># config/environment/development.rb</span>
-<span class="k">module</span> <span class="nn">MyRailsApplication</span>
-  <span class="k">class</span> <span class="nc">Application</span> <span class="o">&lt;</span> <span class="no">Rails</span><span class="o">::</span><span class="no">Application</span>
-    <span class="o">*</span><span class="n">snip</span><span class="o">*</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#616e87;font-style:italic"># config/environment/development.rb</span>
+<span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">MyRailsApplication</span>
+  <span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Application</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Application</span>
+    <span style="color:#81a1c1">*</span>snip<span style="color:#81a1c1">*</span>
 
-    <span class="n">config</span><span class="o">.</span><span class="n">middleware</span><span class="o">.</span><span class="n">use</span> <span class="no">MyMiddleware</span>
+    config<span style="color:#81a1c1">.</span>middleware<span style="color:#81a1c1">.</span>use <span style="color:#8fbcbb">MyMiddleware</span>
 
-    <span class="o">*</span><span class="n">snip</span><span class="o">*</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+    <span style="color:#81a1c1">*</span>snip<span style="color:#81a1c1">*</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>As far as I can tell, the reason for this tiny caveat is when Rails is loading
 all the required files on server boot, when <code>config/application.rb</code> is loaded
 not all constants are loaded. But, due to the nature of the envronment files,
@@ -460,22 +460,22 @@ memory.</p>
 the <code>insert_before</code> and <code>insert_after</code> commands.</p>
 <p>For example, if we, for whatever reason, want to add our <code>MyMiddleware</code> class
 just before the <code>Rails::Rack::Logger</code> middleware, we can use this line:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="k">module</span> <span class="nn">MyRailsApplication</span>
-  <span class="k">class</span> <span class="nc">Application</span> <span class="o">&lt;</span> <span class="no">Rails</span><span class="o">::</span><span class="no">Application</span>
-    <span class="o">*</span><span class="n">snip</span><span class="o">*</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">MyRailsApplication</span>
+  <span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Application</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Application</span>
+    <span style="color:#81a1c1">*</span>snip<span style="color:#81a1c1">*</span>
 
-    <span class="n">config</span><span class="o">.</span><span class="n">middleware</span><span class="o">.</span><span class="n">insert_before</span> <span class="s2">&#34;Rails::Rack::Logger&#34;</span><span class="p">,</span> <span class="s2">&#34;MyMiddleware&#34;</span>
+    config<span style="color:#81a1c1">.</span>middleware<span style="color:#81a1c1">.</span>insert_before <span style="color:#a3be8c">&#34;Rails::Rack::Logger&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;MyMiddleware&#34;</span>
 
-    <span class="o">*</span><span class="n">snip</span><span class="o">*</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+    <span style="color:#81a1c1">*</span>snip<span style="color:#81a1c1">*</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>On the flipside, if we want to add our <code>MyMiddleware</code> class after the
 <code>Rails::Rack::Logger</code> middleware, we can use this line:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="n">config</span><span class="o">.</span><span class="n">middleware</span><span class="o">.</span><span class="n">insert_after</span> <span class="s2">&#34;Rails::Rack::Logger&#34;</span><span class="p">,</span> <span class="s2">&#34;MyMiddleware&#34;</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">config<span style="color:#81a1c1">.</span>middleware<span style="color:#81a1c1">.</span>insert_after <span style="color:#a3be8c">&#34;Rails::Rack::Logger&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;MyMiddleware&#34;</span></code></pre></div>
 <p>Another convenience method that Rails provides us is <code>swap</code>, as in swapping
 middleware.  For example, if you wrote your own params parser middleware, that
 will substitute <code>ActionDispatch::ParamsParser</code>, you can swap it using:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="n">config</span><span class="o">.</span><span class="n">middleware</span><span class="o">.</span><span class="n">swap</span> <span class="s2">&#34;ActionDispatch::ParamsParser&#34;</span><span class="p">,</span> <span class="s2">&#34;MyParamsParser&#34;</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">config<span style="color:#81a1c1">.</span>middleware<span style="color:#81a1c1">.</span>swap <span style="color:#a3be8c">&#34;ActionDispatch::ParamsParser&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;MyParamsParser&#34;</span></code></pre></div>
 <p>This will swap the middleware classes, as in, it will use <code>MyParamsParser</code>
 instead of <code>ActionDispatch::ParamsParser</code>.</p>
 <p>Just to give you an idea, this can be useful when debugging - you can extend
@@ -496,38 +496,38 @@ So, if it is missing - feel free to create it.</p>
 <p>Next, we&rsquo;ll need to add the <code>initialize</code> and the <code>call</code> method. Remember, the
 first argument of the <code>initialize</code> method is the application, and the first
 argument of the <code>call</code> method is the request environment.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># lib/middleware/delta_logger.rb</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#616e87;font-style:italic"># lib/middleware/delta_logger.rb</span>
 
-<span class="k">class</span> <span class="nc">DeltaLogger</span>
-  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">app</span>
-    <span class="vi">@app</span> <span class="o">=</span> <span class="n">app</span>
-  <span class="k">end</span>
+<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">DeltaLogger</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span> app
+    @app <span style="color:#81a1c1">=</span> app
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="k">def</span> <span class="nf">call</span> <span class="n">env</span>
-    <span class="c1"># do something...</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">call</span> env
+    <span style="color:#616e87;font-style:italic"># do something...</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>Next, we&rsquo;ll need to calculate the total time that the applicaiton took to
 process the request and log it:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># lib/middleware/delta_logger.rb</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#616e87;font-style:italic"># lib/middleware/delta_logger.rb</span>
 
-<span class="k">class</span> <span class="nc">DeltaLogger</span>
-  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">app</span>
-    <span class="vi">@app</span> <span class="o">=</span> <span class="n">app</span>
-  <span class="k">end</span>
+<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">DeltaLogger</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span> app
+    @app <span style="color:#81a1c1">=</span> app
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="k">def</span> <span class="nf">call</span> <span class="n">env</span>
-    <span class="n">request_started_on</span> <span class="o">=</span> <span class="no">Time</span><span class="o">.</span><span class="n">now</span>
-    <span class="vi">@status</span><span class="p">,</span> <span class="vi">@headers</span><span class="p">,</span> <span class="vi">@response</span> <span class="o">=</span> <span class="vi">@app</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
-    <span class="n">request_ended_on</span> <span class="o">=</span> <span class="no">Time</span><span class="o">.</span><span class="n">now</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">call</span> env
+    request_started_on <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Time</span><span style="color:#81a1c1">.</span>now
+    @status<span style="color:#eceff4">,</span> @headers<span style="color:#eceff4">,</span> @response <span style="color:#81a1c1">=</span> @app<span style="color:#81a1c1">.</span>call<span style="color:#eceff4">(</span>env<span style="color:#eceff4">)</span>
+    request_ended_on <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Time</span><span style="color:#81a1c1">.</span>now
 
-    <span class="no">Rails</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span> <span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">50</span>
-    <span class="no">Rails</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span> <span class="s2">&#34;Request delta time: </span><span class="si">#{</span><span class="n">request_ended_on</span> <span class="o">-</span> <span class="n">request_started_on</span><span class="si">}</span><span class="s2"> seconds.&#34;</span>
-    <span class="no">Rails</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span> <span class="s2">&#34;=&#34;</span> <span class="o">*</span> <span class="mi">50</span>
+    <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>debug <span style="color:#a3be8c">&#34;=&#34;</span> <span style="color:#81a1c1">*</span> <span style="color:#b48ead">50</span>
+    <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>debug <span style="color:#a3be8c">&#34;Request delta time: </span><span style="color:#a3be8c">#{</span>request_ended_on <span style="color:#81a1c1">-</span> request_started_on<span style="color:#a3be8c">}</span><span style="color:#a3be8c"> seconds.&#34;</span>
+    <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>debug <span style="color:#a3be8c">&#34;=&#34;</span> <span style="color:#81a1c1">*</span> <span style="color:#b48ead">50</span>
 
-    <span class="o">[</span><span class="vi">@status</span><span class="p">,</span> <span class="vi">@headers</span><span class="p">,</span> <span class="vi">@response</span><span class="o">]</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+    <span style="color:#81a1c1">[</span>@status<span style="color:#eceff4">,</span> @headers<span style="color:#eceff4">,</span> @response<span style="color:#81a1c1">]</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>As you can see, this is quite trivial. We save the time before the request has
 been passed onto the rest of the middleware stack and the time after the
 middleware has finished with the request. Then, we subtract the start time from
@@ -538,9 +538,9 @@ log the delta time.</p>
 <p>If you managed to add your middleware to the Rails app, go ahead and boot it.
 When the server boots, issue any request to it. In the logs you will see
 something like:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="o">==================================================</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#81a1c1">==================================================</span>
 Request delta time: 1.40877 seconds.
-<span class="o">==================================================</span></code></pre></div>
+<span style="color:#81a1c1">==================================================</span></code></pre></div>
 <p>This is our <code>DeltaLogger</code> logging the delta time.</p>
 <h3 id="formatting-the-output" class="relative group">Formatting the output <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#formatting-the-output" aria-label="Anchor">#</a></span></h3>
 <p>In one of the examples in the introduction of this post, I mentioned the option
@@ -548,41 +548,41 @@ of passing arguments to the middleware class. Lets see how we can use this
 feature to improve the formatting of the <code>DeltaLogger</code>.</p>
 <p>Passing arguments is done by adding the arguments after the class name in the
 mounting command:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="n">config</span><span class="o">.</span><span class="n">middleware</span><span class="o">.</span><span class="n">use</span> <span class="s2">&#34;MyMiddleware&#34;</span><span class="p">,</span> <span class="s2">&#34;First Argument&#34;</span><span class="p">,</span> <span class="p">{</span> <span class="ss">second</span><span class="p">:</span> <span class="s2">&#34;argument&#34;</span> <span class="p">},</span> <span class="o">[</span><span class="s2">&#34;nth-argument&#34;</span><span class="o">]</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">config<span style="color:#81a1c1">.</span>middleware<span style="color:#81a1c1">.</span>use <span style="color:#a3be8c">&#34;MyMiddleware&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;First Argument&#34;</span><span style="color:#eceff4">,</span> <span style="color:#eceff4">{</span> <span style="color:#a3be8c">second</span><span style="color:#eceff4">:</span> <span style="color:#a3be8c">&#34;argument&#34;</span> <span style="color:#eceff4">},</span> <span style="color:#81a1c1">[</span><span style="color:#a3be8c">&#34;nth-argument&#34;</span><span style="color:#81a1c1">]</span></code></pre></div>
 <p>In our tiny example, we can send through the character that we want the output
 to be formatted with. Currently, our default formatting is done with the equals
 sign.  Making this customizable is easily done by sending this character as the
 first argument:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># lib/middleware/delta_logger.rb</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#616e87;font-style:italic"># lib/middleware/delta_logger.rb</span>
 
-<span class="k">class</span> <span class="nc">DeltaLogger</span>
-  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">app</span><span class="p">,</span> <span class="n">formatting_char</span> <span class="o">=</span> <span class="s1">&#39;=&#39;</span>
-    <span class="vi">@app</span> <span class="o">=</span> <span class="n">app</span>
-    <span class="vi">@formatting_char</span> <span class="o">=</span> <span class="n">formatting_char</span>
-  <span class="k">end</span>
+<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">DeltaLogger</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span> app<span style="color:#eceff4">,</span> formatting_char <span style="color:#81a1c1">=</span> <span style="color:#a3be8c">&#39;=&#39;</span>
+    @app <span style="color:#81a1c1">=</span> app
+    @formatting_char <span style="color:#81a1c1">=</span> formatting_char
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="k">def</span> <span class="nf">call</span> <span class="n">env</span>
-    <span class="n">request_started_on</span> <span class="o">=</span> <span class="no">Time</span><span class="o">.</span><span class="n">now</span>
-    <span class="vi">@status</span><span class="p">,</span> <span class="vi">@headers</span><span class="p">,</span> <span class="vi">@response</span> <span class="o">=</span> <span class="vi">@app</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
-    <span class="n">request_ended_on</span> <span class="o">=</span> <span class="no">Time</span><span class="o">.</span><span class="n">now</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">call</span> env
+    request_started_on <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Time</span><span style="color:#81a1c1">.</span>now
+    @status<span style="color:#eceff4">,</span> @headers<span style="color:#eceff4">,</span> @response <span style="color:#81a1c1">=</span> @app<span style="color:#81a1c1">.</span>call<span style="color:#eceff4">(</span>env<span style="color:#eceff4">)</span>
+    request_ended_on <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Time</span><span style="color:#81a1c1">.</span>now
 
-    <span class="no">Rails</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span> <span class="vi">@formatting_char</span> <span class="o">*</span> <span class="mi">50</span>
-    <span class="no">Rails</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span> <span class="s2">&#34;Request delta time: </span><span class="si">#{</span><span class="n">request_ended_on</span> <span class="o">-</span> <span class="n">request_started_on</span><span class="si">}</span><span class="s2"> seconds.&#34;</span>
-    <span class="no">Rails</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span> <span class="vi">@formatting_char</span> <span class="o">*</span> <span class="mi">50</span>
+    <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>debug @formatting_char <span style="color:#81a1c1">*</span> <span style="color:#b48ead">50</span>
+    <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>debug <span style="color:#a3be8c">&#34;Request delta time: </span><span style="color:#a3be8c">#{</span>request_ended_on <span style="color:#81a1c1">-</span> request_started_on<span style="color:#a3be8c">}</span><span style="color:#a3be8c"> seconds.&#34;</span>
+    <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>debug @formatting_char <span style="color:#81a1c1">*</span> <span style="color:#b48ead">50</span>
 
-    <span class="o">[</span><span class="vi">@status</span><span class="p">,</span> <span class="vi">@headers</span><span class="p">,</span> <span class="vi">@response</span><span class="o">]</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+    <span style="color:#81a1c1">[</span>@status<span style="color:#eceff4">,</span> @headers<span style="color:#eceff4">,</span> @response<span style="color:#81a1c1">]</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>Now, we can change the output when adding the <code>DeltaLogger</code> to the middleware
 stack:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="n">config</span><span class="o">.</span><span class="n">middleware</span><span class="o">.</span><span class="n">use</span> <span class="s2">&#34;DeltaLogger&#34;</span><span class="p">,</span> <span class="s2">&#34;*&#34;</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">config<span style="color:#81a1c1">.</span>middleware<span style="color:#81a1c1">.</span>use <span style="color:#a3be8c">&#34;DeltaLogger&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;*&#34;</span></code></pre></div>
 <p>It&rsquo;s worth mentioning that if your Rails application is running, when changing
 a middleware class you will have to reboot the application so the new changes
 in the middleware can be picked up. This happens because Rails loads the
 middleware only once - on boot.</p>
 <p>Now, when we send a request in the logs we can see that the <code>DeltaLogger</code>
 output changed:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash">**************************************************
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">**************************************************
 Request delta time: 1.40877 seconds.
 **************************************************</code></pre></div>
 <h3 id="logging-levels" class="relative group">Logging levels <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#logging-levels" aria-label="Anchor">#</a></span></h3>
@@ -590,62 +590,62 @@ Request delta time: 1.40877 seconds.
 For example, you might want to change the logging level. In Rails, there are
 six different logging levels: <code>:debug</code>, <code>:info</code>, <code>:warn</code>, <code>:error</code>, <code>:fatal</code>,
 and <code>:unknown</code>.  Lets make the logging level customizable.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># lib/middleware/delta_logger.rb</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#616e87;font-style:italic"># lib/middleware/delta_logger.rb</span>
 
-<span class="no">VALID_LOG_LEVELS</span> <span class="o">=</span> <span class="o">[</span><span class="ss">:debug</span><span class="p">,</span> <span class="ss">:info</span><span class="p">,</span> <span class="ss">:warn</span><span class="p">,</span> <span class="ss">:error</span><span class="p">,</span> <span class="ss">:fatal</span><span class="p">,</span> <span class="ss">:unknown</span><span class="o">]</span>
+<span style="color:#8fbcbb">VALID_LOG_LEVELS</span> <span style="color:#81a1c1">=</span> <span style="color:#81a1c1">[</span><span style="color:#a3be8c">:debug</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:info</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:warn</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:error</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:fatal</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:unknown</span><span style="color:#81a1c1">]</span>
 
-<span class="k">class</span> <span class="nc">DeltaLogger</span>
-  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">app</span><span class="p">,</span> <span class="n">log_level</span>
-    <span class="vi">@app</span> <span class="o">=</span> <span class="n">app</span>
-    <span class="c1"># Default to :info log level if the user sets an invalid log level.</span>
-    <span class="vi">@log_level</span> <span class="o">=</span> <span class="no">VALID_LOG_LEVELS</span><span class="o">.</span><span class="n">include?</span><span class="p">(</span><span class="n">log_level</span><span class="p">)</span> <span class="p">?</span>  <span class="n">log_level</span> <span class="p">:</span> <span class="ss">:info</span>
-  <span class="k">end</span>
+<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">DeltaLogger</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span> app<span style="color:#eceff4">,</span> log_level
+    @app <span style="color:#81a1c1">=</span> app
+    <span style="color:#616e87;font-style:italic"># Default to :info log level if the user sets an invalid log level.</span>
+    @log_level <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">VALID_LOG_LEVELS</span><span style="color:#81a1c1">.</span>include?<span style="color:#eceff4">(</span>log_level<span style="color:#eceff4">)</span> <span style="color:#eceff4">?</span>  log_level <span style="color:#eceff4">:</span> <span style="color:#a3be8c">:info</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="k">def</span> <span class="nf">call</span> <span class="n">env</span>
-    <span class="n">request_started_on</span> <span class="o">=</span> <span class="no">Time</span><span class="o">.</span><span class="n">now</span>
-    <span class="vi">@status</span><span class="p">,</span> <span class="vi">@headers</span><span class="p">,</span> <span class="vi">@response</span> <span class="o">=</span> <span class="vi">@app</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
-    <span class="n">request_ended_on</span> <span class="o">=</span> <span class="no">Time</span><span class="o">.</span><span class="n">now</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">call</span> env
+    request_started_on <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Time</span><span style="color:#81a1c1">.</span>now
+    @status<span style="color:#eceff4">,</span> @headers<span style="color:#eceff4">,</span> @response <span style="color:#81a1c1">=</span> @app<span style="color:#81a1c1">.</span>call<span style="color:#eceff4">(</span>env<span style="color:#eceff4">)</span>
+    request_ended_on <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Time</span><span style="color:#81a1c1">.</span>now
 
-    <span class="no">Rails</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="vi">@log_level</span><span class="p">,</span> <span class="s1">&#39;=&#39;</span> <span class="o">*</span> <span class="mi">50</span><span class="p">)</span>
-    <span class="no">Rails</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="vi">@log_level</span><span class="p">,</span> <span class="s2">&#34;Request delta time: </span><span class="si">#{</span><span class="n">request_ended_on</span> <span class="o">-</span> <span class="n">request_started_on</span><span class="si">}</span><span class="s2"> seconds.&#34;</span><span class="p">)</span>
-    <span class="no">Rails</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="vi">@log_level</span><span class="p">,</span> <span class="s1">&#39;=&#39;</span> <span class="o">*</span> <span class="mi">50</span><span class="p">)</span>
+    <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>send<span style="color:#eceff4">(</span>@log_level<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#39;=&#39;</span> <span style="color:#81a1c1">*</span> <span style="color:#b48ead">50</span><span style="color:#eceff4">)</span>
+    <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>send<span style="color:#eceff4">(</span>@log_level<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Request delta time: </span><span style="color:#a3be8c">#{</span>request_ended_on <span style="color:#81a1c1">-</span> request_started_on<span style="color:#a3be8c">}</span><span style="color:#a3be8c"> seconds.&#34;</span><span style="color:#eceff4">)</span>
+    <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>send<span style="color:#eceff4">(</span>@log_level<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#39;=&#39;</span> <span style="color:#81a1c1">*</span> <span style="color:#b48ead">50</span><span style="color:#eceff4">)</span>
 
-    <span class="o">[</span><span class="vi">@status</span><span class="p">,</span> <span class="vi">@headers</span><span class="p">,</span> <span class="vi">@response</span><span class="o">]</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+    <span style="color:#81a1c1">[</span>@status<span style="color:#eceff4">,</span> @headers<span style="color:#eceff4">,</span> @response<span style="color:#81a1c1">]</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>Now, in our application.rb (or environment.rb) file, we can set the logger to
 use the desired loging level:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="n">config</span><span class="o">.</span><span class="n">middleware</span><span class="o">.</span><span class="n">use</span> <span class="s2">&#34;DeltaLogger&#34;</span><span class="p">,</span> <span class="ss">:warn</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby">config<span style="color:#81a1c1">.</span>middleware<span style="color:#81a1c1">.</span>use <span style="color:#a3be8c">&#34;DeltaLogger&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:warn</span></code></pre></div>
 <p>If we reboot the Rails app and send a new request, the logs will show:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="o">[</span>WARN<span class="o">]</span> <span class="o">==================================================</span>
-<span class="o">[</span>WARN<span class="o">]</span> Request delta time: 0.270595 seconds.
-<span class="o">[</span>WARN<span class="o">]</span> <span class="o">==================================================</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#81a1c1">[</span>WARN<span style="color:#81a1c1">]</span> <span style="color:#81a1c1">==================================================</span>
+<span style="color:#81a1c1">[</span>WARN<span style="color:#81a1c1">]</span> Request delta time: 0.270595 seconds.
+<span style="color:#81a1c1">[</span>WARN<span style="color:#81a1c1">]</span> <span style="color:#81a1c1">==================================================</span></code></pre></div>
 <p>Be aware that your output may vary because logging output relies on the <a href="http://api.rubyonrails.org/classes/ActiveSupport/Logger/SimpleFormatter.html">logger
 formatter</a>
 that your application is using.</p>
 <p>If you are not seeing the exact output, you can plug this logging formatter in
 your app:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># lib/delta_formatter.rb</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#616e87;font-style:italic"># lib/delta_formatter.rb</span>
 
-<span class="k">class</span> <span class="nc">DeltaFormatter</span> <span class="o">&lt;</span> <span class="no">Logger</span><span class="o">::</span><span class="no">Formatter</span>
-  <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">severity</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">program_name</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
-    <span class="s2">&#34;[</span><span class="si">#{</span><span class="n">severity</span><span class="si">}</span><span class="s2">] </span><span class="si">#{</span><span class="nb">String</span> <span class="o">===</span> <span class="n">msg</span> <span class="p">?</span> <span class="n">msg</span> <span class="p">:</span> <span class="n">msg</span><span class="o">.</span><span class="n">inspect</span><span class="si">}</span><span class="se">\n</span><span class="s2">&#34;</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">DeltaFormatter</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">Logger</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Formatter</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">call</span><span style="color:#eceff4">(</span>severity<span style="color:#eceff4">,</span> time<span style="color:#eceff4">,</span> program_name<span style="color:#eceff4">,</span> msg<span style="color:#eceff4">)</span>
+    <span style="color:#a3be8c">&#34;[</span><span style="color:#a3be8c">#{</span>severity<span style="color:#a3be8c">}</span><span style="color:#a3be8c">] </span><span style="color:#a3be8c">#{</span><span style="color:#81a1c1">String</span> <span style="color:#81a1c1">===</span> msg <span style="color:#eceff4">?</span> msg <span style="color:#eceff4">:</span> msg<span style="color:#81a1c1">.</span>inspect<span style="color:#a3be8c">}</span><span style="color:#ebcb8b">\n</span><span style="color:#a3be8c">&#34;</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>You can use this formatter by including it into <code>application.rb</code>:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="o">*</span><span class="n">snipped</span><span class="o">*</span>
-<span class="nb">require</span> <span class="s2">&#34;./lib/delta_formatter&#34;</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#81a1c1">*</span>snipped<span style="color:#81a1c1">*</span>
+<span style="color:#81a1c1">require</span> <span style="color:#a3be8c">&#34;./lib/delta_formatter&#34;</span>
 
-<span class="k">module</span> <span class="nn">MyApplication</span>
-  <span class="k">class</span> <span class="nc">Application</span> <span class="o">&lt;</span> <span class="no">Rails</span><span class="o">::</span><span class="no">Application</span>
-    <span class="n">config</span><span class="o">.</span><span class="n">autoload_paths</span> <span class="o">+=</span> <span class="sx">%W( </span><span class="si">#{</span><span class="n">config</span><span class="o">.</span><span class="n">root</span><span class="si">}</span><span class="sx">/lib/**/*)</span>
+<span style="color:#81a1c1;font-weight:bold">module</span> <span style="color:#8fbcbb">MyApplication</span>
+  <span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">Application</span> <span style="color:#81a1c1">&lt;</span> <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">::</span><span style="color:#8fbcbb">Application</span>
+    config<span style="color:#81a1c1">.</span>autoload_paths <span style="color:#81a1c1">+=</span> <span style="color:#a3be8c">%W( </span><span style="color:#a3be8c">#{</span>config<span style="color:#81a1c1">.</span>root<span style="color:#a3be8c">}</span><span style="color:#a3be8c">/lib/**/*)</span>
 
-    <span class="o">*</span><span class="n">snipped</span><span class="o">*</span>
+    <span style="color:#81a1c1">*</span>snipped<span style="color:#81a1c1">*</span>
 
-    <span class="n">config</span><span class="o">.</span><span class="n">middleware</span><span class="o">.</span><span class="n">use</span> <span class="s2">&#34;DeltaLogger&#34;</span><span class="p">,</span> <span class="ss">:warn</span>
-    <span class="n">config</span><span class="o">.</span><span class="n">log_formatter</span> <span class="o">=</span> <span class="no">DeltaFormatter</span><span class="o">.</span><span class="n">new</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+    config<span style="color:#81a1c1">.</span>middleware<span style="color:#81a1c1">.</span>use <span style="color:#a3be8c">&#34;DeltaLogger&#34;</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:warn</span>
+    config<span style="color:#81a1c1">.</span>log_formatter <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">DeltaFormatter</span><span style="color:#81a1c1">.</span>new
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>After adding this, you&rsquo;ll need to reboot your server and you should see the
 output with the severity tag.</p>
 <h2 id="thread-safety" class="relative group">Thread safety <span class="absolute top-0 w-6 transition-opacity opacity-0 ltr:-left-6 rtl:-right-6 not-prose group-hover:opacity-100"><a class="group-hover:text-primary-300 dark:group-hover:text-neutral-700" style="text-decoration-line: none !important;" href="#thread-safety" aria-label="Anchor">#</a></span></h2>
@@ -656,33 +656,33 @@ be thread-safe, meaning, it should easily spawn multiple duplicates of it so
 different threads can use different objects of the same middleware.</p>
 <p>The easiest and most efficient way to do this is to <code>dup</code> the middleware
 object that is created in runtime.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="c1"># lib/middleware/delta_logger.rb</span>
+<div class="highlight"><pre tabindex="0" style="color:#d8dee9;background-color:#2e3440;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ruby" data-lang="ruby"><span style="color:#616e87;font-style:italic"># lib/middleware/delta_logger.rb</span>
 
-<span class="no">VALID_LOG_LEVELS</span> <span class="o">=</span> <span class="o">[</span><span class="ss">:debug</span><span class="p">,</span> <span class="ss">:info</span><span class="p">,</span> <span class="ss">:warn</span><span class="p">,</span> <span class="ss">:error</span><span class="p">,</span> <span class="ss">:fatal</span><span class="p">,</span> <span class="ss">:unknown</span><span class="o">]</span>
+<span style="color:#8fbcbb">VALID_LOG_LEVELS</span> <span style="color:#81a1c1">=</span> <span style="color:#81a1c1">[</span><span style="color:#a3be8c">:debug</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:info</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:warn</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:error</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:fatal</span><span style="color:#eceff4">,</span> <span style="color:#a3be8c">:unknown</span><span style="color:#81a1c1">]</span>
 
-<span class="k">class</span> <span class="nc">DeltaLogger</span>
-  <span class="k">def</span> <span class="nf">initialize</span> <span class="n">app</span><span class="p">,</span> <span class="n">log_level</span>
-    <span class="vi">@app</span> <span class="o">=</span> <span class="n">app</span>
-    <span class="c1"># Default to :info log level if the user sets an invalid log level.</span>
-    <span class="vi">@log_level</span> <span class="o">=</span> <span class="no">VALID_LOG_LEVELS</span><span class="o">.</span><span class="n">include?</span><span class="p">(</span><span class="n">log_level</span><span class="p">)</span> <span class="p">?</span> <span class="n">log_level</span> <span class="p">:</span> <span class="ss">:info</span>
-  <span class="k">end</span>
+<span style="color:#81a1c1;font-weight:bold">class</span> <span style="color:#8fbcbb">DeltaLogger</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">initialize</span> app<span style="color:#eceff4">,</span> log_level
+    @app <span style="color:#81a1c1">=</span> app
+    <span style="color:#616e87;font-style:italic"># Default to :info log level if the user sets an invalid log level.</span>
+    @log_level <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">VALID_LOG_LEVELS</span><span style="color:#81a1c1">.</span>include?<span style="color:#eceff4">(</span>log_level<span style="color:#eceff4">)</span> <span style="color:#eceff4">?</span> log_level <span style="color:#eceff4">:</span> <span style="color:#a3be8c">:info</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="k">def</span> <span class="nf">call</span> <span class="n">env</span>
-    <span class="nb">dup</span><span class="o">.</span><span class="n">_call</span> <span class="n">env</span>
-  <span class="k">end</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">call</span> env
+    <span style="color:#81a1c1">dup</span><span style="color:#81a1c1">.</span>_call env
+  <span style="color:#81a1c1;font-weight:bold">end</span>
 
-  <span class="k">def</span> <span class="nf">_call</span> <span class="n">env</span>
-    <span class="n">request_started_on</span> <span class="o">=</span> <span class="no">Time</span><span class="o">.</span><span class="n">now</span>
-    <span class="vi">@status</span><span class="p">,</span> <span class="vi">@headers</span><span class="p">,</span> <span class="vi">@response</span> <span class="o">=</span> <span class="vi">@app</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
-    <span class="n">request_ended_on</span> <span class="o">=</span> <span class="no">Time</span><span class="o">.</span><span class="n">now</span>
+  <span style="color:#81a1c1;font-weight:bold">def</span> <span style="color:#88c0d0">_call</span> env
+    request_started_on <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Time</span><span style="color:#81a1c1">.</span>now
+    @status<span style="color:#eceff4">,</span> @headers<span style="color:#eceff4">,</span> @response <span style="color:#81a1c1">=</span> @app<span style="color:#81a1c1">.</span>call<span style="color:#eceff4">(</span>env<span style="color:#eceff4">)</span>
+    request_ended_on <span style="color:#81a1c1">=</span> <span style="color:#8fbcbb">Time</span><span style="color:#81a1c1">.</span>now
 
-    <span class="no">Rails</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="vi">@log_level</span><span class="p">,</span> <span class="s1">&#39;=&#39;</span> <span class="o">*</span> <span class="mi">50</span><span class="p">)</span>
-    <span class="no">Rails</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="vi">@log_level</span><span class="p">,</span> <span class="s2">&#34;Request delta time: </span><span class="si">#{</span><span class="n">request_ended_on</span> <span class="o">-</span> <span class="n">request_started_on</span><span class="si">}</span><span class="s2"> seconds.&#34;</span><span class="p">)</span>
-    <span class="no">Rails</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="vi">@log_level</span><span class="p">,</span> <span class="s1">&#39;=&#39;</span> <span class="o">*</span> <span class="mi">50</span><span class="p">)</span>
+    <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>send<span style="color:#eceff4">(</span>@log_level<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#39;=&#39;</span> <span style="color:#81a1c1">*</span> <span style="color:#b48ead">50</span><span style="color:#eceff4">)</span>
+    <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>send<span style="color:#eceff4">(</span>@log_level<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#34;Request delta time: </span><span style="color:#a3be8c">#{</span>request_ended_on <span style="color:#81a1c1">-</span> request_started_on<span style="color:#a3be8c">}</span><span style="color:#a3be8c"> seconds.&#34;</span><span style="color:#eceff4">)</span>
+    <span style="color:#8fbcbb">Rails</span><span style="color:#81a1c1">.</span>logger<span style="color:#81a1c1">.</span>send<span style="color:#eceff4">(</span>@log_level<span style="color:#eceff4">,</span> <span style="color:#a3be8c">&#39;=&#39;</span> <span style="color:#81a1c1">*</span> <span style="color:#b48ead">50</span><span style="color:#eceff4">)</span>
 
-    <span class="o">[</span><span class="vi">@status</span><span class="p">,</span> <span class="vi">@headers</span><span class="p">,</span> <span class="vi">@response</span><span class="o">]</span>
-  <span class="k">end</span>
-<span class="k">end</span></code></pre></div>
+    <span style="color:#81a1c1">[</span>@status<span style="color:#eceff4">,</span> @headers<span style="color:#eceff4">,</span> @response<span style="color:#81a1c1">]</span>
+  <span style="color:#81a1c1;font-weight:bold">end</span>
+<span style="color:#81a1c1;font-weight:bold">end</span></code></pre></div>
 <p>By adding the <code>_call</code> method and duplicating the object we make sure that
 any instance variables we set in <code>_call</code> will be set on the duped instance,
 not the original. This allows the web server to use a separate (duped) object
@@ -1079,7 +1079,7 @@ problems and code that you&rsquo;ve come up with.</p>
       
         <p class="text-sm text-neutral-500 dark:text-neutral-400">
             &copy;
-            2022
+            2023
             Ilija Eftimov
         </p>
       
